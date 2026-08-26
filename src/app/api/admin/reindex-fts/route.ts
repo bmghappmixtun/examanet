@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         r.numericId,
         COALESCE(r.title, ''),
         COALESCE(r.description, ''),
-        COALESCE(s.name, '')
+        COALESCE(s.nameFr, '')
       FROM Resource r
       LEFT JOIN Subject s ON r.subjectId = s.numericId
       WHERE r.status = 'PUBLISHED'
