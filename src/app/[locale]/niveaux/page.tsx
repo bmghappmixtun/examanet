@@ -139,16 +139,13 @@ export default async function NiveauxPage() {
     const levelsRaw = await db.prepare('SELECT * FROM "Level" ORDER BY "order" ASC').all();
     const classesRaw = await db.prepare('SELECT * FROM "Class" ORDER BY "order" ASC').all();
     const sectionsRaw = await db.prepare('SELECT * FROM "Section" ORDER BY "nameFr" ASC').all();
-    const counts = await db.prepare(\`
-      SELECT "classId", COUNT(*) as count
-      FROM "Resource"
-      WHERE status = 'PUBLISHED' AND "classId" IS NOT NULL
-      GROUP BY "classId"
-    \`).all();
+    const counts = await db.prepare("SELECT classId, COUNT(*) as count FROM Resource WHERE status = ? GROUP BY classId").bind("PUBLISHED").all();
     
     const countMap = new Map();
     for (const c of counts.results || []) {
-      countMap.set(c.classId, c.count);
+      // D1 returns count as either 'count' or 'COUNT(*)' or 'c'
+      const cnt = c.count ?? c['COUNT(*)'] ?? c.c ?? 0;
+      countMap.set(c.classId, cnt);
     }
     
     const levels = (levelsRaw.results || []).map((l: any) => ({

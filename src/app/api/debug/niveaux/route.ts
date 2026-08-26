@@ -1,72 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export async function GET(request: NextRequest) {
   try {
-    // Test 1: Just levels
-    const test1 = await prisma.level.findMany({ orderBy: { order: 'asc' } });
+    const ctx = await getCloudflareContext({ async: true });
+    const db = (ctx as any).env.DB;
     
-    // Test 2: Levels with classes
-    const test2 = await prisma.level.findMany({
-      orderBy: { order: 'asc' },
-      include: {
-        classes: { orderBy: { order: 'asc' } },
-      },
-    });
+    if (!db) return NextResponse.json({ error: 'No D1' }, { status: 500 });
     
-    // Test 3: With _count
-    let test3: any = null, test3Error: string | null = null;
-    try {
-      test3 = await prisma.level.findMany({
-        orderBy: { order: 'asc' },
-        include: {
-          classes: {
-            orderBy: { order: 'asc' },
-            include: {
-              _count: { select: { resources: { where: { status: 'PUBLISHED' as any } } } },
-            },
-          },
-        },
-      });
-    } catch (e: any) {
-      test3Error = e.message + '\n' + (e.stack?.slice(0, 500) || '');
-    }
+    // Test the count query
+    const counts1 = await db.prepare("SELECT classId, COUNT(*) as count FROM Resource WHERE status = ? AND classId IS NOT NULL GROUP BY classId").bind("PUBLISHED").all();
     
-    // Test 4: With sections
-    let test4: any = null, test4Error: string | null = null;
-    try {
-      test4 = await prisma.level.findMany({
-        orderBy: { order: 'asc' },
-        include: {
-          classes: {
-            orderBy: { order: 'asc' },
-            include: {
-              sections: { orderBy: { nameFr: 'asc' }, take: 3 },
-              _count: { select: { resources: { where: { status: 'PUBLISHED' as any } } } },
-            },
-          },
-        },
-      });
-    } catch (e: any) {
-      test4Error = e.message + '\n' + (e.stack?.slice(0, 500) || '');
-    }
+    // Try with .first() to see schema
+    const singleRow = await db.prepare("SELECT * FROM Resource WHERE classId IS NOT NULL LIMIT 1").first();
+    
+    // Alternative count query
+    const counts2 = await db.prepare("SELECT classId, COUNT(*) as c FROM Resource WHERE status = ? GROUP BY classId").bind("PUBLISHED").all();
+    
+    // Total resource count
+    const total = await db.prepare("SELECT COUNT(*) as total FROM Resource WHERE status = ?").bind("PUBLISHED").first();
     
     return NextResponse.json({
-      test1_levels: test1.length,
-      test2_with_classes: test2.length,
-      test2_first_class_count: test2[0]?.classes?.length,
-      test3_with_count: test3 ? 'OK' : 'FAIL',
-      test3Error,
-      test3_class_count: test3?.[0]?.classes?.length,
-      test4_with_sections: test4 ? 'OK' : 'FAIL',
-      test4Error,
-      test4_first_class: test4?.[0]?.classes?.[0] ? {
-        slug: test4[0].classes[0].slug,
-        sections: test4[0].classes[0].sections.length,
-        _count: test4[0].classes[0]._count,
-      } : null,
+      counts1: {
+        count: counts1.results?.length || 0,
+        first: counts1.results?.[0],
+        keys: counts1.results?.[0] ? Object.keys(counts1.results[0]) : [],
+      },
+      counts2: {
+        count: counts2.results?.length || 0,
+        first: counts2.results?.[0],
+      },
+      singleRow_keys: singleRow ? Object.keys(singleRow) : null,
+      singleRow_classId: singleRow?.classId,
+      total_published: total,
     });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message, stack: e.stack?.slice(0, 1000) }, { status: 500 });
+    return NextResponse.json({ error: e.message, stack: e.stack?.slice(0, 500) }, { status: 500 });
   }
 }
