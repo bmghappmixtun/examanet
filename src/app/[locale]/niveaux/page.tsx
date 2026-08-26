@@ -127,416 +127,77 @@ function sectionStyle(classSlug: string, sectionSlug: string): { emoji: string; 
 const CLASSES_WITH_SECTIONS = new Set(['2eme-secondaire', '3eme-secondaire', '4eme-secondaire']);
 
 export default async function NiveauxPage() {
-  const t = await getTranslations();
-  const locale = await getLocale();
-  const isAr = locale === 'ar';
-  let levels: any;
   try {
-    levels = await prisma.level.findMany({
-      orderBy: { order: 'asc' },
-      include: {
-      classes: {
-        orderBy: { order: 'asc' },
-        include: {
-          _count: { select: { resources: { where: { status: 'PUBLISHED' } } } },
-          // Only fetch sections for classes that have them (perf optimization)
-          sections: {
-            where: { class: { slug: { in: Array.from(CLASSES_WITH_SECTIONS) } } },
-            orderBy: { nameFr: 'asc' },
-            include: {
-              _count: { select: { resources: { where: { status: 'PUBLISHED' } } } },
-              // Pre-fetch top 8 resources per section for the inline drill-down
-              resources: {
-                where: { status: 'PUBLISHED' },
-                orderBy: { publishedAt: 'desc' },
-                take: 8,
-                select: {
-                  id: true,
-                  slug: true,
-                  title: true,
-                  type: true,
-                  trimester: true,
-                  year: true,
-                  pageCount: true,
-                  fileSize: true,
-                  viewsCount: true,
-                  downloadsCount: true,
-                  subject: { select: { slug: true, nameFr: true, color: true } },
-                  teacher: { select: { firstName: true, lastName: true } },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-  } catch (e: any) {
-    console.error('[NiveauxPage] prisma.level.findMany FAILED:', e?.message || String(e));
-    console.error('[NiveauxPage] stack:', e?.stack?.slice(0, 1000) || 'no stack');
-    return null;
-  }
-
-  if (!levels) {
-    return <div>Erreur serveur</div>;
-  }
-
-  const totalResources = levels.reduce(
-    (s, lvl) => s + lvl.classes.reduce((a, c) => a + c._count.resources, 0),
-    0,
-  );
-  const totalClasses = levels.reduce((s, lvl) => s + lvl.classes.length, 0);
-
-  // JSON-LD: ItemList of all classes
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
-  const allClasses = levels.flatMap((lvl) =>
-    lvl.classes.map((c) => ({
-      name: `${getLocalizedName(c, locale)} — ${getLocalizedName(lvl, locale)}`,
-      url: `${baseUrl}/ressources?class=${c.slug}`,
-      description: `${c._count.resources} ressources en ${getLocalizedName(c, locale)}`,
-    })),
-  );
-  const niveauxListJsonLd = itemListSchema({
-    name: 'Tous les niveaux scolaires — Examanet',
-    description: t('levels.richSnippet'),
-    url: `${baseUrl}/niveaux`,
-    items: allClasses.slice(0, 50),
-  });
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(niveauxListJsonLd) }}
-      />
-      <main className="flex-1 pt-20">
-        {/* ============== HERO ============== */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-primary-50/30 to-indigo-50/30">
-          {/* Decorative grid pattern */}
-          <svg
-            className="absolute right-0 top-0 h-full w-1/2 opacity-40 pointer-events-none"
-            viewBox="0 0 200 200"
-            preserveAspectRatio="xMidYMid slice"
-          >
-            <defs>
-              <pattern
-                id="niveaux-grid"
-                x="0"
-                y="0"
-                width="32"
-                height="32"
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d="M 32 0 L 0 0 0 32"
-                  fill="none"
-                  stroke="#7C3AED"
-                  strokeWidth="0.6"
-                  opacity="0.18"
-                />
-              </pattern>
-            </defs>
-            <rect width="200" height="200" fill="url(#niveaux-grid)" />
-          </svg>
-          {/* Blurred circles */}
-          <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full blur-3xl opacity-30 bg-emerald-400" />
-          <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-20 bg-violet-400" />
-
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
-            <div className="max-w-3xl">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 mb-4 leading-tight">
-                {t('levels.hero.h1a')}
-                <span className="relative inline-block">
-                  <span className="relative z-10 bg-gradient-to-r from-emerald-600 via-primary-600 to-violet-600 bg-clip-text text-transparent">
-                    {t('levels.hero.h1b')}
-                  </span>
-                  <svg
-                    className="absolute -bottom-1 left-0 w-full"
-                    viewBox="0 0 200 8"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d="M 0 4 Q 50 0 100 4 T 200 4"
-                      fill="none"
-                      stroke="url(#niveaux-hero-grad)"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                    />
-                    <defs>
-                      <linearGradient id="niveaux-hero-grad" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#10B981" />
-                        <stop offset="50%" stopColor="#0EA5E9" />
-                        <stop offset="100%" stopColor="#7C3AED" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </span>
-              </h1>
-
-              <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                {t('levels.hero.subtitle')}
-              </p>
-
-              {/* Stats pills */}
-              <div className="flex flex-wrap gap-3">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm">
-                  <Library className="w-4 h-4 text-primary-600" />
-                  <span className="text-sm">
-                    <strong className="font-bold text-slate-900">{levels.length}</strong>
-                    <span className="text-slate-500"> {t('levels.hero.cycles')}</span>
-                  </span>
-                </div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm">
-                  <School className="w-4 h-4 text-emerald-600" />
-                  <span className="text-sm">
-                    <strong className="font-bold text-slate-900">{totalClasses}</strong>
-                    <span className="text-slate-500"> {t('levels.hero.classes')}</span>
-                  </span>
-                </div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm">
-                  <BookOpen className="w-4 h-4 text-violet-600" />
-                  <span className="text-sm">
-                    <strong className="font-bold text-slate-900">
-                      {totalResources.toLocaleString('fr-FR')}
-                    </strong>
-                    <span className="text-slate-500"> {t('levels.hero.ressources')}</span>
-                  </span>
-                </div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm">
-                  <span className="text-amber-500 text-base">⭐</span>
-                  <span className="text-sm text-slate-600">{t('levels.hero.gratuit')}</span>
-                </div>
+    const t = await getTranslations();
+    const locale = await getLocale();
+    
+    // DIRECT D1 QUERY - no prisma-compat
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = await getCloudflareContext({ async: true });
+    const db = (ctx as any).env.DB;
+    
+    const levelsRaw = await db.prepare('SELECT * FROM "Level" ORDER BY "order" ASC').all();
+    const classesRaw = await db.prepare('SELECT * FROM "Class" ORDER BY "order" ASC').all();
+    const sectionsRaw = await db.prepare('SELECT * FROM "Section" ORDER BY "nameFr" ASC').all();
+    const counts = await db.prepare(\`
+      SELECT "classId", COUNT(*) as count
+      FROM "Resource"
+      WHERE status = 'PUBLISHED' AND "classId" IS NOT NULL
+      GROUP BY "classId"
+    \`).all();
+    
+    const countMap = new Map();
+    for (const c of counts.results || []) {
+      countMap.set(c.classId, c.count);
+    }
+    
+    const levels = (levelsRaw.results || []).map((l: any) => ({
+      ...l,
+      classes: (classesRaw.results || [])
+        .filter((c: any) => c.levelId === l.id)
+        .map((c: any) => ({
+          ...c,
+          _count: { resources: countMap.get(c.id) || 0 },
+          sections: (sectionsRaw.results || []).filter((s: any) => s.classId === c.id),
+        })),
+    }));
+    
+    const totalResources = levels.reduce(
+      (s: number, lvl: any) => s + lvl.classes.reduce((a: number, c: any) => a + c._count.resources, 0),
+      0
+    );
+    const totalClasses = levels.reduce((s: number, lvl: any) => s + lvl.classes.length, 0);
+    
+    return (
+      <div className="min-h-screen flex flex-col">
+        <main className="flex-1 pt-20">
+          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <h1 className="text-3xl font-bold mb-4">Niveaux (DIRECT D1)</h1>
+            <p className="mb-2">Levels: {levels.length} | Classes: {totalClasses} | Resources: {totalResources}</p>
+            {levels.map((l: any) => (
+              <div key={l.id} className="mb-4 p-4 border rounded">
+                <h2 className="text-xl font-semibold">{l.nameFr} ({l.classes.length} classes)</h2>
+                <ul className="ml-4 mt-2">
+                  {l.classes.map((c: any) => (
+                    <li key={c.id}>
+                      {c.nameFr} - {c._count.resources} ressources
+                      {c.sections.length > 0 && ` (${c.sections.length} sections)`}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ============== CYCLES ============== */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 space-y-10">
-          {levels.map((level) => {
-            const design = LEVEL_DESIGN[level.slug] ?? {
-              emoji: '📚',
-              color: '#0EA5E9',
-              gradient: 'from-slate-50 to-slate-100',
-              cardGradient: 'from-slate-50 to-white',
-              accent: '#0EA5E9',
-              Icon: BookOpen,
-              badge: 'bg-slate-100 text-slate-700',
-              tagline: getLocalizedName(level, locale),
-            };
-            const LevelIcon = design.Icon;
-            const classCount = level.classes.length;
-            const resCount = level.classes.reduce((a, c) => a + c._count.resources, 0);
-
-            return (
-              <div key={level.id} className="space-y-5">
-                {/* Level header card */}
-                <div
-                  className={`relative overflow-hidden bg-gradient-to-br ${design.cardGradient} border-2 rounded-3xl p-6 lg:p-8`}
-                  style={{ borderColor: `${design.color}30` }}
-                >
-                  {/* Decorative shape */}
-                  <div
-                    className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-15 blur-2xl"
-                    style={{ background: design.color }}
-                  />
-                  <div
-                    className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full opacity-10 blur-2xl"
-                    style={{ background: design.accent }}
-                  />
-
-                  <div className="relative flex flex-col md:flex-row md:items-center gap-5">
-                    {/* Big icon block */}
-                    <div
-                      className="flex-shrink-0 w-20 h-20 lg:w-24 lg:h-24 rounded-3xl flex items-center justify-center text-4xl lg:text-5xl shadow-md"
-                      style={{
-                        background: `linear-gradient(135deg, ${design.color}, ${design.accent})`,
-                      }}
-                    >
-                      <span className="drop-shadow-sm">{design.emoji}</span>
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${design.badge}`}
-                        >
-                          <LevelIcon className="w-3 h-3" />
-                          {isAr ? level.nameAr || 'حلقة' : 'Cycle'}
-                        </span>
-                        <span className="text-xs text-slate-500">{design.tagline}</span>
-                      </div>
-                      <h2 className="text-2xl lg:text-3xl font-extrabold text-slate-900 leading-tight">
-                        {getLocalizedName(level, locale)}
-                      </h2>
-                      <p className="text-slate-600 mt-1 text-sm lg:text-base">
-                        <strong className="font-bold text-slate-900">{classCount}</strong> classe
-                        {classCount > 1 ? 's' : ''} ·{' '}
-                        <strong className="font-bold text-slate-900">
-                          {resCount.toLocaleString('fr-FR')}
-                        </strong>{' '}
-                        ressources gratuites
-                      </p>
-                    </div>
-
-                    <Link
-                      href={`/niveaux/${level.slug}`}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border-2 rounded-xl font-bold text-sm shadow-sm hover:shadow-md transition-all group/btn self-start md:self-auto"
-                      style={{ borderColor: design.color, color: design.color }}
-                    >
-                      Tout voir
-                      <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Classes grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4">
-                  {level.classes.map((cls) => {
-                    const classStyle = CLASS_STYLES[cls.slug] ?? {
-                      roman: '?',
-                      emoji: '📚',
-                      tint: design.color,
-                    };
-                    const hasSections =
-                      CLASSES_WITH_SECTIONS.has(cls.slug) && cls.sections.length > 0;
-                    // Map sections with design tokens
-                    const sections = hasSections
-                      ? cls.sections.map((s) => {
-                          const sStyle = sectionStyle(cls.slug, s.slug);
-                          return {
-                            id: s.id,
-                            slug: s.slug,
-                            nameFr: getLocalizedName(s, locale),
-                            nameAr: s.nameAr,
-                            emoji: sStyle.emoji,
-                            tint: sStyle.tint,
-                            _count: s._count,
-                            resources: s.resources.map((r) => ({
-                              id: r.id,
-                              slug: r.slug,
-                              title: r.title,
-                              type: r.type,
-                              trimester: r.trimester,
-                              year: r.year,
-                              pageCount: r.pageCount,
-                              fileSize: r.fileSize,
-                              viewsCount: r.viewsCount,
-                              downloadsCount: r.downloadsCount,
-                              subject: {
-                                slug: r.subject.slug,
-                                nameFr: getLocalizedName(r.subject, locale),
-                                color: r.subject.color,
-                              },
-                              teacher: r.teacher
-                                ? {
-                                    firstName: r.teacher.firstName,
-                                    lastName: r.teacher.lastName,
-                                  }
-                                : null,
-                            })),
-                          };
-                        })
-                      : undefined;
-                    return (
-                      <ClassAccordion
-                        key={cls.id}
-                        classData={{
-                          id: cls.id,
-                          slug: cls.slug,
-                          nameFr: getLocalizedName(cls, locale),
-                          nameAr: cls.nameAr,
-                          _count: cls._count,
-                        }}
-                        classStyle={classStyle}
-                        design={{ color: design.color, cardGradient: design.cardGradient }}
-                        hasSections={hasSections}
-                        sections={sections}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </section>
-
-        {/* ============== PROGRESSION VISUAL ============== */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 lg:p-8 shadow-sm">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-bold text-slate-900 mb-1 flex items-center justify-center gap-2">
-                <Trophy className="w-5 h-5 text-amber-500" />
-                Votre parcours de la 7ème au Bac
-              </h3>
-              <p className="text-sm text-slate-500">
-                Sept années d\'apprentissage — chaque étape ouvre de nouvelles matières
-              </p>
-            </div>
-
-            {/* Progression bar */}
-            <div className="relative">
-              <div className="absolute top-1/2 left-0 right-0 h-1.5 -translate-y-1/2 bg-gradient-to-r from-emerald-200 via-primary-300 to-violet-300 rounded-full" />
-              <div className="relative grid grid-cols-7 gap-2">
-                {[
-                  { num: 'VII', label: '7ème', color: '#10B981' },
-                  { num: 'VIII', label: '8ème', color: '#059669' },
-                  { num: 'IX', label: '9ème', color: '#0D9488' },
-                  { num: 'I', label: '1ère', color: '#6366F1' },
-                  { num: 'II', label: '2ème', color: '#7C3AED' },
-                  { num: 'III', label: '3ème', color: '#8B5CF6' },
-                  { num: 'IV', label: 'Bac', color: '#A855F7' },
-                ].map((step, idx) => (
-                  <div key={idx} className="flex flex-col items-center">
-                    <div
-                      className="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-xs lg:text-sm font-extrabold text-white shadow-md ring-4 ring-white mb-2"
-                      style={{ background: step.color }}
-                    >
-                      {step.num}
-                    </div>
-                    <span className="text-[11px] lg:text-xs text-slate-700 font-semibold">
-                      {step.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ============== CTA ============== */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="bg-gradient-to-r from-slate-900 to-indigo-900 rounded-3xl p-8 lg:p-12 text-center relative overflow-hidden">
-            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-emerald-500/20 blur-3xl" />
-            <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-violet-500/20 blur-3xl" />
-            <div className="relative">
-              <h2 className="text-2xl lg:text-3xl font-extrabold text-white mb-3">
-                Préparez votre réussite scolaire
-              </h2>
-              <p className="text-slate-300 mb-6 max-w-xl mx-auto">
-                Toutes les ressources sont conformes au programme officiel tunisien et sélectionnées
-                par nos professeurs partenaires.
-              </p>
-              <div className="flex flex-wrap justify-center gap-3">
-                <Link
-                  href="/ressources"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-primary-50 transition shadow-lg"
-                >
-                  <BookMarked className="w-4 h-4" />
-                  {t('levels.cta.cta1')}
-                </Link>
-                <Link
-                  href="/referentiel-national"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition border border-white/20"
-                >
-                  {t('levels.cta.cta2')}
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
+            ))}
+          </section>
+        </main>
       </div>
-  );
+    );
+  } catch (e: any) {
+    return (
+      <div className="min-h-screen p-8">
+        <h1 className="text-2xl font-bold text-red-600">ERREUR PAGE</h1>
+        <p className="text-red-700 mt-2">{e.message}</p>
+        <pre className="mt-4 p-4 bg-slate-100 text-xs overflow-auto">{e.stack?.slice(0, 1500)}</pre>
+      </div>
+    );
+  }
 }
