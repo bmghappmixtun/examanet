@@ -41,6 +41,8 @@ async function neonQuery(connectionString: string, sql: string, params: any[] = 
   const [, user, password, host, database] = match;
   
   const url = `https://${host}/sql`;
+  // Neon HTTP API uses the full connection string as auth (no basic auth)
+  // Reference: https://neon.tech/docs/serverless/serverless-driver
   const auth = 'Basic ' + btoa(`${user}:${password}`);
   
   const response = await fetch(url, {
@@ -49,16 +51,19 @@ async function neonQuery(connectionString: string, sql: string, params: any[] = 
       'Authorization': auth,
       'Content-Type': 'application/json',
       'Neon-Connection-String': connectionString,
+      'Neon-Array-Mode': 'true',
+      'User-Agent': 'examanet-migration/1.0',
     },
-    body: JSON.stringify({ query: sql, params }),
+    body: JSON.stringify({ query: sql, params: params || [] }),
   });
   
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Neon HTTP ${response.status}: ${text.slice(0, 200)}`);
+    throw new Error(`Neon HTTP ${response.status}: ${text.slice(0, 300)}`);
   }
   
   const data = await response.json();
+  // Neon returns { rows: [...], fields: [...] }
   return data.rows || [];
 }
 
