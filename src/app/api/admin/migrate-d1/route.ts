@@ -207,12 +207,23 @@ export async function POST(req: NextRequest) {
   }
 
   // Use the connection string from Hyperdrive
-  const NEON_URL = hyperdrive.connectionString || hyperdrive.host;
-  if (!NEON_URL) {
-    return NextResponse.json({ error: 'HYPERDRIVE has no connectionString' }, { status: 500 });
+  // Hyperdrive: prefer connectionString, fallback to env var
+  let NEON_URL: string;
+  if (hyperdrive.connectionString) {
+    NEON_URL = hyperdrive.connectionString;
+  } else if (hyperdrive.host) {
+    const user = hyperdrive.user || 'postgres';
+    const password = hyperdrive.password || '';
+    const database = hyperdrive.database || 'postgres';
+    NEON_URL = `postgresql://${user}:${password}@${hyperdrive.host}:${hyperdrive.port || 5432}/${database}?sslmode=require`;
+  } else if (process.env.NEON_DATABASE_URL) {
+    NEON_URL = process.env.NEON_DATABASE_URL;
+  } else {
+    return NextResponse.json({ error: 'No Neon connection available (Hyperdrive empty and no env var)' }, { status: 500 });
   }
+  console.log('[migrate-d1] Using connection:', NEON_URL.replace(/:[^:@]+@/, ':***@').substring(0, 80));
 
-  // postgres.js can use Hyperdrive's connectionString directly
+  // postgres.js with the connection string
   const sql = postgres(NEON_URL, {
     max: 1,
     idle_timeout: 0,
