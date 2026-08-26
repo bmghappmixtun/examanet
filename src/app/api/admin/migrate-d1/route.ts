@@ -230,31 +230,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Table ${table} not in D1` }, { status: 404 });
   }
 
-  // Connect to Neon via Hyperdrive (CF-managed connection pool, no SSL issues)
-  // Hyperdrive is the recommended way to connect CF Workers to Postgres
-  const ctx2 = await getCloudflareContext({ async: true });
-  const hyperdrive = (ctx2 as any).env.HYPERDRIVE;
-  if (!hyperdrive) {
-    return NextResponse.json({ error: 'HYPERDRIVE binding not available' }, { status: 500 });
+  // Use NEON_DATABASE_URL directly (Hyperdrive connectionString has region issues)
+  const NEON_URL = process.env.NEON_DATABASE_URL;
+  if (!NEON_URL) {
+    return NextResponse.json({ error: 'NEON_DATABASE_URL env var not set' }, { status: 500 });
   }
-
-  // Use the connection string from Hyperdrive
-  // Hyperdrive: prefer connectionString, fallback to env var
-  let NEON_URL: string;
-  if (hyperdrive.connectionString) {
-    NEON_URL = hyperdrive.connectionString;
-  } else if (hyperdrive.host) {
-    const user = hyperdrive.user || 'postgres';
-    const password = hyperdrive.password || '';
-    const database = hyperdrive.database || 'postgres';
-    NEON_URL = `postgresql://${user}:${password}@${hyperdrive.host}:${hyperdrive.port || 5432}/${database}?sslmode=require`;
-  } else if (process.env.NEON_DATABASE_URL) {
-    NEON_URL = process.env.NEON_DATABASE_URL;
-  } else {
-    return NextResponse.json({ error: 'No Neon connection available (Hyperdrive empty and no env var)' }, { status: 500 });
-  }
-  console.log('[migrate-d1] NEON_URL host:', new URL(NEON_URL.replace('postgresql://', 'http://')).host);
-  console.log('[migrate-d1] Full URL sample:', NEON_URL.replace(/:[^:@]+@/, ':***@').substring(0, 100));
+  console.log('[migrate-d1] Host:', new URL(NEON_URL.replace('postgresql://', 'http://')).host);
 
   // Use Neon serverless driver (HTTP transport - works across regions)
   const sql = (q: string, params: any[] = []) => neonQuery(NEON_URL, q, params);
