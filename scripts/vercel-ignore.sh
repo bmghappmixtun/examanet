@@ -14,6 +14,15 @@ echo "Branch: $VERCEL_GIT_COMMIT_REF"
 echo "Commit msg: $VERCEL_GIT_COMMIT_MESSAGE"
 echo "Env: $VERCEL_ENV"
 
+# CRITICAL: Skip ALL Cloudflare/CF-only branches - they target CF Workers, not Vercel
+# 2026-08-26: After GitLab migration, all CF work happens on GitLab
+# These branches should NEVER trigger a Vercel build
+CF_BRANCH_PATTERN='^(feature/cf-isolated|feature/d1-migration|feature/opennext-cloudflare|feature/cf-)'
+if [[ "$VERCEL_GIT_COMMIT_REF" =~ $CF_BRANCH_PATTERN ]]; then
+  echo "→ CF-only branch ($VERCEL_GIT_COMMIT_REF): SKIP Vercel build entirely"
+  exit 0
+fi
+
 # Always build production
 if [ "$VERCEL_ENV" = "production" ]; then
   echo "→ production env: always build"
