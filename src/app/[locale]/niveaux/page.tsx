@@ -130,9 +130,11 @@ export default async function NiveauxPage() {
   const t = await getTranslations();
   const locale = await getLocale();
   const isAr = locale === 'ar';
-  const levels = await prisma.level.findMany({
-    orderBy: { order: 'asc' },
-    include: {
+  let levels: any;
+  try {
+    levels = await prisma.level.findMany({
+      orderBy: { order: 'asc' },
+      include: {
       classes: {
         orderBy: { order: 'asc' },
         include: {
@@ -169,6 +171,15 @@ export default async function NiveauxPage() {
       },
     },
   });
+  } catch (e: any) {
+    console.error('[NiveauxPage] prisma.level.findMany FAILED:', e?.message || String(e));
+    console.error('[NiveauxPage] stack:', e?.stack?.slice(0, 1000) || 'no stack');
+    return null;
+  }
+
+  if (!levels) {
+    return <div>Erreur serveur</div>;
+  }
 
   const totalResources = levels.reduce(
     (s, lvl) => s + lvl.classes.reduce((a, c) => a + c._count.resources, 0),
