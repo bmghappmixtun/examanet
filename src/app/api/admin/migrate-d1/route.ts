@@ -41,17 +41,14 @@ async function neonQuery(connectionString: string, sql: string, params: any[] = 
   const [, user, password, host, database] = match;
   
   const url = `https://${host}/sql`;
-  // Neon HTTP API uses the full connection string as auth (no basic auth)
-  // Reference: https://neon.tech/docs/serverless/serverless-driver
-  const auth = 'Basic ' + btoa(`${user}:${password}`);
-  
+  // Neon's HTTP SQL endpoint: pass auth via Neon-Connection-String header
+  // (not Basic auth - that's for the websocket proxy)
+  // Reference: https://api-docs.neon.tech/reference/neonsqlquerysqlpost
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      'Authorization': auth,
       'Content-Type': 'application/json',
       'Neon-Connection-String': connectionString,
-      'Neon-Array-Mode': 'true',
       'User-Agent': 'examanet-migration/1.0',
     },
     body: JSON.stringify({ query: sql, params: params || [] }),
