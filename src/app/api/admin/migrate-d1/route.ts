@@ -248,7 +248,8 @@ export async function POST(req: NextRequest) {
   } else {
     return NextResponse.json({ error: 'No Neon connection available (Hyperdrive empty and no env var)' }, { status: 500 });
   }
-  console.log('[migrate-d1] Using connection:', NEON_URL.replace(/:[^:@]+@/, ':***@').substring(0, 80));
+  console.log('[migrate-d1] NEON_URL host:', new URL(NEON_URL.replace('postgresql://', 'http://')).host);
+  console.log('[migrate-d1] Full URL sample:', NEON_URL.replace(/:[^:@]+@/, ':***@').substring(0, 100));
 
   // Use Neon serverless driver (HTTP transport - works across regions)
   const sql = (q: string, params: any[] = []) => neonQuery(NEON_URL, q, params);
