@@ -157,3 +157,5 @@ cloudflare-env.d.ts
 src/lib/prisma.ts.vercel.bak
 src/lib/prisma.proxy.ts.bak
 next.config.js.original
+scripts/d1-migration/exports/
+scripts/d1-migration/sql/
