@@ -1,16 +1,12 @@
 # GitLab CI/CD for Examanet Cloudflare Workers
 # 
 # This pipeline builds and deploys the OpenNext CF Worker bundle to Cloudflare.
-# Triggered on push to main (CF production) and feature/d1-migration-phase1 (CF staging).
+# Triggered on push to main (CF production) and other branches (CF staging).
 # 
-# Required GitLab CI variables (Project → Settings → CI/CD → Variables):
-#   - CF_ACCOUNT_ID: 59cffdeaadf3809cc3d2039c43f836e0
-#   - CF_API_TOKEN: Cloudflare API token (with Workers:Edit permission)
-#   - DATABASE_URL: Neon Postgres URL (for build-time schema generation)
-# 
-# Worker mapping:
-#   - main → examanet-prod (live, will receive examanet.com DNS)
-#   - feature/d1-migration-phase1 → examanet-poc (test/canary)
+# Required GitLab CI variables:
+#   CF_ACCOUNT_ID  - Cloudflare account ID
+#   CF_API_TOKEN   - Cloudflare API token (Workers:Edit)
+#   DATABASE_URL   - stub is fine, Hyperdrive used at runtime
 
 stages:
   - install
@@ -19,48 +15,38 @@ stages:
 
 variables:
   NODE_VERSION: "22"
-  BUN_VERSION: "1.1.0"
-  # Stub DATABASE_URL during build (we use Hyperdrive at runtime, not this)
   DATABASE_URL: "postgresql://stub:stub@localhost:5432/stub"
 
-# Use a single shared runner config to avoid duplicating setup across jobs
-.default_runner:
-  tags:
-    - linux  # Use a Linux runner with bun installed (or install it)
+# Default image and setup
+default:
+  image: node:22-bullseye
   before_script:
-    - apt-get update -qq && apt-get install -y -qq curl unzip > /dev/null
-    - "command -v bun || curl -fsSL https://bun.sh/install | bash"
-    - export PATH="$HOME/.bun/bin:$PATH"
+    - apt-get update -qq
+    - apt-get install -y -qq curl unzip git > /dev/null
+    - which bun || (curl -fsSL https://bun.sh/install | bash)
+    - export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
     - bun --version
     - node --version
-
-# Cache node_modules + .next + .open-next between jobs
-.cache_template: &cache_template
-  key:
-    files:
-      - package.json
-      - bun.lock
-      - wrangler.jsonc
-      - wrangler.prod.jsonc
-  paths:
-    - node_modules/
-    - .next/
-    - .open-next/
-  policy: pull-push
 
 # ---------------------------------------------------------------------------
 # Stage 1: install
 # ---------------------------------------------------------------------------
 install_dependencies:
   stage: install
-  extends: .default_runner
   script:
-    - echo "→ Installing dependencies with bun"
+    - echo "Installing dependencies with bun"
     - bun install --frozen-lockfile
-    - echo "→ Restoring node_modules from bun to npm (for some scripts)"
+    - echo "Fallback npm install for postinstall scripts"
     - npm install --prefer-offline --no-audit --no-fund
   cache:
-    <<: *cache_template
+    key:
+      files:
+        - package.json
+        - bun.lock
+    paths:
+      - node_modules/
+      - .next/
+      - .open-next/
   artifacts:
     paths:
       - node_modules/
@@ -71,93 +57,94 @@ install_dependencies:
 # ---------------------------------------------------------------------------
 build_cf_bundle:
   stage: build
-  extends: .default_runner
-  needs: [install_dependencies]
+  needs: ["install_dependencies"]
   script:
-    - echo "→ Selecting wrangler config based on branch"
-    - |
-      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        export WRANGLER_CONFIG="wrangler.prod.jsonc"
-        export WORKER_NAME="examanet-prod"
-      else
-        export WRANGLER_CONFIG="wrangler.jsonc"
-        export WORKER_NAME="examanet-poc"
-      fi
-    - echo "→ Worker: $WORKER_NAME (config: $WRANGLER_CONFIG)"
-    - echo "→ Applying CF bundle surgery (stub sharp + nodejs-only)"
+    - echo "Running CF bundle surgery"
     - bash scripts/surgery-cf.sh
-    - echo "→ Running npx next build"
+    - echo "Running npx next build"
     - rm -rf .next .open-next
     - npx next build
-    - echo "→ Running opennextjs-cloudflare build"
+    - echo "Running opennextjs-cloudflare build"
     - npx opennextjs-cloudflare build --skipNextBuild
-    - echo "→ Stubbing Prisma native binary in bundle (saves 16MB)"
+    - echo "Stubbing Prisma native binary"
     - bash scripts/stub-prisma-binary.sh
-    - echo "→ Verifying bundle size"
+    - echo "Bundle size"
     - du -sh .open-next/
   cache:
-    <<: *cache_template
+    key:
+      files:
+        - package.json
+        - bun.lock
+    paths:
+      - node_modules/
+      - .next/
+      - .open-next/
+    policy: pull
   artifacts:
     paths:
       - .open-next/
     expire_in: 1 hour
 
 # ---------------------------------------------------------------------------
-# Stage 3: deploy
+# Stage 3a: deploy to PRODUCTION (main branch only)
 # ---------------------------------------------------------------------------
-deploy_to_cloudflare:
+deploy_production:
   stage: deploy
-  extends: .default_runner
-  needs: [build_cf_bundle]
+  needs: ["build_cf_bundle"]
   script:
-    - echo "→ Deploying to Cloudflare Worker"
-    - |
-      if [ "$CI_COMMIT_REF_NAME" = "main" ]; then
-        export WRANGLER_CONFIG="wrangler.prod.jsonc"
-        export WORKER_NAME="examanet-prod"
-      else
-        export WRANGLER_CONFIG="wrangler.jsonc"
-        export WORKER_NAME="examanet-poc"
-      fi
-    - echo "→ Target: $WORKER_NAME"
-    - CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgresql://stub:stub@localhost:5432/stub" \
-      CLOUDFLARE_ACCOUNT_ID="${CF_ACCOUNT_ID}" \
-      CLOUDFLARE_API_TOKEN="${CF_API_TOKEN}" \
-      npx wrangler deploy --config "$WRANGLER_CONFIG"
+    - echo "Deploying to examanet-prod"
+    - export CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgresql://stub:stub@localhost:5432/stub"
+    - export CLOUDFLARE_ACCOUNT_ID="${CF_ACCOUNT_ID}"
+    - export CLOUDFLARE_API_TOKEN="${CF_API_TOKEN}"
+    - npx wrangler deploy --config wrangler.prod.jsonc
   environment:
     name: production
     url: https://examanet-prod.examanet-poc.workers.dev
   rules:
     - if: $CI_COMMIT_REF_NAME == "main"
       when: on_success
-      allow_failure: false
   retry:
     max: 2
     when:
       - runner_system_failure
       - stuck_or_timeout_failure
   cache:
-    <<: *cache_template
+    key:
+      files:
+        - package.json
+        - bun.lock
+    paths:
+      - node_modules/
+      - .next/
+      - .open-next/
     policy: pull
 
-# Staging deploy (always to POC, never to prod)
-deploy_to_poc:
+# ---------------------------------------------------------------------------
+# Stage 3b: deploy to STAGING (POC, all other branches)
+# ---------------------------------------------------------------------------
+deploy_staging:
   stage: deploy
-  extends: .default_runner
-  needs: [build_cf_bundle]
+  needs: ["build_cf_bundle"]
   script:
-    - echo "→ Deploying to CF staging (examanet-poc)"
-    - CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgresql://stub:stub@localhost:5432/stub" \
-      CLOUDFLARE_ACCOUNT_ID="${CF_ACCOUNT_ID}" \
-      CLOUDFLARE_API_TOKEN="${CF_API_TOKEN}" \
-      npx wrangler deploy --config wrangler.jsonc
+    - echo "Deploying to examanet-poc"
+    - export CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgresql://stub:stub@localhost:5432/stub"
+    - export CLOUDFLARE_ACCOUNT_ID="${CF_ACCOUNT_ID}"
+    - export CLOUDFLARE_API_TOKEN="${CF_API_TOKEN}"
+    - npx wrangler deploy --config wrangler.jsonc
   environment:
     name: staging
     url: https://examanet-poc.examanet-poc.workers.dev
   rules:
     - if: $CI_COMMIT_REF_NAME != "main"
       when: on_success
-      allow_failure: true  # Don't fail pipeline if POC deploy fails
+      allow_failure: true
   cache:
-    <<: *cache_template
+    key:
+      files:
+        - package.json
+        - bun.lock
+    paths:
+      - node_modules/
+      - .next/
+      - .open-next/
     policy: pull
