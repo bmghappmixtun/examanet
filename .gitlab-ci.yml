@@ -1,12 +1,22 @@
 # GitLab CI/CD for Examanet Cloudflare Workers
 # 
 # This pipeline builds and deploys the OpenNext CF Worker bundle to Cloudflare.
-# Triggered on push to main (CF production) and other branches (CF staging).
 # 
+# 2026-08-26: Disabled auto-run because GitLab.com Trial has no shared runner.
+#   - The pipeline config is kept so it's ready when we add a runner
+#   - Use "Run pipeline" manually from GitLab UI when ready
+#   - Or uncomment the workflow: rules to enable auto-run
+#
 # Required GitLab CI variables:
 #   CF_ACCOUNT_ID  - Cloudflare account ID
 #   CF_API_TOKEN   - Cloudflare API token (Workers:Edit)
 #   DATABASE_URL   - stub is fine, Hyperdrive used at runtime
+
+# workflow:
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "web"  # Manual run only
+#     - if: $CI_PIPELINE_SOURCE == "schedule"  # Or scheduled
+#     - when: never  # Disable auto-run on push
 
 stages:
   - install
