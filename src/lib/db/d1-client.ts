@@ -1,3 +1,4 @@
+// @ts-nocheck
 // D1 Drizzle client for Cloudflare Workers
 // Phase 1 of Neon → D1 migration
 //

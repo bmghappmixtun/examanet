@@ -198,20 +198,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Table ${table} not in D1` }, { status: 404 });
   }
 
-  // Connect to Neon via postgres.js (CF Workers has native support)
-  // Hyperdrive not used here because the migration orchestrator needs to control
-  // the connection lifecycle and we don't want to hit Hyperdrive's connection pool limits
-  const NEON_URL = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
-  if (!NEON_URL) {
-    return NextResponse.json({ error: 'NEON_DATABASE_URL not set' }, { status: 500 });
+  // Connect to Neon via Hyperdrive (CF-managed connection pool, no SSL issues)
+  // Hyperdrive is the recommended way to connect CF Workers to Postgres
+  const ctx2 = await getCloudflareContext({ async: true });
+  const hyperdrive = (ctx2 as any).env.HYPERDRIVE;
+  if (!hyperdrive) {
+    return NextResponse.json({ error: 'HYPERDRIVE binding not available' }, { status: 500 });
   }
 
+  // Use the connection string from Hyperdrive
+  const NEON_URL = hyperdrive.connectionString || hyperdrive.host;
+  if (!NEON_URL) {
+    return NextResponse.json({ error: 'HYPERDRIVE has no connectionString' }, { status: 500 });
+  }
+
+  // postgres.js can use Hyperdrive's connectionString directly
   const sql = postgres(NEON_URL, {
     max: 1,
     idle_timeout: 0,
     connect_timeout: 10,
     prepare: false,
     fetch_types: false,
+    // Hyperdrive handles SSL
+    ssl: 'require',
   });
 
   let total = 0;
