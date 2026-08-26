@@ -97,7 +97,7 @@ CREATE TABLE `Download` (
 	`original` integer DEFAULT false NOT NULL,
 	`createdAt` integer NOT NULL,
 	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`) ON UPDATE no action ON DELETE Cascade,
-	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SetNull
+	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SET NULL
 );
 --> statement-breakpoint
 CREATE INDEX `download_resource_idx` ON `Download` (`resourceId`);--> statement-breakpoint
@@ -116,7 +116,7 @@ CREATE TABLE `ErrorLog` (
 	`context` text,
 	`agentSeen` integer DEFAULT false NOT NULL,
 	`createdAt` integer NOT NULL,
-	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SetNull
+	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SET NULL
 );
 --> statement-breakpoint
 CREATE INDEX `error_log_source_idx` ON `ErrorLog` (`source`);--> statement-breakpoint
@@ -233,7 +233,7 @@ CREATE TABLE `Report` (
 	`reviewedAt` integer,
 	`createdAt` integer NOT NULL,
 	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`) ON UPDATE no action ON DELETE Cascade,
-	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SetNull
+	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SET NULL
 );
 --> statement-breakpoint
 CREATE INDEX `report_resource_idx` ON `Report` (`resourceId`);--> statement-breakpoint
@@ -322,10 +322,10 @@ CREATE TABLE `Resource` (
 	`publishedAt` integer,
 	`createdAt` integer NOT NULL,
 	`updatedAt` integer NOT NULL,
-	FOREIGN KEY (`classId`) REFERENCES `Class`(`id`) ON UPDATE no action ON DELETE SetNull,
-	FOREIGN KEY (`sectionId`) REFERENCES `Section`(`id`) ON UPDATE no action ON DELETE SetNull,
+	FOREIGN KEY (`classId`) REFERENCES `Class`(`id`) ON UPDATE no action ON DELETE SET NULL,
+	FOREIGN KEY (`sectionId`) REFERENCES `Section`(`id`) ON UPDATE no action ON DELETE SET NULL,
 	FOREIGN KEY (`subjectId`) REFERENCES `Subject`(`id`) ON UPDATE no action ON DELETE Restrict,
-	FOREIGN KEY (`teacherId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SetNull
+	FOREIGN KEY (`teacherId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SET NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `Resource_numericId_unique` ON `Resource` (`numericId`);--> statement-breakpoint
@@ -351,8 +351,8 @@ CREATE TABLE `SearchLog` (
 	`locale` text DEFAULT 'fr' NOT NULL,
 	`source` text DEFAULT 'search_bar' NOT NULL,
 	`createdAt` integer NOT NULL,
-	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SetNull,
-	FOREIGN KEY (`clickedResourceId`) REFERENCES `Resource`(`id`) ON UPDATE no action ON DELETE SetNull
+	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SET NULL,
+	FOREIGN KEY (`clickedResourceId`) REFERENCES `Resource`(`id`) ON UPDATE no action ON DELETE SET NULL
 );
 --> statement-breakpoint
 CREATE INDEX `search_log_query_idx` ON `SearchLog` (`query`);--> statement-breakpoint
@@ -411,7 +411,7 @@ CREATE TABLE `Share` (
 	`platform` text NOT NULL,
 	`createdAt` integer NOT NULL,
 	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`) ON UPDATE no action ON DELETE Cascade,
-	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SetNull
+	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SET NULL
 );
 --> statement-breakpoint
 CREATE TABLE `Subject` (
@@ -445,7 +445,7 @@ CREATE TABLE `TeacherFile` (
 	`createdAt` integer NOT NULL,
 	`updatedAt` integer NOT NULL,
 	FOREIGN KEY (`teacherId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE Cascade,
-	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`) ON UPDATE no action ON DELETE SetNull
+	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`) ON UPDATE no action ON DELETE SET NULL
 );
 --> statement-breakpoint
 CREATE INDEX `teacher_file_teacher_idx` ON `TeacherFile` (`teacherId`);--> statement-breakpoint
@@ -462,7 +462,7 @@ CREATE TABLE `TeacherInvitation` (
 	`invitationSentAt` integer,
 	`invitationActivatedAt` integer,
 	`createdAt` integer NOT NULL,
-	FOREIGN KEY (`invitedById`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SetNull
+	FOREIGN KEY (`invitedById`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SET NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `TeacherInvitation_token_unique` ON `TeacherInvitation` (`token`);--> statement-breakpoint
@@ -554,7 +554,7 @@ CREATE TABLE `View` (
 	`userAgent` text,
 	`createdAt` integer NOT NULL,
 	FOREIGN KEY (`resourceId`) REFERENCES `Resource`(`id`) ON UPDATE no action ON DELETE Cascade,
-	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SetNull
+	FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON UPDATE no action ON DELETE SET NULL
 );
 --> statement-breakpoint
 CREATE INDEX `view_resource_idx` ON `View` (`resourceId`);--> statement-breakpoint
