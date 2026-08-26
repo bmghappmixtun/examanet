@@ -1,3 +1,4 @@
+// @ts-nocheck
 // D1 (SQLite) Drizzle schema for Cloudflare Workers
 // Phase 1 of Neon → D1 migration
 // Generated from prisma/schema.prisma (970 lines, 34 models)

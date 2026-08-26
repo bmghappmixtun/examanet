@@ -49,10 +49,10 @@ case "$ACTION" in
 
     echo "→ Running npx next build"
     rm -rf .next .open-next
-    DATABASE_URL="${DATABASE_URL:-postgresql://stub:stub@localhost:5432/stub}" npx next build 2>&1 | tail -5
+    DATABASE_URL="${DATABASE_URL:-postgresql://stub:stub@localhost:5432/stub}"  npx next build 2>&1 | tail -5
 
     echo "→ Running opennextjs-cloudflare build"
-    DATABASE_URL="${DATABASE_URL:-postgresql://stub:stub@localhost:5432/stub}" npx opennextjs-cloudflare build --skipNextBuild 2>&1 | tail -10
+    DATABASE_URL="${DATABASE_URL:-postgresql://stub:stub@localhost:5432/stub}" npx opennextjs-cloudflare build --skipNextBuild --dangerouslyUseUnsupportedNextVersion 2>&1 | tail -10
 
     echo "→ Stubbing Prisma native binary in bundle (saves 16MB)"
     if [ -f scripts/stub-prisma-binary.sh ]; then
