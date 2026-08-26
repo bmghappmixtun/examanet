@@ -33,7 +33,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import postgres from 'postgres';
+import { neon } from '@neondatabase/serverless';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -223,28 +223,19 @@ export async function POST(req: NextRequest) {
   }
   console.log('[migrate-d1] Using connection:', NEON_URL.replace(/:[^:@]+@/, ':***@').substring(0, 80));
 
-  // postgres.js with the connection string
-  const sql = postgres(NEON_URL, {
-    max: 1,
-    idle_timeout: 0,
-    connect_timeout: 10,
-    prepare: false,
-    fetch_types: false,
-    // Hyperdrive handles SSL
-    ssl: 'require',
-  });
+  // Use Neon serverless driver (HTTP transport - works across regions)
+  const sql = neon(NEON_URL);
 
   let total = 0;
   let rows: any[] = [];
 
   try {
     // Get total count
-    const countRes = await sql.unsafe(`SELECT COUNT(*)::int as c FROM "${table}"`);
+    const countRes = await sql(`SELECT COUNT(*)::int as c FROM "${table}"`);
     total = Number(countRes[0]?.c || 0);
 
     if (total === 0) {
-      await sql.end();
-      return NextResponse.json({
+          return NextResponse.json({
         imported: 0,
         total: 0,
         hasMore: false,
@@ -257,23 +248,21 @@ export async function POST(req: NextRequest) {
     const skipCols = SKIP_COLUMNS[table] || [];
     const d1ColNames = cols.map((c) => c.name);
     // We use SELECT * and filter in code (cheaper than introspecting Neon columns)
-    const neonRows = await sql.unsafe(
+    const neonRows = await sql(
       `SELECT * FROM "${table}" ORDER BY 1 LIMIT $1 OFFSET $2`,
       [limit, offset],
     );
 
     rows = neonRows;
   } catch (e: any) {
-    await sql.end();
-    return NextResponse.json(
+      return NextResponse.json(
       { error: `Neon query failed: ${e.message?.slice(0, 300)}` },
       { status: 500 },
     );
   }
 
   if (rows.length === 0) {
-    await sql.end();
-    return NextResponse.json({
+      return NextResponse.json({
       imported: 0,
       total,
       hasMore: false,
@@ -312,7 +301,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  await sql.end();
 
   const hasMore = offset + imported < total;
 
