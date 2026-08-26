@@ -33,7 +33,34 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { neon } from '@neondatabase/serverless';
+// Custom neon HTTP client (no TCP, works across regions in CF Workers)
+async function neonQuery(connectionString: string, sql: string, params: any[] = []): Promise<any[]> {
+  // Convert postgresql://user:pass@host/db → https://host/sql
+  const match = connectionString.match(/postgresql:\/\/([^:]+):([^@]+)@([^/]+)\/(.+)/);
+  if (!match) throw new Error('Invalid connection string format');
+  const [, user, password, host, database] = match;
+  
+  const url = `https://${host}/sql`;
+  const auth = 'Basic ' + btoa(`${user}:${password}`);
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': auth,
+      'Content-Type': 'application/json',
+      'Neon-Connection-String': connectionString,
+    },
+    body: JSON.stringify({ query: sql, params }),
+  });
+  
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Neon HTTP ${response.status}: ${text.slice(0, 200)}`);
+  }
+  
+  const data = await response.json();
+  return data.rows || [];
+}
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -224,7 +251,7 @@ export async function POST(req: NextRequest) {
   console.log('[migrate-d1] Using connection:', NEON_URL.replace(/:[^:@]+@/, ':***@').substring(0, 80));
 
   // Use Neon serverless driver (HTTP transport - works across regions)
-  const sql = neon(NEON_URL);
+  const sql = (q: string, params: any[] = []) => neonQuery(NEON_URL, q, params);
 
   let total = 0;
   let rows: any[] = [];
