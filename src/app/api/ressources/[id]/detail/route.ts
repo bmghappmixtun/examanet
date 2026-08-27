@@ -63,6 +63,9 @@ export async function GET(
       resource: {
         id: r.id, numericId: r.numericId, slug: r.slug, title: r.title,
         description: r.description, type: r.type, status: r.status,
+        // File info (needed for PDF viewer and download)
+        fileKey: r.fileKey || null, fileUrl: r.fileUrl || null, r2Key: r.r2Key || null,
+        fileSize: r.fileSize || null, pageCount: r.pageCount || null,
         subject: r.s_id ? { id: r.s_id, slug: r.s_slug, nameFr: r.s_nameFr, nameAr: r.s_nameAr, color: r.s_color } : null,
         class: r.cl_id ? { id: r.cl_id, slug: r.cl_slug, nameFr: r.cl_nameFr, nameAr: r.cl_nameAr, levelId: r.cl_levelId } : null,
         level: r.lv_id ? { id: r.lv_id, slug: r.lv_slug, nameFr: r.lv_nameFr } : null,
