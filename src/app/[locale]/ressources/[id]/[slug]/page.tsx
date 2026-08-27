@@ -112,14 +112,24 @@ export default async function ResourcePage({
   if (!data) {
     notFound();
   }
-  const { resource, aggregateRating, similar: similarData, userSession } = data;
-  // similar is already structured for the UI
-  const similar: any[] = similarData || [];
+  const { resource } = data;
+  // Compute aggregate rating from ratings (API doesn't return it directly)
+  const ratingsForDist = (data && data.ratings) || [];
+  const aggregateRating: any = ratingsForDist.length > 0
+    ? {
+        ratingCount: ratingsForDist.length,
+        ratingValue: Math.round((ratingsForDist.reduce((s: number, r: any) => s + r.stars, 0) / ratingsForDist.length) * 10) / 10,
+      }
+    : null;
+  // similar is optional - default to empty
+  const similar: any[] = (data && data.similar) || [];
+  // userSession is optional - default to null (anonymous)
+  const userSession: any = (data && data.userSession) || null;
 
-  // Star distribution
+  // Star distribution (use ratingsForDist computed above)
   const dist = [5, 4, 3, 2, 1].map((star) => ({
     star,
-    count: resource.ratings.filter((r) => r.stars === star).length,
+    count: ratingsForDist.filter((r: any) => r.stars === star).length,
   }));
   const maxCount = Math.max(...dist.map((d) => d.count), 1);
 
@@ -492,17 +502,17 @@ export default async function ResourcePage({
               {canViewBody && (
               
 <CommentsSection                resourceId={resource.id}
-                initialComments={resource.comments.map((c) => ({
+                initialComments={((data && data.comments) || []).map((c: any) => ({
                   id: c.id,
                   content: c.content,
-                  createdAt: c.createdAt.toISOString(),
+                  createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : new Date().toISOString(),
                   // Pre-compute the relative-time label on the server so the
                   // client component can render byte-for-byte identical HTML
                   // (timeAgo uses Date.now() — non-deterministic across
                   // SSR/hydration). CommentsSection re-runs timeAgo in
                   // useEffect after mount to tick the label forward.
-                  createdAtLabel: timeAgo(c.createdAt),
-                  user: c.user,
+                  createdAtLabel: timeAgo(c.createdAt ? new Date(c.createdAt) : new Date()),
+                  user: c.user || { firstName: '', lastName: '', avatarUrl: null },
                 }))}
               />
               )}
