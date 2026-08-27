@@ -1,6 +1,7 @@
 'use client';
 // @ts-nocheck
 import { useEffect, useState } from 'react';
+import { Link } from '@/i18n/navigation';
 
 
 // import { prisma } from '@/lib/prisma'; (removed for client)
@@ -102,9 +103,31 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
     );
   }
 
-  const { resource, aggregateRating, similar: similarData, userSession } = data;
-  // similar is the helper's similar data (already structured for the UI)
-  const similar: any[] = similarData || [];
+  // API data shape: { resource, ratings, comments }
+  // No aggregateRating/similar/userSession in the response — compute safe defaults
+  const resource = data.resource;
+  const commentsFromApi = (data && data.comments) || [];
+  const ratingsFromApi = (data && data.ratings) || [];
+  // Compute aggregate rating from ratings
+  const aggregateRating: any = ratingsFromApi.length > 0
+    ? {
+        ratingCount: ratingsFromApi.length,
+        ratingValue: Math.round((ratingsFromApi.reduce((s: number, r: any) => s + r.stars, 0) / ratingsFromApi.length) * 10) / 10,
+      }
+    : null;
+  const similar: any[] = (data && data.similar) || [];
+  const userSession: any = (data && data.userSession) || null;
+
+  // Visibility check (from original page)
+  const isArchived = resource.status === 'ARCHIVED';
+  const canViewBody = !isArchived || (userSession && (userSession.id === resource.teacherId || userSession.role === 'ADMIN'));
+
+  // Star distribution (compute from ratings)
+  const dist = [5, 4, 3, 2, 1].map((star) => ({
+    star,
+    count: ratingsFromApi.filter((r: any) => r.stars === star).length,
+  }));
+  const maxCount = Math.max(...dist.map((d: any) => d.count), 1);
 
   // JSON-LD structured data for SEO (LearningResource schema)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
@@ -475,17 +498,17 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
               {canViewBody && (
               
 <CommentsSection                resourceId={resource.id}
-                initialComments={resource.comments.map((c) => ({
+                initialComments={commentsFromApi.map((c: any) => ({
                   id: c.id,
                   content: c.content,
-                  createdAt: c.createdAt.toISOString(),
+                  createdAt: c.createdAt ? new Date(c.createdAt).toISOString() : new Date().toISOString(),
                   // Pre-compute the relative-time label on the server so the
                   // client component can render byte-for-byte identical HTML
                   // (timeAgo uses Date.now() — non-deterministic across
                   // SSR/hydration). CommentsSection re-runs timeAgo in
                   // useEffect after mount to tick the label forward.
-                  createdAtLabel: timeAgo(c.createdAt),
-                  user: c.user,
+                  createdAtLabel: timeAgo(c.createdAt ? new Date(c.createdAt) : new Date()),
+                  user: c.user || { firstName: "", lastName: "", avatarUrl: null },
                 }))}
               />
               )}
