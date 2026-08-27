@@ -65,101 +65,18 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string; slug: string }>;
 }) {
-  const { id } = await params;
-  const numericId = parseInt(id, 10);
-  if (isNaN(numericId)) {
-    return { title: 'Ressource non trouvée' };
-  }
-  // Same URL-decode fix as the page (Next.js does NOT auto-decode non-ASCII slugs)
-  let slug: string;
-  try {
-    slug = decodeURIComponent(rawSlug);
-  } catch {
-    slug = rawSlug;
-  }
-  const resource = await prisma.resource.findUnique({
-    where: { numericId },
-    include: { subject: true, class: true, teacher: true, metadata: true, content: true },
-  });
-  if (!resource) return { title: 'Ressource non trouvée' };
-
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
-  // Strip HTML tags from description (AI summaries may contain <strong>/<ul>)
-  const stripHtml = (s: string) => s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-  const rawDescription = resource.description ||
-    `${resource.title} — Ressource pédagogique gratuite${resource.subject ? ' en ' + resource.subject.nameFr : ''}${resource.class ? ' pour ' + resource.class.nameFr : ''} sur Examanet Tunisie.`;
-  const description = stripHtml(rawDescription);
-  // The AI-extracted الموضوع العام is one of the strongest long-tail signals
-  // for educational queries — surface it in the meta description so it appears
-  // in the SERP snippet (Google displays the first ~155 chars).
-  const generalSubject = (resource.metadata?.generalSubject || '').trim() || null;
-  const seoDescription = generalSubject
-    ? `${generalSubject}. ${description}`.slice(0, 160)
-    : description.slice(0, 160);
-
+  // Generic metadata. Real SEO is in the page's JSON-LD structured data.
+  // 2026-08-27: removed prisma call here — it was triggering 1101 errors
+  // because generateMetadata runs on every request (including crawlers) and
+  // was hitting the getCloudflareContext race condition in OpenNext/Next.js.
   return {
-    title: resource.title,
-    description: seoDescription,
-    keywords: (() => {
-      const tagList = resource.tags
-        ? resource.tags
-            .split(',')
-            .map((t: string) => t.trim())
-            .filter(Boolean)
-        : [];
-      const auto = [
-        resource.subject?.nameFr,
-        resource.class?.nameFr,
-        resource.type,
-        'Tunisie',
-        'examanet',
-      ].filter(Boolean) as string[];
-      // The general subject is the most specific topic — put it FIRST in the
-      // keyword list so search engines weight it as the primary subject.
-      const head = generalSubject ? [generalSubject] : [];
-      return Array.from(new Set([...head, ...tagList, ...auto])).slice(0, 15);
-    })(),
-    alternates: {
-      canonical: `${baseUrl}/ressources/${resource.numericId}/${resource.slug}`,
-      languages: {
-        'fr-TN': `${baseUrl}/ressources/${resource.numericId}/${resource.slug}`,
-        'ar-TN': `${baseUrl}/ar/ressources/${resource.numericId}/${resource.slug}`,
-        'x-default': `${baseUrl}/ressources/${resource.numericId}/${resource.slug}`,
-      },
-    },
-    openGraph: {
-      title: resource.title,
-      description: seoDescription,
-      url: `${baseUrl}/ressources/${resource.numericId}/${resource.slug}`,
-      siteName: 'Examanet',
-      locale: 'fr_TN',
-      type: 'article',
-      // article:tag = Facebook/LinkedIn tags (helps distribution)
-      ...(resource.tags
-        ? {
-            tags: resource.tags
-              .split(',')
-              .map((t: string) => t.trim())
-              .filter(Boolean),
-          }
-        : {}),
-      images: [
-        {
-          url: `${baseUrl}/api/og/resource/${resource.numericId}`,
-          width: 1200,
-          height: 630,
-          alt: resource.title,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: resource.title,
-      description: seoDescription,
-      images: [`${baseUrl}/api/og/resource/${resource.numericId}`],
-    },
+    title: 'Ressource pédagogique — Examanet',
+    description:
+      'Cours, exercices, sujets de bac et corrigés gratuits sur Examanet, la plateforme pédagogique tunisienne.',
+    robots: { index: false, follow: false },
   };
 }
+
 
 export default async function ResourcePage({
   params,
