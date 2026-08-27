@@ -448,7 +448,9 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
               <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden mb-4">
                 <div className="p-0">
                   <LazyPDFViewer
-                    url={`/api/resources/${resource.numericId}/download`}
+                    // 2026-08-27: use direct fileUrl from D1 (bypasses broken /download proxy on CF)
+                    // The download button still uses the proxy for tracking
+                    url={resource.fileUrl || `/api/resources/${resource.numericId}/download`}
                     fileName={`${resource.title}.pdf`}
                     pageCount={resource.pageCount ?? null}
                     fileSize={resource.fileSize ? humanFileSize(resource.fileSize) : null}
