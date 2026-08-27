@@ -50,7 +50,7 @@ import type { RessourcesResponse } from '@/lib/facets';
 export type { Facets } from '@/lib/facets';
 
 interface FilterShellProps {
-  initialData: RessourcesResponse;
+  initialData?: RessourcesResponse;
   userId: string | null;
   /**
    * Array (NOT Set) of resource IDs the current user has favorited.
@@ -165,7 +165,10 @@ export default function FilterShell({ initialData, userId, initialFavorites }: F
   });
 
   // ============== DATA (server initial → client-refetched) ==============
-  const [data, setData] = useState<ApiResponse>(initialData);
+  // When no SSR initialData is provided, the page is purely client-rendered
+  // (used for CF Workers where the SSR data fetch throws 1101 on filtered URLs).
+  const emptyData: ApiResponse = { resources: [], total: 0, totalPages: 0, currentPage: 1, facets: { byType: {}, byTrimestre: {}, byYear: {}, byLanguage: {}, byClass: {}, bySection: {}, bySubject: {}, withCorrection: 0, collegePilote: 0, collegeOrdinaire: 0, lyceePilote: 0, lyceeOrdinaire: 0 }, nameMaps: { class: {}, section: {}, subject: {} } };
+  const [data, setData] = useState<ApiResponse>(initialData || emptyData);
   // Convert the array prop to a Set once on mount for O(1) `has()` lookups.
   // We keep the source-of-truth as the array prop (safe across RSC) and
   // memoize the Set so it doesn't rebuild on every render.
@@ -228,8 +231,10 @@ export default function FilterShell({ initialData, userId, initialFavorites }: F
     // appear then disappear" race when the page first hydrates).
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      if (filterKey === firstRenderKey.current) {
-        lastFetchKey.current = filterKey; // mark as "already fetched" (with SSR data)
+      // Skip the initial fetch only if SSR initialData was provided
+      // AND the current filters match what was server-rendered
+      if (initialData && filterKey === firstRenderKey.current) {
+        lastFetchKey.current = filterKey;
         return;
       }
     }
@@ -264,7 +269,7 @@ export default function FilterShell({ initialData, userId, initialFavorites }: F
         params.set('sort', f.sort);
         params.set('page', String(f.page));
 
-        const url = `/api/ressources?${params.toString()}`;
+        const url = `/api/ressources-data?${params.toString()}`;
         const res = await fetch(url, {
           signal: controller.signal,
         });
