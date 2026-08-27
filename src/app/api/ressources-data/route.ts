@@ -64,22 +64,16 @@ export async function GET(request: NextRequest) {
     }
     if (hasCorrection) conditions.push("r.hasCorrection = 1");
     
-    // Category filters: schoolType only (LIMITATION: cannot distinguish
-    // college vs lycee because Resource.classId is NULL for all rows in D1
-    // — the original migration didn't remap the FKs. So "Collège pilote" +
-    // "Lycée pilote" will both match all PILOTE resources. Same for ordinaire.
-    // To properly fix, run a data migration to remap classId from Neon IDs
-    // to D1 IDs. Until then, this filter just toggles schoolType=PILOTE/PUBLIC.)
-    const schoolTypeConditions: string[] = [];
-    const anyPilote = collegePilote || lyceePilote;
-    const anyOrdinaire = collegeOrdinaire || lyceeOrdinaire;
-    if (anyPilote && !anyOrdinaire) schoolTypeConditions.push("r.schoolType = 'PILOTE'");
-    else if (anyOrdinaire && !anyPilote) schoolTypeConditions.push("(r.schoolType = 'PUBLIC' OR r.schoolType IS NULL)");
-    else if (anyPilote && anyOrdinaire) {
-      // Both selected = no schoolType filter
-    }
-    if (schoolTypeConditions.length > 0) {
-      conditions.push('(' + schoolTypeConditions.join(' OR ') + ')');
+    // Category filters: schoolType + levelId (via JOIN to Class)
+    // Now that classId is populated (migration commit), we can use the
+    // proper level-based filter.
+    const levelConditions: string[] = [];
+    if (collegePilote) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'college') AND r.schoolType = 'PILOTE')"); }
+    if (collegeOrdinaire) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'college') AND (r.schoolType = 'PUBLIC' OR r.schoolType IS NULL))"); }
+    if (lyceePilote) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'lycee') AND r.schoolType = 'PILOTE')"); }
+    if (lyceeOrdinaire) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'lycee') AND (r.schoolType = 'PUBLIC' OR r.schoolType IS NULL))"); }
+    if (levelConditions.length > 0) {
+      conditions.push('(' + levelConditions.join(' OR ') + ')');
     }
     
     // Class and section filters (after the JOINs)
