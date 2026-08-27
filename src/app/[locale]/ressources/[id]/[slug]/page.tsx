@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { fetchResourceDetail } from '@/lib/resource-detail-fetcher';
 import { getTechMeta } from '@/lib/techologie-meta';
 import ResourceActions from '@/components/resources/ResourceActions';
 // PDFViewer is lazy-loaded via LazyPDFViewer (~90 KB gzipped saved on initial
@@ -173,37 +174,69 @@ export default async function ResourcePage({
     // We can't redirect here because we don't have the resource yet. The lookup below
     // will use numericId and find the real slug, then we render normally.
   }
-  const userSession = await getCurrentUser();
-  const resource = await prisma.resource.findUnique({
-    where: { numericId },
-    include: {
-      subject: true,
-      class: { include: { level: true } },
-      section: true,
-      teacher: true,
-      ratings: { include: { user: { select: { firstName: true, lastName: true } } } },
-      comments: {
-        where: { parentId: null },
-        include: { user: { select: { firstName: true, lastName: true, avatarUrl: true } } },
-        orderBy: { createdAt: 'desc' },
+  // getCurrentUser is unstable on CF Workers; default to null on error
+  let userSession: any = null;
+  try {
+    userSession = await getCurrentUser();
+  } catch (e) {
+    // Ignore - anonymous user
+  }
+  // 2026-08-27: prisma-compat on CF Workers throws 1101 ~50% of the time
+  // on this complex nested-include query. Try prisma first (works when it
+  // doesn't throw), fall back to the D1-based helper if it fails.
+  let resource: any = null;
+  let aggregateRating: any = null;
+  try {
+    resource = await prisma.resource.findUnique({
+      where: { numericId },
+      include: {
+        subject: true,
+        class: { include: { level: true } },
+        section: true,
+        teacher: true,
+        ratings: { include: { user: { select: { firstName: true, lastName: true } } } },
+        comments: {
+          where: { parentId: null },
+          include: { user: { select: { firstName: true, lastName: true, avatarUrl: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
+        metadata: true,
+        aiSummary: true,
+        content: true,
       },
-      // AI-extracted content (2026-07-20 Mavis pipeline)
-      metadata: true,
-      aiSummary: true,
-      content: true,
-    },
-  });
+    });
+  } catch (e) {
+    // Fall back to D1-based fetcher
+    try {
+      const detail = await fetchResourceDetail(numericId);
+      if (detail) {
+        resource = detail.resource;
+        // Compute aggregate rating from the ratings array
+        const ratings = detail.ratings;
+        aggregateRating = ratings.length > 0
+          ? {
+              ratingCount: ratings.length,
+              ratingValue: Math.round((ratings.reduce((s: number, r: any) => s + r.stars, 0) / ratings.length) * 10) / 10,
+            }
+          : null;
+      }
+    } catch (e2) {
+      // Both approaches failed
+      notFound();
+    }
+  }
 
-  // Aggregate ratings for JSON-LD (avg + count) — only shown if there are ratings
+  // Aggregate ratings for JSON-LD (already computed if from D1 fallback, otherwise compute now)
   const ratings = resource?.ratings ?? [];
-  const aggregateRating =
-    ratings.length > 0
+  if (aggregateRating === null) {
+    aggregateRating = ratings.length > 0
       ? {
           ratingCount: ratings.length,
           ratingValue:
             Math.round((ratings.reduce((s, r) => s + r.stars, 0) / ratings.length) * 10) / 10,
         }
       : null;
+  }
   if (!resource) notFound();
   // 301 redirect to canonical slug when the requested slug is outdated
   // (titles get rebuilt periodically; this preserves SEO equity from old links).
@@ -229,16 +262,22 @@ export default async function ResourcePage({
   if (canViewBody) {
     resource.fileUrl = `/api/resources/${resource.numericId}/download`;
 
-    // Track view
-    await prisma.view.create({ data: { resourceId: resource.id, ipAddress: 'visitor' } });
-    await prisma.resource.update({
-      where: { id: resource.id },
-      data: { viewsCount: { increment: 1 } },
-    });
+    // Track view (prisma throws intermittently on CF; non-critical if it fails)
+    try {
+      await prisma.view.create({ data: { resourceId: resource.id, ipAddress: 'visitor' } });
+      await prisma.resource.update({
+        where: { id: resource.id },
+        data: { viewsCount: { increment: 1 } },
+      });
+    } catch (e) {
+      // Ignore - tracking is best-effort
+    }
   }
 
-  // Similar resources
-  const similar = await prisma.resource.findMany({
+  // Similar resources (prisma throws intermittently on CF; fall back to empty)
+  let similar: any[] = [];
+  try {
+    similar = await prisma.resource.findMany({
     where: { status: 'PUBLISHED', subjectId: resource.subjectId, NOT: { id: resource.id } },
     take: 4,
     orderBy: { viewsCount: 'desc' },
@@ -267,6 +306,9 @@ export default async function ResourcePage({
       },
     },
   });
+  } catch (e) {
+    // Ignore - similar resources non-critical
+  }
 
   // Star distribution
   const dist = [5, 4, 3, 2, 1].map((star) => ({
