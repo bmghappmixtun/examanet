@@ -1,8 +1,8 @@
 'use client';
 // @ts-nocheck
 import { useEffect, useState } from 'react';
-import { notFound, permanentRedirect } from 'next/navigation';
-import { Link } from '@/i18n/navigation';
+
+
 // import { prisma } from '@/lib/prisma'; (removed for client)
 // import { getCurrentUser } from '@/lib/auth'; (removed for client)
 import { getTechMeta } from '@/lib/techologie-meta';
@@ -47,7 +47,6 @@ import {
   Target,
 } from 'lucide-react';
 
-export const dynamic = 'force-dynamic';
 
 
 export default function ResourceDetailClient({ numericId, slug: initialSlug }: { numericId: number; slug: string }) {
