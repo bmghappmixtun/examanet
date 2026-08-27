@@ -182,46 +182,47 @@ export default async function ResourcePage({
     // Ignore - anonymous user
   }
   // 2026-08-27: prisma-compat on CF Workers throws 1101 ~50% of the time
-  // on this complex nested-include query. Try prisma first (works when it
-  // doesn't throw), fall back to the D1-based helper if it fails.
+  // on this complex nested-include query. Use the D1-based fetcher as the
+  // primary data source — it's reliable. The D1 fetcher already wraps
+  // each query in try/catch and returns null on failure.
   let resource: any = null;
   let aggregateRating: any = null;
+  let similar: any[] = [];
   try {
-    resource = await prisma.resource.findUnique({
-      where: { numericId },
-      include: {
-        subject: true,
-        class: { include: { level: true } },
-        section: true,
-        teacher: true,
-        ratings: { include: { user: { select: { firstName: true, lastName: true } } } },
-        comments: {
-          where: { parentId: null },
-          include: { user: { select: { firstName: true, lastName: true, avatarUrl: true } } },
-          orderBy: { createdAt: 'desc' },
-        },
-        metadata: true,
-        aiSummary: true,
-        content: true,
-      },
-    });
+    const detail = await fetchResourceDetail(numericId);
+    if (detail) {
+      resource = detail.resource;
+      similar = detail.similar;
+      const ratings = detail.ratings;
+      aggregateRating = ratings.length > 0
+        ? {
+            ratingCount: ratings.length,
+            ratingValue: Math.round((ratings.reduce((s: number, r: any) => s + r.stars, 0) / ratings.length) * 10) / 10,
+          }
+        : null;
+    }
   } catch (e) {
-    // Fall back to D1-based fetcher
+    // D1 fetcher failed; fall back to prisma
     try {
-      const detail = await fetchResourceDetail(numericId);
-      if (detail) {
-        resource = detail.resource;
-        // Compute aggregate rating from the ratings array
-        const ratings = detail.ratings;
-        aggregateRating = ratings.length > 0
-          ? {
-              ratingCount: ratings.length,
-              ratingValue: Math.round((ratings.reduce((s: number, r: any) => s + r.stars, 0) / ratings.length) * 10) / 10,
-            }
-          : null;
-      }
+      resource = await prisma.resource.findUnique({
+        where: { numericId },
+        include: {
+          subject: true,
+          class: { include: { level: true } },
+          section: true,
+          teacher: true,
+          ratings: { include: { user: { select: { firstName: true, lastName: true } } } },
+          comments: {
+            where: { parentId: null },
+            include: { user: { select: { firstName: true, lastName: true, avatarUrl: true } } },
+            orderBy: { createdAt: 'desc' },
+          },
+          metadata: true,
+          aiSummary: true,
+          content: true,
+        },
+      });
     } catch (e2) {
-      // Both approaches failed
       notFound();
     }
   }
@@ -272,42 +273,6 @@ export default async function ResourcePage({
     } catch (e) {
       // Ignore - tracking is best-effort
     }
-  }
-
-  // Similar resources (prisma throws intermittently on CF; fall back to empty)
-  let similar: any[] = [];
-  try {
-    similar = await prisma.resource.findMany({
-    where: { status: 'PUBLISHED', subjectId: resource.subjectId, NOT: { id: resource.id } },
-    take: 4,
-    orderBy: { viewsCount: 'desc' },
-    select: {
-      id: true,
-      numericId: true,
-      slug: true,
-      title: true,
-      viewsCount: true,
-      downloadsCount: true,
-      avgRating: true,
-      commentsCount: true,
-      subject: { select: { nameFr: true, color: true } },
-      class: { select: { nameFr: true, slug: true } },
-      teacher: {
-        select: {
-          numericId: true,
-          slug: true,
-          firstName: true,
-          lastName: true,
-          firstNameAr: true,
-          lastNameAr: true,
-          schoolName: true,
-          schoolNameAr: true,
-        },
-      },
-    },
-  });
-  } catch (e) {
-    // Ignore - similar resources non-critical
   }
 
   // Star distribution
