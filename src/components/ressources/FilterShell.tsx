@@ -481,7 +481,7 @@ export default function FilterShell({ initialData, userId, initialFavorites }: F
               icon={BookOpen}
               options={subjectOptions.map(([slug, count]) => ({
                 value: slug,
-                label: initialData.nameMaps?.subject?.[slug] || slug,
+                label: data.nameMaps?.subject?.[slug] || slug,
                 count,
               }))}
               selected={filters.subject}
@@ -496,7 +496,7 @@ export default function FilterShell({ initialData, userId, initialFavorites }: F
               icon={GraduationCap}
               options={classOptions.map(([slug, count]) => ({
                 value: slug,
-                label: initialData.nameMaps?.class?.[slug] || slug,
+                label: data.nameMaps?.class?.[slug] || slug,
                 count,
               }))}
               selected={filters.class}
@@ -511,7 +511,7 @@ export default function FilterShell({ initialData, userId, initialFavorites }: F
               icon={FilterIcon}
               options={availableSections.map(([slug, count]) => ({
                 value: slug,
-                label: initialData.nameMaps?.section?.[slug] || slug,
+                label: data.nameMaps?.section?.[slug] || slug,
                 count,
               }))}
               selected={filters.section}
@@ -794,7 +794,7 @@ export default function FilterShell({ initialData, userId, initialFavorites }: F
             filters={filters}
             onRemove={(patch) => update(patch)}
             onReset={reset}
-            nameMaps={initialData.nameMaps}
+            nameMaps={data.nameMaps}
           />
         </div>
 
