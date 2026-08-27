@@ -267,6 +267,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       resources: formattedResources,
       total,
+      totalPages: Math.ceil(total / PAGE_SIZE),
+      currentPage: page,
       facets: {
         byType,
         byTrimestre,

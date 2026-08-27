@@ -13,9 +13,15 @@ export const dynamic = 'force-dynamic';
 export default async function Header() {
   const user = await getCurrentUser();
   const t = await getTranslations();
-  const unreadNotifications = user
-    ? await prisma.notification.count({ where: { userId: user.id, isRead: false } })
-    : 0;
+  let unreadNotifications = 0;
+  if (user) {
+    try {
+      unreadNotifications = await prisma.notification.count({ where: { userId: user.id, isRead: false } });
+    } catch {
+      // prisma-compat on CF Workers is unstable; ignore errors here.
+      // The header doesn't need an exact notification count to render.
+    }
+  }
 
   return (
     <header className="fixed top-0 start-0 end-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/50">
