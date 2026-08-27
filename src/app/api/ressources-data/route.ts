@@ -64,27 +64,22 @@ export async function GET(request: NextRequest) {
     }
     if (hasCorrection) conditions.push("r.hasCorrection = 1");
     
-    // Category filters: build classId IN + schoolType IN
-    const levelClassIds = await getLevelClassIds(db);
-    const activeLevels: string[] = [];
-    const wantedSchoolTypes = new Set<string>();
-    if (collegePilote) { activeLevels.push('college'); wantedSchoolTypes.add('PILOTE'); }
-    if (collegeOrdinaire) { activeLevels.push('college'); wantedSchoolTypes.add('PUBLIC'); wantedSchoolTypes.add('LYCEE'); }
-    if (lyceePilote) { activeLevels.push('lycee'); wantedSchoolTypes.add('PILOTE'); }
-    if (lyceeOrdinaire) { activeLevels.push('lycee'); wantedSchoolTypes.add('PUBLIC'); wantedSchoolTypes.add('LYCEE'); }
-    
-    if (activeLevels.length > 0) {
-      const uniqueLevels = Array.from(new Set(activeLevels));
-      const allowedClassIds = uniqueLevels.flatMap((l) => levelClassIds[l]);
-      if (allowedClassIds.length > 0) {
-        conditions.push(`r.classId IN (${allowedClassIds.map(() => '?').join(',')})`);
-        params.push(...allowedClassIds);
-      }
-      const schoolTypeList = Array.from(wantedSchoolTypes);
-      if (schoolTypeList.length > 0) {
-        conditions.push(`r.schoolType IN (${schoolTypeList.map(() => '?').join(',')})`);
-        params.push(...schoolTypeList);
-      }
+    // Category filters: schoolType only (LIMITATION: cannot distinguish
+    // college vs lycee because Resource.classId is NULL for all rows in D1
+    // — the original migration didn't remap the FKs. So "Collège pilote" +
+    // "Lycée pilote" will both match all PILOTE resources. Same for ordinaire.
+    // To properly fix, run a data migration to remap classId from Neon IDs
+    // to D1 IDs. Until then, this filter just toggles schoolType=PILOTE/PUBLIC.)
+    const schoolTypeConditions: string[] = [];
+    const anyPilote = collegePilote || lyceePilote;
+    const anyOrdinaire = collegeOrdinaire || lyceeOrdinaire;
+    if (anyPilote && !anyOrdinaire) schoolTypeConditions.push("r.schoolType = 'PILOTE'");
+    else if (anyOrdinaire && !anyPilote) schoolTypeConditions.push("(r.schoolType = 'PUBLIC' OR r.schoolType IS NULL)");
+    else if (anyPilote && anyOrdinaire) {
+      // Both selected = no schoolType filter
+    }
+    if (schoolTypeConditions.length > 0) {
+      conditions.push('(' + schoolTypeConditions.join(' OR ') + ')');
     }
     
     // Class and section filters (after the JOINs)
