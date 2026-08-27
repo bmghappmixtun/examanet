@@ -69,9 +69,9 @@ export async function GET(request: NextRequest) {
     // proper level-based filter.
     const levelConditions: string[] = [];
     if (collegePilote) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'college') AND r.schoolType = 'PILOTE')"); }
-    if (collegeOrdinaire) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'college') AND (r.schoolType = 'PUBLIC' OR r.schoolType IS NULL))"); }
+    if (collegeOrdinaire) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'college') AND (r.schoolType = 'PUBLIC' OR r.schoolType IS NULL OR r.schoolType = 'LYCEE'))"); }
     if (lyceePilote) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'lycee') AND r.schoolType = 'PILOTE')"); }
-    if (lyceeOrdinaire) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'lycee') AND (r.schoolType = 'PUBLIC' OR r.schoolType IS NULL))"); }
+    if (lyceeOrdinaire) { levelConditions.push("(cls.levelId = (SELECT id FROM Level WHERE slug = 'lycee') AND (r.schoolType = 'PUBLIC' OR r.schoolType IS NULL OR r.schoolType = 'LYCEE'))"); }
     if (levelConditions.length > 0) {
       conditions.push('(' + levelConditions.join(' OR ') + ')');
     }
