@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { Link } from '@/i18n/navigation';
-import { prisma } from '@/lib/prisma';
+// 2026-08-28: switched to D1 shim to avoid prisma-compat race condition on CF Workers
+import { prisma } from '@/lib/d1-prisma-shim';
 import { itemListSchema, breadcrumbSchema, SITE_URL } from '@/lib/structured-data';
 import { getTranslations, getLocale } from 'next-intl/server';
 import {
@@ -71,7 +72,10 @@ const breadcrumbJsonLd = breadcrumbSchema([
   { name: 'Professeurs', url: `${SITE_URL}/professeurs` },
 ]);
 
-export default async function TeachersPage(props: { searchParams: Promise<SearchParams> }) {
+export default async function TeachersPage(props: {
+  searchParams: Promise<SearchParams>;
+}) {
+  try {
   const tt = await getTranslations();
   const sp = await props.searchParams;
   const q = (sp.q || '').trim();
@@ -539,6 +543,11 @@ export default async function TeachersPage(props: { searchParams: Promise<Search
       </main>
       </div>
   );
+  } catch (e: any) {
+    console.error("[profs page] error:", e?.message);
+    return renderEmptyPage();
+  }
+
 }
 
 // =====================================================================
@@ -929,4 +938,15 @@ function buildHref(params: Record<string, string | undefined>): string {
   }
   const qs = sp.toString();
   return `/professeurs${qs ? '?' + qs : ''}`;
+}
+
+function renderEmptyPage() {
+  return (
+    <div className="min-h-screen pt-24 px-4">
+      <div className="max-w-7xl mx-auto text-center py-12">
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">Professeurs</h1>
+        <p className="text-slate-600">Page temporairement indisponible. Réessayez dans quelques instants.</p>
+      </div>
+    </div>
+  );
 }
