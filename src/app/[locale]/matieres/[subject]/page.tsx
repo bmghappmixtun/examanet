@@ -28,8 +28,8 @@ export async function generateMetadata({ params }: { params: Promise<{ subject: 
       return { title: 'Matière non trouvée' };
     }
     return {
-      title: `${subject.nameFr} — Cours, Devoirs et Exercices | Examanet`,
-      description: `Ressources en ${subject.nameFr} pour le système éducatif tunisien : cours, exercices, sujets de bac et corrigés.`,
+      title: `${subject.nameFr} — Cours, Devoirs et Exercices gratuits`,
+      description: `Ressources en ${subject.nameFr} pour le système éducatif tunisien : cours, exercices, sujets de bac et corrigés. 100% gratuit.`,
       alternates: {
         canonical: `https://examanet.com/matieres/${subjectSlug}`,
       },
