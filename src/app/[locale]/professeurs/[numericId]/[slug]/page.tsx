@@ -85,10 +85,13 @@ export async function generateMetadata({
   };
 }
 
-export default function Page({
+export default async function Page({
   params,
 }: {
   params: Promise<{ numericId: string; slug: string }>;
 }) {
-  return <TeacherDetailClient params={params} />;
+  // Await params on the server, then pass VALUES to client component
+  // (cannot pass Promise/use() to client component - that fails during SSR)
+  const { numericId, slug } = await params;
+  return <TeacherDetailClient numericId={numericId} slug={slug} />;
 }
