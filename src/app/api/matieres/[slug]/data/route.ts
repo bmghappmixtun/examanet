@@ -190,6 +190,14 @@ export async function GET(
           numericId: r.teacher_numericId,
           slug: r.teacher_slug,
         } : null,
+        // Add subject so ResourceCard can render it (all resources on this page share the same subject)
+        subject: {
+          slug: subject.slug,
+          nameFr: subject.nameFr,
+          nameAr: subject.nameAr,
+          color: subject.color,
+          icon: subject.icon,
+        },
       })),
       totalCount,
       page,
