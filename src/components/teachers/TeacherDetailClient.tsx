@@ -1,6 +1,6 @@
 'use client';
 // @ts-nocheck
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import {
@@ -29,8 +29,7 @@ function getInitials(firstName: string, lastName: string): string {
   return [firstName, lastName].filter(Boolean).map(p => p[0]?.toUpperCase() || '').slice(0, 2).join('');
 }
 
-export default function TeacherDetailClient({ params }: { params: Promise<{ numericId: string; slug: string }> }) {
-  const { numericId, slug } = use(params);
+export default function TeacherDetailClient({ numericId, slug }: { numericId: string; slug: string }) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFoundState, setNotFoundState] = useState(false);
