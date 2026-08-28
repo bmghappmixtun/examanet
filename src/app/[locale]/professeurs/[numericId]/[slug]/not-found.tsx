@@ -62,7 +62,7 @@ export default function NotFound() {
         dangerouslySetInnerHTML={{ __html: '{}' }}
       />
 
-      <main className="flex-1 pt-20">
+      <div className="flex-1 pt-20">
         {/* 1. Breadcrumb placeholder (hidden via CSS). The page.tsx + loading.tsx
             both render a <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
             wrapping a <nav> with the breadcrumb trail. We mirror that
@@ -173,7 +173,7 @@ export default function NotFound() {
             <aside className="space-y-6 hidden" aria-hidden="true" />
           </div>
         </div>
-      </main>
+      </div>
 
       </div>
   );

@@ -51,7 +51,7 @@ export default function Loading() {
         dangerouslySetInnerHTML={{ __html: '{}' }}
       />
 
-      <main className="flex-1 pt-20">
+      <div className="flex-1 pt-20">
         {/* Breadcrumb skeleton — <nav> (NOT <div>) to match the page's actual
             element type. The page renders <nav aria-label="Fil d'Ariane">,
             so the loading must too.
@@ -259,7 +259,7 @@ export default function Loading() {
             </aside>
           </div>
         </div>
-      </main>
+      </div>
 
       </div>
   );
