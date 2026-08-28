@@ -13,7 +13,7 @@ import ResourceCard from '@/components/resources/ResourceCard';
 import SubjectHero from '@/components/subjects/SubjectHero';
 import SubjectFilters from '@/components/subjects/SubjectFilters';
 import SmartPagination from '@/components/ui/SmartPagination';
-import { Sparkles, ArrowRight, BookOpen, GraduationCap } from 'lucide-react';
+import { Sparkles, ArrowRight, BookOpen, GraduationCap, SlidersHorizontal } from 'lucide-react';
 import { getSubjectConfig, SUBJECTS_CONFIG } from '@/lib/subjects.config';
 import { getLocalizedName } from '@/lib/localized-name';
 
@@ -102,7 +102,8 @@ export default function MatiereClient({ slug }: MatiereClientProps) {
     return <MatiereError />;
   }
 
-  return <MatiereView data={data} locale={locale} />;
+  const currentSort = searchParams.get('sort') || 'recent';
+  return <MatiereView data={data} locale={locale} currentSort={currentSort} />;
 }
 
 function MatiereLoading() {
@@ -156,7 +157,41 @@ function MatiereError() {
   );
 }
 
-function MatiereView({ data, locale }: { data: PageData; locale: string }) {
+function SortDropdown({ current, subjectSlug }: { current: string; subjectSlug: string }) {
+  const router = useRouter();
+  const options = [
+    { value: 'recent', label: 'Plus récents' },
+    { value: 'popular', label: 'Plus consultés' },
+    { value: 'downloads', label: 'Plus téléchargés' },
+    { value: 'favorites', label: 'Plus populaires' },
+  ];
+  return (
+    <div className="relative">
+      <select
+        value={current}
+        onChange={(e) => {
+          const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+          if (e.target.value === 'recent') {
+            params.delete('sort');
+          } else {
+            params.set('sort', e.target.value);
+          }
+          params.delete('page');
+          const qs = params.toString();
+          router.push(`/matieres/${subjectSlug}${qs ? '?' + qs : ''}`, { scroll: false });
+        }}
+        className="appearance-none bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-9 py-1.5 text-sm font-medium text-slate-700 cursor-pointer hover:bg-slate-100 transition"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
+      <SlidersHorizontal className="w-3.5 h-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+    </div>
+  );
+}
+
+function MatiereView({ data, locale, currentSort }: { data: PageData; locale: string; currentSort: string }) {
   const { subject, resources, totalCount, page, pageSize, facets, classes, sections, teachers, relatedSubjects } = data;
   const cfg = getSubjectConfig(subject.slug);
   const color = cfg?.color ?? subject.color ?? '#0EA5E9';
@@ -193,6 +228,18 @@ function MatiereView({ data, locale }: { data: PageData; locale: string }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Subject Hero */}
           <SubjectHero subject={heroSubject} totalResources={totalCount} totalTeachers={uniqueTeachers.length} intro={cfg?.seo?.descriptionFr ?? `Ressources en ${subject.nameFr} pour le système éducatif tunisien : cours, exercices, sujets de bac et corrigés.`} />
+
+          {/* Intro section: "Tout sur X au système éducatif tunisien" */}
+          {cfg?.seo?.introFr ? (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">
+                Tout sur {getLocalizedName(subject, locale)} au système éducatif tunisien
+              </h2>
+              <p className="text-slate-600 leading-relaxed">
+                {cfg.seo.introFr}
+              </p>
+            </div>
+          ) : null}
 
           {/* Filters + Grid layout (sidebar + main) */}
           <div className="flex flex-col lg:flex-row gap-8">
@@ -235,12 +282,13 @@ function MatiereView({ data, locale }: { data: PageData; locale: string }) {
 
             {/* Resources main content */}
             <div className="flex-1 min-w-0">
-              {/* Sort header with count */}
+              {/* Sort header with count + sort dropdown */}
               <div className="flex items-center justify-between mb-5 bg-white rounded-xl border border-slate-200 px-4 py-3">
                 <div className="text-sm text-slate-600">
                   <strong className="text-slate-900">{totalCount.toLocaleString('fr-FR')}</strong>{' '}
                   ressources disponibles
                 </div>
+                <SortDropdown current={currentSort} subjectSlug={subject.slug} />
               </div>
               {resources.length === 0 ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center">
