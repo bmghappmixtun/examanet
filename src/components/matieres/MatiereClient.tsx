@@ -166,6 +166,17 @@ function MatiereView({ data, locale }: { data: PageData; locale: string }) {
   // Build unique teachers from byProf (since teachers facet already has unique teachers)
   const uniqueTeachers = (facets.byProf || []).slice(0, 30);
 
+  // Enrich subject with config (emoji, gradient, motif) for SubjectHero
+  const heroSubject = {
+    slug: subject.slug,
+    nameFr: subject.nameFr,
+    nameAr: subject.nameAr,
+    color: color,
+    emoji: cfg?.design?.emoji ?? subject.icon ?? '📘',
+    gradient: cfg?.design?.gradient ?? 'from-sky-100 to-sky-50',
+    motif: (cfg?.design?.motif ?? 'lines') as any,
+  };
+
   // Build related subjects with config (emoji, gradient)
   const relatedFinal = relatedSubjects.map((s: any) => {
     const c = SUBJECTS_CONFIG[s.slug];
@@ -181,20 +192,42 @@ function MatiereView({ data, locale }: { data: PageData; locale: string }) {
       <main className="flex-1 pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Subject Hero */}
-          <SubjectHero subject={subject} color={color} locale={locale} />
+          <SubjectHero subject={heroSubject} totalResources={totalCount} totalTeachers={uniqueTeachers.length} intro={cfg?.seo?.descriptionFr ?? `Ressources en ${subject.nameFr} pour le système éducatif tunisien : cours, exercices, sujets de bac et corrigés.`} />
 
           {/* Filters */}
           <SubjectFilters
-            classes={classes}
-            sections={sections}
-            teachers={teachers}
-            facets={facets}
+            subjectSlug={subject.slug}
+            classes={classes.map(c => ({ id: c.id, nameFr: c.nameFr, slug: c.slug, order: c.order || 0 }))}
+            sections={sections.map(s => ({ id: s.id, name: s.nameFr || '', slug: s.slug, class: { nameFr: '' } }))}
+            teachers={teachers.map(t => ({ id: t.id, firstName: t.firstName, lastName: t.lastName, firstNameAr: t.firstNameAr, lastNameAr: t.lastNameAr, avatarUrl: t.avatarUrl, schoolName: t.schoolName }))}
+            resourceTypes={[
+              { slug: 'COURS', label: 'Cours' },
+              { slug: 'COURSE', label: 'Cours' },
+              { slug: 'EXERCISE', label: 'Exercices' },
+              { slug: 'EXERCICE', label: 'Exercices' },
+              { slug: 'HOMEWORK', label: 'Devoirs' },
+              { slug: 'DEVOIR', label: 'Devoirs' },
+              { slug: 'BAC_SUBJECT', label: 'Sujets BAC' },
+              { slug: 'EXAMEN', label: 'Examens' },
+              { slug: 'REVISION', label: 'Révisions' },
+              { slug: 'RESUME', label: 'Résumés' },
+            ]}
+            trimesters={[
+              { slug: '1', label: 'Trimestre 1' },
+              { slug: '2', label: 'Trimestre 2' },
+              { slug: '3', label: 'Trimestre 3' },
+            ]}
+            facets={{
+              byType: Object.fromEntries((facets.byType || []).map((f: any) => [f.value, f.count])),
+              byTrimestre: Object.fromEntries((facets.byTrimestre || []).map((f: any) => [f.value, f.count])),
+              byAnnee: Object.fromEntries((facets.byClass || []).map((f: any) => [f.slug, f.count])),
+            }}
             activeFilters={Object.fromEntries(
               typeof window !== 'undefined'
-                ? new URLSearchParams(window.location.search)
+                ? Array.from(new URLSearchParams(window.location.search).entries())
                 : []
             )}
-            subjectSlug={subject.slug}
+            totalCount={totalCount}
           />
 
           {/* Resources grid */}
