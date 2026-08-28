@@ -235,6 +235,13 @@ function MatiereView({ data, locale }: { data: PageData; locale: string }) {
 
             {/* Resources main content */}
             <div className="flex-1 min-w-0">
+              {/* Sort header with count */}
+              <div className="flex items-center justify-between mb-5 bg-white rounded-xl border border-slate-200 px-4 py-3">
+                <div className="text-sm text-slate-600">
+                  <strong className="text-slate-900">{totalCount.toLocaleString('fr-FR')}</strong>{' '}
+                  ressources disponibles
+                </div>
+              </div>
               {resources.length === 0 ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center">
                 <div className="text-5xl mb-3">📚</div>
