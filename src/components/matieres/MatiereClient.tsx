@@ -194,9 +194,11 @@ function MatiereView({ data, locale }: { data: PageData; locale: string }) {
           {/* Subject Hero */}
           <SubjectHero subject={heroSubject} totalResources={totalCount} totalTeachers={uniqueTeachers.length} intro={cfg?.seo?.descriptionFr ?? `Ressources en ${subject.nameFr} pour le système éducatif tunisien : cours, exercices, sujets de bac et corrigés.`} />
 
-          {/* Filters */}
-          <SubjectFilters
-            subjectSlug={subject.slug}
+          {/* Filters + Grid layout (sidebar + main) */}
+          <div className="flex flex-col lg:flex-row gap-8">
+            <aside className="w-full lg:w-72 flex-shrink-0">
+              <SubjectFilters
+                subjectSlug={subject.slug}
             classes={classes.map(c => ({ id: c.id, nameFr: c.nameFr, slug: c.slug, order: c.order || 0 }))}
             sections={sections.map(s => ({ id: s.id, name: s.nameFr || '', slug: s.slug, class: { nameFr: '' } }))}
             teachers={teachers.map(t => ({ id: t.id, firstName: t.firstName, lastName: t.lastName, firstNameAr: t.firstNameAr, lastNameAr: t.lastNameAr, avatarUrl: t.avatarUrl, schoolName: t.schoolName }))}
@@ -228,11 +230,12 @@ function MatiereView({ data, locale }: { data: PageData; locale: string }) {
                 : []
             )}
             totalCount={totalCount}
-          />
+              />
+            </aside>
 
-          {/* Resources grid */}
-          <div className="mt-6">
-            {resources.length === 0 ? (
+            {/* Resources main content */}
+            <div className="flex-1 min-w-0">
+              {resources.length === 0 ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center">
                 <div className="text-5xl mb-3">📚</div>
                 <h3 className="text-xl font-bold mb-2">Aucune ressource pour ces filtres</h3>
@@ -261,6 +264,7 @@ function MatiereView({ data, locale }: { data: PageData; locale: string }) {
                 />
               </div>
             )}
+            </div>
           </div>
 
           {/* Related subjects */}
