@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
     const collegeOrdinaire = sp.get('collegeOrdinaire') === '1';
     const lyceePilote = sp.get('lyceePilote') === '1';
     const lyceeOrdinaire = sp.get('lyceeOrdinaire') === '1';
+    const teacherIdNumeric = sp.get('teacherId');
     const sort = sp.get('sort') || 'recent';
     const page = Math.max(1, parseInt(sp.get('page') || '1'));
     const PAGE_SIZE = 24;
@@ -87,6 +88,21 @@ export async function GET(request: NextRequest) {
     if (section.length > 0) {
       conditions.push(`sec.slug IN (${section.map(() => '?').join(',')})`);
       params.push(...section);
+    }
+    
+    // Teacher filter: URL has numericId (like 14), DB has D1 internal ID
+    // Need to look up the D1 ID first
+    if (teacherIdNumeric) {
+      const teacherRow: any = await db.prepare(
+        'SELECT id FROM User WHERE numericId = ? AND role = \'TEACHER\' LIMIT 1'
+      ).bind(parseInt(teacherIdNumeric, 10)).first();
+      if (teacherRow) {
+        conditions.push('r.teacherId = ?');
+        params.push(teacherRow.id);
+      } else {
+        // Teacher doesn't exist - return empty results
+        conditions.push('1 = 0');
+      }
     }
     
     // ORDER BY
