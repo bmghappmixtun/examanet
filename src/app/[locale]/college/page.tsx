@@ -19,8 +19,6 @@ import { getTranslations, getLocale } from 'next-intl/server';
 import { itemListSchema, breadcrumbSchema } from '@/lib/structured-data';
 import { getLocalizedName } from '@/lib/localized-name';
 
-export const revalidate = 3600; // ISR: refresh every hour
-
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -81,81 +79,94 @@ const SUBJECT_INFO: Record<string, { color: string; icon: string; desc: string }
 export default async function CollegePillar() {
   const t = await getTranslations();
   const locale = await getLocale();
-  // Top resources (by views) for carousel
-  const topResources = await prisma.resource.findMany({
-    where: {
-      status: 'PUBLISHED',
-      class: { level: { slug: 'college' } },
-    },
-    orderBy: { viewsCount: 'desc' },
-    take: 8,
-    include: {
-      subject: true,
-      class: { include: { level: true } },
-      teacher: { select: { firstName: true, lastName: true, firstNameAr: true, lastNameAr: true } },
-    },
-  });
+  // D1 direct queries (temporarily disabled for debugging)
+  let topResources: any[] = [];
+  let classStats: any[] = [];
+  let subjectStats: any[] = [];
+  let topTeachers: any[] = [];
+  let decoratedTopResources: any[] = [];
+  let allSubjectsRaw: any = [];
+  
+  try {
+    // Dynamic import to avoid build-time resolution issues
+    const cfModule = await import('@opennextjs/cloudflare');
+    const ctx = await cfModule.getCloudflareContext({ async: true });
+    const db = (ctx as any).env.DB;
+    console.log('[COLLEGE] D1 ctx obtained, db:', !!db);
+    
+    // 1. Top resources (with teacher name) - use JOIN instead of IN subquery
+    const topR: any = await db.prepare([
+      'SELECT r.id, r.numericId, r.slug, r.title, r.type, r.viewsCount, r.downloadsCount, r.avgRating, r.ratingsCount, r.publishedAt, r.thumbnailUrl, r.description, r.subjectId, r.classId, r.teacherId, u.firstName as teacherFirstName, u.lastName as teacherLastName, u.firstNameAr as teacherFirstNameAr, u.lastNameAr as teacherLastNameAr',
+      'FROM Resource r',
+      'INNER JOIN "Class" c ON r.classId = c.id',
+      'INNER JOIN "Level" l ON c.levelId = l.id',
+      'LEFT JOIN User u ON r.teacherId = u.id',
+      'WHERE r.status = ? AND l.slug = ?',
+      'ORDER BY r.viewsCount DESC LIMIT 8'
+    ].join(' ')).bind('PUBLISHED', 'college').all();
+    topResources = (topR.results || topR || []);
+    
+    // 2. Classes with counts - use JOIN
+    const classStatsR: any = await db.prepare([
+      'SELECT c.id, c.numericId, c.slug, c.nameFr, c.nameAr, c."order", COUNT(r.id) as resourceCount',
+      'FROM "Class" c',
+      'INNER JOIN "Level" l ON c.levelId = l.id',
+      'LEFT JOIN Resource r ON r.classId = c.id AND r.status = ?',
+      'WHERE l.slug = ?',
+      'GROUP BY c.id ORDER BY c."order" ASC'
+    ].join(' ')).bind('PUBLISHED', 'college').all();
+    classStats = (classStatsR.results || classStatsR || []).map((c: any) => ({ ...c, _count: { resources: c.resourceCount } }));
+    
+    // 3. Subjects with counts - use JOIN
+    const subjR: any = await db.prepare([
+      'SELECT s.id as subjectId, s.nameFr as subject, s.slug, s.icon, s.color, COUNT(r.id) as count',
+      'FROM Resource r',
+      'INNER JOIN Subject s ON r.subjectId = s.id',
+      'INNER JOIN "Class" c ON r.classId = c.id',
+      'INNER JOIN "Level" l ON c.levelId = l.id',
+      'WHERE l.slug = ? AND r.status = ?',
+      'GROUP BY s.id',
+      'ORDER BY count DESC'
+    ].join(' ')).bind('college', 'PUBLISHED').all();
+    subjectStats = (subjR.results || subjR || []).map((s: any) => ({ ...s, count: Number(s.count) }));
+    
+    // 4b. All subjects (for subject data)
+    try {
+      allSubjectsRaw = await db.prepare('SELECT id, slug, nameFr, nameAr, color, icon FROM Subject').all();
+    } catch {}
+    
+    // 4. Top teachers - use JOIN
+    const teachR: any = await db.prepare([
+      'SELECT u.id, u.numericId, u.slug, u.firstName, u.lastName, u.firstNameAr, u.lastNameAr, u.avatarUrl, u.schoolName, u.isVerifiedTeacher, COUNT(r.id) as uploadCount',
+      'FROM User u',
+      'INNER JOIN Resource r ON r.teacherId = u.id',
+      'INNER JOIN "Class" c ON r.classId = c.id',
+      'INNER JOIN "Level" l ON c.levelId = l.id',
+      'WHERE u.role = ? AND l.slug = ? AND r.status = ?',
+      'GROUP BY u.id',
+      'ORDER BY uploadCount DESC LIMIT 8'
+    ].join(' ')).bind('TEACHER', 'college', 'PUBLISHED').all();
+    topTeachers = (teachR.results || teachR || []).map((u: any) => ({ ...u, _count: { uploadedFiles: u.uploadCount } }));
+  } catch (e) {
+    console.error('College D1 fail:', e?.message);
+  }
+  
+  // Fetch subjects map for nameFr (ResourceCard needs it)
+  // Already fetched in try block, but if D1 query failed, use empty
+  const allSubjects: any[] = (allSubjectsRaw as any).results || allSubjectsRaw || [];
+  const subjectMap = new Map(allSubjects.map((s: any) => [s.id, s]));
+  const classMap = new Map(classStats.map((c: any) => [c.id, c]));
+  decoratedTopResources = topResources.map((r: any) => ({
+    ...r,
+    subject: subjectMap.get(r.subjectId) || null,
+    class: classMap.get(r.classId) ? { slug: classMap.get(r.classId).slug, nameFr: classMap.get(r.classId).nameFr } : null,
+    teacher: r.teacherId ? { firstName: r.teacherFirstName, lastName: r.teacherLastName, firstNameAr: r.teacherFirstNameAr, lastNameAr: r.teacherLastNameAr } : null,
+    isFavorited: false,
+  }));
 
-  // Resources by class
-  const classStats = await prisma.class.findMany({
-    where: { level: { slug: 'college' } },
-    orderBy: { order: 'asc' },
-    include: { _count: { select: { resources: { where: { status: 'PUBLISHED' } } } } },
-  });
+  // Total resources count
+  const totalResources = classStats.reduce((s: number, c: any) => s + (c._count?.resources || c.resourceCount || 0), 0);
 
-  // Resources by subject for college
-  const subjectStats = await prisma.$queryRaw<
-    Array<{
-      subject: string;
-      subjectId: string;
-      slug: string;
-      icon: string | null;
-      color: string | null;
-      count: bigint;
-    }>
-  >`
-    SELECT s."nameFr" as subject, s.id as "subjectId", s.slug, s.icon, s.color, COUNT(r.id)::int as count
-    FROM "Resource" r
-    JOIN "Subject" s ON r."subjectId" = s.id
-    JOIN "Class" c ON r."classId" = c.id
-    JOIN "Level" l ON c."levelId" = l.id
-    WHERE l.slug = 'college' AND r.status = 'PUBLISHED'
-    GROUP BY s."nameFr", s.id, s.slug, s.icon, s.color
-    ORDER BY count DESC
-  `;
-
-  // Top teachers in college by resource count
-  const topTeachers = await prisma.user.findMany({
-    where: {
-      role: 'TEACHER',
-      uploadedFiles: { some: { class: { level: { slug: 'college' } } } },
-    },
-    select: {
-      id: true,
-      numericId: true,
-      slug: true,
-      firstName: true,
-      lastName: true,
-      avatarUrl: true,
-      isVerifiedTeacher: true,
-      schoolName: true,
-      _count: {
-        select: {
-          uploadedFiles: { where: { class: { level: { slug: 'college' } }, status: 'PUBLISHED' } },
-        },
-      },
-    },
-    orderBy: { uploadedFiles: { _count: 'desc' } },
-    take: 8,
-  });
-
-  const totalResources = classStats.reduce((s, c) => s + c._count.resources, 0);
-
-  // Decorate topResources with isFavorited
-  const topFavIds = await getUserFavorites(topResources.map((r) => r.id));
-  const decoratedTopResources = decorateWithFavorites(topResources, topFavIds);
-
-  // JSON-LD: ItemList of top resources
   const resourcesListJsonLd =
     topResources.length > 0
       ? itemListSchema({

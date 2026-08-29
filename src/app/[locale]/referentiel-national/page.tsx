@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
-import fs from 'fs';
-import path from 'path';
-import ReferentielContent from './ReferentielContent';
 import { getLocale } from 'next-intl/server';
 import { breadcrumbSchema } from '@/lib/structured-data';
+import { REFERENTIEL_SOURCE } from '@/data/referentiel-source';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
@@ -20,84 +18,27 @@ export async function generateMetadata(): Promise<Metadata> {
       ? 'المرجع الوطني للمنظومة التربوية التونسية'
       : 'Référentiel National du Système Éducatif Tunisien',
     description: isAr
-      ? '📘 المرجع الوطني الرسمي: المسار الكامل من السنة السابعة أساسي إلى الباكالوريا التونسية (الرائد الرسمي عدد 2019-1085). جميع الأقسام والشعب والمواد مع الحصص الرسمية، وفقاً لوزارة التربية.'
-      : "📘 Référentiel national officiel : parcours complet de la 7ème année de base au Baccalauréat tunisien (JORT n° 2019-1085). Toutes les classes, sections et matières avec horaires officiels, conformes au Ministère de l'Éducation.",
+      ? '📘 المرجع الوطني الرسمي: المسار الكامل من السنة السابعة أساسي إلى الباكالوريا التونسية (الرائد الرسمي عدد 2019-1085).'
+      : "📘 Référentiel national officiel : parcours complet de la 7ème année de base au Baccalauréat tunisien (JORT n° 2019-1085). Toutes les classes, sections et matières.",
     keywords: isAr
-      ? [
-          'المرجع الوطني تونس',
-          'المنظومة التربوية التونسية',
-          'البرنامج الرسمي وزارة التربية',
-          'الرائد الرسمي 2019-1085',
-          'الأقسام السابعة والثامنة والتاسعة تونس',
-          'شعبة الباكالوريا تونس',
-          'الباكالوريا التونسية',
-          'إصلاح التعليم تونس',
-        ]
-      : [
-          'référentiel national Tunisie',
-          'système éducatif tunisien',
-          'programme officiel Ministère Éducation Tunisie',
-          'JORT 2019-1085',
-          'classes 7ème 8ème 9ème Tunisie',
-          'sections baccalauréat Tunisie',
-          'baccalauréat tunisien',
-          'réforme éducative Tunisie',
-        ],
-    // SEO 2026-08-22: locale-prefixed canonical. Was `${SITE_URL}/referentiel-national`
-    // (same canonical for /fr and /ar pages).
-    alternates: { canonical: `${SITE_URL}${isAr ? '/ar' : '/fr'}/referentiel-national` },
-    openGraph: {
-      title: isAr
-        ? 'المرجع الوطني للمنظومة التربوية التونسية'
-        : 'Référentiel National du Système Éducatif Tunisien',
-      description: isAr
-        ? 'المرجع الوطني الرسمي للمنظومة التربوية التونسية.'
-        : 'Référentiel national officiel du système éducatif tunisien.',
-      url: `${SITE_URL}/referentiel-national`,
-      siteName: 'Examanet',
-      locale: isAr ? 'ar_TN' : 'fr_TN',
-      type: 'website',
-    },
+      ? ['référentiel national', 'système éducatif', 'tunisie']
+      : ['référentiel national Tunisie', 'système éducatif tunisien', 'programme officiel', 'JORT 2019-1085'],
   };
 }
 
-export default function ReferentielNationalPage() {
-  // Read the raw HTML source at request time (kept under /content, not /public)
-  const filePath = path.join(process.cwd(), 'content', 'referentiel-source.html');
-  const rawHtml = fs.readFileSync(filePath, 'utf-8');
-
-  // Extract <style>...</style> CSS
-  const styleMatch = rawHtml.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
-  const css = styleMatch ? styleMatch[1] : '';
-
-  // Extract <script>...</script> blocks (executed once via React, not innerHTML)
-  const scriptBlocks: string[] = [];
-  const bodySource = rawHtml.replace(
-    /<script\b[^>]*>([\s\S]*?)<\/script>/gi,
-    (_match, code: string) => {
-      scriptBlocks.push(code);
-      return '';
-    }
-  );
-
-  // Extract body content (without <body> tags themselves and without scripts)
-  const bodyMatch = bodySource.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  const bodyHtml = bodyMatch ? bodyMatch[1] : '';
-
+export default function Page() {
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      {/* Inline the page-specific CSS so it scopes itself */}
-      <style dangerouslySetInnerHTML={{ __html: css }} />
-
-      {/* Main content pushed below the fixed Header */}
-      <main className="pt-[62px] lg:pt-[73px]">
-        <ReferentielContent html={bodyHtml} scripts={scriptBlocks} />
-      </main>
-
-      </>
+      <div className="pt-[62px] lg:pt-[73px]">
+        <div
+          id="referentiel-body"
+          dangerouslySetInnerHTML={{ __html: REFERENTIEL_SOURCE }}
+        />
+      </div>
+    </>
   );
 }
