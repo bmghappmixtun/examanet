@@ -5,29 +5,18 @@
  * The pillar page, the /sujets-passes sub-page, and any future
  * "concours 9ème" components MUST read from this file.
  *
- * ARCHITECTURE (future-proof):
- * - `getConcours9emeFiles()` reads the static manifest from /public/data
- * - The pillar dynamically lists all available files per year × subject × voie × type
- * - Adding new corrigés = update /public/data/concours-9eme-manifest.json + redeploy
- *
- * For client components, use the same fetch URL via /data/concours-9eme-manifest.json
- * Server components can call the helpers below directly.
+ * ARCHITECTURE: 
+ * - The manifest is embedded at build time (scripts/embed-concours-manifest.ts)
+ * - This avoids fs.readFileSync which doesn't work on CF Workers runtime
+ * - For client components, use the same data via /data/concours-9eme-manifest.json
  *
  * @see /public/data/concours-9eme-manifest.json
- * @see /workspace/docs/concours-9eme-blob-manifest.json (workspace source)
+ * @see /src/data/concours-9eme-manifest.ts (auto-generated)
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
+import { CONCOURS_9EME_MANIFEST } from '@/data/concours-9eme-manifest';
 
 const BLOB_BASE_URL = 'https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com';
-
-// Try multiple manifest paths (server-side vs public)
-const MANIFEST_PATHS = [
-  path.join(process.cwd(), 'public', 'data', 'concours-9eme-manifest.json'),
-  '/workspace/docs/concours-9eme-blob-manifest.json',
-  path.join(process.cwd(), 'data', 'concours-9eme-manifest.json'),
-];
 
 export type ConcoursFile = {
   key: string;
@@ -143,38 +132,22 @@ export const CONCOURS_VOIES = [
   },
 ] as const;
 
-let _manifest: any = null;
-
+// Load the embedded manifest (synchronous, works on both Vercel and CF Workers)
 function loadManifest(): any {
-  if (_manifest) return _manifest;
-  for (const p of MANIFEST_PATHS) {
-    try {
-      const raw = fs.readFileSync(p, 'utf-8');
-      _manifest = JSON.parse(raw);
-      return _manifest;
-    } catch (e) {
-      // continue trying
-    }
-  }
-  console.error('[concours-9eme-data] failed to load manifest from any path');
-  return { uploaded: [], failed: [], namespaces: {} };
+  return CONCOURS_9EME_MANIFEST;
 }
 
 /**
  * Build a proxied URL for the given key, so the browser only ever sees
  * examanet.com URLs (never the Vercel Blob storage URL).
- *
- * The key is the same as in the manifest (e.g. "concours-9eme/9raya/2020/.../math.pdf").
  */
 export function proxiedFileUrl(key: string): string {
-  // Encode each path segment, keeping the slashes
   const encoded = key.split('/').map(encodeURIComponent).join('/');
   return `/api/concours-file/${encoded}`;
 }
 
 /**
- * Returns files with the ORIGINAL upstream URLs (used by the proxy route itself,
- * since it needs to fetch the real blob URL, not its own proxy URL).
+ * Returns files with the ORIGINAL upstream URLs (used by the proxy route itself).
  */
 export function getOriginalConcoursFiles(): ConcoursFile[] {
   const m = loadManifest();
@@ -192,7 +165,6 @@ export function getConcours9emeFiles(): ConcoursFile[] {
   const m = loadManifest();
   return (m.uploaded || []).map((u: any) => ({
     key: u.key,
-    // Replace the upstream blob URL with our proxy URL (browser sees examanet.com)
     url: proxiedFileUrl(u.key),
     size: u.size,
     source: u.source,

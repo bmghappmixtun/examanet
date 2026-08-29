@@ -21,16 +21,9 @@
  * @see /public/data/bac-manifest.json
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
+import { BAC_MANIFEST } from '@/data/bac-manifest';
 
 const BLOB_BASE_URL = 'https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com';
-
-// Try multiple manifest paths (server-side vs public)
-const MANIFEST_PATHS = [
-  path.join(process.cwd(), 'public', 'data', 'bac-manifest.json'),
-  path.join(process.cwd(), 'data', 'bac-manifest.json'),
-];
 
 export type BacFile = {
   key: string;
@@ -120,23 +113,11 @@ export const BAC_SUBJECTS: BacSubject[] = [
 ];
 
 // =============================================================================
-// MANIFEST LOADER (cached)
+// MANIFEST LOADER
+// Uses the embedded BAC_MANIFEST (works on both Vercel and CF Workers).
 // =============================================================================
-let _manifest: any = null;
-
 function loadManifest(): any {
-  if (_manifest) return _manifest;
-  for (const p of MANIFEST_PATHS) {
-    try {
-      const raw = fs.readFileSync(p, 'utf-8');
-      _manifest = JSON.parse(raw);
-      return _manifest;
-    } catch (e) {
-      // continue trying
-    }
-  }
-  console.error('[bac-data] failed to load manifest from any path');
-  return { uploaded: [], failed: [], sections: BAC_SECTIONS, subjects: BAC_SUBJECTS };
+  return BAC_MANIFEST;
 }
 
 // =============================================================================
