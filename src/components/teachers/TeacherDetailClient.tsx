@@ -175,7 +175,7 @@ function DetailView({ data }: { data: any }) {
                   <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Matières enseignées</h2>
                   <div className="flex flex-wrap gap-2">
                     {teachingSubjects.map((s: any) => (
-                      <Link key={s.slug} href={{ pathname: '/fr/matieres/[subject]', params: { subject: s.slug } }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium hover:scale-105 transition" style={{ backgroundColor: s.color ? `${s.color}15` : '#f1f5f9', color: s.color || '#475569' }}>
+                      <Link key={s.slug} href={{ pathname: '/matieres/[subject]', params: { subject: s.slug } }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium hover:scale-105 transition" style={{ backgroundColor: s.color ? `${s.color}15` : '#f1f5f9', color: s.color || '#475569' }}>
                         {s.icon && <span>{s.icon}</span>}{s.nameFr}
                       </Link>
                     ))}
@@ -205,13 +205,13 @@ function DetailView({ data }: { data: any }) {
                   <h2 className="text-2xl font-extrabold flex items-center gap-2">
                     <BookOpen className="w-6 h-6 text-primary-500" />Ressources ({resourceCount})
                   </h2>
-                  <Link href={`/fr/ressources?teacherId=${teacher.numericId}` as any} className={`text-sm text-primary-600 hover:text-primary-700 font-semibold ${showToutVoir ? '' : 'hidden'}`} aria-hidden={!showToutVoir} tabIndex={showToutVoir ? 0 : -1}>
+                  <Link href={`/ressources?teacherId=${teacher.numericId}` as any} className={`text-sm text-primary-600 hover:text-primary-700 font-semibold ${showToutVoir ? '' : 'hidden'}`} aria-hidden={!showToutVoir} tabIndex={showToutVoir ? 0 : -1}>
                     Tout voir →
                   </Link>
                 </div>
                 <div className={`space-y-3 ${resources.length === 0 ? 'hidden' : ''}`}>
                   {latestResources.map((r: any) => (
-                    <Link key={r.id} href={{ pathname: '/fr/ressources/[id]/[slug]', params: { id: String(r.numericId), slug: r.slug } }} className="block bg-white rounded-2xl border border-slate-200 hover:border-primary-300 hover:shadow-md transition p-4 group">
+                    <Link key={r.id} href={{ pathname: '/ressources/[id]/[slug]', params: { id: String(r.numericId), slug: r.slug } }} className="block bg-white rounded-2xl border border-slate-200 hover:border-primary-300 hover:shadow-md transition p-4 group">
                       <div className="flex items-start gap-3">
                         <div className={`w-12 h-14 rounded-lg bg-gradient-to-br ${TYPE_COLORS[r.type] || TYPE_COLORS.OTHER} flex items-center justify-center flex-shrink-0`}>
                           <FileText className="w-5 h-5 text-white" />
