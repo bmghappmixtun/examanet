@@ -269,7 +269,7 @@ export async function GET(request: NextRequest) {
       } : null,
     }));
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       resources: formattedResources,
       total,
       totalPages: Math.ceil(total / PAGE_SIZE),
@@ -298,6 +298,14 @@ export async function GET(request: NextRequest) {
         (allClasses.results || []).map((c: any) => [c.id, levelSlugMap.get(c.levelId) || null])
       ),
     });
+    // 2026-08-29: CDN cache headers - reduce D1 rows read
+    // The "no filter" case is cacheable for 60s (data changes ~hourly)
+    // Filter cases are less cacheable but can still benefit
+    const hasFilters = q || type.length || subject.length || classSlug.length || section.length || trimestre.length || year.length || language.length || hasCorrection || teacherIdNumeric;
+    response.headers.set('Cache-Control', hasFilters
+      ? 'public, max-age=10, s-maxage=30, stale-while-revalidate=60'
+      : 'public, max-age=30, s-maxage=120, stale-while-revalidate=300');
+    return response;
   } catch (e: any) {
     return NextResponse.json({ error: e.message, stack: e.stack?.slice(0, 500) }, { status: 500 });
   }
