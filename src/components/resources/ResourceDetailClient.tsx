@@ -86,7 +86,7 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
         <div className="max-w-md w-full bg-white rounded-2xl border border-slate-200 p-8 text-center">
           <h1 className="text-2xl font-bold text-slate-900 mb-2">Ressource non trouvée</h1>
           <p className="text-slate-600 text-sm mb-4">La ressource demandée n'existe pas ou a été supprimée.</p>
-          <a href="/fr/ressources" className="text-primary-600 hover:underline">← Retour aux ressources</a>
+          <Link href="/ressources" className="text-primary-600 hover:underline">← Retour aux ressources</Link>
         </div>
       </div>
     );
