@@ -22,13 +22,13 @@ export async function generateMetadata({
   // Simple, fast metadata (no D1 calls in generateMetadata to avoid CPU timeout)
   // The actual teacher name and details are shown in the client component
   return {
-    title: `Professeur #${numericId} — Examanet`,
+    title: `Professeur #${numericId}`,
     description: `Découvrez le profil de ce professeur sur Examanet : cours, exercices, sujets et corrigés gratuits.`,
     alternates: {
       canonical: `https://examanet.com/professeurs/${numericId}`,
     },
     openGraph: {
-      title: `Professeur #${numericId} sur Examanet`,
+      title: `Professeur #${numericId}`,
       description: `Profil professeur sur Examanet`,
       url: `https://examanet.com/professeurs/${numericId}`,
       siteName: 'Examanet',
