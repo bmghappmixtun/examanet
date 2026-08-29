@@ -285,7 +285,7 @@ function ActiveChips({ subjectSlugs, classSlugs, q, verifiedOnly, subjects, clas
       {chips.map((c) => (
         <Link
           key={c.key}
-          href={`/fr/professeurs?${new URLSearchParams(window.location.search).toString().replace(new RegExp(`&?${c.param}=[^&]*`), '')}`}
+          href={`/professeurs?${new URLSearchParams(window.location.search).toString().replace(new RegExp(`&?${c.param}=[^&]*`), '')}`}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-800 text-sm font-medium rounded-full hover:bg-amber-200 transition"
         >
           {c.label}
@@ -299,7 +299,7 @@ function ActiveChips({ subjectSlugs, classSlugs, q, verifiedOnly, subjects, clas
 function TeacherCard({ t, stats, featured }: any) {
   const fullName = [t.firstName, t.lastName].filter(Boolean).join(' ') || t.firstNameAr || 'Professeur';
   const initials = fullName.split(' ').map((p: string) => p[0]).slice(0, 2).join('').toUpperCase();
-  const href = `/fr/professeurs/${t.numericId}/${t.slug}`;
+  const href = `/professeurs/${t.numericId}/${t.slug}`;
   const s = stats || { files: 0, downloads: 0, views: 0, rating: 0, followers: 0 };
   return (
     <Link
@@ -375,7 +375,7 @@ function Pagination({ current, total }: { current: number; total: number }) {
     if (page === 1) params.delete('page');
     else params.set('page', String(page));
     const qs = params.toString();
-    return `/fr/professeurs${qs ? '?' + qs : ''}`;
+    return `/professeurs${qs ? '?' + qs : ''}`;
   };
   
   const pages: (number | 'ellipsis')[] = [];
