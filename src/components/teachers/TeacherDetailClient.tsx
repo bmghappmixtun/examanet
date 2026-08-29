@@ -109,9 +109,9 @@ function DetailView({ data }: { data: any }) {
         <section className="bg-gradient-to-br from-primary-50 via-amber-50 to-rose-50 border-b border-amber-100">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
             <nav className="text-sm text-slate-500 mb-4 flex items-center gap-1.5">
-              <Link href="/fr" className="hover:text-primary-600">Accueil</Link>
+              <Link href="/" className="hover:text-primary-600">Accueil</Link>
               <span>›</span>
-              <Link href="/fr/professeurs" className="hover:text-primary-600">Professeurs</Link>
+              <Link href="/professeurs" className="hover:text-primary-600">Professeurs</Link>
               <span>›</span>
               <span className="text-slate-700 font-medium">{fullName}</span>
             </nav>
