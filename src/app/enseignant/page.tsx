@@ -174,7 +174,7 @@ export default async function TeacherDashboard(props: {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-extrabold">👋 Bonjour {user.firstName || 'cher enseignant'}</h1>
         <Link
-          href="/enseignant/ressources/ajouter"
+          href="/enseignant/ajouter"
           className="btn-primary inline-flex items-center gap-2"
         >
           <Upload className="w-4 h-4" />
@@ -249,7 +249,7 @@ export default async function TeacherDashboard(props: {
                 <Upload className="w-10 h-10 mx-auto mb-2 text-slate-300" />
                 <p>Vous n'avez pas encore de ressources.</p>
                 <Link
-                  href="/enseignant/ressources/ajouter"
+                  href="/enseignant/ajouter"
                   className="btn-primary mt-3 inline-flex"
                 >
                   Publier ma première ressource

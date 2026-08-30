@@ -130,7 +130,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
                   {[
                     { href: '/enseignant', icon: LayoutDashboard, label: 'Dashboard' },
                     { href: '/enseignant/ressources', icon: FileText, label: 'Mes ressources', badge: myResources },
-                    { href: '/enseignant/ressources/ajouter', icon: Plus, label: 'Nouvelle ressource' },
+                    { href: '/enseignant/ajouter', icon: Plus, label: 'Nouvelle ressource' },
                     { href: '/enseignant/bibliotheque', icon: BookOpen, label: 'Bibliothèque', badge: libraryCount },
                     { href: '/enseignant/favoris', icon: Heart, label: 'Favoris', badge: favoritesCount },
                     { href: '/enseignant/analytics', icon: BarChart3, label: 'Analytics' },
