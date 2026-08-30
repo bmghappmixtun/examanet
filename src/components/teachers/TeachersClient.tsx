@@ -30,19 +30,22 @@ interface PageData {
   classesTaught: { slug: string; nameFr: string; nameAr: string | null }[];
 }
 
-export default function TeachersClient() {
+export default function TeachersClient({ initialData }: { initialData?: PageData | null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [data, setData] = useState<PageData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<PageData | null>(initialData || null);
+  const [loading, setLoading] = useState(!initialData);
+  const [error, setError] = useState<string | null>(initialData ? null : null);
 
   useEffect(() => {
+    // Skip first fetch if initialData matches the current URL
+    const currentQs = searchParams.toString();
+    if (initialData && !currentQs) return;
     let cancelled = false;
     async function fetchData() {
       try {
         setLoading(true);
-        const res = await fetch(`/api/professeurs/data?${searchParams.toString()}`);
+        const res = await fetch(`/api/professeurs/data?${currentQs}`);
         if (cancelled) return;
         if (!res.ok) {
           setError(res.status === 404 ? 'not_found' : 'server_error');
@@ -55,6 +58,7 @@ export default function TeachersClient() {
           setError(json.error);
         } else {
           setData(json);
+          setError(null);
         }
         setLoading(false);
       } catch (e: any) {
@@ -68,8 +72,8 @@ export default function TeachersClient() {
     return () => { cancelled = true; };
   }, [searchParams]);
 
-  if (loading) return <TeachersLoading />;
-  if (error) return <TeachersError />;
+  if (loading && !data) return <TeachersLoading />;
+  if (error && !data) return <TeachersError />;
   if (!data) return <TeachersLoading />;
 
   return <TeachersView data={data} />;
