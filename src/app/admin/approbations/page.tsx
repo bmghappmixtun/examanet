@@ -1,28 +1,11 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { CheckCircle } from 'lucide-react';
 import ApprobationsClient from '@/components/admin/ApprobationsClient';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Server-side date formatter. Produces a stable relative-time string
- * ("30s", "5min", "2h", or a French absolute date) using a FIXED reference
- * time so the server-rendered HTML and the client-rendered initial tree
- * produce the same string. Without this, the client's `new Date()` and
- * the server's `new Date()` differ by a few seconds (network + hydration
- * latency), and the "30s" / "5min" diff calculation lands on different
- * branches — React #419 (text content mismatch).
- *
- * Fixes ERR-M3YA2R 2× React #419 on /admin/approbations (2026-08-07
- * nightly digest, Googlebot IP 74.125.19.40).
- *
- * NOTE: the displayed label is computed at SSR time. The label may become
- * slightly stale after the page sits open in a tab, but the admin panel
- * is short-lived and the staleness is acceptable.
- */
 function formatDateLabel(iso: string | null | undefined, now: Date): string | null {
   if (!iso) return null;
   const date = new Date(iso);
@@ -33,52 +16,91 @@ function formatDateLabel(iso: string | null | undefined, now: Date): string | nu
   return date.toLocaleDateString('fr-FR');
 }
 
-export default async function AdminApprovationsPage() {
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
+
+export default async function AdminApprovalsPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
+  if (user.role !== 'ADMIN') redirect('/');
 
-  const [pendingTeachers, pendingResources] = await Promise.all([
-    prisma.user.findMany({
-      where: { role: 'TEACHER', status: { in: ['PENDING_APPROVAL', 'PENDING_FILE_VERIFICATION', 'PENDING_OTP'] } },
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        schoolName: true,
-        governorate: true,
-        diploma: true,
-        teachingSubjects: true,
-        teachingLevels: true,
-        createdAt: true,
-        status: true,
-        emailVerifiedAt: true,
-        invitationStatus: true,
-        lastInvitationId: true,
-        verificationFilesRequestedAt: true,
-        verificationFilesCount: true,
-        verificationFilesReceivedAt: true,
-        _count: {
-          select: { uploadedFiles: true, library: true, verificationFiles: true },
-        },
-      },
-    }),
-    prisma.resource.findMany({
-      where: { status: 'PENDING_APPROVAL' },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        subject: { select: { nameFr: true } },
-        class: { select: { nameFr: true } },
-        teacher: { select: { firstName: true, lastName: true, email: true, schoolName: true } },
-      },
-    }),
-  ]);
-
-  // Single "now" reference so every label is computed against the same
-  // instant — keeps the streamed HTML internally consistent and matches
-  // whatever the client will see on hydration.
+  const db = await getD1();
   const now = new Date();
+
+  // Pending teachers (any non-ACTIVE status for TEACHER role)
+  const teachersR = await db.prepare(`
+    SELECT 
+      u.id, u.email, u.firstName, u.lastName, u.schoolName, u.governorate,
+      u.diploma, u.teachingSubjects, u.teachingLevels,
+      u.createdAt, u.status, u.emailVerifiedAt, u.approvedAt, u.isVerifiedTeacher,
+      (SELECT COUNT(*) FROM TeacherFile WHERE teacherId = u.id) AS uploadedFiles,
+      (SELECT COUNT(*) FROM TeacherVerificationFile WHERE userId = u.id) AS verificationFiles,
+      (SELECT MIN(createdAt) FROM TeacherVerificationFile WHERE userId = u.id) AS firstVerificationAt
+    FROM User u
+    WHERE u.role = 'TEACHER' AND u.status IN ('PENDING_APPROVAL', 'PENDING_FILE_VERIFICATION', 'PENDING_OTP')
+    ORDER BY u.createdAt DESC
+    LIMIT 50
+  `).all().catch(() => ({ results: [] }));
+
+  // Pending resources
+  const resourcesR = await db.prepare(`
+    SELECT 
+      r.id, r.title, r.status, r.createdAt, r.type, r.classId, r.subjectId,
+      s.nameFr AS subjectNameFr,
+      c.nameFr AS classNameFr,
+      t.firstName AS teacherFirstName, t.lastName AS teacherLastName, t.email AS teacherEmail, t.schoolName AS teacherSchoolName
+    FROM Resource r
+    LEFT JOIN Subject s ON r.subjectId = s.id
+    LEFT JOIN "Class" c ON r.classId = c.id
+    LEFT JOIN User t ON r.teacherId = t.id
+    WHERE r.status = 'PENDING_APPROVAL'
+    ORDER BY r.createdAt DESC
+    LIMIT 50
+  `).all().catch(() => ({ results: [] }));
+
+  // Convert to the format the client component expects
+  const ms = (v: any) => (v == null || v === 0 ? null : new Date(Number(v)).toISOString());
+  const pendingTeachers = (teachersR?.results || []).map((t: any) => ({
+    id: t.id,
+    email: t.email,
+    firstName: t.firstName,
+    lastName: t.lastName,
+    schoolName: t.schoolName,
+    governorate: t.governorate,
+    diploma: t.diploma,
+    teachingSubjects: t.teachingSubjects,
+    teachingLevels: t.teachingLevels,
+    status: t.status,
+    isVerifiedTeacher: !!t.isVerifiedTeacher,
+    createdAt: ms(t.createdAt),
+    emailVerifiedAt: ms(t.emailVerifiedAt),
+    verificationFilesRequestedAt: ms(t.firstVerificationAt),
+    verificationFilesCount: t.verificationFiles || 0,
+    verificationFilesReceivedAt: null,
+    invitationStatus: null,
+    invitationSentAt: null,
+    lastInvitationId: null,
+    _count: { uploadedFiles: t.uploadedFiles || 0, library: 0, verificationFiles: t.verificationFiles || 0 },
+  }));
+
+  const pendingResources = (resourcesR?.results || []).map((r: any) => ({
+    id: r.id,
+    title: r.title,
+    status: r.status,
+    type: r.type,
+    createdAt: ms(r.createdAt),
+    subject: { nameFr: r.subjectNameFr },
+    class: { nameFr: r.classNameFr },
+    teacher: {
+      firstName: r.teacherFirstName,
+      lastName: r.teacherLastName,
+      email: r.teacherEmail,
+      schoolName: r.teacherSchoolName,
+    },
+  }));
 
   return (
     <div>
@@ -97,17 +119,12 @@ export default async function AdminApprovationsPage() {
         <ApprobationsClient
           initialTeachers={pendingTeachers.map((t) => ({
             ...t,
-            createdAt: t.createdAt.toISOString(),
-            createdAtLabel: formatDateLabel(t.createdAt.toISOString(), now) ?? '',
-            emailVerifiedAt: t.emailVerifiedAt?.toISOString() || null,
-            verificationFilesRequestedAt: t.verificationFilesRequestedAt?.toISOString() || null,
-            verificationFilesRequestedAtLabel: formatDateLabel(t.verificationFilesRequestedAt?.toISOString() ?? null, now),
-            verificationFilesReceivedAt: t.verificationFilesReceivedAt?.toISOString() || null,
+            createdAtLabel: formatDateLabel(t.createdAt, now) ?? '',
+            verificationFilesRequestedAtLabel: formatDateLabel(t.verificationFilesRequestedAt, now),
           }))}
           initialResources={pendingResources.map((r) => ({
             ...r,
-            createdAt: r.createdAt.toISOString(),
-            createdAtLabel: formatDateLabel(r.createdAt.toISOString(), now) ?? '',
+            createdAtLabel: formatDateLabel(r.createdAt, now) ?? '',
           }))}
         />
       )}
