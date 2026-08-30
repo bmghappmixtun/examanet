@@ -1,26 +1,19 @@
 // @ts-nocheck
 export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-
-export const runtime = 'nodejs';
+import { d1All, d1First, d1Run, genId } from '@/lib/db-d1';
 
 export async function GET() {
   const user = await getCurrentUser();
   if (!user || user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
-
-  const sections = await prisma.section.findMany({
-    orderBy: [{ class: { order: 'asc' } }, { nameFr: 'asc' }],
-    include: {
-      class: { select: { nameFr: true, slug: true } },
-      _count: { select: { resources: true } },
-    },
-  });
-
+  const sections = await d1All(
+    `SELECT s.id, s.numericId, s.slug, s.nameFr, s.nameAr, s."order",
+            (SELECT COUNT(*) FROM Resource r WHERE r.sectionId = s.id) AS resourceCount
+     FROM Section s ORDER BY s.nameFr ASC`,
+  );
   return NextResponse.json({ sections });
 }
 
@@ -29,29 +22,26 @@ export async function POST(req: NextRequest) {
   if (!user || user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
-
   try {
-    const { slug, nameFr, nameAr, classId } = await req.json();
-    if (!slug || !nameFr || !nameAr || !classId) {
-      return NextResponse.json({ error: 'slug, nameFr, nameAr, classId requis' }, { status: 400 });
+    const body = await req.json();
+    const { slug, nameFr, nameAr, order } = body;
+    if (!slug || !nameFr || !nameAr) {
+      return NextResponse.json({ error: 'slug, nameFr, nameAr requis' }, { status: 400 });
     }
-
-    const section = await prisma.section.create({
-      data: {
-        slug: slug.toLowerCase().trim(),
-        nameFr: nameFr.trim(),
-        nameAr: nameAr.trim(),
-        classId,
-      },
-    });
-    return NextResponse.json({ success: true, section });
+    const slugClean = slug.toLowerCase().trim();
+    const existing = await d1First('SELECT id FROM Section WHERE slug = ?', slugClean);
+    if (existing) return NextResponse.json({ error: 'Ce slug existe déjà' }, { status: 400 });
+    const id = genId();
+    const now = Date.now();
+    const r = await d1Run(
+      `INSERT INTO Section (id, slug, nameFr, nameAr, "order", createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      id, slugClean, nameFr.trim(), nameAr.trim(),
+      typeof order === 'number' ? order : 0, now, now,
+    );
+    if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+    return NextResponse.json({ success: true, id });
   } catch (e: any) {
-    if (e.message?.includes('Unique')) {
-      return NextResponse.json(
-        { error: 'Cette section existe déjà pour cette classe' },
-        { status: 400 },
-      );
-    }
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

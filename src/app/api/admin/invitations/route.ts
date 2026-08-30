@@ -1,109 +1,55 @@
 // @ts-nocheck
 export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { d1All, d1First, d1Run, genId } from '@/lib/db-d1';
+import { isValidOrigin } from '@/lib/security';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
+  const user = await getCurrentUser();
+  if (!user || user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+  }
+  const invitations = await d1All(
+    `SELECT id, email, status, message, expiresAt, acceptedAt, invitationSentAt,
+            invitationActivatedAt, createdAt
+     FROM TeacherInvitation
+     ORDER BY createdAt DESC LIMIT 200`,
+  );
+  return NextResponse.json({ invitations });
+}
+
+export async function POST(req: NextRequest) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+  }
+  if (!isValidOrigin(req)) {
+    return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
+  }
   try {
-    const me = await getCurrentUser();
-    if (!me || me.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const body = await req.json();
+    const { email, message } = body;
+    if (!email) return NextResponse.json({ error: 'Email requis' }, { status: 400 });
+    const existing = await d1First(
+      "SELECT id FROM TeacherInvitation WHERE email = ? AND status IN ('PENDING', 'ACCEPTED')",
+      email.toLowerCase(),
+    );
+    if (existing) {
+      return NextResponse.json({ error: 'Une invitation existe déjà pour cet email' }, { status: 400 });
     }
-
-    const sp = req.nextUrl.searchParams;
-    const status = sp.get('status'); // PENDING|SENT|CLICKED|ACTIVATED|EXPIRED|CANCELLED
-    const teacherId = sp.get('teacherId');
-    const page = Math.max(1, parseInt(sp.get('page') || '1'));
-    const pageSize = Math.min(100, parseInt(sp.get('size') || '50'));
-    const skip = (page - 1) * pageSize;
-
-    const where: any = {};
-    // Per user rule (2026-08-07): the CLICKED filter matches invitations
-    // where the teacher clicked at least once, regardless of current
-    // status. This is the same heuristic used in the admin page UI.
-    if (status === 'CLICKED') {
-      where.clickCount = { gt: 0 };
-    } else if (status) {
-      where.status = status;
-    }
-    if (teacherId) where.teacherId = teacherId;
-
-    const [invitations, total] = await Promise.all([
-      prisma.teacherInvitation.findMany({
-        where,
-        take: pageSize,
-        skip,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          teacher: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              _count: { select: { uploadedFiles: true } },
-            },
-          },
-          invitedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
-        },
-      }),
-      prisma.teacherInvitation.count({ where }),
-    ]);
-
-    // Stats by status — per user rule (2026-08-07): the CLICKED stat counts
-    // unique teachers who clicked at least once, not the count of
-    // invitations currently in the CLICKED state. (Old behavior was always
-    // 0 because any teacher who clicked eventually activated and moved to
-    // ACTIVATED.) We also expose the total click events separately.
-    const [stats, clickedCount, totalClicksAgg] = await Promise.all([
-      prisma.teacherInvitation.groupBy({
-        by: ['status'],
-        _count: { status: true },
-      }),
-      prisma.teacherInvitation.count({
-        where: { clickCount: { gt: 0 } },
-      }),
-      prisma.teacherInvitation.aggregate({
-        _sum: { clickCount: true },
-      }),
-    ]);
-
-    const statsMap: Record<string, number> = {};
-    stats.forEach((s: any) => {
-      statsMap[s.status] = s._count.status;
-    });
-    // Override CLICKED with the unique-click count
-    statsMap.CLICKED = clickedCount;
-
-    return NextResponse.json({
-      invitations: invitations.map((inv) => ({
-        id: inv.id,
-        token: inv.token,
-        email: inv.email,
-        status: inv.status,
-        createdAt: inv.createdAt,
-        emailSentAt: inv.emailSentAt,
-        linkClickedAt: inv.linkClickedAt,
-        activatedAt: inv.activatedAt,
-        cancelledAt: inv.cancelledAt,
-        expiresAt: inv.expiresAt,
-        clickCount: inv.clickCount,
-        clickIpAddress: inv.clickIpAddress,
-        activateIpAddress: inv.activateIpAddress,
-        customMessage: inv.customMessage,
-        teacher: inv.teacher,
-        invitedBy: inv.invitedBy,
-      })),
-      total,
-      page,
-      pageSize,
-      stats: statsMap,
-      totalClickEvents: totalClicksAgg._sum.clickCount || 0,
-    });
+    const id = genId();
+    const token = crypto.randomUUID() + '-' + crypto.randomUUID();
+    const now = Date.now();
+    const expiresAt = now + 14 * 24 * 60 * 60 * 1000; // 14 days
+    const r = await d1Run(
+      `INSERT INTO TeacherInvitation (id, email, token, invitedById, status, message, expiresAt, invitationSentAt, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      id, email.toLowerCase(), token, user.id, 'PENDING', message || null, expiresAt, now, now,
+    );
+    if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+    return NextResponse.json({ success: true, id, token });
   } catch (e: any) {
-    console.error('invitations GET error:', e);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

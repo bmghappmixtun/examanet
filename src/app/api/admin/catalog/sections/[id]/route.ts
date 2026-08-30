@@ -1,28 +1,32 @@
 // @ts-nocheck
 export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-
-export const runtime = 'nodejs';
+import { d1First, d1Run } from '@/lib/db-d1';
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user || user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
-  const { id } = await params;
-
   try {
+    const { id } = await params;
     const body = await req.json();
-    const data: any = {};
-    for (const k of ['nameFr', 'nameAr', 'classId']) {
-      if (body[k] !== undefined) data[k] = body[k];
+    const fields: string[] = [];
+    const values: any[] = [];
+    for (const k of ['nameFr', 'nameAr', 'order']) {
+      if (body[k] !== undefined) {
+        fields.push(`${k} = ?`);
+        values.push(body[k]);
+      }
     }
-    if (body.slug) data.slug = body.slug.toLowerCase().trim();
-    const section = await prisma.section.update({ where: { id }, data });
-    return NextResponse.json({ success: true, section });
+    if (fields.length === 0) return NextResponse.json({ error: 'Aucun champ à mettre à jour' }, { status: 400 });
+    fields.push('updatedAt = ?');
+    values.push(Date.now());
+    values.push(id);
+    const r = await d1Run(`UPDATE Section SET ${fields.join(', ')} WHERE id = ?`, ...values);
+    if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+    return NextResponse.json({ success: true });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
@@ -33,18 +37,19 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!user || user.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
-  const { id } = await params;
-
-  const resourceCount = await prisma.resource.count({ where: { sectionId: id } });
-  if (resourceCount > 0) {
-    return NextResponse.json(
-      {
-        error: `Impossible : ${resourceCount} ressource(s) utilisent cette section.`,
-      },
-      { status: 400 },
-    );
+  try {
+    const { id } = await params;
+    const used = await d1First('SELECT COUNT(*) as c FROM Resource WHERE sectionId = ?', id);
+    if (used && Number(used.c) > 0) {
+      return NextResponse.json(
+        { error: `Impossible : ${used.c} ressource(s) utilisent cette section` },
+        { status: 400 },
+      );
+    }
+    const r = await d1Run('DELETE FROM Section WHERE id = ?', id);
+    if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+    return NextResponse.json({ success: true });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
-
-  await prisma.section.delete({ where: { id } });
-  return NextResponse.json({ success: true });
 }
