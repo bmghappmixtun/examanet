@@ -73,8 +73,8 @@ export default async function TeacherResourcesPage(props: {
     params.push(status);
   }
   if (editStatus !== 'ALL') {
-    conds.push('r.editStatus = ?');
-    params.push(editStatus);
+    // D1 Resource has no editStatus column — ignore this filter for now
+    conds.push('1=1');
   }
   const whereSql = conds.join(' AND ');
   const orderSql = SORT_MAP[sort] || SORT_MAP.recent;
@@ -84,7 +84,7 @@ export default async function TeacherResourcesPage(props: {
   const [resourcesR, countR, subjectsR, publishedR, pendingR, rejectedR, pendingEditR, editRejectedR] =
     await Promise.all([
       db.prepare(
-        `SELECT r.id, r.numericId, r.slug, r.title, r.status, r.editStatus, r.type,
+        `SELECT r.id, r.numericId, r.slug, r.title, r.status, r.type,
                 r.viewsCount, r.downloadsCount, r.avgRating, r.createdAt, r.updatedAt,
                 s.nameFr as subjectNameFr, s.color as subjectColor, s.icon as subjectIcon,
                 c.nameFr as classNameFr,

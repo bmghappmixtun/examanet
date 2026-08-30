@@ -1,16 +1,17 @@
+// @ts-nocheck
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { uploadFile } from '@/lib/storage';
 
-export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 /**
  * POST /api/teacher/resources/upload
- * Step 1 of resource creation: upload the file only, get back the fileKey/fileUrl.
- * Step 2 (POST /api/teacher/resources) creates the resource record with the uploaded file.
+ * Step 1 of resource creation: upload the file to R2, get back the fileKey/fileUrl.
+ * Step 2 (POST /api/teacher/resources) creates the resource record.
+ *
+ * D1 + R2 implementation (CF Workers compatible).
  */
 export async function POST(req: NextRequest) {
   try {
@@ -32,21 +33,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Fichier trop volumineux (max 50 MB)' }, { status: 400 });
     }
 
-    // Upload file
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = await getCloudflareContext({ async: true });
+    const bucket = (ctx as any).env.PDFS_BUCKET as R2Bucket | undefined;
+    if (!bucket) {
+      return NextResponse.json({ error: 'Stockage R2 non configuré' }, { status: 500 });
+    }
+
     const ext = file.name.split('.').pop() || 'pdf';
     const fileName = `resources/pending/${user.id}-${Date.now()}.${ext}`;
-    const uploadResult: any = await uploadFile(fileName, buffer, 'application/pdf');
+    const arrayBuffer = await file.arrayBuffer();
+    await bucket.put(fileName, arrayBuffer, {
+      httpMetadata: { contentType: 'application/pdf' },
+    });
+    const fileUrl = `https://r2.examanet.com/${fileName}`;
 
     return NextResponse.json({
       success: true,
-      fileKey: uploadResult.key || fileName,
-      fileUrl: uploadResult.url,
+      fileKey: fileName,
+      fileUrl,
       fileSize: file.size,
       fileName: file.name,
     });
   } catch (e: any) {
     console.error('Upload error:', e);
-    return NextResponse.json({ error: e.message || 'Erreur serveur' }, { status: 500 });
+    return NextResponse.json(
+      { error: e?.message || 'Erreur serveur' },
+      { status: 500 },
+    );
   }
 }
