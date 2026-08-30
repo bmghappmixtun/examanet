@@ -2,7 +2,6 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import TeacherLibraryClient from '@/components/teacher/TeacherLibraryClient';
 
 export const metadata: Metadata = {
@@ -12,6 +11,12 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
+
 export default async function TeacherLibraryPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
@@ -19,16 +24,10 @@ export default async function TeacherLibraryPage() {
     redirect('/');
   }
 
-  // Pre-fetch filter options (classes, subjects)
-  const [classes, subjects] = await Promise.all([
-    prisma.class.findMany({
-      orderBy: { order: 'asc' },
-      select: { id: true, nameFr: true, nameAr: true, slug: true },
-    }),
-    prisma.subject.findMany({
-      orderBy: { order: 'asc' },
-      select: { id: true, nameFr: true, nameAr: true, slug: true, color: true, icon: true },
-    }),
+  const db = await getD1();
+  const [classesR, subjectsR] = await Promise.all([
+    db.prepare('SELECT id, nameFr, nameAr, slug FROM "Class" ORDER BY "order" ASC').all().catch(() => ({ results: [] })),
+    db.prepare('SELECT id, nameFr, nameAr, slug, color, icon FROM Subject ORDER BY nameFr ASC').all().catch(() => ({ results: [] })),
   ]);
 
   return (
@@ -42,7 +41,7 @@ export default async function TeacherLibraryPage() {
           à tout moment et les réutiliser pour publier de nouvelles ressources.
         </p>
       </div>
-      <TeacherLibraryClient classes={classes} subjects={subjects} />
+      <TeacherLibraryClient classes={classesR?.results || []} subjects={subjectsR?.results || []} />
     </div>
   );
 }
