@@ -47,12 +47,10 @@ export default async function TeacherDashboard(props: {
 
   const db = await getD1();
 
-  // User status
+  // User status (D1: only has 'status' column - no verification fields)
   const fullUser = await db
     .prepare(
-      `SELECT status, verificationFilesRequestedAt, verificationFilesCount,
-              verificationFilesNote, verificationFilesReceivedAt
-       FROM User WHERE id = ?`,
+      `SELECT status FROM User WHERE id = ?`,
     )
     .bind(user.id)
     .first()
@@ -61,6 +59,7 @@ export default async function TeacherDashboard(props: {
   const needsVerification = fullUser?.status === 'PENDING_FILE_VERIFICATION';
 
   // Verification files (if needed)
+  // D1 TeacherVerificationFile uses 'userId' (not 'teacherId') and 'createdAt' (not 'uploadedAt')
   const verificationFiles = needsVerification
     ? await db
         .prepare(
