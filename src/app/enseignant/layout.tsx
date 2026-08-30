@@ -48,15 +48,17 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   const db = await getD1();
 
   // Check teacher status (D1)
+  // Note: User table has no verificationFilesCount/verificationFilesReceivedAt
+  // in D1 (these were never migrated from Prisma schema).
   const teacherStatus = await db
     .prepare(
-      `SELECT status, verificationFilesCount, verificationFilesReceivedAt
-       FROM User WHERE id = ?`,
+      `SELECT status FROM User WHERE id = ?`,
     )
     .bind(user.id)
     .first()
     .catch(() => null);
-  const canUpload = teacherStatus?.status === 'ACTIVE';
+  // For ADMIN, always allow upload. For TEACHER, require ACTIVE status.
+  const canUpload = user.role === 'ADMIN' || teacherStatus?.status === 'ACTIVE';
 
   // Sidebar counts (D1)
   const [
