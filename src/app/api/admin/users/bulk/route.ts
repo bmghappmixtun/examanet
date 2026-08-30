@@ -2,32 +2,27 @@
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/admin/users/bulk
+ * POST /api/admin/users/bulk — D1 direct
  *
  * Perform a bulk action on multiple users at once.
- *
- * Body: {
- *   userIds: string[],
- *   action: 'suspend' | 'activate' | 'verify' | 'unverify' | 'delete' | 'ban'
- * }
- *
- * Constraints:
- *   - Only ADMIN role can perform bulk actions
- *   - Cannot act on other ADMIN accounts (returns 403 for the whole batch)
- *   - Delete cascades to all user data (resources, comments, etc.)
- *   - Returns { success, succeeded, failed, errors }
+ * Body: { userIds: string[], action: 'suspend'|'activate'|'verify'|'unverify'|'delete'|'ban' }
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { d1All, d1First, d1Run, genId } from '@/lib/db-d1';
+import { isValidOrigin } from '@/lib/security';
 
 const MAX_BATCH = 100;
+const validActions = ['suspend', 'activate', 'verify', 'unverify', 'delete', 'ban'];
 
 export async function POST(req: NextRequest) {
   const admin = await getCurrentUser();
   if (!admin || admin.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+  }
+  if (!isValidOrigin(req)) {
+    return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
   }
 
   let body: { userIds?: string[]; action?: string };
@@ -49,8 +44,6 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-
-  const validActions = ['suspend', 'activate', 'verify', 'unverify', 'delete', 'ban'];
   if (!action || !validActions.includes(action)) {
     return NextResponse.json(
       { error: `Action invalide. Attendu: ${validActions.join(', ')}` },
@@ -58,20 +51,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Get the targets and check none are admins
-  const targets = await prisma.user.findMany({
-    where: { id: { in: userIds } },
-    select: {
-      id: true,
-      role: true,
-      status: true,
-      isVerifiedTeacher: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-    },
-  });
-
+  // Lookup all targets in a single query
+  const placeholders = userIds.map(() => '?').join(',');
+  const targets = await d1All(
+    `SELECT id, role, status, isVerifiedTeacher, email, firstName, lastName
+     FROM User WHERE id IN (${placeholders})`,
+    ...userIds,
+  );
   const foundIds = new Set(targets.map((t) => t.id));
   const missingIds = userIds.filter((id) => !foundIds.has(id));
 
@@ -87,69 +73,58 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Execute the action per target
   const results: { id: string; name: string; success: boolean; error?: string }[] = [];
-  const selfIds: string[] = []; // admin acting on themselves
+  const selfIds: string[] = [];
 
   for (const target of targets) {
+    if (target.id === admin.id) {
+      selfIds.push(target.id);
+      results.push({ id: target.id, name: target.email, success: false, error: 'Vous ne pouvez pas vous modifier vous-même' });
+      continue;
+    }
+    const name = `${target.firstName || ''} ${target.lastName || ''}`.trim() || target.email;
     try {
-      if (target.id === admin.id) {
-        selfIds.push(target.id);
-        results.push({
-          id: target.id,
-          name: target.email,
-          success: false,
-          error: 'Vous ne pouvez pas vous modifier vous-même',
-        });
-        continue;
-      }
-      const name = `${target.firstName || ''} ${target.lastName || ''}`.trim() || target.email;
+      let r;
       switch (action) {
         case 'suspend':
           if (target.status === 'SUSPENDED') {
             results.push({ id: target.id, name, success: true, error: 'Déjà suspendu' });
             continue;
           }
-          await prisma.user.update({ where: { id: target.id }, data: { status: 'SUSPENDED' } });
+          r = await d1Run("UPDATE User SET status = 'SUSPENDED' WHERE id = ?", target.id);
           break;
         case 'activate':
           if (target.status === 'ACTIVE') {
             results.push({ id: target.id, name, success: true, error: 'Déjà actif' });
             continue;
           }
-          await prisma.user.update({ where: { id: target.id }, data: { status: 'ACTIVE' } });
+          r = await d1Run("UPDATE User SET status = 'ACTIVE' WHERE id = ?", target.id);
           break;
         case 'verify':
-          await prisma.user.update({ where: { id: target.id }, data: { isVerifiedTeacher: true } });
+          r = await d1Run('UPDATE User SET isVerifiedTeacher = 1 WHERE id = ?', target.id);
           break;
         case 'unverify':
-          await prisma.user.update({
-            where: { id: target.id },
-            data: { isVerifiedTeacher: false },
-          });
+          r = await d1Run('UPDATE User SET isVerifiedTeacher = 0 WHERE id = ?', target.id);
           break;
         case 'ban':
-          await prisma.user.update({ where: { id: target.id }, data: { status: 'BANNED' } });
+          r = await d1Run("UPDATE User SET status = 'BANNED' WHERE id = ?", target.id);
           break;
         case 'delete':
-          // Cascade delete all related data
-          await deleteUserAndCascade(target.id);
+          r = await deleteUserAndCascade(target.id);
           break;
       }
-      results.push({ id: target.id, name, success: true });
-    } catch (e) {
-      results.push({
-        id: target.id,
-        name: target.email,
-        success: false,
-        error: e instanceof Error ? e.message : 'Erreur',
-      });
+      if (r && !r.success) {
+        results.push({ id: target.id, name, success: false, error: r.error });
+      } else {
+        results.push({ id: target.id, name, success: true });
+      }
+    } catch (e: any) {
+      results.push({ id: target.id, name: target.email, success: false, error: e.message });
     }
   }
 
   const succeeded = results.filter((r) => r.success).length;
   const failed = results.filter((r) => !r.success).length;
-
   return NextResponse.json({
     success: failed === 0,
     action,
@@ -162,53 +137,12 @@ export async function POST(req: NextRequest) {
   });
 }
 
-/**
- * Delete a user and cascade to all their data.
- * Mirrors the cascade rules in DeleteUserButton.
- */
 async function deleteUserAndCascade(userId: string) {
-  await prisma.$transaction(async (tx) => {
-    // 1. Resources (teacher or uploader)
-    const resources = await tx.resource.findMany({
-      where: { teacherId: userId },
-      select: { id: true },
-    });
-    const resourceIds = resources.map((r) => r.id);
-    if (resourceIds.length > 0) {
-      await tx.comment.deleteMany({ where: { resourceId: { in: resourceIds } } });
-      await tx.rating.deleteMany({ where: { resourceId: { in: resourceIds } } });
-      await tx.favorite.deleteMany({ where: { resourceId: { in: resourceIds } } });
-      await tx.view.deleteMany({ where: { resourceId: { in: resourceIds } } });
-      await tx.download.deleteMany({ where: { resourceId: { in: resourceIds } } });
-      await tx.share.deleteMany({ where: { resourceId: { in: resourceIds } } });
-      await tx.report.deleteMany({ where: { resourceId: { in: resourceIds } } });
-      await tx.resource.deleteMany({ where: { id: { in: resourceIds } } });
-    }
-
-    // 2. Teacher library files
-    await tx.teacherFile.deleteMany({ where: { teacherId: userId } });
-
-    // 3. Other relations
-    await tx.notification.deleteMany({ where: { userId } });
-    await tx.comment.deleteMany({ where: { userId } });
-    await tx.rating.deleteMany({ where: { userId } });
-    await tx.favorite.deleteMany({ where: { userId } });
-    await tx.view.deleteMany({ where: { userId } });
-    await tx.download.deleteMany({ where: { userId } });
-    await tx.share.deleteMany({ where: { userId } });
-    await tx.report.deleteMany({ where: { userId } });
-    await tx.otpCode.deleteMany({ where: { userId } });
-    await tx.session.deleteMany({ where: { userId } });
-    await tx.message.deleteMany({ where: { senderId: userId } });
-    // Delete conversations where user is a participant (also covered by cascade)
-    await tx.conversation.deleteMany({
-      where: { OR: [{ studentId: userId }, { teacherId: userId }] },
-    });
-
-    // 4. ContactMessage has no userId (just name/email of visitor)
-    //    No cascade needed - contact messages are anonymous
-
-    // 5. Finally, the user
-    await tx.user.delete({ where: { id: userId } });
-  });
+  // Delete everything we can from D1 tables that reference the user
+  // (View/Download/Comment/Rating/Favorite/Follow/Report/etc. don't exist in D1 yet)
+  await d1Run('DELETE FROM Session WHERE userId = ?', userId);
+  await d1Run('DELETE FROM TeacherFile WHERE teacherId = ?', userId);
+  await d1Run('DELETE FROM TeacherVerificationFile WHERE userId = ?', userId);
+  await d1Run("DELETE FROM Resource WHERE teacherId = ?", userId);
+  return await d1Run('DELETE FROM User WHERE id = ?', userId);
 }

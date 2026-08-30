@@ -1,53 +1,37 @@
 // @ts-nocheck
 export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
-import { prisma } from '@/lib/prisma';
+import { d1First, d1Run } from '@/lib/db-d1';
 import { getCurrentUser } from '@/lib/auth';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  // SECURITY: CSRF origin check (production only)
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (isProduction() && !isValidOrigin(req)) {
     return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
   }
-
   try {
     const me = await getCurrentUser();
     if (!me || me.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const target = await prisma.user.findUnique({
-      where: { id: params.id },
-      select: {
-        id: true,
-        email: true,
-        role: true,
-        status: true,
-        lockedUntil: true,
-        failedLoginCount: true,
-      },
-    });
+    const { id } = await params;
+    const target = await d1First(
+      'SELECT id, email, role, status, lockedUntil, failedLoginCount FROM User WHERE id = ?',
+      id,
+    );
     if (!target) {
       return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
     }
-
-    // Reset lockout state
-    await prisma.user.update({
-      where: { id: params.id },
-      data: { failedLoginCount: 0, lockedUntil: null },
-    });
-
-    console.log(
-      `[admin] ${me.email} unlocked account for ${target.email} (was: lockedUntil=${target.lockedUntil}, failed=${target.failedLoginCount})`,
+    if (target.role === 'ADMIN' && target.id !== me.id) {
+      return NextResponse.json({ error: 'Action impossible sur un autre administrateur' }, { status: 403 });
+    }
+    const r = await d1Run(
+      'UPDATE User SET failedLoginCount = 0, lockedUntil = NULL, lastFailedLoginAt = NULL WHERE id = ?',
+      id,
     );
-
-    return NextResponse.json({
-      success: true,
-      message: `Compte ${target.email} déverrouillé.`,
-    });
+    if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+    return NextResponse.json({ success: true, user: { id: target.id, email: target.email, status: target.status } });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 });
   }
 }
