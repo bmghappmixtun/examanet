@@ -1,28 +1,27 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
 import UsersManagementClient from '@/components/admin/UsersManagementClient';
 
 export const dynamic = 'force-dynamic';
 
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
+
 const ALLOWED_PAGE_SIZES = [10, 25, 50, 100];
 
-// Sorts that require aggregation across all files of a teacher
-// These MUST use raw SQL because Prisma orderBy doesn't support
-// SUM/AVG on related rows.
-const STATS_SORTS: Record<string, { column: string; nulls: 'first' | 'last' }> = {
-  files: { column: 'file_count', nulls: 'last' },
-  views: { column: 'total_views', nulls: 'last' },
-  downloads: { column: 'total_downloads', nulls: 'last' },
-  favorites: { column: 'total_favorites', nulls: 'last' },
-  comments: { column: 'total_comments', nulls: 'last' },
-  rating: { column: 'weighted_rating', nulls: 'last' },
+const SORT_MAP: Record<string, { col: string; dir: 'ASC' | 'DESC' }> = {
+  recent: { col: 'u.createdAt', dir: 'DESC' },
+  oldest: { col: 'u.createdAt', dir: 'ASC' },
+  name_asc: { col: 'u.lastName', dir: 'ASC' },
+  name_desc: { col: 'u.lastName', dir: 'DESC' },
+  last_login: { col: 'u.lastLoginAt', dir: 'DESC' },
 };
 
 export default async function AdminUsersPage(props: {
-  params: Promise<any>;
   searchParams: Promise<any>;
 }) {
   const sp = await props.searchParams;
@@ -38,180 +37,155 @@ export default async function AdminUsersPage(props: {
   const pageSize = ALLOWED_PAGE_SIZES.includes(requestedSize) ? requestedSize : 25;
   const skip = (page - 1) * pageSize;
 
-  // Build where clause based on role + search
-  const where: any = { role };
+  const db = await getD1();
+
+  // Build WHERE clause
+  const where: string[] = ['u.role = ?'];
+  const params: any[] = [role];
   if (q) {
-    where.OR = [
-      { email: { contains: q, mode: 'insensitive' } },
-      { firstName: { contains: q, mode: 'insensitive' } },
-      { lastName: { contains: q, mode: 'insensitive' } },
-    ];
+    where.push('(u.email LIKE ? OR u.firstName LIKE ? OR u.lastName LIKE ?)');
+    params.push(`%${q}%`, `%${q}%`, `%${q}%`);
   }
+  const whereSql = where.join(' AND ');
 
-  const isStatsSort = sort in STATS_SORTS;
+  const isStatsSort = ['files', 'views', 'downloads', 'favorites', 'comments', 'rating'].includes(sort);
 
-  // Fetch users (paginated + sorted) + counts (in parallel)
-  const [usersRaw, filteredTotal, teacherCount, studentCount, adminCount] = await Promise.all([
-    isStatsSort
-      ? fetchUsersWithStats({ role, q, sort, skip, pageSize })
-      : fetchUsersNormal({ where, sort, skip, pageSize }),
-    prisma.user.count({ where }),
-    prisma.user.count({ where: { role: 'TEACHER' } }),
-    prisma.user.count({ where: { role: 'STUDENT' } }),
-    prisma.user.count({ where: { role: 'ADMIN' } }),
+  // Counts (always)
+  const [teacherCount, studentCount, adminCount, filteredTotalR] = await Promise.all([
+    db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER'").first().catch(() => ({ c: 0 })),
+    db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'STUDENT'").first().catch(() => ({ c: 0 })),
+    db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'ADMIN'").first().catch(() => ({ c: 0 })),
+    db.prepare(`SELECT COUNT(*) as c FROM User u WHERE ${whereSql}`).bind(...params).first().catch(() => ({ c: 0 })),
   ]);
 
+  // Build user query
+  let usersRaw: any[];
+  if (isStatsSort) {
+    // Stats-based sort requires aggregation
+    const STATS_COLS: Record<string, string> = {
+      files: 'COALESCE(ts.file_count, 0)',
+      views: 'COALESCE(ts.total_views, 0)',
+      downloads: 'COALESCE(ts.total_downloads, 0)',
+      favorites: 'COALESCE(ts.total_favorites, 0)',
+      comments: 'COALESCE(ts.total_comments, 0)',
+      rating: 'COALESCE(ts.weighted_rating, 0)',
+    };
+    const orderCol = STATS_COLS[sort];
+    const r = await db
+      .prepare(
+        `WITH teacher_stats AS (
+          SELECT teacherId,
+            COUNT(*) AS file_count,
+            COALESCE(SUM(viewsCount), 0) AS total_views,
+            COALESCE(SUM(downloadsCount), 0) AS total_downloads,
+            COALESCE(SUM(favoritesCount), 0) AS total_favorites,
+            COALESCE(SUM(commentsCount), 0) AS total_comments,
+            CASE WHEN SUM(ratingCount) > 0
+              THEN SUM(avgRating * ratingCount) / SUM(ratingCount)
+              ELSE 0
+            END AS weighted_rating
+          FROM Resource
+          WHERE teacherId IS NOT NULL
+          GROUP BY teacherId
+        )
+        SELECT u.id, u.numericId, u.slug, u.email, u.firstName, u.lastName, u.role, u.status,
+          u.isVerifiedTeacher, u.schoolName, u.createdAt, u.lastLoginAt,
+          COALESCE(ts.file_count, 0) AS fileCount,
+          COALESCE(ts.total_views, 0) AS totalViews,
+          COALESCE(ts.total_downloads, 0) AS totalDownloads,
+          COALESCE(ts.total_favorites, 0) AS totalFavorites,
+          COALESCE(ts.total_comments, 0) AS totalComments,
+          COALESCE(ts.weighted_rating, 0) AS weightedRating
+        FROM User u
+        LEFT JOIN teacher_stats ts ON ts.teacherId = u.id
+        WHERE ${whereSql}
+        ORDER BY ${orderCol} DESC, u.createdAt DESC
+        LIMIT ? OFFSET ?`,
+      )
+      .bind(...params, pageSize, skip)
+      .all()
+      .catch(() => ({ results: [] }));
+    usersRaw = (r?.results || []).map((row: any) => ({
+      id: row.id,
+      numericId: row.numericId,
+      slug: row.slug,
+      email: row.email,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      role: row.role,
+      status: row.status,
+      isVerifiedTeacher: !!row.isVerifiedTeacher,
+      schoolName: row.schoolName,
+      createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : null,
+      lastLoginAt: row.lastLoginAt ? new Date(row.lastLoginAt).toISOString() : null,
+      invitationStatus: null,
+      invitationSentAt: null,
+      invitationActivatedAt: null,
+      lastInvitationId: null,
+      _count: { uploadedFiles: row.fileCount || 0 },
+      stats: {
+        fileCount: row.fileCount,
+        totalViews: row.totalViews,
+        totalDownloads: row.totalDownloads,
+        totalFavorites: row.totalFavorites,
+        totalComments: row.totalComments,
+        weightedRating: row.weightedRating,
+      },
+    }));
+  } else {
+    // Normal sort
+    const orderBy = SORT_MAP[sort] || SORT_MAP.recent;
+    const r = await db
+      .prepare(
+        `SELECT u.id, u.numericId, u.slug, u.email, u.firstName, u.lastName, u.role, u.status,
+          u.isVerifiedTeacher, u.schoolName, u.createdAt, u.lastLoginAt,
+          (SELECT COUNT(*) FROM Resource r WHERE r.teacherId = u.id) AS fileCount
+        FROM User u
+        WHERE ${whereSql}
+        ORDER BY ${orderBy.col} ${orderBy.dir}
+        LIMIT ? OFFSET ?`,
+      )
+      .bind(...params, pageSize, skip)
+      .all()
+      .catch(() => ({ results: [] }));
+    usersRaw = (r?.results || []).map((row: any) => ({
+      id: row.id,
+      numericId: row.numericId,
+      slug: row.slug,
+      email: row.email,
+      firstName: row.firstName,
+      lastName: row.lastName,
+      role: row.role,
+      status: row.status,
+      isVerifiedTeacher: !!row.isVerifiedTeacher,
+      schoolName: row.schoolName,
+      createdAt: row.createdAt ? new Date(row.createdAt).toISOString() : null,
+      lastLoginAt: row.lastLoginAt ? new Date(row.lastLoginAt).toISOString() : null,
+      invitationStatus: null,
+      invitationSentAt: null,
+      invitationActivatedAt: null,
+      lastInvitationId: null,
+      _count: { uploadedFiles: row.fileCount || 0 },
+    }));
+  }
+
   const counts = {
-    TEACHER: teacherCount,
-    STUDENT: studentCount,
-    ADMIN: adminCount,
-    TOTAL: teacherCount + studentCount + adminCount,
+    TEACHER: Number(teacherCount?.c || 0),
+    STUDENT: Number(studentCount?.c || 0),
+    ADMIN: Number(adminCount?.c || 0),
+    TOTAL: Number(teacherCount?.c || 0) + Number(studentCount?.c || 0) + Number(adminCount?.c || 0),
   };
 
   return (
     <UsersManagementClient
-      initialUsers={usersRaw as any}
+      initialUsers={usersRaw}
       initialCounts={counts}
       initialRole={role}
       initialSearch={q}
       initialPage={page}
       initialPageSize={pageSize}
       initialSort={sort}
-      totalFiltered={filteredTotal}
+      totalFiltered={Number(filteredTotalR?.c || 0)}
     />
   );
-}
-
-// Normal Prisma query for non-stats sorts
-async function fetchUsersNormal({
-  where,
-  sort,
-  skip,
-  pageSize,
-}: {
-  where: any;
-  sort: string;
-  skip: number;
-  pageSize: number;
-}) {
-  let orderBy: any = { createdAt: 'desc' };
-  if (sort === 'name_asc') orderBy = [{ lastName: 'asc' }, { firstName: 'asc' }];
-  else if (sort === 'name_desc') orderBy = [{ lastName: 'desc' }, { firstName: 'desc' }];
-  else if (sort === 'oldest') orderBy = { createdAt: 'asc' };
-  else if (sort === 'last_login') orderBy = { lastLoginAt: 'desc' };
-
-  return prisma.user.findMany({
-    where,
-    take: pageSize,
-    skip,
-    orderBy,
-    select: {
-      id: true,
-      numericId: true,
-      slug: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      status: true,
-      isVerifiedTeacher: true,
-      schoolName: true,
-      createdAt: true,
-      lastLoginAt: true,
-      invitationStatus: true,
-      invitationSentAt: true,
-      invitationActivatedAt: true,
-      lastInvitationId: true,
-      _count: { select: { uploadedFiles: true } },
-    },
-  });
-}
-
-// Raw SQL query for stats-based sorts
-// Aggregates file_count, total_views, total_downloads, total_favorites,
-// total_comments, weighted_rating per teacher, then sorts and paginates
-// the result. Works across ALL teachers, not just the current page.
-async function fetchUsersWithStats({
-  role,
-  q,
-  sort,
-  skip,
-  pageSize,
-}: {
-  role: string;
-  q: string;
-  sort: string;
-  skip: number;
-  pageSize: number;
-}) {
-  const { column, nulls } = STATS_SORTS[sort];
-  const orderClause = `${column} DESC NULLS ${nulls.toUpperCase()}, u."createdAt" DESC`;
-
-  // Search filter (case-insensitive)
-  const searchFilter = q
-    ? Prisma.sql`AND (u.email ILIKE ${'%' + q + '%'} OR u."firstName" ILIKE ${'%' + q + '%'} OR u."lastName" ILIKE ${'%' + q + '%'})`
-    : Prisma.empty;
-
-  const rows = await prisma.$queryRaw<any[]>(Prisma.sql`
-    WITH teacher_stats AS (
-      SELECT
-        "teacherId",
-        COUNT(*)::int AS file_count,
-        COALESCE(SUM("viewsCount"), 0)::int AS total_views,
-        COALESCE(SUM("downloadsCount"), 0)::int AS total_downloads,
-        COALESCE(SUM("favoritesCount"), 0)::int AS total_favorites,
-        COALESCE(SUM("commentsCount"), 0)::int AS total_comments,
-        CASE WHEN SUM("ratingCount") > 0
-          THEN SUM("avgRating" * "ratingCount") / SUM("ratingCount")
-          ELSE 0
-        END AS weighted_rating
-      FROM "Resource"
-      WHERE "teacherId" IS NOT NULL
-      GROUP BY "teacherId"
-    )
-    SELECT
-      u.id, u.email, u."firstName", u."lastName", u.role, u.status,
-      u."isVerifiedTeacher", u."schoolName", u."createdAt", u."lastLoginAt",
-      u."invitationStatus", u."invitationSentAt", u."invitationActivatedAt",
-      u."lastInvitationId",
-      COALESCE(ts.file_count, 0)::int AS "fileCount",
-      COALESCE(ts.total_views, 0)::int AS "totalViews",
-      COALESCE(ts.total_downloads, 0)::int AS "totalDownloads",
-      COALESCE(ts.total_favorites, 0)::int AS "totalFavorites",
-      COALESCE(ts.total_comments, 0)::int AS "totalComments",
-      COALESCE(ts.weighted_rating, 0)::float AS "weightedRating"
-    FROM "User" u
-    LEFT JOIN teacher_stats ts ON ts."teacherId" = u.id
-    WHERE u.role = ${role} ${searchFilter}
-    ORDER BY ${Prisma.raw(orderClause)}
-    LIMIT ${pageSize} OFFSET ${skip}
-  `);
-
-  // Map raw SQL result to match the Prisma select shape
-  return rows.map((r) => ({
-    id: r.id,
-    email: r.email,
-    firstName: r.firstName,
-    lastName: r.lastName,
-    role: r.role,
-    status: r.status,
-    isVerifiedTeacher: r.isVerifiedTeacher,
-    schoolName: r.schoolName,
-    createdAt: r.createdAt,
-    lastLoginAt: r.lastLoginAt,
-    invitationStatus: r.invitationStatus,
-    invitationSentAt: r.invitationSentAt,
-    invitationActivatedAt: r.invitationActivatedAt,
-    lastInvitationId: r.lastInvitationId,
-    _count: { uploadedFiles: r.fileCount },
-    // Extra aggregate stats for the UI
-    stats: {
-      fileCount: r.fileCount,
-      totalViews: r.totalViews,
-      totalDownloads: r.totalDownloads,
-      totalFavorites: r.totalFavorites,
-      totalComments: r.totalComments,
-      weightedRating: r.weightedRating,
-    },
-  }));
 }
