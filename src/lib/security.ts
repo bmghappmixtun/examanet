@@ -62,11 +62,27 @@ export function isValidOrigin(request: Request): boolean {
     return false;
   }
 
-  const allowedHosts = ['examanet.com', 'www.examanet.com', 'localhost', '127.0.0.1'];
+  const allowedHosts = [
+    'examanet.com',
+    'www.examanet.com',
+    'localhost',
+    '127.0.0.1',
+  ];
+
+  // Workers.dev subdomains (any sub: examanet-poc, examanet-prod, etc.)
+  // The wildcard check below handles all of them.
+  // Production host validation: origin hostname must equal the request's host,
+  // OR end with one of the allowedHosts (handles subdomains).
+  // This way, requests to workers.dev URLs work without listing each one.
 
   const checkUrl = origin || referer || '';
   try {
     const url = new URL(checkUrl);
+    // Same host as request = OK (covers workers.dev POC/PROD)
+    if (host && url.hostname === host) return true;
+    // workers.dev subdomains (any *.workers.dev) = OK
+    if (url.hostname === 'workers.dev' || url.hostname.endsWith('.workers.dev')) return true;
+    // Allowed hosts
     return allowedHosts.some((h) => url.hostname === h || url.hostname.endsWith('.' + h));
   } catch {
     return false;
