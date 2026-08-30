@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import {
   Eye,
@@ -17,274 +16,221 @@ import { formatNumber, timeAgo } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
+
+function num(v: any): number {
+  if (v == null) return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export default async function TeacherStatsPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
 
-  const teacher = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { status: true },
-  });
+  const db = await getD1();
+  const teacher = await db.prepare('SELECT status FROM User WHERE id = ?').bind(user.id).first().catch(() => null);
   const canUpload = teacher?.status === 'ACTIVE';
 
-  // Top performing resources
-  const topResources = await prisma.resource.findMany({
-    where: { teacherId: user.id, status: 'PUBLISHED' },
-    take: 10,
-    orderBy: [{ viewsCount: 'desc' }, { downloadsCount: 'desc' }],
-    include: { subject: true },
-  });
+  // Top performing resources + all published
+  const [topR, allPubR, totalsR, monthlyR] = await Promise.all([
+    db.prepare(
+      `SELECT r.id, r.numericId, r.slug, r.title, r.type, r.status,
+              r.viewsCount, r.downloadsCount, r.avgRating, r.favoritesCount, r.commentsCount,
+              r.createdAt, r.publishedAt,
+              s.nameFr as subjectNameFr, s.color as subjectColor, s.icon as subjectIcon,
+              c.nameFr as classNameFr
+       FROM Resource r
+       LEFT JOIN Subject s ON r.subjectId = s.id
+       LEFT JOIN "Class" c ON r.classId = c.id
+       WHERE r.teacherId = ? AND r.status = 'PUBLISHED'
+       ORDER BY r.viewsCount DESC
+       LIMIT 10`,
+    ).bind(user.id).all().catch(() => ({ results: [] })),
+    db.prepare(
+      "SELECT viewsCount, downloadsCount, avgRating FROM Resource WHERE teacherId = ? AND status = 'PUBLISHED'",
+    ).bind(user.id).all().catch(() => ({ results: [] })),
+    db.prepare(
+      `SELECT
+         (SELECT COUNT(*) FROM Resource WHERE teacherId = ?) AS total,
+         (SELECT COUNT(*) FROM Resource WHERE teacherId = ? AND status = 'PUBLISHED') AS published,
+         (SELECT COUNT(*) FROM Resource WHERE teacherId = ? AND status = 'PENDING_APPROVAL') AS pending,
+         (SELECT COUNT(*) FROM Resource WHERE teacherId = ? AND status = 'REJECTED') AS rejected`,
+    ).bind(user.id, user.id, user.id, user.id).first().catch(() => ({ total: 0, published: 0, pending: 0, rejected: 0 })),
+    // Monthly aggregation: 12 months back
+    db.prepare(
+      `SELECT
+         strftime('%Y-%m', datetime(createdAt/1000, 'unixepoch')) AS month,
+         COUNT(*) AS count,
+         SUM(viewsCount) AS views,
+         SUM(downloadsCount) AS downloads
+       FROM Resource
+       WHERE teacherId = ? AND status = 'PUBLISHED' AND createdAt > ?
+       GROUP BY month
+       ORDER BY month ASC`,
+    ).bind(user.id, Date.now() - 365 * 24 * 60 * 60 * 1000).all().catch(() => ({ results: [] })),
+  ]);
 
-  // Aggregated stats per subject
-  const bySubject = await prisma.resource.groupBy({
-    by: ['subjectId'],
-    where: { teacherId: user.id, status: 'PUBLISHED' },
-    _sum: { viewsCount: true, downloadsCount: true },
-    _count: { id: true },
-    _avg: { avgRating: true },
-  });
+  const top = topR?.results || [];
+  const allPub = allPubR?.results || [];
+  const monthly = monthlyR?.results || [];
+  const totalR_t = totalsR || {};
 
-  // Enrich subject data
-  const subjects = await prisma.subject.findMany({
-    where: { id: { in: bySubject.map((b) => b.subjectId) } },
-  });
-  const subjectMap = new Map(subjects.map((s) => [s.id, s]));
-
-  // All-time aggregates
-  const totals = await prisma.resource.aggregate({
-    where: { teacherId: user.id, status: 'PUBLISHED' },
-    _sum: { viewsCount: true, downloadsCount: true, favoritesCount: true },
-    _avg: { avgRating: true },
-  });
-
-  // Monthly views (last 6 months) – approximate via createdAt + viewCount
-  const recentResources = await prisma.resource.findMany({
-    where: { teacherId: user.id, status: 'PUBLISHED' },
-    select: { createdAt: true, viewsCount: true, downloadsCount: true },
-  });
-
-  const monthMap = new Map<string, { views: number; downloads: number }>();
-  const now = new Date();
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    monthMap.set(key, { views: 0, downloads: 0 });
+  let totalViews = 0;
+  let totalDownloads = 0;
+  let ratingSum = 0;
+  for (const r of allPub) {
+    totalViews += num(r.viewsCount);
+    totalDownloads += num(r.downloadsCount);
+    ratingSum += Number(r.avgRating) || 0;
   }
-  recentResources.forEach((r) => {
-    const d = new Date(r.createdAt);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    if (monthMap.has(key)) {
-      const entry = monthMap.get(key)!;
-      entry.views += r.viewsCount;
-      entry.downloads += r.downloadsCount;
-    }
-  });
-  const monthlyData = Array.from(monthMap.entries()).map(([month, data]) => ({
-    month,
-    label: new Date(month + '-01').toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
-    ...data,
-  }));
-  const maxMonthlyViews = Math.max(1, ...monthlyData.map((m) => m.views));
+  const avgRating = allPub.length ? ratingSum / allPub.length : 0;
+  const total = num(totalR_t.total);
+  const published = num(totalR_t.published);
+  const pending = num(totalR_t.pending);
+  const rejected = num(totalR_t.rejected);
 
-  const totalResources = topResources.length;
+  // Engagement rate
+  const engagementRate = totalViews > 0 ? (totalDownloads / totalViews) * 100 : 0;
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Link href="/enseignant" className="p-2 hover:bg-slate-100 rounded-lg">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <h1 className="text-2xl font-extrabold flex items-center gap-2">
-          <BarChart3 className="w-6 h-6 text-primary-600" /> Statistiques
-        </h1>
-      </div>
-
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <KPI
-          icon={Eye}
-          label="Vues totales"
-          value={formatNumber(totals._sum.viewsCount || 0)}
-          color="from-primary-500 to-primary-600"
-          bg="bg-primary-100"
-          text="text-primary-600"
-        />
-        <KPI
-          icon={Download}
-          label="Téléchargements"
-          value={formatNumber(totals._sum.downloadsCount || 0)}
-          color="from-emerald-500 to-emerald-600"
-          bg="bg-emerald-100"
-          text="text-emerald-600"
-        />
-        <KPI
-          icon={Star}
-          label="Note moyenne"
-          value={(totals._avg.avgRating || 0).toFixed(2)}
-          suffix="/ 5"
-          color="from-amber-500 to-amber-600"
-          bg="bg-amber-100"
-          text="text-amber-600"
-        />
-        <KPI
-          icon={FileText}
-          label="Ressources publiées"
-          value={formatNumber(totalResources)}
-          color="from-slate-500 to-slate-600"
-          bg="bg-slate-100"
-          text="text-slate-600"
-        />
-      </div>
-
-      {/* Monthly chart */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 mb-8">
-        <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-primary-600" /> Activité sur 6 mois
-        </h2>
-        {monthlyData.every((m) => m.views === 0 && m.downloads === 0) ? (
-          <div className="py-12 text-center text-slate-400">
-            <BarChart3 className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p>Pas encore de données pour ces 6 derniers mois.</p>
-          </div>
-        ) : (
-          <div className="flex items-end gap-3 h-48 mt-4">
-            {monthlyData.map((m) => (
-              <div key={m.month} className="flex-1 flex flex-col items-center justify-end gap-1">
-                <div className="text-[10px] font-bold text-slate-500">{formatNumber(m.views)}</div>
-                <div
-                  className="w-full bg-gradient-to-t from-primary-500 to-primary-300 rounded-t-lg transition-all"
-                  style={{ height: `${Math.max(4, (m.views / maxMonthlyViews) * 100)}%` }}
-                  title={`${m.views} vues`}
-                />
-                <div className="text-[10px] text-slate-500 font-medium">{m.label}</div>
-              </div>
-            ))}
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900">Statistiques & Analytics 📊</h1>
+          <p className="text-slate-500 text-sm mt-1">Performance de vos ressources</p>
+        </div>
+        {canUpload && (
+          <Link href="/enseignant/ajouter" className="btn-primary inline-flex items-center gap-2">
+            <Upload className="w-4 h-4" /> Nouvelle ressource
+          </Link>
         )}
       </div>
 
-      {/* Top resources */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-5 border border-slate-100">
+          <FileText className="w-5 h-5 text-blue-500 mb-2" />
+          <div className="text-2xl font-extrabold">{formatNumber(total)}</div>
+          <div className="text-sm text-slate-600">Total ressources</div>
+          <div className="text-xs text-slate-400 mt-0.5">{published} publiées</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100">
+          <Eye className="w-5 h-5 text-emerald-500 mb-2" />
+          <div className="text-2xl font-extrabold">{formatNumber(totalViews)}</div>
+          <div className="text-sm text-slate-600">Vues totales</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100">
+          <Download className="w-5 h-5 text-amber-500 mb-2" />
+          <div className="text-2xl font-extrabold">{formatNumber(totalDownloads)}</div>
+          <div className="text-sm text-slate-600">Téléchargements</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100">
+          <Star className="w-5 h-5 text-purple-500 mb-2" />
+          <div className="text-2xl font-extrabold">{avgRating.toFixed(1)}</div>
+          <div className="text-sm text-slate-600">Note moyenne</div>
+          <div className="text-xs text-slate-400 mt-0.5">sur {allPub.length} ressources</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+          <div className="text-xs font-bold text-emerald-700 uppercase">Publiées</div>
+          <div className="text-2xl font-extrabold text-emerald-700 mt-1">{formatNumber(published)}</div>
+        </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="text-xs font-bold text-amber-700 uppercase">En attente</div>
+          <div className="text-2xl font-extrabold text-amber-700 mt-1">{formatNumber(pending)}</div>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <div className="text-xs font-bold text-red-700 uppercase">Refusées</div>
+          <div className="text-2xl font-extrabold text-red-700 mt-1">{formatNumber(rejected)}</div>
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <div className="text-xs font-bold text-blue-700 uppercase">Taux engagement</div>
+          <div className="text-2xl font-extrabold text-blue-700 mt-1">{engagementRate.toFixed(1)}%</div>
+          <div className="text-xs text-blue-600 mt-0.5">downloads / vues</div>
+        </div>
+      </div>
+
+      {monthly.length > 0 && (
+        <div className="bg-white rounded-2xl border border-slate-100 p-6">
+          <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-slate-400" />
+            Activité sur 12 mois
+          </h2>
+          <div className="space-y-2">
+            {monthly.map((m: any) => {
+              const maxViews = Math.max(...monthly.map((x: any) => num(x.views)), 1);
+              const widthPct = (num(m.views) / maxViews) * 100;
+              return (
+                <div key={m.month} className="flex items-center gap-3 text-sm">
+                  <span className="w-20 text-slate-600 font-mono text-xs">{m.month}</span>
+                  <div className="flex-1 bg-slate-100 rounded-full h-6 relative overflow-hidden">
+                    <div className="bg-emerald-500 h-6 rounded-full" style={{ width: `${widthPct}%` }} />
+                  </div>
+                  <span className="w-24 text-right text-slate-700 font-semibold">
+                    {formatNumber(num(m.views))} vues
+                  </span>
+                  <span className="w-32 text-right text-slate-500 text-xs">
+                    {m.count} ress. · {formatNumber(num(m.downloads))} DL
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-2xl border border-slate-100 p-6">
         <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-emerald-600" /> Top ressources
+          <TrendingUp className="w-5 h-5 text-emerald-500" />
+          Top 10 ressources par vues
         </h2>
-        {topResources.length === 0 ? (
-          <div className="py-12 text-center text-slate-400">
-            <FileText className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p>Aucune ressource publiée pour l'instant.</p>
-            <Link
-              href={canUpload ? '/enseignant/ajouter' : '/enseignant'}
-              className="btn-accent mt-4"
-            >
-              <Upload className="w-4 h-4" />{' '}
-              {canUpload ? 'Publier ma première ressource' : "Soumettre mes fichiers d'abord"}
-            </Link>
+        {top.length === 0 ? (
+          <div className="text-center py-8 text-slate-500">
+            <p>Pas encore de ressources publiées.</p>
+            {canUpload && (
+              <Link href="/enseignant/ajouter" className="btn-primary mt-3 inline-flex">
+                Publier ma première ressource
+              </Link>
+            )}
           </div>
         ) : (
-          <div className="space-y-2">
-            {topResources.map((r, i) => (
+          <div className="space-y-3">
+            {top.map((r: any, i: number) => (
               <Link
                 key={r.id}
-                href={`/ressources/${r.numericId}/${r.slug}`}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition"
+                href={r.numericId ? `/ressources/${r.numericId}/${r.slug}` : '#'}
+                target="_blank"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition group"
               >
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
+                  {i + 1}
+                </div>
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-extrabold flex-shrink-0 ${i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-slate-200 text-slate-700' : i === 2 ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-500'}`}
+                  className="w-10 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-xl"
+                  style={{ background: r.subjectColor ? `${r.subjectColor}20` : '#F1F5F9' }}
                 >
-                  #{i + 1}
+                  {r.subjectIcon || '📄'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm truncate">{r.title}</div>
-                  <div className="text-xs text-slate-500">
-                    {r.subject.nameFr} · {timeAgo(r.createdAt)}
-                  </div>
+                  <div className="font-semibold text-sm truncate group-hover:text-primary-600">{r.title}</div>
+                  <div className="text-xs text-slate-500">{r.subjectNameFr} · {timeAgo(r.publishedAt || r.createdAt)}</div>
                 </div>
-                <div className="flex items-center gap-4 text-xs text-slate-600 flex-shrink-0">
-                  <span className="flex items-center gap-1">
-                    <Eye className="w-3 h-3" /> {formatNumber(r.viewsCount)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Download className="w-3 h-3" /> {formatNumber(r.downloadsCount)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Star className="w-3 h-3 text-amber-500" /> {r.avgRating.toFixed(1)}
-                  </span>
+                <div className="flex items-center gap-3 text-xs text-slate-500 flex-shrink-0">
+                  <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{formatNumber(r.viewsCount)}</span>
+                  <span className="flex items-center gap-1"><Download className="w-3.5 h-3.5" />{formatNumber(r.downloadsCount)}</span>
+                  <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-500" />{(r.avgRating || 0).toFixed(1)}</span>
                 </div>
               </Link>
             ))}
           </div>
         )}
       </div>
-
-      {/* By subject */}
-      {bySubject.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 p-6">
-          <h2 className="font-bold text-lg mb-4">📚 Par matière</h2>
-          <div className="space-y-3">
-            {bySubject
-              .sort((a, b) => (b._sum.viewsCount || 0) - (a._sum.viewsCount || 0))
-              .map((b) => {
-                const subject = subjectMap.get(b.subjectId);
-                if (!subject) return null;
-                return (
-                  <div
-                    key={b.subjectId}
-                    className="flex items-center justify-between p-3 bg-slate-50 rounded-xl"
-                  >
-                    <div>
-                      <div className="font-semibold text-sm">{subject.nameFr}</div>
-                      <div className="text-xs text-slate-500">
-                        {b._count.id} ressource{b._count.id > 1 ? 's' : ''}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs">
-                      <span className="flex items-center gap-1 text-primary-600 font-semibold">
-                        <Eye className="w-3 h-3" /> {formatNumber(b._sum.viewsCount || 0)}
-                      </span>
-                      <span className="flex items-center gap-1 text-emerald-600 font-semibold">
-                        <Download className="w-3 h-3" /> {formatNumber(b._sum.downloadsCount || 0)}
-                      </span>
-                      <span className="flex items-center gap-1 text-amber-600 font-semibold">
-                        <Star className="w-3 h-3" /> {(b._avg.avgRating || 0).toFixed(1)}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function KPI({
-  icon: Icon,
-  label,
-  value,
-  suffix,
-  color,
-  bg,
-  text,
-}: {
-  icon: any;
-  label: string;
-  value: string;
-  suffix?: string;
-  color: string;
-  bg: string;
-  text: string;
-}) {
-  return (
-    <div className="bg-white rounded-xl p-5 border border-slate-100">
-      <div className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center mb-3`}>
-        <Icon className={`w-5 h-5 ${text}`} />
-      </div>
-      <div className="text-2xl font-extrabold">
-        {value}
-        {suffix && <span className="text-base text-slate-400">{suffix}</span>}
-      </div>
-      <div className="text-sm font-semibold text-slate-700">{label}</div>
     </div>
   );
 }

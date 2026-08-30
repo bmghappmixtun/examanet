@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { d1First } from '@/lib/db-d1';
 import SettingsClient from '@/components/settings/SettingsClient';
 
 export const dynamic = 'force-dynamic';
@@ -10,66 +10,27 @@ export default async function SettingsPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
 
-  const account = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      status: true,
-      firstName: true,
-      lastName: true,
-      avatarUrl: true,
-      bio: true,
-      schoolName: true,
-      governorate: true,
-      diploma: true,
-      teachingSubjects: true,
-      teachingLevels: true,
-      phone: true,
-      website: true,
-      preferredLang: true,
-      themePref: true,
-      notifyEmail: true,
-      notifyInApp: true,
-      createdAt: true,
-      lastLoginAt: true,
-      emailVerifiedAt: true,
-    },
-  });
-
+  const account = await d1First(
+    `SELECT id, email, role, status, firstName, lastName, avatarUrl, bio,
+            schoolName, governorate, diploma, teachingSubjects, teachingLevels,
+            phone, website, schoolLevel, classLevel, isVerifiedTeacher
+     FROM User WHERE id = ?`,
+    user.id,
+  );
   if (!account) redirect('/connexion');
 
-  // Get available options for teachers
-  const [subjects, classes, levels] = await Promise.all([
-    prisma.subject
-      .findMany({
-        orderBy: { nameFr: 'asc' },
-        select: { slug: true, nameFr: true, nameAr: true },
-      })
-      .catch(() => []),
-    prisma.class
-      .findMany({
-        orderBy: { order: 'asc' },
-        select: { slug: true, nameFr: true, nameAr: true, level: { select: { nameFr: true } } },
-      })
-      .catch(() => []),
-    prisma.level
-      .findMany({
-        orderBy: { order: 'asc' },
-        select: { slug: true, nameFr: true },
-      })
-      .catch(() => []),
-  ]);
+  // Convert teachingSubjects / teachingLevels to array if they're JSON strings
+  const parseArray = (v: any): string[] => {
+    if (!v) return [];
+    if (Array.isArray(v)) return v;
+    try { return JSON.parse(v); } catch { return []; }
+  };
 
-  return (
-    <SettingsClient
-      account={JSON.parse(JSON.stringify(account))}
-      options={{
-        subjects: JSON.parse(JSON.stringify(subjects)),
-        classes: JSON.parse(JSON.stringify(classes)),
-        levels: JSON.parse(JSON.stringify(levels)),
-      }}
-    />
-  );
+  const accountForClient = {
+    ...account,
+    teachingSubjects: parseArray(account.teachingSubjects),
+    teachingLevels: parseArray(account.teachingLevels),
+  };
+
+  return <SettingsClient account={accountForClient as any} />;
 }

@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import {
   FileText,
@@ -23,16 +22,22 @@ export const dynamic = 'force-dynamic';
 export const metadata = {
   title: 'Espace enseignant',
   description: 'Espace enseignant Examanet — publiez et gérez vos ressources pédagogiques.',
-  robots: {
-    index: false,
-    follow: false,
-    nocache: true,
-    googleBot: { index: false, follow: false },
-  },
+  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
 };
 
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
+
+function num(v: any): number {
+  if (v == null) return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export default async function TeacherDashboard(props: {
-  params: Promise<any>;
   searchParams: Promise<any>;
 }) {
   const sp = await props.searchParams;
@@ -40,56 +45,85 @@ export default async function TeacherDashboard(props: {
   if (!user) redirect('/connexion');
   const showWelcome = sp?.welcome === '1';
 
-  // Check if teacher needs to submit verification files
-  const fullUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: {
-      status: true,
-      verificationFilesRequestedAt: true,
-      verificationFilesCount: true,
-      verificationFilesNote: true,
-      verificationFilesReceivedAt: true,
-    },
-  });
+  const db = await getD1();
+
+  // User status
+  const fullUser = await db
+    .prepare(
+      `SELECT status, verificationFilesRequestedAt, verificationFilesCount,
+              verificationFilesNote, verificationFilesReceivedAt
+       FROM User WHERE id = ?`,
+    )
+    .bind(user.id)
+    .first()
+    .catch(() => null);
+
   const needsVerification = fullUser?.status === 'PENDING_FILE_VERIFICATION';
 
-  // Fetch verification files if needed
+  // Verification files (if needed)
   const verificationFiles = needsVerification
-    ? await prisma.teacherVerificationFile.findMany({
-        where: { teacherId: user.id },
-        orderBy: { uploadedAt: 'desc' },
-      })
-    : [];
-  const verificationRemaining = Math.max(0, 5 - verificationFiles.length);
+    ? await db
+        .prepare(
+          `SELECT id, type, fileKey, fileUrl, mimeType, fileSize, status, createdAt
+           FROM TeacherVerificationFile
+           WHERE userId = ?
+           ORDER BY createdAt DESC`,
+        )
+        .bind(user.id)
+        .all()
+        .catch(() => ({ results: [] }))
+    : { results: [] };
+  const verificationRemaining = Math.max(0, 5 - (verificationFiles?.results?.length || 0));
 
-  const [totalResources, published, pending, rejected, recentResources] = await Promise.all([
-    prisma.resource.count({ where: { teacherId: user.id } }),
-    prisma.resource.count({ where: { teacherId: user.id, status: 'PUBLISHED' } }),
-    prisma.resource.count({ where: { teacherId: user.id, status: 'PENDING_APPROVAL' } }),
-    prisma.resource.count({ where: { teacherId: user.id, status: 'REJECTED' } }),
-    prisma.resource.findMany({
-      where: { teacherId: user.id },
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: { subject: true },
-    }),
-  ]);
+  // Counts + recent resources (in parallel)
+  const [totalR, publishedR, pendingR, rejectedR, recentR, allPublishedR, pendingListR, subjectsR] =
+    await Promise.all([
+      db.prepare('SELECT COUNT(*) as c FROM Resource WHERE teacherId = ?').bind(user.id).first().catch(() => ({ c: 0 })),
+      db.prepare("SELECT COUNT(*) as c FROM Resource WHERE teacherId = ? AND status = 'PUBLISHED'").bind(user.id).first().catch(() => ({ c: 0 })),
+      db.prepare("SELECT COUNT(*) as c FROM Resource WHERE teacherId = ? AND status = 'PENDING_APPROVAL'").bind(user.id).first().catch(() => ({ c: 0 })),
+      db.prepare("SELECT COUNT(*) as c FROM Resource WHERE teacherId = ? AND status = 'REJECTED'").bind(user.id).first().catch(() => ({ c: 0 })),
+      db.prepare(
+        `SELECT r.id, r.numericId, r.slug, r.title, r.status, r.createdAt, r.type,
+                s.nameFr as subjectNameFr, s.color as subjectColor, s.icon as subjectIcon
+         FROM Resource r
+         LEFT JOIN Subject s ON r.subjectId = s.id
+         WHERE r.teacherId = ?
+         ORDER BY r.createdAt DESC
+         LIMIT 5`,
+      ).bind(user.id).all().catch(() => ({ results: [] })),
+      db.prepare(
+        "SELECT viewsCount, downloadsCount, avgRating FROM Resource WHERE teacherId = ? AND status = 'PUBLISHED'",
+      ).bind(user.id).all().catch(() => ({ results: [] })),
+      db.prepare(
+        `SELECT r.id, r.numericId, r.slug, r.title, r.createdAt,
+                s.nameFr as subjectNameFr, s.color as subjectColor
+         FROM Resource r
+         LEFT JOIN Subject s ON r.subjectId = s.id
+         WHERE r.teacherId = ? AND r.status = 'PENDING_APPROVAL'
+         ORDER BY r.createdAt DESC`,
+      ).bind(user.id).all().catch(() => ({ results: [] })),
+      db.prepare('SELECT id, slug, nameFr, color, icon FROM Subject ORDER BY nameFr ASC').all().catch(() => ({ results: [] })),
+    ]);
 
-  const allPublished = await prisma.resource.findMany({
-    where: { teacherId: user.id, status: 'PUBLISHED' },
-    select: { viewsCount: true, downloadsCount: true, avgRating: true },
-  });
+  const totalResources = num(totalR?.c);
+  const published = num(publishedR?.c);
+  const pending = num(pendingR?.c);
+  const rejected = num(rejectedR?.c);
+  const recentResources = recentR?.results || [];
+  const pendingResources = pendingListR?.results || [];
+  const allPublished = allPublishedR?.results || [];
+  const subjects = subjectsR?.results || [];
 
-  const totalViews = allPublished.reduce((s, r) => s + r.viewsCount, 0);
-  const totalDownloads = allPublished.reduce((s, r) => s + r.downloadsCount, 0);
-  const avgRating = allPublished.length
-    ? allPublished.reduce((s, r) => s + r.avgRating, 0) / allPublished.length
-    : 0;
-
-  const pendingResources = await prisma.resource.findMany({
-    where: { teacherId: user.id, status: 'PENDING_APPROVAL' },
-    include: { subject: true },
-  });
+  // Compute aggregates from all published resources
+  let totalViews = 0;
+  let totalDownloads = 0;
+  let ratingSum = 0;
+  for (const r of allPublished) {
+    totalViews += num(r.viewsCount);
+    totalDownloads += num(r.downloadsCount);
+    ratingSum += Number(r.avgRating) || 0;
+  }
+  const avgRating = allPublished.length ? ratingSum / allPublished.length : 0;
 
   return (
     <div>
@@ -100,276 +134,215 @@ export default async function TeacherDashboard(props: {
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white flex items-center justify-center text-2xl flex-shrink-0 shadow-md">
               📁
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <h2 className="font-extrabold text-xl text-slate-900">
-                  Action requise : envoyez 5 fichiers de vérification
-                </h2>
-                <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200">
-                  En attente
-                </span>
-              </div>
-              <p className="text-sm text-slate-700 leading-relaxed">
-                Pour finaliser la vérification de votre compte enseignant, merci de nous envoyer
-                <strong> 5 fichiers Word/PDF</strong> parmi vos productions (cours, séries, devoirs,
-                corrigés). Chaque fichier doit contenir <strong>votre nom et prénom</strong> (
-                {user.firstName} {user.lastName}).
+            <div className="flex-1">
+              <h2 className="text-xl font-extrabold text-slate-900 mb-1">
+                Action requise : envoyez vos fichiers de vérification
+              </h2>
+              <p className="text-slate-600 text-sm">
+                Pour finaliser la vérification de votre compte enseignant, merci d'envoyer
+                {' '}{5} fichiers Word/PDF d'exemple (cours, séries, devoirs, etc.) avec votre nom et prénom.
+                {' '}<span className="font-bold">({5 - verificationRemaining} restant{5 - verificationRemaining > 1 ? 's' : ''})</span>
               </p>
+              {fullUser?.verificationFilesNote && (
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                  <strong>Note de l'admin :</strong> {fullUser.verificationFilesNote}
+                </div>
+              )}
             </div>
           </div>
-
           <VerificationFilesUploader
-            initialFiles={verificationFiles.map((f) => ({
-              id: f.id,
-              fileName: f.fileName,
-              originalFormat: f.originalFormat,
-              fileUrl: f.fileUrl,
-              fileSize: f.fileSize,
-              type: f.type,
-              description: f.description,
-              year: f.year,
-              uploadedAt: f.uploadedAt.toISOString(),
-              reviewedByAdmin: f.reviewedByAdmin,
-            }))}
-            initialRemaining={verificationRemaining}
-            initialRequestedAt={fullUser?.verificationFilesRequestedAt?.toISOString() || null}
-            initialReceivedAt={fullUser?.verificationFilesReceivedAt?.toISOString() || null}
-            initialStatus={fullUser?.status || ''}
-            note={fullUser?.verificationFilesNote || null}
+            teacherId={user.id}
+            existingFiles={verificationFiles?.results || []}
+            remaining={verificationRemaining}
           />
         </div>
       )}
 
       {showWelcome && (
-        <div className="mb-6 bg-gradient-to-r from-sky-50 to-cyan-50 border-2 border-sky-200 rounded-2xl p-5 flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white flex items-center justify-center text-2xl flex-shrink-0">
-            🎉
-          </div>
-          <div className="flex-1">
-            <h2 className="font-extrabold text-lg text-slate-900 mb-1">
-              Bienvenue sur Examanet, {user.firstName} !
-            </h2>
-            <p className="text-sm text-slate-700 leading-relaxed">
-              Votre compte enseignant est activé. Vous retrouvez ci-dessous tous vos fichiers.
-              <strong className="text-sky-700">
-                {' '}
-                {totalResources}{' '}
-                {totalResources > 1
-                  ? 'ressources sont déjà en ligne'
-                  : 'ressource est déjà en ligne'}
-              </strong>{' '}
-              sur la plateforme. N'hésitez pas à explorer les statistiques et à modifier vos
-              fichiers à tout moment.
-            </p>
-            <a
-              href="/enseignant/bibliotheque"
-              className="inline-flex items-center gap-1 mt-3 text-sm font-semibold text-sky-700 hover:text-sky-800"
-            >
-              Voir ma bibliothèque →
-            </a>
+        <div className="mb-6 bg-gradient-to-br from-emerald-50 via-white to-teal-50 border-2 border-emerald-300 rounded-2xl p-5 lg:p-6">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-2xl flex-shrink-0 shadow-md">
+              🎉
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-emerald-900 mb-1">Bienvenue !</h2>
+              <p className="text-emerald-800">Votre compte enseignant a été approuvé. Vous pouvez maintenant publier des ressources.</p>
+            </div>
           </div>
         </div>
       )}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-extrabold">Tableau de bord 👨‍🏫</h1>
-        {fullUser?.status === 'ACTIVE' ? (
-          <Link href="/enseignant/ajouter" className="btn-accent">
-            <Upload className="w-4 h-4" /> Ajouter une ressource
-          </Link>
-        ) : (
-          <span
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 font-semibold rounded-xl cursor-not-allowed"
-            title="Soumettez vos fichiers de vérification pour activer cette fonctionnalité"
-          >
-            <Upload className="w-4 h-4" /> Ajouter une ressource
-            <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-              Vérification requise
-            </span>
-          </span>
-        )}
-      </div>
 
-      {/* Quick links to new features */}
-      <div className="grid sm:grid-cols-1 gap-3 mb-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-extrabold">👋 Bonjour {user.firstName || 'cher enseignant'}</h1>
         <Link
-          href="/enseignant/bibliotheque"
-          className="group flex items-center gap-3 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 hover:border-blue-400 transition"
+          href="/enseignant/ressources/ajouter"
+          className="btn-primary inline-flex items-center gap-2"
         >
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition">
-            📚
-          </div>
-          <div className="flex-1">
-            <div className="font-bold text-slate-900">Ma bibliothèque personnelle</div>
-            <div className="text-xs text-slate-600">
-              Vos fichiers Word (.docx) originaux, jamais perdus. Téléchargeables par tous les
-              enseignants.
-            </div>
-          </div>
-          <span className="text-blue-500 group-hover:translate-x-1 transition">→</span>
+          <Upload className="w-4 h-4" />
+          Nouvelle ressource
         </Link>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
-        {[
-          {
-            icon: FileText,
-            value: totalResources,
-            label: 'Total',
-            color: 'from-slate-500 to-slate-600',
-            bg: 'bg-slate-100',
-            text: 'text-slate-600',
-          },
-          {
-            icon: CheckCircle,
-            value: published,
-            label: 'Publiés',
-            color: 'from-emerald-500 to-emerald-600',
-            bg: 'bg-emerald-100',
-            text: 'text-emerald-600',
-          },
-          {
-            icon: Clock,
-            value: pending,
-            label: 'En attente',
-            color: 'from-amber-500 to-amber-600',
-            bg: 'bg-amber-100',
-            text: 'text-amber-600',
-          },
-          {
-            icon: AlertCircle,
-            value: rejected,
-            label: 'Rejetés',
-            color: 'from-red-500 to-red-600',
-            bg: 'bg-red-100',
-            text: 'text-red-600',
-          },
-          {
-            icon: Eye,
-            value: totalViews,
-            label: 'Vues totales',
-            color: 'from-primary-500 to-primary-600',
-            bg: 'bg-primary-100',
-            text: 'text-primary-600',
-          },
-        ].map((s, i) => (
-          <div key={i} className="bg-white rounded-xl p-4 border border-slate-100">
-            <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center mb-2`}>
-              <s.icon className={`w-4 h-4 ${s.text}`} />
-            </div>
-            <div className="text-xl font-extrabold">{formatNumber(s.value)}</div>
-            <div className="text-xs text-slate-500">{s.label}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-6 mb-8">
-        {/* Global stats */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100">
-          <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary-600" /> Performance globale
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-4 bg-slate-50 rounded-xl">
-              <Download className="w-6 h-6 mx-auto mb-1 text-emerald-500" />
-              <div className="text-2xl font-extrabold">{formatNumber(totalDownloads)}</div>
-              <div className="text-xs text-slate-500">Téléchargements</div>
-            </div>
-            <div className="text-center p-4 bg-slate-50 rounded-xl">
-              <Star className="w-6 h-6 mx-auto mb-1 text-amber-500" />
-              <div className="text-2xl font-extrabold">{avgRating.toFixed(1)} / 5</div>
-              <div className="text-xs text-slate-500">Note moyenne</div>
-            </div>
-          </div>
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white rounded-xl p-5 border border-slate-100">
+          <FileText className="w-5 h-5 text-blue-500 mb-2" />
+          <div className="text-2xl font-extrabold">{formatNumber(totalResources)}</div>
+          <div className="text-sm text-slate-600">Ressources</div>
+          <div className="text-xs text-slate-400 mt-0.5">{published} publiées</div>
         </div>
-
-        {/* Pending approval alert */}
-        {pending > 0 && (
-          <div className="bg-amber-50 rounded-2xl p-6 border border-amber-200">
-            <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-amber-600" /> Ressources en attente
-            </h2>
-            <p className="text-sm text-amber-700 mb-3">
-              Vos {pending} ressource{pending > 1 ? 's' : ''} sont en attente d'approbation par
-              l'administrateur.
-            </p>
-            <div className="space-y-2">
-              {pendingResources.map((r) => (
-                <div
-                  key={r.id}
-                  className="flex items-center justify-between bg-white rounded-lg p-3"
-                >
-                  <span
-                    className={`text-sm font-medium truncate ${isArabic(r.title) ? 'text-right' : 'text-left'}`}
-                    dir={isArabic(r.title) ? 'rtl' : 'ltr'}
-                    lang={isArabic(r.title) ? 'ar' : 'fr'}
-                  >
-                    {r.title}
-                  </span>
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-bold flex-shrink-0">
-                    En attente
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="bg-white rounded-xl p-5 border border-slate-100">
+          <Eye className="w-5 h-5 text-emerald-500 mb-2" />
+          <div className="text-2xl font-extrabold">{formatNumber(totalViews)}</div>
+          <div className="text-sm text-slate-600">Vues</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100">
+          <Download className="w-5 h-5 text-amber-500 mb-2" />
+          <div className="text-2xl font-extrabold">{formatNumber(totalDownloads)}</div>
+          <div className="text-sm text-slate-600">Téléchargements</div>
+        </div>
+        <div className="bg-white rounded-xl p-5 border border-slate-100">
+          <Star className="w-5 h-5 text-purple-500 mb-2" />
+          <div className="text-2xl font-extrabold">{avgRating.toFixed(1)}</div>
+          <div className="text-sm text-slate-600">Note moyenne</div>
+        </div>
       </div>
 
-      {/* Recent resources */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6">
-        <h2 className="font-bold text-lg mb-4">Dernières ressources</h2>
-        {recentResources.length === 0 ? (
-          <p className="text-slate-500 text-sm">Aucune ressource. Ajoutez votre première !</p>
-        ) : (
+      {/* Alerts */}
+      {(pending > 0 || rejected > 0) && (
+        <div className="grid sm:grid-cols-2 gap-4 mb-8">
+          {pending > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <div className="font-bold text-amber-800 flex items-center gap-2">
+                <Clock className="w-4 h-4" /> {pending} en attente d'approbation
+              </div>
+              <div className="text-sm text-amber-700">Vos ressources sont en cours de validation.</div>
+            </div>
+          )}
+          {rejected > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div className="font-bold text-red-800 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" /> {rejected} rejetée{rejected > 1 ? 's' : ''}
+              </div>
+              <div className="text-sm text-red-700">
+                <Link href="/enseignant/ressources" className="underline">Voir les ressources rejetées</Link>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Recent resources */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-lg flex items-center gap-2">
+              <FileText className="w-5 h-5 text-slate-400" />
+              Mes ressources récentes
+            </h2>
+            <Link href="/enseignant/ressources" className="text-sm text-primary-600 font-semibold hover:underline">
+              Tout voir →
+            </Link>
+          </div>
           <div className="space-y-3">
-            {recentResources.map((r) => (
-              <Link
-                key={r.id}
-                href={`/ressources/${r.numericId}/${r.slug}`}
-                className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-12 bg-slate-100 rounded flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-slate-400" />
-                  </div>
-                  <div>
+            {recentResources.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <Upload className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+                <p>Vous n'avez pas encore de ressources.</p>
+                <Link
+                  href="/enseignant/ressources/ajouter"
+                  className="btn-primary mt-3 inline-flex"
+                >
+                  Publier ma première ressource
+                </Link>
+              </div>
+            ) : (
+              recentResources.map((r: any) => (
+                <div key={r.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div
-                      className={`font-semibold text-sm ${isArabic(r.title) ? 'text-right' : 'text-left'}`}
-                      dir={isArabic(r.title) ? 'rtl' : 'ltr'}
-                      lang={isArabic(r.title) ? 'ar' : 'fr'}
+                      className="w-10 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-xl"
+                      style={{ background: r.subjectColor ? `${r.subjectColor}20` : '#F1F5F9' }}
                     >
-                      {r.title}
+                      {r.subjectIcon || '📄'}
                     </div>
-                    <div className="text-xs text-slate-500">
-                      {r.subject.nameFr} · {timeAgo(r.createdAt)}
+                    <div className="min-w-0">
+                      <div
+                        className={`font-semibold text-sm truncate ${isArabic(r.title) ? 'text-right' : 'text-left'}`}
+                        dir={isArabic(r.title) ? 'rtl' : 'ltr'}
+                        lang={isArabic(r.title) ? 'ar' : 'fr'}
+                      >
+                        {r.title}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {r.subjectNameFr} · {timeAgo(r.createdAt)}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
                   <span
-                    className={`px-2 py-1 text-xs font-bold rounded ${
+                    className={`px-2 py-1 text-xs font-bold rounded flex-shrink-0 ${
                       r.status === 'PUBLISHED'
                         ? 'bg-emerald-100 text-emerald-700'
                         : r.status === 'PENDING_APPROVAL'
                           ? 'bg-amber-100 text-amber-700'
-                          : 'bg-red-100 text-red-700'
+                          : r.status === 'REJECTED'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-slate-100 text-slate-700'
                     }`}
                   >
-                    {r.status === 'PUBLISHED'
-                      ? '✓ Publié'
-                      : r.status === 'PENDING_APPROVAL'
-                        ? '⏳ En attente'
-                        : '✕ Rejeté'}
+                    {r.status === 'PUBLISHED' ? '✓' : r.status === 'PENDING_APPROVAL' ? '⏳' : r.status === 'REJECTED' ? '✕' : '📝'}
                   </span>
-                  <div className="text-xs text-slate-400 hidden sm:block">
-                    {formatNumber(r.viewsCount)} vues
-                  </div>
                 </div>
-              </Link>
-            ))}
+              ))
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Pending resources */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-lg flex items-center gap-2">
+              <Clock className="w-5 h-5 text-amber-500" />
+              En attente d'approbation
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {pendingResources.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <CheckCircle className="w-10 h-10 mx-auto mb-2 text-emerald-300" />
+                <p>Aucune ressource en attente</p>
+              </div>
+            ) : (
+              pendingResources.map((r: any) => (
+                <div key={r.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div
+                      className="w-10 h-12 rounded-lg flex items-center justify-center flex-shrink-0 text-xl"
+                      style={{ background: r.subjectColor ? `${r.subjectColor}20` : '#F1F5F9' }}
+                    >
+                      📄
+                    </div>
+                    <div className="min-w-0">
+                      <div
+                        className={`font-semibold text-sm truncate ${isArabic(r.title) ? 'text-right' : 'text-left'}`}
+                        dir={isArabic(r.title) ? 'rtl' : 'ltr'}
+                        lang={isArabic(r.title) ? 'ar' : 'fr'}
+                      >
+                        {r.title}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {r.subjectNameFr} · {timeAgo(r.createdAt)}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="px-2 py-1 text-xs font-bold rounded bg-amber-100 text-amber-700 flex-shrink-0">
+                    ⏳
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

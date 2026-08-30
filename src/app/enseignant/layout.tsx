@@ -6,7 +6,6 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import FloatingUploadButton from '@/components/layout/FloatingUploadButton';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -26,46 +25,68 @@ import {
 // Teacher dashboard pages should never be indexed
 export const metadata: Metadata = {
   title: 'Espace enseignant',
-  robots: {
-    index: false,
-    follow: false,
-    nocache: true,
-    googleBot: { index: false, follow: false },
-  },
+  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
 };
+
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
+
+function num(v: any): number {
+  if (v == null) return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
 
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
   if (user.role !== 'TEACHER' && user.role !== 'ADMIN') redirect('/');
 
-  // Check if teacher is blocked from uploading (pending file verification or approval)
-  const teacherStatus = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { status: true, verificationFilesCount: true, verificationFilesReceivedAt: true },
-  });
+  const db = await getD1();
+
+  // Check teacher status (D1)
+  const teacherStatus = await db
+    .prepare(
+      `SELECT status, verificationFilesCount, verificationFilesReceivedAt
+       FROM User WHERE id = ?`,
+    )
+    .bind(user.id)
+    .first()
+    .catch(() => null);
   const canUpload = teacherStatus?.status === 'ACTIVE';
 
-  // Get counts for the sidebar (in parallel)
+  // Sidebar counts (D1)
   const [
-    myResources,
-    publishedResources,
-    pendingApproval,
-    pendingEdits,
-    rejectedEdits,
-    unreadNotifs,
-    libraryCount,
-    favoritesCount,
+    myResourcesR,
+    publishedResourcesR,
+    pendingApprovalR,
+    pendingEditsR,
+    rejectedEditsR,
+    unreadNotifsR,
+    libraryCountR,
+    favoritesCountR,
   ] = await Promise.all([
-    prisma.resource.count({ where: { teacherId: user.id } }),
-    prisma.resource.count({ where: { teacherId: user.id, status: 'PUBLISHED' } }),
-    prisma.resource.count({ where: { teacherId: user.id, status: 'PENDING_APPROVAL' } }),
-    prisma.resource.count({ where: { teacherId: user.id, editStatus: 'PENDING_EDIT_APPROVAL' } }),
-    prisma.resource.count({ where: { teacherId: user.id, editStatus: 'EDIT_REJECTED' } }),
-    prisma.notification.count({ where: { userId: user.id, isRead: false } }),
-    prisma.teacherFile.count({ where: { teacherId: user.id } }),
-    prisma.favorite.count({ where: { userId: user.id } }),
+    db.prepare('SELECT COUNT(*) as c FROM Resource WHERE teacherId = ?').bind(user.id).first().catch(() => ({ c: 0 })),
+    db.prepare("SELECT COUNT(*) as c FROM Resource WHERE teacherId = ? AND status = 'PUBLISHED'").bind(user.id).first().catch(() => ({ c: 0 })),
+    db.prepare("SELECT COUNT(*) as c FROM Resource WHERE teacherId = ? AND status = 'PENDING_APPROVAL'").bind(user.id).first().catch(() => ({ c: 0 })),
+    db.prepare("SELECT COUNT(*) as c FROM Resource WHERE teacherId = ? AND editStatus = 'PENDING_EDIT_APPROVAL'").bind(user.id).first().catch(() => ({ c: 0 })),
+    db.prepare("SELECT COUNT(*) as c FROM Resource WHERE teacherId = ? AND editStatus = 'EDIT_REJECTED'").bind(user.id).first().catch(() => ({ c: 0 })),
+    db.prepare("SELECT COUNT(*) as c FROM Notification WHERE userId = ? AND isRead = 0").bind(user.id).first().catch(() => ({ c: 0 })),
+    db.prepare('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ?').bind(user.id).first().catch(() => ({ c: 0 })),
+    db.prepare('SELECT COUNT(*) as c FROM Favorite WHERE userId = ?').bind(user.id).first().catch(() => ({ c: 0 })),
   ]);
+
+  const myResources = num(myResourcesR?.c);
+  const publishedResources = num(publishedResourcesR?.c);
+  const pendingApproval = num(pendingApprovalR?.c);
+  const pendingEdits = num(pendingEditsR?.c);
+  const rejectedEdits = num(rejectedEditsR?.c);
+  const unreadNotifs = num(unreadNotifsR?.c);
+  const libraryCount = num(libraryCountR?.c);
+  const favoritesCount = num(favoritesCountR?.c);
 
   const initials = getInitials(user.firstName, user.lastName);
 
@@ -73,11 +94,9 @@ export default async function TeacherLayout({ children }: { children: React.Reac
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
       <div className="flex-1 pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid lg:grid-cols-[280px_1fr] gap-6">
-            {/* ================ SIMPLIFIED SIDEBAR (8 items) ================ */}
             <aside className="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto space-y-2">
-              {/* ===== Profile card with live counters ===== */}
               <Link
                 href="/enseignant/profil"
                 className="block bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-4 text-white shadow-md hover:shadow-lg transition group"
@@ -96,87 +115,51 @@ export default async function TeacherLayout({ children }: { children: React.Reac
                   </div>
                   <ChevronRight className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition" />
                 </div>
-
-                {/* Live counters (option 4) */}
-                <div className="mt-3 pt-3 border-t border-white/20 flex items-center gap-2 text-xs">
-                  <span className="px-2 py-1 bg-white/20 rounded-md font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    {publishedResources} publiées
-                  </span>
-                  {pendingApproval + pendingEdits > 0 && (
-                    <span className="px-2 py-1 bg-white/30 rounded-md font-bold flex items-center gap-1">
-                      ⏳ {pendingApproval + pendingEdits} en attente
-                    </span>
-                  )}
-                </div>
+                {pendingApproval + pendingEdits + rejectedEdits + unreadNotifs > 0 && (
+                  <div className="mt-3 pt-3 border-t border-white/20 text-xs text-amber-100">
+                    {pendingApproval + pendingEdits + unreadNotifs} action{pendingApproval + pendingEdits + unreadNotifs > 1 ? 's' : ''} en attente
+                  </div>
+                )}
               </Link>
 
-              {/* ===== MES RESSOURCES (4 items) ===== */}
-              <SidebarGroup title="Mes ressources" icon={BookOpen}>
-                <SidebarLink
-                  href="/enseignant"
-                  icon={LayoutDashboard}
-                  label="Tableau de bord"
-                  exact
-                />
-                <SidebarLink
-                  href="/enseignant/ressources"
-                  icon={FileText}
-                  label="Mes ressources"
-                  badge={myResources}
-                  badgeColor="bg-slate-500"
-                />
-                <SidebarLink
-                  href="/enseignant/bibliotheque"
-                  icon={BookOpen}
-                  label="Ma bibliothèque"
-                  badge={libraryCount}
-                  badgeColor="bg-blue-500"
-                />
-                <SidebarLink
-                  href="/enseignant/ajouter"
-                  icon={Plus}
-                  label="Ajouter"
-                  highlight
-                  disabled={!canUpload}
-                  disabledReason={
-                    !canUpload ? 'Terminez la vérification de vos fichiers pour publier' : undefined
-                  }
-                />
-              </SidebarGroup>
+              <div className="bg-white rounded-2xl border border-slate-100 p-2 shadow-sm">
+                <div className="px-3 pt-2 pb-1.5 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Navigation</div>
+                <div className="space-y-0.5">
+                  {[
+                    { href: '/enseignant', icon: LayoutDashboard, label: 'Dashboard' },
+                    { href: '/enseignant/ressources', icon: FileText, label: 'Mes ressources', badge: myResources },
+                    { href: '/enseignant/ressources/ajouter', icon: Plus, label: 'Nouvelle ressource' },
+                    { href: '/enseignant/bibliotheque', icon: BookOpen, label: 'Bibliothèque', badge: libraryCount },
+                    { href: '/enseignant/favoris', icon: Heart, label: 'Favoris', badge: favoritesCount },
+                    { href: '/enseignant/analytics', icon: BarChart3, label: 'Analytics' },
+                    { href: '/enseignant/notifications', icon: Bell, label: 'Notifications', badge: unreadNotifs },
+                    { href: '/enseignant/profil', icon: User, label: 'Profil' },
+                    { href: '/enseignant/parametres', icon: Settings, label: 'Paramètres' },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition"
+                      >
+                        <Icon className="w-4 h-4 flex-shrink-0" />
+                        <span className="flex-1 truncate">{item.label}</span>
+                        {item.badge !== undefined && item.badge > 0 && (
+                          <span className="px-1.5 py-0.5 text-amber-700 bg-amber-100 text-[10px] font-bold rounded-full">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
 
-              {/* ===== MON ACTIVITÉ (2 items) ===== */}
-              <SidebarGroup title="Mon activité" icon={BarChart3}>
-                <SidebarLink href="/enseignant/stats" icon={BarChart3} label="Statistiques" />
-                <SidebarLink
-                  href="/enseignant/notifications"
-                  icon={Bell}
-                  label="Notifications"
-                  badge={unreadNotifs > 0 ? unreadNotifs : undefined}
-                  badgeColor="bg-primary-600"
-                />
-              </SidebarGroup>
-
-              {/* ===== MON COMPTE (3 items) ===== */}
-              <SidebarGroup title="Mon compte" icon={User}>
-                <SidebarLink href="/enseignant/profil" icon={User} label="Mon profil" />
-                <SidebarLink
-                  href="/enseignant/favoris"
-                  icon={Heart}
-                  label="Mes favoris"
-                  badge={favoritesCount}
-                  badgeColor="bg-pink-500"
-                />
-                <SidebarLink href="/enseignant/parametres" icon={Settings} label="Paramètres" />
-              </SidebarGroup>
-
-              {user.role === 'ADMIN' && (
-                <Link
-                  href="/admin"
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm font-bold hover:bg-red-100 transition"
-                >
-                  <Shield className="w-4 h-4" /> Administration
-                </Link>
+              {!canUpload && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800">
+                  <strong>Upload bloqué</strong> · Votre compte doit être validé pour publier.
+                </div>
               )}
             </aside>
 
@@ -185,99 +168,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
         </div>
       </div>
       <Footer />
-
-      {/* ===== Floating Action Button (option 3) ===== */}
-      <FloatingUploadButton />
+      {canUpload && <FloatingUploadButton />}
     </div>
-  );
-}
-
-function SidebarGroup({
-  title,
-  icon: Icon,
-  children,
-}: {
-  title: string;
-  icon: any;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-2">
-        <Icon className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">{title}</span>
-      </div>
-      <div className="p-2 space-y-0.5">{children}</div>
-    </div>
-  );
-}
-
-function SidebarLink({
-  href,
-  icon: Icon,
-  label,
-  exact,
-  badge,
-  badgeColor,
-  highlight,
-  disabled,
-  disabledReason,
-}: {
-  href: string;
-  icon: any;
-  label: string;
-  exact?: boolean;
-  badge?: number;
-  badgeColor?: string;
-  highlight?: boolean;
-  disabled?: boolean;
-  disabledReason?: string;
-}) {
-  if (disabled) {
-    return (
-      <div
-        title={disabledReason || 'Action désactivée'}
-        aria-disabled="true"
-        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium cursor-not-allowed ${
-          highlight
-            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white opacity-50 font-bold'
-            : 'text-slate-400 bg-slate-100/50'
-        }`}
-      >
-        <Icon className="w-4 h-4 flex-shrink-0" strokeWidth={highlight ? 2.5 : 2} />
-        <span className="flex-1 truncate">{label}</span>
-        <span className="px-1.5 py-0.5 bg-amber-200 text-amber-800 text-[9px] font-bold rounded-full">
-          🔒
-        </span>
-        {badge !== undefined && badge > 0 && (
-          <span
-            className={`px-1.5 py-0.5 text-white text-[10px] font-bold rounded-full ${badgeColor || 'bg-slate-500'}`}
-          >
-            {badge}
-          </span>
-        )}
-      </div>
-    );
-  }
-  return (
-    <Link
-      href={href}
-      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition ${
-        highlight
-          ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-md font-bold'
-          : 'text-slate-700 hover:bg-amber-50 hover:text-amber-700'
-      }`}
-    >
-      <Icon className="w-4 h-4 flex-shrink-0" strokeWidth={highlight ? 2.5 : 2} />
-      <span className="flex-1 truncate">{label}</span>
-
-      {badge !== undefined && badge > 0 && (
-        <span
-          className={`px-1.5 py-0.5 text-white text-[10px] font-bold rounded-full ${badgeColor || 'bg-slate-500'}`}
-        >
-          {badge}
-        </span>
-      )}
-    </Link>
   );
 }
