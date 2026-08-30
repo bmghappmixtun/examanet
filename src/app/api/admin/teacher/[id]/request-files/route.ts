@@ -1,71 +1,54 @@
 // @ts-nocheck
 export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { sendTeacherFileRequestEmail } from '@/lib/email';
+import { d1First, d1Run, genId } from '@/lib/db-d1';
+import { isValidOrigin } from '@/lib/security';
 
 /**
- * POST /api/admin/teacher/[id]/request-files
+ * POST /api/admin/teacher/[id]/request-files — D1 direct
  *
  * For NEW (non-invited) teachers, ask them to send 5 sample files
  * to verify they're a real teacher. Invited teachers are excluded.
  *
- * Body (optional): { note?: string }
- *
- * Effect:
- * - Sets status to PENDING_FILE_VERIFICATION
- * - Records verificationFilesRequestedAt + requestedBy
- * - Sends a professional email with the request
- * - Creates an in-app notification
+ * Note: email sending is skipped (CF Workers can't send email directly).
+ * The client should trigger email via /api/email/teacher-file-request.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const admin = await getCurrentUser();
   if (!admin || admin.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
-
+  if (!isValidOrigin(req)) {
+    return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
+  }
   const { id } = await params;
   const body = await req.json().catch(() => ({}));
   const note: string | null = (body?.note || '').toString().trim() || null;
 
-  const teacher = await prisma.user.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      status: true,
-      role: true,
-      invitationStatus: true,
-      lastInvitationId: true,
-      verificationFilesRequestedAt: true,
-    },
-  });
-
+  const teacher = await d1First(
+    `SELECT id, email, firstName, lastName, status, role,
+            lastInvitationId, verificationFilesRequestedAt
+     FROM User WHERE id = ?`,
+    id,
+  );
   if (!teacher || teacher.role !== 'TEACHER') {
     return NextResponse.json({ error: 'Enseignant non trouvé' }, { status: 404 });
   }
 
-  // Exclude invited teachers — they're pre-vetted by the admin
-  const isInvited = !!teacher.lastInvitationId || !!teacher.invitationStatus;
-  if (isInvited) {
+  // Exclude invited teachers
+  if (teacher.lastInvitationId) {
     return NextResponse.json(
       {
-        error:
-          'Action non applicable : cet enseignant a été invité. Les profs invités sont déjà pré-vérifiés.',
+        error: 'Action non applicable : cet enseignant a été invité. Les profs invités sont déjà pré-vérifiés.',
         code: 'INVITED_TEACHER',
       },
       { status: 400 },
     );
   }
-
-  // Avoid sending duplicate requests within 24h
+  // Avoid duplicate requests within 24h
   if (teacher.verificationFilesRequestedAt) {
-    const hoursSince =
-      (Date.now() - new Date(teacher.verificationFilesRequestedAt).getTime()) / 1000 / 3600;
+    const hoursSince = (Date.now() - Number(teacher.verificationFilesRequestedAt)) / 1000 / 3600;
     if (hoursSince < 24) {
       return NextResponse.json(
         {
@@ -76,49 +59,32 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       );
     }
   }
-
   if (!teacher.email || !teacher.firstName || !teacher.lastName) {
-    return NextResponse.json(
-      { error: 'Profil prof incomplet (email/nom manquant)' },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'Profil prof incomplet (email/nom manquant)' }, { status: 400 });
   }
-
-  // Update DB
-  await prisma.user.update({
-    where: { id },
-    data: {
-      status: 'PENDING_FILE_VERIFICATION',
-      verificationFilesRequestedAt: new Date(),
-      verificationFilesRequestedById: admin.id,
-      verificationFilesNote: note,
-    },
-  });
-
-  // Send email
-  const emailResult = await sendTeacherFileRequestEmail({
-    to: teacher.email,
-    firstName: teacher.firstName,
-    lastName: teacher.lastName,
-    email: teacher.email,
-    note,
-  });
-
-  // In-app notification
-  await prisma.notification.create({
-    data: {
-      userId: id,
-      type: 'verification_files_requested',
-      title: '📁 Action requise : envoyez 5 fichiers de vérification',
-      message: `Bonjour ${teacher.firstName}, pour finaliser la vérification de votre compte enseignant, merci de nous envoyer 5 fichiers Word/PDF d'exemple (cours, séries, devoirs, etc.) avec votre nom et prénom. Vous avez 7 jours.`,
-      link: '/enseignant/verification',
-    },
-  });
-
+  // Update User
+  const now = Date.now();
+  const r = await d1Run(
+    `UPDATE User SET status = 'PENDING_FILE_VERIFICATION',
+            verificationFilesRequestedAt = ?, updatedAt = ?
+     WHERE id = ?`,
+    now, now, id,
+  );
+  if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+  // Create in-app notification (D1 Notification table may not exist, but we try)
+  try {
+    await d1Run(
+      `INSERT INTO Notification (id, userId, type, title, message, link, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      genId(), id, 'verification_files_requested',
+      '📁 Action requise : envoyez 5 fichiers de vérification',
+      `Bonjour ${teacher.firstName}, pour finaliser la vérification de votre compte enseignant, merci de nous envoyer 5 fichiers Word/PDF d'exemple (cours, séries, devoirs, etc.) avec votre nom et prénom. Vous avez 7 jours.`,
+      '/enseignant/verification', now,
+    );
+  } catch {}
   return NextResponse.json({
     success: true,
-    emailSent: emailResult.success,
-    emailId: emailResult.id,
-    message: `Demande envoyée à ${teacher.firstName} ${teacher.lastName}`,
+    emailSent: false,
+    message: `Demande préparée pour ${teacher.firstName} ${teacher.lastName}. L'envoi d'email n'est pas encore actif sur CF Workers — l'admin doit contacter le prof manuellement.`,
   });
 }

@@ -1,164 +1,93 @@
 // @ts-nocheck
 export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { deleteFile } from '@/lib/storage';
-
-export const runtime = 'nodejs';
+import { d1All, d1First, d1Run } from '@/lib/db-d1';
+import { isValidOrigin } from '@/lib/security';
 
 /**
- * POST /api/admin/teachers/bulk-delete
- *
- * Bulk-delete TEACHER users (typically PENDING_OTP, PENDING_APPROVAL, etc.)
- * that the admin wants to remove permanently.
+ * POST /api/admin/teachers/bulk-delete — D1 direct
  *
  * SAFETY:
  * - Admin cannot delete themselves
  * - Admin role is always preserved
  * - boutiti.mehdi@gmail.com is NEVER deleted (hard-coded protection)
- * - Resources are TRANSFERRED to the current admin (NOT deleted) by default
- *   unless keepFiles=false explicitly chosen
+ * - Resources are TRANSFERRED to the current admin by default unless keepFiles=false
  *
- * Body:
- *   { ids: string[], keepFiles?: boolean }
- *
- * Response:
- *   { ok: true, deleted: string[], transferred: number, deletedFiles: number, errors: string[] }
+ * Body: { ids: string[], keepFiles?: boolean }
+ * Response: { ok: true, deleted: string[], transferred: number, deletedFiles: number, errors: string[] }
  */
 const PROTECTED_EMAILS = new Set([
-  'boutiti.mehdi@gmail.com', // ⚠️ SUPER ADMIN - NEVER DELETE
+  'boutiti.mehdi@gmail.com', // ⚠️ ADMIN — never delete
 ]);
 
 export async function POST(req: NextRequest) {
-  const me = await getCurrentUser();
-  if (!me || me.role !== 'ADMIN') {
+  const admin = await getCurrentUser();
+  if (!admin || admin.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
-
-  let body: { ids?: string[]; keepFiles?: boolean };
+  if (!isValidOrigin(req)) {
+    return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
+  }
   try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
-
-  const ids = Array.isArray(body.ids) ? body.ids.filter((x) => typeof x === 'string') : [];
-  if (ids.length === 0) {
-    return NextResponse.json({ error: 'ids array is required and non-empty' }, { status: 400 });
-  }
-  if (ids.length > 200) {
-    return NextResponse.json(
-      { error: 'Trop de suppressions en une fois (max 200)' },
-      { status: 400 },
-    );
-  }
-
-  // keepFiles: default TRUE (safer — preserve by transferring to admin)
-  const keepFiles = body.keepFiles !== false;
-
-  // Fetch all targets
-  const targets = await prisma.user.findMany({
-    where: { id: { in: ids } },
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      status: true,
-      firstName: true,
-      lastName: true,
-      _count: {
-        select: { uploadedFiles: true, library: true, verificationFiles: true },
-      },
-    },
-  });
-
-  const errors: string[] = [];
-  const deleted: string[] = [];
-  const skipped: string[] = [];
-  let totalResourcesTransferred = 0;
-  let totalFilesDeleted = 0;
-
-  for (const target of targets) {
-    try {
-      // SAFETY: skip self
-      if (target.id === me.id) {
-        skipped.push(`${target.email} (soi-même)`);
-        continue;
-      }
-      // SAFETY: skip admins
-      if (target.role === 'ADMIN') {
-        skipped.push(`${target.email} (admin)`);
-        continue;
-      }
-      // SAFETY: skip protected emails
-      if (target.email && PROTECTED_EMAILS.has(target.email.toLowerCase())) {
-        skipped.push(`${target.email} (protégé)`);
-        continue;
-      }
-      // SAFETY: only delete TEACHER
-      if (target.role !== 'TEACHER') {
-        skipped.push(`${target.email} (rôle ${target.role})`);
-        continue;
-      }
-
-      // Count resources before deletion
-      const resources = await prisma.resource.findMany({
-        where: { teacherId: target.id },
-        select: { id: true, fileUrl: true },
-      });
-      const fileCount = resources.length;
-
-      if (keepFiles) {
-        // Transfer resources to the current admin (preserved + attributed to admin)
-        if (fileCount > 0) {
-          await prisma.resource.updateMany({
-            where: { teacherId: target.id },
-            data: { teacherId: me.id },
-          });
-          totalResourcesTransferred += fileCount;
-        }
-      } else {
-        // Hard delete: cleanup blob storage in background
-        if (fileCount > 0) {
-          totalFilesDeleted += fileCount;
-          // Don't block the response on blob cleanup
-          Promise.all(
-            resources.map((r) =>
-              deleteFile(r.fileUrl).catch((e) => console.error('File delete error:', e)),
-            ),
-          ).catch(() => {});
-        }
-      }
-
-      // Clean up FK dependencies that don't have onDelete: Cascade
-      await prisma.comment.deleteMany({ where: { userId: target.id } });
-      await prisma.rating.deleteMany({ where: { userId: target.id } });
-      await prisma.view.deleteMany({ where: { userId: target.id } });
-      await prisma.download.deleteMany({ where: { userId: target.id } });
-      await prisma.report.deleteMany({ where: { userId: target.id } });
-
-      // Delete the user (cascade handles OtpCode, Notification, TeacherInvitation,
-      // TeacherFile, Conversation, etc. via the schema's onDelete: Cascade)
-      await prisma.user.delete({ where: { id: target.id } });
-      deleted.push(target.email || target.id);
-    } catch (e: any) {
-      console.error(`❌ Bulk delete error for ${target.email}:`, e);
-      errors.push(`${target.email || target.id}: ${e.message}`);
+    const body = await req.json().catch(() => ({}));
+    const ids: string[] = Array.isArray(body.ids) ? body.ids : [];
+    const keepFiles = body.keepFiles !== false;
+    if (ids.length === 0) {
+      return NextResponse.json({ error: 'Aucun utilisateur fourni' }, { status: 400 });
     }
+    if (ids.includes(admin.id)) {
+      return NextResponse.json({ error: 'Vous ne pouvez pas vous supprimer vous-même' }, { status: 403 });
+    }
+    const placeholders = ids.map(() => '?').join(',');
+    const targets = await d1All(
+      `SELECT id, email, role FROM User WHERE id IN (${placeholders})`,
+      ...ids,
+    );
+    const errors: string[] = [];
+    const deleted: string[] = [];
+    let transferred = 0;
+    let deletedFiles = 0;
+    for (const t of targets) {
+      if (t.email && PROTECTED_EMAILS.has(t.email)) {
+        errors.push(`${t.email} : protégé (admin principal)`);
+        continue;
+      }
+      if (t.role === 'ADMIN') {
+        errors.push(`${t.email || t.id} : admin protégé`);
+        continue;
+      }
+      if (t.id === admin.id) {
+        errors.push(`${t.email} : c'est vous`);
+        continue;
+      }
+      try {
+        if (keepFiles) {
+          // Transfer resources to admin
+          const r = await d1Run(
+            "UPDATE Resource SET teacherId = ?, updatedAt = ? WHERE teacherId = ?",
+            admin.id, Date.now(), t.id,
+          );
+          if (r.success) transferred += Number((r.meta as any)?.changes || 0);
+        } else {
+          // Delete resources owned by this teacher
+          const r = await d1Run('DELETE FROM Resource WHERE teacherId = ?', t.id);
+          if (r.success) deletedFiles += Number((r.meta as any)?.changes || 0);
+        }
+        // Cascade: delete sessions, files, etc.
+        await d1Run('DELETE FROM Session WHERE userId = ?', t.id);
+        await d1Run('DELETE FROM TeacherFile WHERE teacherId = ?', t.id);
+        await d1Run('DELETE FROM TeacherVerificationFile WHERE userId = ?', t.id);
+        // Delete user
+        const r = await d1Run('DELETE FROM User WHERE id = ?', t.id);
+        if (r.success) deleted.push(t.id);
+        else errors.push(`${t.email}: ${r.error}`);
+      } catch (e: any) {
+        errors.push(`${t.email}: ${e.message}`);
+      }
+    }
+    return NextResponse.json({ ok: true, deleted, transferred, deletedFiles, errors });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 });
   }
-
-  return NextResponse.json({
-    ok: true,
-    deleted,
-    skipped,
-    errors,
-    totalRequested: ids.length,
-    totalDeleted: deleted.length,
-    totalSkipped: skipped.length,
-    totalErrors: errors.length,
-    totalResourcesTransferred,
-    totalFilesDeleted,
-  });
 }
