@@ -1,21 +1,10 @@
 // @ts-nocheck
-import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import TeacherLibraryClient from '@/components/teacher/TeacherLibraryClient';
-
-export const metadata: Metadata = {
-  title: 'Ma bibliothèque — Examanet',
-  description: 'Vos fichiers originaux (.docx, .pdf) sauvegardés pour réutilisation future',
-};
+import { d1All, d1First } from '@/lib/db-d1';
 
 export const dynamic = 'force-dynamic';
-
-async function getD1() {
-  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
-  const ctx = await getCloudflareContext({ async: true });
-  return (ctx as any).env.DB;
-}
 
 export default async function TeacherLibraryPage() {
   const user = await getCurrentUser();
@@ -24,11 +13,48 @@ export default async function TeacherLibraryPage() {
     redirect('/');
   }
 
-  const db = await getD1();
-  const [classesR, subjectsR] = await Promise.all([
-    db.prepare('SELECT id, nameFr, nameAr, slug FROM "Class" ORDER BY "order" ASC').all().catch(() => ({ results: [] })),
-    db.prepare('SELECT id, nameFr, nameAr, slug, color, icon FROM Subject ORDER BY nameFr ASC').all().catch(() => ({ results: [] })),
+  // SSR pre-fetch: classes + subjects + files + canUpload
+  const [classesR, subjectsR, filesR, statusR] = await Promise.all([
+    d1All('SELECT id, nameFr, nameAr, slug FROM "Class" ORDER BY "order" ASC'),
+    d1All('SELECT id, nameFr, nameAr, slug, color, icon FROM Subject ORDER BY nameFr ASC'),
+    d1All(
+      `SELECT id, teacherId, resourceId, fileName, fileKey, fileUrl, r2Key, r2PdfKey,
+              fileSize, mimeType, isActive, createdAt, updatedAt
+       FROM TeacherFile
+       WHERE teacherId = ? AND isActive = 1
+       ORDER BY createdAt DESC
+       LIMIT 200`,
+      user.id,
+    ),
+    d1First('SELECT status FROM User WHERE id = ?', user.id),
   ]);
+
+  const canUpload = statusR?.status === 'ACTIVE';
+
+  // Normalize files for client (extract format from filename, fix isActive boolean)
+  const normalizedFiles = (filesR || []).map((f: any) => {
+    let fmt = '';
+    if (f.fileName) {
+      const m = /\.([a-z0-9]+)$/i.exec(f.fileName);
+      if (m) fmt = m[1].toLowerCase();
+    }
+    if (!fmt && f.mimeType) {
+      const mt = String(f.mimeType).toLowerCase();
+      if (mt.includes('pdf')) fmt = 'pdf';
+      else if (mt.includes('word') || mt.includes('document')) fmt = 'docx';
+      else if (mt.includes('opendocument')) fmt = 'odt';
+    }
+    return {
+      ...f,
+      isActive: Boolean(f.isActive),
+      originalFormat: fmt || 'other',
+      // createdAt is a number (ms) from D1, convert to ISO string for client
+      createdAt:
+        typeof f.createdAt === 'number'
+          ? new Date(f.createdAt).toISOString()
+          : f.createdAt,
+    };
+  });
 
   return (
     <div>
@@ -41,7 +67,12 @@ export default async function TeacherLibraryPage() {
           à tout moment et les réutiliser pour publier de nouvelles ressources.
         </p>
       </div>
-      <TeacherLibraryClient classes={classesR?.results || []} subjects={subjectsR?.results || []} />
+      <TeacherLibraryClient
+        classes={classesR || []}
+        subjects={subjectsR || []}
+        initialFiles={normalizedFiles}
+        initialCanUpload={canUpload}
+      />
     </div>
   );
 }

@@ -97,6 +97,8 @@ function getFormatBadge(format: string) {
 export default function TeacherLibraryClient({
   classes,
   subjects,
+  initialFiles = [],
+  initialCanUpload = true,
 }: {
   classes: { id: string; nameFr: string; nameAr: string; slug: string }[];
   subjects: {
@@ -107,10 +109,27 @@ export default function TeacherLibraryClient({
     color?: string | null;
     icon?: string | null;
   }[];
+  initialFiles?: TeacherFile[];
+  initialCanUpload?: boolean;
 }) {
-  const [files, setFiles] = useState<TeacherFile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [canUpload, setCanUpload] = useState<boolean>(true);
+  // Normalize D1 files: extract originalFormat from filename if missing
+  const normalizedInitial = (initialFiles || []).map((f: any) => {
+    let fmt = f.originalFormat;
+    if (!fmt && f.fileName) {
+      const m = /\.([a-z0-9]+)$/i.exec(f.fileName);
+      if (m) fmt = m[1].toLowerCase();
+    }
+    if (!fmt && f.mimeType) {
+      const mt = String(f.mimeType).toLowerCase();
+      if (mt.includes('pdf')) fmt = 'pdf';
+      else if (mt.includes('word') || mt.includes('document')) fmt = 'docx';
+      else if (mt.includes('opendocument')) fmt = 'odt';
+    }
+    return { ...f, originalFormat: fmt || 'other' };
+  });
+  const [files, setFiles] = useState<TeacherFile[]>(normalizedInitial);
+  const [loading, setLoading] = useState(false);
+  const [canUpload, setCanUpload] = useState<boolean>(initialCanUpload);
   const [filter, setFilter] = useState<Filter>({
     search: '',
     classId: '',

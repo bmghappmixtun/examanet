@@ -3,52 +3,42 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { d1All, d1First, d1Run } from '@/lib/db-d1';
 
-export const runtime = 'nodejs';
-
-// GET /api/user/account - full account info
-export async function GET() {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-
-  const account = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      status: true,
-      firstName: true,
-      lastName: true,
-      avatarUrl: true,
-      bio: true,
-      schoolName: true,
-      governorate: true,
-      diploma: true,
-      teachingSubjects: true,
-      teachingLevels: true,
-      phone: true,
-      website: true,
-      preferredLang: true,
-      themePref: true,
-      notifyEmail: true,
-      notifyInApp: true,
-      createdAt: true,
-      lastLoginAt: true,
-      emailVerifiedAt: true,
-    },
-  });
-
-  return NextResponse.json({ account });
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
 }
 
-// PATCH /api/user/account - update account
-export async function PATCH(req: NextRequest) {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-
+// GET /api/user/account - full account info (D1 direct)
+export async function GET() {
   try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+
+    const account = await d1First(
+      `SELECT id, email, role, status, firstName, lastName, avatarUrl, bio,
+              schoolName, governorate, diploma, teachingSubjects, teachingLevels,
+              phone, website, preferredLang, themePref, notifyEmail, notifyInApp,
+              createdAt, lastLoginAt, emailVerifiedAt
+       FROM User WHERE id = ?`,
+      user.id,
+    );
+    if (!account) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+
+    return NextResponse.json({ account });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}
+
+// PATCH /api/user/account - update account (D1 direct)
+export async function PATCH(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+
     const body = await req.json();
     const allowed = [
       'firstName',
@@ -65,66 +55,50 @@ export async function PATCH(req: NextRequest) {
       'notifyEmail',
       'notifyInApp',
     ];
-    const data: any = {};
+    const sets: string[] = [];
+    const params: any[] = [];
+
     for (const k of allowed) {
-      if (body[k] !== undefined) data[k] = body[k];
+      if (body[k] !== undefined) {
+        sets.push(`${k} = ?`);
+        params.push(body[k]);
+      }
     }
 
     // JSON fields
-    if (body.teachingSubjects !== undefined) {
-      let arr: string[] = [];
-      if (Array.isArray(body.teachingSubjects)) arr = body.teachingSubjects;
-      else if (typeof body.teachingSubjects === 'string') {
-        try {
-          arr = JSON.parse(body.teachingSubjects);
-        } catch {
-          arr = body.teachingSubjects
-            .split(',')
-            .map((s: string) => s.trim())
-            .filter(Boolean);
-        }
+    const jsonStringify = (v: any): string => {
+      if (Array.isArray(v)) return JSON.stringify(v);
+      if (typeof v === 'string') {
+        try { return JSON.stringify(JSON.parse(v)); } catch { return JSON.stringify(v.split(',').map(s => s.trim()).filter(Boolean)); }
       }
-      data.teachingSubjects = JSON.stringify(arr);
+      return JSON.stringify(v);
+    };
+    if (body.teachingSubjects !== undefined) {
+      sets.push('teachingSubjects = ?');
+      params.push(jsonStringify(body.teachingSubjects));
     }
     if (body.teachingLevels !== undefined) {
-      let arr: string[] = [];
-      if (Array.isArray(body.teachingLevels)) arr = body.teachingLevels;
-      else if (typeof body.teachingLevels === 'string') {
-        try {
-          arr = JSON.parse(body.teachingLevels);
-        } catch {
-          arr = body.teachingLevels
-            .split(',')
-            .map((s: string) => s.trim())
-            .filter(Boolean);
-        }
-      }
-      data.teachingLevels = JSON.stringify(arr);
+      sets.push('teachingLevels = ?');
+      params.push(jsonStringify(body.teachingLevels));
     }
 
-    const updated = await prisma.user.update({
-      where: { id: user.id },
-      data,
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        avatarUrl: true,
-        bio: true,
-        schoolName: true,
-        governorate: true,
-        diploma: true,
-        teachingSubjects: true,
-        teachingLevels: true,
-        phone: true,
-        website: true,
-        preferredLang: true,
-        themePref: true,
-        notifyEmail: true,
-        notifyInApp: true,
-      },
-    });
+    if (sets.length === 0) {
+      return NextResponse.json({ success: true, account: null });
+    }
 
+    params.push(user.id);
+    await d1Run(
+      `UPDATE User SET ${sets.join(', ')} WHERE id = ?`,
+      ...params,
+    );
+
+    const updated = await d1First(
+      `SELECT id, firstName, lastName, avatarUrl, bio, schoolName, governorate,
+              diploma, teachingSubjects, teachingLevels, phone, website,
+              preferredLang, themePref, notifyEmail, notifyInApp
+       FROM User WHERE id = ?`,
+      user.id,
+    );
     return NextResponse.json({ success: true, account: updated });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
@@ -133,15 +107,19 @@ export async function PATCH(req: NextRequest) {
 
 // DELETE /api/user/account - delete account
 export async function DELETE() {
-  const user = await getCurrentUser();
-  if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-  if (user.role === 'ADMIN') {
-    return NextResponse.json(
-      { error: 'Les admins ne peuvent pas supprimer leur compte ici' },
-      { status: 403 },
-    );
-  }
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    if (user.role === 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Les admins ne peuvent pas supprimer leur compte ici' },
+        { status: 403 },
+      );
+    }
 
-  await prisma.user.delete({ where: { id: user.id } });
-  return NextResponse.json({ success: true });
+    await d1Run('DELETE FROM User WHERE id = ?', user.id);
+    return NextResponse.json({ success: true });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
