@@ -1,11 +1,10 @@
 // @ts-nocheck
 export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { sendResourceApprovedEmail, sendResourceRejectedEmail } from '@/lib/email';
+import { d1First, d1Run } from '@/lib/db-d1';
+import { isValidOrigin } from '@/lib/security';
 
 export async function POST(
   req: NextRequest,
@@ -14,100 +13,37 @@ export async function POST(
   const user = await getCurrentUser();
   if (!user || user.role !== 'ADMIN')
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
-
-  const { id, action } = await params;
-  const resource = await prisma.resource.findUnique({
-    where: { id },
-    include: { teacher: { select: { numericId: true, slug: true } } },
-  });
-  if (!resource) return NextResponse.json({ error: 'Ressource non trouvée' }, { status: 404 });
-
-  // Accept optional body (e.g., rejection reason)
-  let body: { reason?: string } = {};
-  try {
-    body = await req.json();
-  } catch {
-    // No body or invalid JSON, use empty
+  if (!isValidOrigin(req)) {
+    return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
   }
-
-  if (action === 'approve') {
-    await prisma.resource.update({
-      where: { id },
-      data: {
-        status: 'PUBLISHED',
-        approvedAt: new Date(),
-        approvedById: user.id,
-        publishedAt: new Date(),
-      },
-    });
-    // Force revalidation of all relevant pages (public list + detail + filters)
-    revalidatePath('/ressources');
-    revalidatePath(`/ressources/${resource.numericId}/${resource.slug}`);
-    revalidatePath('/');
-    revalidatePath('/enseignant/ressources');
-    revalidatePath('/admin/approbations');
-    revalidatePath('/admin/ressources');
-    revalidatePath('/admin');
-    if (resource.teacherId && resource.teacher) {
-      revalidatePath(`/professeurs/${resource.teacher.numericId}/${resource.teacher.slug}`);
-    }
-    if (resource.teacherId) {
-      await prisma.notification.create({
-        data: {
-          userId: resource.teacherId,
-          type: 'resource_approved',
-          title: 'Ressource publiée ! ✅',
-          message: `"${resource.title}" est maintenant en ligne.`,
-          link: `/ressources/${resource.numericId}/${resource.slug}`,
-        },
-      });
-      const teacher = await prisma.user.findUnique({ where: { id: resource.teacherId } });
-      if (teacher?.email && teacher.firstName) {
-        await sendResourceApprovedEmail(
-          teacher.email,
-          teacher.firstName,
-          resource.title,
-          true,
-          `/ressources/${resource.numericId}/${resource.slug}`,
-        );
-      }
-    }
-  } else if (action === 'reject') {
-    const reason = (body.reason || '').trim() || "Aucun motif fourni par l'administrateur.";
-    await prisma.resource.update({
-      where: { id },
-      data: {
-        status: 'REJECTED',
-        rejectionReason: reason,
-        approvedById: user.id,
-      },
-    });
-    if (resource.teacherId) {
-      await prisma.notification.create({
-        data: {
-          userId: resource.teacherId,
-          type: 'resource_rejected',
-          title: 'Ressource non validée ❌',
-          message: reason.length > 100 ? reason.slice(0, 100) + '...' : reason,
-          link: `/ressources/${resource.numericId}/${resource.slug}`,
-        },
-      });
-      const teacher = await prisma.user.findUnique({ where: { id: resource.teacherId } });
-      if (teacher?.email && teacher.firstName) {
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
-        const resourceUrl = `${siteUrl}/ressources/${resource.numericId}/${resource.slug}`;
-        await sendResourceRejectedEmail(
-          teacher.email,
-          teacher.firstName,
-          resource.title,
-          reason,
-          resourceUrl,
-        );
-      }
-    }
-  } else {
+  const { id, action } = await params;
+  if (action !== 'approve' && action !== 'reject') {
     return NextResponse.json({ error: 'Action invalide' }, { status: 400 });
   }
-
-  return NextResponse.json({ success: true });
+  const resource = await d1First(
+    'SELECT id, status, slug, numericId, title FROM Resource WHERE id = ?',
+    id,
+  );
+  if (!resource) return NextResponse.json({ error: 'Ressource non trouvée' }, { status: 404 });
+  let body: { reason?: string } = {};
+  try { body = await req.json(); } catch {}
+  if (action === 'approve') {
+    const r = await d1Run(
+      "UPDATE Resource SET status = 'PUBLISHED', publishedAt = ?, updatedAt = ? WHERE id = ?",
+      Date.now(), Date.now(), id,
+    );
+    if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+    // Revalidate the resource page
+    if (resource.numericId && resource.slug) {
+      try { revalidatePath(`/fr/ressources/${resource.numericId}/${resource.slug}`); } catch {}
+    }
+    return NextResponse.json({ success: true, status: 'PUBLISHED' });
+  } else {
+    const r = await d1Run(
+      "UPDATE Resource SET status = 'REJECTED', updatedAt = ? WHERE id = ?",
+      Date.now(), id,
+    );
+    if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+    return NextResponse.json({ success: true, status: 'REJECTED' });
+  }
 }
