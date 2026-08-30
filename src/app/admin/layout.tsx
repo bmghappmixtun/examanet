@@ -4,8 +4,13 @@ import type { Metadata } from 'next';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
 import {
   Shield,
   Users,
@@ -39,24 +44,49 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user) redirect('/connexion');
   if (user.role !== 'ADMIN') redirect('/');
 
-  // Get live counts for badges
-  const [pendingApprovals, pendingEdits, pendingReports, newUsers, unseenErrors] = await Promise.all([
-    prisma.resource.count({ where: { status: 'PENDING_APPROVAL' } }),
-    prisma.resource.count({ where: { editStatus: 'PENDING_EDIT_APPROVAL' } }),
-    prisma.report.count({ where: { status: 'PENDING' } }),
-    prisma.user.count({
-      where: {
-        role: { in: ['TEACHER', 'STUDENT'] },
-        createdAt: { gte: new Date(Date.now() - 7 * 86400000) },
-      },
-    }),
-    prisma.errorLog.count({
-      where: {
-        severity: { in: ['ERROR', 'CRITICAL'] },
-        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      },
-    }),
-  ]);
+  // Get live counts for badges — D1 direct
+  const db = await getD1();
+  const sevenDaysAgo = Date.now() - 7 * 86400 * 1000;
+  const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+
+  const [pendingApprovalsR, pendingEditsR, pendingReportsR, newUsersR, unseenErrorsR] =
+    await Promise.all([
+      db
+        .prepare("SELECT COUNT(*) as c FROM Resource WHERE status = 'PENDING_APPROVAL'")
+        .first()
+        .catch(() => ({ c: 0 })),
+      db
+        .prepare(
+          "SELECT COUNT(*) as c FROM Resource WHERE editStatus = 'PENDING_EDIT_APPROVAL'",
+        )
+        .first()
+        .catch(() => ({ c: 0 })),
+      db
+        .prepare("SELECT COUNT(*) as c FROM Report WHERE status = 'PENDING'")
+        .first()
+        .catch(() => ({ c: 0 })),
+      db
+        .prepare(
+          "SELECT COUNT(*) as c FROM User WHERE role IN ('TEACHER', 'STUDENT') AND createdAt > ?",
+        )
+        .bind(sevenDaysAgo)
+        .first()
+        .catch(() => ({ c: 0 })),
+      db
+        .prepare(
+          "SELECT COUNT(*) as c FROM ErrorLog WHERE severity IN ('ERROR', 'CRITICAL') AND createdAt > ?",
+        )
+        .bind(oneDayAgo)
+        .first()
+        .catch(() => ({ c: 0 })),
+    ]);
+
+  const num = (v: any) => (v == null ? 0 : Number(v) || 0);
+  const pendingApprovals = num(pendingApprovalsR?.c);
+  const pendingEdits = num(pendingEditsR?.c);
+  const pendingReports = num(pendingReportsR?.c);
+  const newUsers = num(newUsersR?.c);
+  const unseenErrors = num(unseenErrorsR?.c);
 
   const navItems: any[] = [
     { group: "Vue d'ensemble" },

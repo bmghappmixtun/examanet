@@ -1,6 +1,11 @@
 // @ts-nocheck
+/**
+ * /admin dashboard
+ *
+ * 2026-08-30: Rewrote to use raw D1 SQL (prisma-compat points at Neon which
+ * has no data). Same KPI numbers and layout, just D1 direct.
+ */
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import Link from 'next/link';
 import { Users, FileText, Star, Download, AlertCircle, Settings } from 'lucide-react';
@@ -20,57 +25,113 @@ export const metadata = {
   },
 };
 
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
+
+function num(v: any): number {
+  if (v == null) return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export default async function AdminDashboard() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
 
+  // ADMIN only
+  if (user.role !== 'ADMIN') {
+    if (user.role === 'TEACHER') redirect('/enseignant');
+    redirect('/mon-compte');
+  }
+
+  const db = await getD1();
+
+  const safeFirst = async (sql: string, ...params: any[]) => {
+    try {
+      const stmt = db.prepare(sql);
+      const r = await (params.length ? stmt.bind(...params) : stmt).first();
+      return r;
+    } catch (e: any) {
+      console.error('[admin/page] query failed:', sql.slice(0, 60), e.message);
+      return null;
+    }
+  };
+  const safeAll = async (sql: string, ...params: any[]) => {
+    try {
+      const stmt = db.prepare(sql);
+      const r = await (params.length ? stmt.bind(...params) : stmt).all();
+      return r?.results || [];
+    } catch (e: any) {
+      console.error('[admin/page] query failed:', sql.slice(0, 60), e.message);
+      return [];
+    }
+  };
+
   const [
-    totalUsers,
-    totalStudents,
-    totalTeachers,
-    pendingTeachers,
-    totalResources,
-    publishedResources,
-    pendingResources,
+    totalUsersR,
+    totalStudentsR,
+    totalTeachersR,
+    pendingTeachersR,
+    totalResourcesR,
+    publishedResourcesR,
+    pendingResourcesR,
+    totalDownloadsR,
+    totalRatingsR,
+    totalCommentsR,
+    recentResources,
+    recentUsers,
   ] = await Promise.all([
-    prisma.user.count(),
-    prisma.user.count({ where: { role: 'STUDENT' } }),
-    prisma.user.count({ where: { role: 'TEACHER' } }),
-    prisma.user.count({ where: { role: 'TEACHER', status: 'PENDING_APPROVAL' } }),
-    prisma.resource.count(),
-    prisma.resource.count({ where: { status: 'PUBLISHED' } }),
-    prisma.resource.count({ where: { status: 'PENDING_APPROVAL' } }),
+    safeFirst('SELECT COUNT(*) as c FROM User'),
+    safeFirst("SELECT COUNT(*) as c FROM User WHERE role = 'STUDENT'"),
+    safeFirst("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER'"),
+    safeFirst("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER' AND status = 'PENDING_APPROVAL'"),
+    safeFirst('SELECT COUNT(*) as c FROM Resource'),
+    safeFirst("SELECT COUNT(*) as c FROM Resource WHERE status = 'PUBLISHED'"),
+    safeFirst("SELECT COUNT(*) as c FROM Resource WHERE status = 'PENDING_APPROVAL'"),
+    safeFirst("SELECT SUM(downloadsCount) as s FROM Resource WHERE status = 'PUBLISHED'"),
+    safeFirst('SELECT COUNT(*) as c FROM Rating'),
+    safeFirst('SELECT COUNT(*) as c FROM Comment'),
+    safeAll(
+      `SELECT r.id, r.title, r.status, r.createdAt,
+              s.nameFr as subjectNameFr,
+              t.firstName as teacherFirstName, t.lastName as teacherLastName
+       FROM Resource r
+       LEFT JOIN Subject s ON r.subjectId = s.id
+       LEFT JOIN User t ON r.teacherId = t.id
+       WHERE r.status IN ('PENDING_APPROVAL', 'PUBLISHED')
+       ORDER BY r.createdAt DESC
+       LIMIT 8`,
+    ),
+    safeAll(
+      `SELECT id, firstName, lastName, email, role, status, createdAt
+       FROM User
+       ORDER BY createdAt DESC
+       LIMIT 6`,
+    ),
   ]);
 
-  const [totalDownloads, totalComments, totalRatings] = await Promise.all([
-    prisma.resource.aggregate({ where: { status: 'PUBLISHED' }, _sum: { downloadsCount: true } }),
-    prisma.comment.count(),
-    prisma.rating.count(),
-  ]);
+  const totalUsers = num(totalUsersR?.c);
+  const totalStudents = num(totalStudentsR?.c);
+  const totalTeachers = num(totalTeachersR?.c);
+  const pendingTeachers = num(pendingTeachersR?.c);
+  const totalResources = num(totalResourcesR?.c);
+  const publishedResources = num(publishedResourcesR?.c);
+  const pendingResources = num(pendingResourcesR?.c);
+  const totalDownloads = num(totalDownloadsR?.s);
+  const totalRatings = num(totalRatingsR?.c);
 
-  const recentResources = await prisma.resource.findMany({
-    where: { status: { in: ['PENDING_APPROVAL', 'PUBLISHED'] } },
-    take: 8,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      subject: true,
-      teacher: { select: { firstName: true, lastName: true, firstNameAr: true, lastNameAr: true } },
-    },
-  });
-
-  const recentUsers = await prisma.user.findMany({
-    take: 6,
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      role: true,
-      status: true,
-      createdAt: true,
-    },
-  });
+  const recentResourcesList = (recentResources || []).map((r: any) => ({
+    id: r.id,
+    title: r.title,
+    status: r.status,
+    createdAt: r.createdAt,
+    subject: { nameFr: r.subjectNameFr },
+    teacher: { firstName: r.teacherFirstName, lastName: r.teacherLastName },
+  }));
+  const recentUsersList = recentUsers || [];
 
   return (
     <div>
@@ -110,7 +171,7 @@ export default async function AdminDashboard() {
           },
           {
             icon: Download,
-            value: totalDownloads._sum.downloadsCount || 0,
+            value: totalDownloads,
             label: 'Téléchargements',
             color: 'from-amber-500 to-amber-600',
             bg: 'bg-amber-100',
@@ -160,7 +221,7 @@ export default async function AdminDashboard() {
             >
               <div>
                 <div className="font-bold text-orange-800">
-                  📄 {pendingResources} ressource{pendingResources > 1 ? 's' : ''} à valider
+                  📄 {pendingResources} ressource{pendingResources > 0 ? 's' : ''} à valider
                 </div>
                 <div className="text-sm text-orange-600">Cliquez pour examiner</div>
               </div>
@@ -183,7 +244,7 @@ export default async function AdminDashboard() {
             </Link>
           </div>
           <div className="space-y-3">
-            {recentResources.map((r) => (
+            {recentResourcesList.map((r: any) => (
               <div
                 key={r.id}
                 className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50"
@@ -201,7 +262,7 @@ export default async function AdminDashboard() {
                       {r.title}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {r.teacher?.firstName} {r.teacher?.lastName} · {r.subject.nameFr}
+                      {r.teacher?.firstName} {r.teacher?.lastName} · {r.subject?.nameFr}
                     </div>
                   </div>
                 </div>
@@ -216,6 +277,9 @@ export default async function AdminDashboard() {
                 </span>
               </div>
             ))}
+            {recentResourcesList.length === 0 && (
+              <div className="text-sm text-slate-400 text-center py-6">Aucune ressource récente</div>
+            )}
           </div>
         </div>
 
@@ -231,14 +295,14 @@ export default async function AdminDashboard() {
             </Link>
           </div>
           <div className="space-y-3">
-            {recentUsers.map((u) => (
+            {recentUsersList.map((u: any) => (
               <div
                 key={u.id}
                 className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white font-bold text-xs flex items-center justify-center">
-                    {(u.firstName?.[0] || u.email[0]).toUpperCase()}
+                    {(u.firstName?.[0] || u.email?.[0] || '?').toUpperCase()}
                   </div>
                   <div>
                     <div className="font-semibold text-sm">
@@ -263,6 +327,9 @@ export default async function AdminDashboard() {
                 </div>
               </div>
             ))}
+            {recentUsersList.length === 0 && (
+              <div className="text-sm text-slate-400 text-center py-6">Aucun utilisateur récent</div>
+            )}
           </div>
         </div>
       </div>

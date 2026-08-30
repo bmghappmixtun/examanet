@@ -19,8 +19,19 @@ export function formatDate(date: Date | string, lang: 'fr' | 'ar' = 'fr'): strin
   return d.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-export function timeAgo(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+export function timeAgo(date: Date | string | number | null | undefined): string {
+  if (date == null || date === 0 || date === '') return 'jamais';
+  let d: Date;
+  if (typeof date === 'number') {
+    d = new Date(date);
+  } else if (typeof date === 'string' && /^\d+$/.test(date)) {
+    d = new Date(Number(date));
+  } else if (typeof date === 'string') {
+    d = new Date(date);
+  } else {
+    d = date;
+  }
+  if (!(d instanceof Date) || isNaN(d.getTime())) return 'inconnu';
   const seconds = Math.floor((Date.now() - d.getTime()) / 1000);
   const intervals: [number, string][] = [
     [31536000, 'an'],
