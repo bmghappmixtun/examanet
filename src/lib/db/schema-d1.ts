@@ -69,6 +69,12 @@ export const users = sqliteTable('User', {
   uploadsCount:    integer('uploadsCount').notNull().default(0),
   followersCount:  integer('followersCount').notNull().default(0),
 
+  // Login security (2026-08-30: added when migrating login to D1)
+  failedLoginCount:    integer('failedLoginCount').notNull().default(0),
+  lockedUntil:         integer('lockedUntil', { mode: 'timestamp' }),
+  lastFailedLoginAt:   integer('lastFailedLoginAt', { mode: 'timestamp' }),
+  lastLoginAt:         integer('lastLoginAt', { mode: 'timestamp' }),
+
   createdAt:       integer('createdAt', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   updatedAt:       integer('updatedAt', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 }, (table) => ({
