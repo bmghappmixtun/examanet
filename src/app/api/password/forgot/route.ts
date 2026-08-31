@@ -5,37 +5,18 @@
  * Sends an OTP code to the user's email if the account exists.
  * Always returns the same response shape (no email enumeration).
  *
- * SECURITY MEASURES (defense in depth):
- *  1. Email existence check (silent) — only ACTIVE users get a code
- *  2. Same response shape regardless of email existence (anti-enumeration)
- *  3. Rate limit per email (5 requests / 15 min) to slow brute force probes
- *  4. Rate limit per IP (20 requests / 15 min) to slow distributed probes
- *  5. Audit log — every attempt is logged for security monitoring
- *  6. Status check — suspended/banned/pending accounts are blocked
- *  7. OTP reuse — invalidates previous unused codes on each request
- *  8. OTP expiry — codes expire after 30 min
- *  9. OTP attempt limit — max 5 tries per code
- *
- * POST /api/password/forgot
- *   { email: string }
- *   → { success: true, email: string, devCode?: string }
+ * D1 direct (was prisma). Per security model, we keep all checks.
  */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction, getClientIp } from '@/lib/security';
-import { prisma } from '@/lib/prisma';
 import { generateOTP } from '@/lib/auth';
 import { sendOTPEmail } from '@/lib/email';
 
-export const runtime = 'nodejs';
-
-const RESET_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
+const RESET_EXPIRY_MS = 30 * 60 * 1000;
 const RATE_LIMIT_PER_EMAIL = 5;
 const RATE_LIMIT_PER_IP = 20;
-const RATE_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const RATE_WINDOW_MS = 15 * 60 * 1000;
 
-// In-memory rate limit (per process). Good enough for this single endpoint;
-// for a multi-instance setup, move to Redis or Upstash.
 const _rateStore = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(key: string, limit: number): boolean {
@@ -50,16 +31,22 @@ function checkRateLimit(key: string, limit: number): boolean {
   return true;
 }
 
+function genId() {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 25);
+}
+
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
+
 export async function POST(req: NextRequest) {
   if (isProduction() && !isValidOrigin(req)) {
     return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
   }
 
   const ip = getClientIp(req);
-  const ua = req.headers.get('user-agent') || '';
-  // (kept for future use; user-agent can be logged with attempts)
-
-  // Rate limit per IP
   if (!checkRateLimit(`ip:${ip}`, RATE_LIMIT_PER_IP)) {
     return NextResponse.json(
       { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
@@ -67,7 +54,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let body: { email?: string };
+  let body: any;
   try {
     body = await req.json();
   } catch {
@@ -79,7 +66,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Email invalide' }, { status: 400 });
   }
 
-  // Rate limit per email
   if (!checkRateLimit(`email:${email}`, RATE_LIMIT_PER_EMAIL)) {
     return NextResponse.json(
       { error: 'Trop de tentatives pour cet email. Réessayez dans 15 minutes.' },
@@ -87,75 +73,50 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // SECURITY: always return the same response shape to prevent email enumeration.
-  // The actual work happens below only if the user exists.
   const genericResponse = { success: true, email };
 
-  // ============================================================
-  // CHECK 1: Does the email exist in the database?
-  // (silent — return genericResponse either way to prevent enumeration)
-  // ============================================================
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true, email: true, firstName: true, status: true, role: true },
-  });
+  const db = await getD1();
+  const user = await db
+    .prepare(
+      'SELECT id, email, firstName, status, role FROM User WHERE email = ? LIMIT 1',
+    )
+    .bind(email)
+    .first();
 
-  // Log every attempt for security audit (regardless of result)
   console.log(
     `[forgot-password] attempt email=${email} ip=${ip} exists=${!!user} status=${user?.status || 'NO_USER'}`,
   );
 
   if (!user) {
-    // No user found — but don't reveal this to the caller
     return NextResponse.json(genericResponse);
   }
 
-  // ============================================================
-  // CHECK 2: Account status — only blocked users cannot reset
-  // Silent return for blocked accounts (no email sent, same response)
-  //
-  // Status flow for STUDENTS:
-  //   PENDING_OTP  → after signup, before email verification
-  //   ACTIVE       → after email verification
-  //
-  // Status flow for TEACHERS:
-  //   PENDING_APPROVAL       → after signup, before admin approval
-  //   PENDING_FILE_VERIFICATION → during file verification
-  //   ACTIVE                 → fully approved
-  //
-  // Blocked statuses (cannot reset):
-  //   SUSPENDED  → admin-suspended
-  //   BANNED     → permanently banned
-  // ============================================================
   if (user.status === 'SUSPENDED' || user.status === 'BANNED') {
     console.log(`[forgot-password] blocked ${user.status} user email=${email}`);
     return NextResponse.json(genericResponse);
   }
 
-  // ============================================================
-  // CHECK 3: Invalidate any previous unused codes
-  // ============================================================
-  await prisma.otpCode.updateMany({
-    where: { userId: user.id, purpose: 'password_reset', consumedAt: null },
-    data: { consumedAt: new Date() },
-  });
+  // Invalidate any previous unused codes
+  await db
+    .prepare(
+      `UPDATE OtpCode SET usedAt = ?
+       WHERE userId = ? AND purpose = 'RESET' AND usedAt IS NULL`,
+    )
+    .bind(Date.now(), user.id)
+    .run();
 
-  // ============================================================
-  // CHECK 4: Generate and persist the OTP
-  // ============================================================
+  // Generate and persist OTP
   const code = generateOTP();
-  await prisma.otpCode.create({
-    data: {
-      userId: user.id,
-      code,
-      purpose: 'password_reset',
-      expiresAt: new Date(Date.now() + RESET_EXPIRY_MS),
-    },
-  });
+  const now = Date.now();
+  await db
+    .prepare(
+      `INSERT INTO OtpCode (id, userId, code, purpose, expiresAt, createdAt)
+       VALUES (?, ?, ?, 'RESET', ?, ?)`,
+    )
+    .bind(genId(), user.id, code, now + RESET_EXPIRY_MS, now)
+    .run();
 
-  // ============================================================
-  // CHECK 5: Send the email (server-side, await for status)
-  // ============================================================
+  // Send email
   const result = await sendOTPEmail(user.email, code, user.firstName ?? undefined);
 
   console.log(
@@ -165,7 +126,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     success: true,
     email: user.email,
-    // Dev code is included in dev/test mode for easy local testing
     ...(result.devCode ? { devCode: result.devCode } : {}),
   });
 }

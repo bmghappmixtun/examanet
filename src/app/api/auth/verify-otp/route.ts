@@ -1,13 +1,17 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
-import { prisma } from '@/lib/prisma';
 import { createSession, setSessionCookie } from '@/lib/auth';
 import { sendWelcomeConfirmedEmail } from '@/lib/email';
 import { notifyAdminsTeacherActivated } from '@/lib/admin-notify';
 
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
+
 export async function POST(req: NextRequest) {
-  // SECURITY: CSRF origin check (production only)
   if (isProduction() && !isValidOrigin(req)) {
     return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
   }
@@ -18,12 +22,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email et code requis' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    const db = await getD1();
+    const normalizedEmail = email.toLowerCase();
+
+    const user = await db
+      .prepare('SELECT id, status, emailVerifiedAt, email, firstName, lastName, role FROM User WHERE email = ? LIMIT 1')
+      .bind(normalizedEmail)
+      .first();
     if (!user) return NextResponse.json({ error: 'Utilisateur non trouvé' }, { status: 404 });
 
     // Already verified?
     if (user.emailVerifiedAt) {
-      // Auto-login if active
       if (user.status === 'ACTIVE') {
         const { token, expiresAt } = await createSession(user.id);
         await setSessionCookie(token, expiresAt);
@@ -32,10 +41,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, status: user.status });
     }
 
-    const otp = await prisma.otpCode.findFirst({
-      where: { userId: user.id, purpose: 'email_verification', consumedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
+    // Find the most recent unused OTP for this user
+    const otp = await db
+      .prepare(
+        `SELECT id, code, expiresAt FROM OtpCode
+         WHERE userId = ? AND purpose = 'VERIFY' AND usedAt IS NULL
+         ORDER BY createdAt DESC LIMIT 1`,
+      )
+      .bind(user.id)
+      .first();
 
     if (!otp) {
       return NextResponse.json(
@@ -43,65 +57,53 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    if (otp.expiresAt < new Date()) {
+    if (Number(otp.expiresAt) < Date.now()) {
       return NextResponse.json(
         { error: 'Code expiré. Demandez un nouveau code.' },
         { status: 400 },
       );
     }
-    if (otp.attempts >= 5) {
-      return NextResponse.json(
-        { error: 'Trop de tentatives. Demandez un nouveau code.' },
-        { status: 429 },
-      );
-    }
     if (otp.code !== code) {
-      await prisma.otpCode.update({ where: { id: otp.id }, data: { attempts: { increment: 1 } } });
       return NextResponse.json({ error: 'Code incorrect' }, { status: 400 });
     }
 
-    // Mark OTP as consumed
-    await prisma.otpCode.update({ where: { id: otp.id }, data: { consumedAt: new Date() } });
+    // Mark OTP as used
+    await db
+      .prepare('UPDATE OtpCode SET usedAt = ? WHERE id = ?')
+      .bind(Date.now(), otp.id)
+      .run();
 
-    // Update user: verify email + set appropriate status
-    // - STUDENT → ACTIVE (can login immediately)
-    // - TEACHER → PENDING_APPROVAL (admin must approve)
+    // Update user: verify email + set status
     const newStatus = user.role === 'TEACHER' ? 'PENDING_APPROVAL' : 'ACTIVE';
-    const updated = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        status: newStatus,
-        emailVerifiedAt: new Date(),
-      },
-    });
+    const now = Date.now();
+    await db
+      .prepare(
+        'UPDATE User SET status = ?, emailVerifiedAt = ?, updatedAt = ? WHERE id = ?',
+      )
+      .bind(newStatus, now, now, user.id)
+      .run();
 
-    // Send confirmation email after successful verification
-    await sendWelcomeConfirmedEmail(updated.email, updated.firstName ?? '', updated.role).catch(
+    // Send confirmation email
+    await sendWelcomeConfirmedEmail(user.email, user.firstName ?? '', user.role).catch(
       (e) => console.error('Confirmation email error:', e),
     );
 
-    // For TEACHER: notify admins that the prof has activated their account (PENDING_OTP → PENDING_APPROVAL)
-    if (updated.role === 'TEACHER' && newStatus === 'PENDING_APPROVAL') {
-      await notifyAdminsTeacherActivated(updated.id).catch((e) =>
-        console.error('Teacher activation admin notify error:', e),
-      );
-    }
-
-    // Auto-login for students
-    if (updated.status === 'ACTIVE') {
-      const { token, expiresAt } = await createSession(updated.id);
+    // Auto-login students; teachers wait for approval
+    if (newStatus === 'ACTIVE') {
+      const { token, expiresAt } = await createSession(user.id);
       await setSessionCookie(token, expiresAt);
+      return NextResponse.json({ success: true, status: 'ACTIVE', autoLoggedIn: true });
     }
 
-    return NextResponse.json({
-      success: true,
-      status: updated.status,
-      role: updated.role,
-      message:
-        updated.status === 'ACTIVE'
-          ? 'Email vérifié ! Bienvenue sur Examanet.'
-          : "Email vérifié ! Votre compte enseignant est en attente d'approbation par un administrateur.",
-    });
+    // Notify admins for teacher approval
+    if (user.role === 'TEACHER') {
+      await notifyAdminsTeacherActivated(user.id).catch((e) =>
+        console.error('Admin notify error:', e),
+      );
+      return NextResponse.json({ success: true, status: 'PENDING_APPROVAL' });
+    }
+
+    return NextResponse.json({ success: true, status: newStatus });
   } catch (e: any) {
     console.error('Verify OTP error:', e);
     return NextResponse.json({ error: e.message }, { status: 500 });

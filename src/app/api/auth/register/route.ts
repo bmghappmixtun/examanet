@@ -1,10 +1,19 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
-import { prisma } from '@/lib/prisma';
 import { hashPassword, generateOTP } from '@/lib/auth';
 import { sendOTPEmail, sendWelcomeEmail } from '@/lib/email';
 import { notifyAdminsNewTeacher } from '@/lib/admin-notify';
+
+function genId() {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 25);
+}
+
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
 
 export async function POST(req: NextRequest) {
   // SECURITY: CSRF origin check (production only)
@@ -28,31 +37,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email invalide' }, { status: 400 });
     }
 
-    // SECURITY: anti-email-enumeration — return same response regardless of existence
-    // (UX trade-off: user who tries to re-register gets a slightly different flow
-    // but we don't leak whether the email is already in the DB)
-    const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    const db = await getD1();
+    const normalizedEmail = email.toLowerCase();
+
+    // Check if user already exists
+    const existing = await db
+      .prepare('SELECT id, status, emailVerifiedAt, email, firstName FROM User WHERE email = ? LIMIT 1')
+      .bind(normalizedEmail)
+      .first();
+
     if (existing) {
-      // If user exists but is PENDING_OTP (didn't verify), re-send OTP silently
+      // If user exists but is PENDING_OTP, regenerate OTP
       if (existing.status === 'PENDING_OTP' && !existing.emailVerifiedAt) {
         const otpCode = generateOTP();
-        await prisma.otpCode.updateMany({
-          where: { userId: existing.id, purpose: 'email_verification', consumedAt: null },
-          data: { consumedAt: new Date() },
-        });
-        await prisma.otpCode.create({
-          data: {
-            userId: existing.id,
-            code: otpCode,
-            purpose: 'email_verification',
-            expiresAt: new Date(Date.now() + 30 * 60 * 1000),
-          },
-        });
+        // Expire existing OTPs for this user+purpose
+        await db
+          .prepare(
+            `UPDATE OtpCode SET usedAt = ?
+             WHERE userId = ? AND purpose = 'VERIFY' AND usedAt IS NULL`,
+          )
+          .bind(Date.now(), existing.id)
+          .run();
+        // Create new OTP
+        await db
+          .prepare(
+            `INSERT INTO OtpCode (id, userId, code, purpose, expiresAt, createdAt)
+             VALUES (?, ?, ?, 'VERIFY', ?, ?)`,
+          )
+          .bind(
+            genId(),
+            existing.id,
+            otpCode,
+            Date.now() + 30 * 60 * 1000,
+            Date.now(),
+          )
+          .run();
         sendOTPEmail(existing.email, otpCode, existing.firstName ?? undefined).catch((e) =>
           console.error('Re-OTP error:', e),
         );
       }
-      // SECURITY: same response shape as a fresh registration
+      // Same response shape as a fresh registration (anti-enumeration)
       return NextResponse.json({
         success: true,
         requiresVerification: true,
@@ -61,60 +85,62 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Create new user
     const passwordHash = await hashPassword(password);
     const otpCode = generateOTP();
-    // Both students AND teachers require OTP verification first
-    const status = 'PENDING_OTP';
+    const userId = genId();
+    const now = Date.now();
 
-    const user = await prisma.user.create({
-      data: {
-        email: email.toLowerCase(),
+    await db
+      .prepare(
+        `INSERT INTO User (
+          id, email, passwordHash, firstName, lastName, role, status,
+          emailVerifiedAt, slug, createdAt, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING_OTP', NULL, '', ?, ?)`,
+      )
+      .bind(
+        userId,
+        normalizedEmail,
         passwordHash,
         firstName,
-        lastName: lastName || '',
+        lastName || '',
         role,
-        status,
-        emailVerifiedAt: null,
-        slug: '', // auto-filled by Prisma middleware
-      },
-    });
+        now,
+        now,
+      )
+      .run();
 
     // Create OTP code (30 min expiry)
-    await prisma.otpCode.create({
-      data: {
-        userId: user.id,
-        code: otpCode,
-        purpose: 'email_verification',
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
-      },
-    });
+    await db
+      .prepare(
+        `INSERT INTO OtpCode (id, userId, code, purpose, expiresAt, createdAt)
+         VALUES (?, ?, ?, 'VERIFY', ?, ?)`,
+      )
+      .bind(genId(), userId, otpCode, now + 30 * 60 * 1000, now)
+      .run();
 
-    // Send OTP (for verification) - await so we know if it failed
-    const otpResult = await sendOTPEmail(user.email, otpCode, user.firstName ?? undefined);
+    // Send OTP email
+    const otpResult = await sendOTPEmail(normalizedEmail, otpCode, firstName);
     console.log(
-      `[register] OTP email result for ${user.email}: success=${otpResult.success} id=${otpResult.id} devCode=${otpResult.devCode ? 'YES' : 'NO'}`,
+      `[register] OTP email result for ${normalizedEmail}: success=${otpResult.success} id=${otpResult.id} devCode=${otpResult.devCode ? 'YES' : 'NO'}`,
     );
 
-    // Send welcome email (different purpose - confirms account creation)
-    await sendWelcomeEmail(user.email, user.firstName ?? '', user.role);
+    // Send welcome email
+    await sendWelcomeEmail(normalizedEmail, firstName, role);
 
     // If teacher, notify admins in-app
-    if (user.role === 'TEACHER') {
-      await notifyAdminsNewTeacher(user.id).catch((e) => console.error('Admin notify error:', e));
+    if (role === 'TEACHER') {
+      await notifyAdminsNewTeacher(userId).catch((e) => console.error('Admin notify error:', e));
     }
 
-    // Build response - in dev mode OR if email failed, expose the OTP
-    // so the user can verify without checking email
+    // Build response
     const response: any = {
       success: true,
       requiresVerification: true,
       message: 'Compte créé. Un code de vérification a été envoyé à votre email.',
-      email: user.email,
+      email: normalizedEmail,
     };
 
-    // Expose devCode when:
-    // - NODE_ENV is not production
-    // - OR Resend is in testing mode (failed to send to non-owner)
     if (otpResult.devCode) {
       response.devCode = otpResult.devCode;
       response.devMode = true;
