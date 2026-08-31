@@ -1,18 +1,41 @@
 /**
- * Storage helper for CF Workers + D1 deployment.
+ * Storage helper for Examanet.
  *
- * Production: files go to R2 (PDFS_BUCKET). The fileUrl points to our
- * /api/file/{key} proxy so the browser never sees a Vercel Blob URL.
- * Legacy Vercel Blob URLs (from before migration) are still served via
- * the same proxy, falling back to Vercel Blob when R2 doesn't have the file.
+ *  - Production (CF Workers + D1 deployment): R2 (PDFS_BUCKET) is the
+ *    storage backend. The fileUrl is `/api/file/{key}` (proxied through
+ *    our Worker so the browser never sees a third-party URL).
+ *  - Local dev: ./public/uploads.
  *
- * Development: local filesystem (./public/uploads).
+ * We DO NOT use Vercel Blob anymore. New uploads go straight to R2.
+ * Legacy Vercel Blob URLs are still served (read-only) via the same proxy
+ * (`/api/file/` falls back to Vercel Blob when R2 doesn't have the file).
  */
 import { promises as fs } from 'fs';
 import path from 'path';
 
-const IS_VERCEL = process.env.VERCEL === '1';
 const R2_PUBLIC_PREFIX = '/api/file/';
+
+/**
+ * Detect whether we are running on CF Workers (i.e. R2 is available).
+ * We try to read the PDFS_BUCKET binding via getCloudflareContext. If it
+ * resolves to a bucket, we're on Workers. If it throws (no binding, dev
+ * mode, Node), we're on local dev.
+ *
+ * Cached after first call — the answer doesn't change at runtime.
+ */
+let isWorkersCache: boolean | null = null;
+async function isWorkers(): Promise<boolean> {
+  if (isWorkersCache !== null) return isWorkersCache;
+  try {
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = await getCloudflareContext({ async: true });
+    const bucket = (ctx as any)?.env?.PDFS_BUCKET;
+    isWorkersCache = Boolean(bucket);
+  } catch {
+    isWorkersCache = false;
+  }
+  return isWorkersCache;
+}
 
 export async function uploadFile(
   filename: string,
@@ -20,10 +43,10 @@ export async function uploadFile(
   contentType = 'application/pdf',
 ): Promise<{ url: string; key: string }> {
   // Production: R2 (CF Workers). fileUrl is the public proxy.
-  if (IS_VERCEL) {
+  if (await isWorkers()) {
     const { getCloudflareContext } = await import('@opennextjs/cloudflare');
     const ctx = await getCloudflareContext({ async: true });
-    const bucket = (ctx as any).env.PDFS_BUCKET as R2Bucket | undefined;
+    const bucket = (ctx as any).env.PDFS_BUCKET as R2Bucket;
     if (!bucket) {
       throw new Error('R2 bucket (PDFS_BUCKET) is not configured');
     }
@@ -46,27 +69,29 @@ export async function uploadFile(
 }
 
 export async function deleteFile(keyOrUrl: string): Promise<void> {
-  // If it's a proxy URL, extract the key
+  // If it's a proxy URL, extract the key and delete from R2
   if (keyOrUrl.startsWith(R2_PUBLIC_PREFIX)) {
     const key = keyOrUrl.slice(R2_PUBLIC_PREFIX.length);
-    if (IS_VERCEL) {
-      const { getCloudflareContext } = await import('@opennextjs/cloudflare');
-      const ctx = await getCloudflareContext({ async: true });
-      const bucket = (ctx as any).env.PDFS_BUCKET as R2Bucket | undefined;
-      if (bucket) {
-        try {
+    if (await isWorkers()) {
+      try {
+        const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+        const ctx = await getCloudflareContext({ async: true });
+        const bucket = (ctx as any).env.PDFS_BUCKET as R2Bucket | undefined;
+        if (bucket) {
           await bucket.delete(key);
-        } catch {}
+        }
+      } catch {
+        // ignore — best effort
       }
     }
     return;
   }
-  // Legacy Vercel Blob delete (best-effort, won't work without @vercel/blob)
-  // We no longer use Vercel Blob, so this is a no-op.
+  // Legacy Vercel Blob URL — we no longer delete from Vercel Blob.
+  // The file is still served read-only via /api/file/ (Vercel Blob fallback).
   if (keyOrUrl.startsWith('http')) {
     return;
   }
-  // Local delete
+  // Local file delete (dev)
   try {
     const uploadDir = process.env.UPLOAD_DIR || './public/uploads';
     await fs.unlink(path.join(uploadDir, path.basename(keyOrUrl)));
