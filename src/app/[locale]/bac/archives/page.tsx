@@ -17,12 +17,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const isAr = locale === 'ar';
   const stats = getBacStats();
+  const yearMin = stats.yearRange?.min ?? 2010;
+  const yearMax = stats.yearRange?.max ?? 2025;
   const title = isAr
-    ? `أرشيف الباكالوريا التونسية — ${stats.totalFiles} ملف من 2010 إلى 2025`
-    : `Archives Bac Tunisie — ${stats.totalFiles} fichiers de 2010 à 2025`;
+    ? `أرشيف الباكالوريا التونسية — ${stats.totalFiles} ملف من ${yearMin} إلى ${yearMax}`
+    : `Archives Bac Tunisie — ${stats.totalFiles} fichiers de ${yearMin} à ${yearMax}`;
   const desc = isAr
-    ? `📥 ${stats.totalFiles} ملف من مواضيع وإصلاحات الباكالوريا التونسية من 2010 إلى 2025 — ${stats.sectionsCount} شعب، ${stats.subjectsCount} مواد، دورة رئيسية ومراقبة. تصفية، بحث، تحميل مباشر.`
-    : `📥 ${stats.totalFiles} fichiers de sujets et corrigés du Bac tunisien de 2010 à 2025 — ${stats.sectionsCount} sections, ${stats.subjectsCount} matières, sessions principale et contrôle. Filtre, recherche, téléchargement direct.`;
+    ? `📥 ${stats.totalFiles} ملف من مواضيع وإصلاحات الباكالوريا التونسية من ${yearMin} إلى ${yearMax} — ${stats.sectionsCount} شعب، ${stats.subjectsCount} مواد، دورة رئيسية ومراقبة. تصفية، بحث، تحميل مباشر.`
+    : `📥 ${stats.totalFiles} fichiers de sujets et corrigés du Bac tunisien de ${yearMin} à ${yearMax} — ${stats.sectionsCount} sections, ${stats.subjectsCount} matières, sessions principale et contrôle. Filtre, recherche, téléchargement direct.`;
 
   return {
     title,
@@ -193,7 +195,7 @@ export default async function BacArchivesPage({ searchParams }: PageProps) {
 
   const itemListJsonLd = itemListSchema({
     name: t('bac.archives.title') || 'Archives Bac Tunisie',
-    description: `${stats.totalFiles} fichiers de sujets et corrigés du Bac tunisien de 2010 à 2025`,
+    description: `${stats.totalFiles} fichiers de sujets et corrigés du Bac tunisien de ${stats.yearRange?.min ?? 2010} à ${stats.yearRange?.max ?? 2025}`,
     url: isAr ? PAGE_URL_AR : PAGE_URL_FR,
     items: allFiles.map((f: any) => ({
       name: `${f.subject} ${f.year} ${f.session === 'principale' ? (isAr ? 'د.ر' : 'P') : isAr ? 'د.م' : 'C'} ${f.type === 'sujets' ? (isAr ? 'موضوع' : 'Sujet') : isAr ? 'إصلاح' : 'Corrigé'}`,
