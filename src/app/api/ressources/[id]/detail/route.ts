@@ -61,7 +61,7 @@ export async function GET(
 
     // ResourceSummary — AI-generated full text summary
     const sum = await db.prepare(
-      'SELECT summary, modelUsed, generatedAt FROM ResourceSummary WHERE resourceId = ? LIMIT 1'
+      'SELECT summary, model, language, generatedAt FROM ResourceSummary WHERE resourceId = ? LIMIT 1'
     ).bind(r.id).first();
     
     // Comments - simple
@@ -104,6 +104,9 @@ export async function GET(
         } : null,
         // AI full text summary
         summary: sum?.summary || null,
+        summaryModel: sum?.model || null,
+        summaryLanguage: sum?.language || null,
+        summaryGeneratedAt: sum?.generatedAt || null,
       },
       ratings: ratings?.results || [],
       comments: comments?.results || [],
