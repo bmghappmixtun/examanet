@@ -213,7 +213,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* 2026-07-30: preconnect to Vercel Blob storage (PDFs) so the TCP
             + TLS handshake happens in parallel with HTML/CSS/JS parsing.
             Saves ~100-200ms on first PDF download / preview thumbnail. */}
-        <link rel="preconnect" href="https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com" crossOrigin="anonymous" />
+        
         {/* 2026-07-30: preconnect to Google Analytics to avoid late DNS/TLS
             on first interaction (improves INP by ~30-50ms). */}
         <link rel="preconnect" href="https://www.google-analytics.com" />
