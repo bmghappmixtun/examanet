@@ -1,5 +1,4 @@
 'use client';
-import { Link } from '@/i18n/navigation';
 import NextLink from 'next/link';
 import { Upload, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -59,7 +58,7 @@ export default function FloatingUploadButton() {
           </div>
         )}
 
-        <Link
+        <NextLink
           href="/enseignant/ajouter"
           onMouseEnter={() => setExpanded(true)}
           onMouseLeave={() => setExpanded(false)}
@@ -74,7 +73,7 @@ export default function FloatingUploadButton() {
           <span className="absolute -top-1 -end-1 w-5 h-5 bg-white text-orange-600 rounded-full flex items-center justify-center text-xs font-extrabold shadow-md">
             +
           </span>
-        </Link>
+        </NextLink>
       </div>
     );
   }
