@@ -21,6 +21,11 @@
   "observability": {
     "enabled": true
   },
+  "triggers": {
+    "crons": [
+      "2 * * * *"
+    ]
+  },
   "r2_buckets": [
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
