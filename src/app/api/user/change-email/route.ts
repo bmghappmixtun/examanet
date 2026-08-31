@@ -2,10 +2,14 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 
-export const runtime = 'nodejs';
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser();
@@ -20,9 +24,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email invalide' }, { status: 400 });
     }
 
-    // Verify password
-    const bcrypt = await import('bcryptjs');
-    const fullUser = await prisma.user.findUnique({ where: { id: user.id } });
+    const db = await getD1();
+    const fullUser = await db
+      .prepare('SELECT id, passwordHash FROM User WHERE id = ? LIMIT 1')
+      .bind(user.id)
+      .first();
+
     if (!fullUser?.passwordHash) {
       return NextResponse.json({ error: 'Compte sans mot de passe' }, { status: 400 });
     }
@@ -31,16 +38,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Mot de passe incorrect' }, { status: 400 });
     }
 
-    // Check if email already used
-    const existing = await prisma.user.findUnique({ where: { email: newEmail } });
+    const normalizedEmail = newEmail.toLowerCase();
+    const existing = await db
+      .prepare('SELECT id FROM User WHERE email = ? LIMIT 1')
+      .bind(normalizedEmail)
+      .first();
     if (existing && existing.id !== user.id) {
       return NextResponse.json({ error: 'Cet email est déjà utilisé' }, { status: 400 });
     }
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { email: newEmail, emailVerifiedAt: null },
-    });
+    await db
+      .prepare(
+        'UPDATE User SET email = ?, emailVerifiedAt = NULL, updatedAt = ? WHERE id = ?',
+      )
+      .bind(normalizedEmail, Date.now(), user.id)
+      .run();
 
     return NextResponse.json({
       success: true,

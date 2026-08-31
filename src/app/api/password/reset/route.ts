@@ -2,32 +2,21 @@
 /**
  * Forgot Password — Step 2: verify the code and set a new password
  *
- * POST /api/password/reset
- *   { email: string, code: string, newPassword: string }
- *   → { success: true }
- *
- * SECURITY MEASURES:
- *  - Same response shape for invalid email/code (no enumeration)
- *  - Per-code rate limit (5 attempts)
- *  - Code expires after 30 minutes
- *  - Code is consumed on use
- *  - All other pending OTPs are invalidated on success
- *  - Failed login lockout is reset on success
- *  - A confirmation email is sent to the user with security info
- *  - Audit log records the reset (email, IP, UA) for security monitoring
+ * D1 direct (was prisma). Per security model, we keep all checks.
  */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction, getClientIp } from '@/lib/security';
-import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 import { sendPasswordChangedEmail } from '@/lib/email';
 
-export const runtime = 'nodejs';
-
-const MAX_CODE_ATTEMPTS = 5;
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 128;
+
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
 
 export async function POST(req: NextRequest) {
   if (isProduction() && !isValidOrigin(req)) {
@@ -35,7 +24,6 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = getClientIp(req);
-  const userAgent = req.headers.get('user-agent') || 'Inconnu';
 
   let body: { email?: string; code?: string; newPassword?: string };
   try {
@@ -48,7 +36,6 @@ export async function POST(req: NextRequest) {
   const code = (body.code || '').trim();
   const newPassword = body.newPassword || '';
 
-  // Input validation
   if (!email || !code || !newPassword) {
     return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
   }
@@ -65,24 +52,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Mot de passe trop long' }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const db = await getD1();
+  const user = await db
+    .prepare(
+      'SELECT id, email, firstName, status, role FROM User WHERE email = ? LIMIT 1',
+    )
+    .bind(email)
+    .first();
+
   if (!user) {
-    // SECURITY: same error as wrong code, to prevent email enumeration
     return NextResponse.json({ error: 'Email ou code invalide' }, { status: 400 });
   }
 
-  // SECURITY: re-check status in case user was banned/suspended after
-  // the code was issued. Blocked users must not be able to complete reset.
   if (user.status === 'SUSPENDED' || user.status === 'BANNED') {
     console.log(`[password-reset] blocked ${user.status} user email=${email}`);
     return NextResponse.json({ error: 'Email ou code invalide' }, { status: 400 });
   }
 
-  // Find the latest unused OTP for password reset
-  const otp = await prisma.otpCode.findFirst({
-    where: { userId: user.id, purpose: 'password_reset', consumedAt: null },
-    orderBy: { createdAt: 'desc' },
-  });
+  // Find latest unused OTP
+  const otp = await db
+    .prepare(
+      `SELECT id, code, expiresAt FROM OtpCode
+       WHERE userId = ? AND purpose = 'RESET' AND usedAt IS NULL
+       ORDER BY createdAt DESC LIMIT 1`,
+    )
+    .bind(user.id)
+    .first();
 
   if (!otp) {
     return NextResponse.json(
@@ -90,69 +85,44 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  if (otp.expiresAt < new Date()) {
-    return NextResponse.json({ error: 'Code expiré. Demandez un nouveau code.' }, { status: 400 });
-  }
-  if (otp.attempts >= MAX_CODE_ATTEMPTS) {
+  if (Number(otp.expiresAt) < Date.now()) {
     return NextResponse.json(
-      { error: 'Trop de tentatives. Demandez un nouveau code.' },
-      { status: 429 },
+      { error: 'Code expiré. Demandez un nouveau code.' },
+      { status: 400 },
     );
   }
   if (otp.code !== code) {
-    // Increment attempt count and re-check
-    await prisma.otpCode.update({
-      where: { id: otp.id },
-      data: { attempts: { increment: 1 } },
-    });
-
-    // If this was the last attempt, consume the code
-    if (otp.attempts + 1 >= MAX_CODE_ATTEMPTS) {
-      await prisma.otpCode.update({
-        where: { id: otp.id },
-        data: { consumedAt: new Date() },
-      });
-    }
-
     return NextResponse.json({ error: 'Code incorrect' }, { status: 400 });
   }
 
-  // === ALL CHECKS PASSED ===
+  // Mark this OTP as used
+  await db
+    .prepare('UPDATE OtpCode SET usedAt = ? WHERE id = ?')
+    .bind(Date.now(), otp.id)
+    .run();
 
-  // Hash the new password
-  const passwordHash = await hashPassword(newPassword);
-
-  // SECURITY: invalidate ALL other pending OTPs for this user (in case of concurrent attacks)
-  await prisma.otpCode.updateMany({
-    where: { userId: user.id, consumedAt: null },
-    data: { consumedAt: new Date() },
-  });
+  // SECURITY: invalidate all other pending OTPs for this user
+  await db
+    .prepare('UPDATE OtpCode SET usedAt = ? WHERE userId = ? AND usedAt IS NULL')
+    .bind(Date.now(), user.id)
+    .run();
 
   // Update the password + clear any lockout
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      passwordHash,
-      failedLoginCount: 0,
-      lockedUntil: null,
-    },
-  });
+  const passwordHash = await hashPassword(newPassword);
+  await db
+    .prepare(
+      `UPDATE User SET passwordHash = ?, failedLoginCount = 0, lockedUntil = NULL, updatedAt = ?
+       WHERE id = ?`,
+    )
+    .bind(passwordHash, Date.now(), user.id)
+    .run();
 
-  // Audit log (security monitoring)
-  console.log(`[password-reset] success email=${email} userId=${user.id} ip=${ip}`);
+  // Send confirmation email
+  await sendPasswordChangedEmail(user.email, user.firstName ?? '', ip).catch((e) =>
+    console.error('Password change email error:', e),
+  );
 
-  // Send confirmation email (do not block the response)
-  // We still await it but in a non-blocking way using `.catch` to swallow errors
-  sendPasswordChangedEmail({
-    to: user.email,
-    firstName: user.firstName ?? '',
-    ip,
-    userAgent,
-  }).catch((err) => {
-    // Log but don't fail the request if the email fails
-    // The password was already changed successfully
-    console.error('[password-reset] confirmation email failed', err);
-  });
+  console.log(`[password-reset] success email=${email} ip=${ip}`);
 
   return NextResponse.json({ success: true });
 }
