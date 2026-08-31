@@ -6,9 +6,8 @@
  *    our Worker so the browser never sees a third-party URL).
  *  - Local dev: ./public/uploads.
  *
- * We DO NOT use Vercel Blob anymore. New uploads go straight to R2.
- * Legacy Vercel Blob URLs are still served (read-only) via the same proxy
- * (`/api/file/` falls back to Vercel Blob when R2 doesn't have the file).
+ * Vercel Blob is no longer used for any code path (upload, delete, or serve).
+ * All files live in R2.
  */
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -86,8 +85,8 @@ export async function deleteFile(keyOrUrl: string): Promise<void> {
     }
     return;
   }
-  // Legacy Vercel Blob URL — we no longer delete from Vercel Blob.
-  // The file is still served read-only via /api/file/ (Vercel Blob fallback).
+  // External URL (e.g. an old Vercel Blob link stored before migration).
+  // We no longer touch external storage — only R2.
   if (keyOrUrl.startsWith('http')) {
     return;
   }

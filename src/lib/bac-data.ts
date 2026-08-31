@@ -23,8 +23,6 @@
 
 import { BAC_MANIFEST } from '@/data/bac-manifest';
 
-const BLOB_BASE_URL = 'https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com';
-
 export type BacFile = {
   key: string;
   url: string;

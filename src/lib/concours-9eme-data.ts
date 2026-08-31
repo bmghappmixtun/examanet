@@ -16,8 +16,6 @@
 
 import { CONCOURS_9EME_MANIFEST } from '@/data/concours-9eme-manifest';
 
-const BLOB_BASE_URL = 'https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com';
-
 export type ConcoursFile = {
   key: string;
   url: string;
