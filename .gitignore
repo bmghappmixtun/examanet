@@ -163,3 +163,4 @@ scripts/d1-migration/sql/
 # Local worktrees
 .worktrees/
 node_modules/
+node_modules/

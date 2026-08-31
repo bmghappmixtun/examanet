@@ -1,9 +1,16 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { sendContactEmail } from '@/lib/email';
 
-export const runtime = 'nodejs';
+function genId() {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 25);
+}
+
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
 
 const VALID_SUBJECTS = ['question', 'bug', 'teacher', 'partnership', 'copyright', 'other'];
 
@@ -14,15 +21,12 @@ export async function POST(req: NextRequest) {
     if (!name || !email || !message) {
       return NextResponse.json({ error: 'Nom, email et message sont requis' }, { status: 400 });
     }
-
     if (typeof name !== 'string' || name.trim().length < 2) {
       return NextResponse.json({ error: 'Nom invalide' }, { status: 400 });
     }
-
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'Email invalide' }, { status: 400 });
     }
-
     if (message.length > 2000) {
       return NextResponse.json(
         { error: 'Message trop long (max 2000 caractères)' },
@@ -32,19 +36,23 @@ export async function POST(req: NextRequest) {
 
     const subjectValue = subject && VALID_SUBJECTS.includes(subject) ? subject : 'other';
 
-    // Save to DB
-    await prisma.contactMessage.create({
-      data: {
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
-        subject: subjectValue,
-        message: message.trim(),
-        ip: req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null,
-        userAgent: req.headers.get('user-agent')?.slice(0, 500) || null,
-      },
-    });
+    const db = await getD1();
+    await db
+      .prepare(
+        `INSERT INTO ContactMessage (id, name, email, subject, message, status, createdAt)
+         VALUES (?, ?, ?, ?, ?, 'PENDING', ?)`,
+      )
+      .bind(
+        genId(),
+        name.trim(),
+        email.toLowerCase().trim(),
+        subjectValue,
+        message.trim(),
+        Date.now(),
+      )
+      .run();
 
-    // Send email notification to admin
+    // Send email notification to admin (won't fail if no RESEND_API_KEY - logs only)
     await sendContactEmail({
       name: name.trim(),
       email: email.toLowerCase().trim(),
@@ -52,9 +60,9 @@ export async function POST(req: NextRequest) {
       message: message.trim(),
     }).catch((e) => console.error('Contact email error:', e));
 
-    return NextResponse.json({ success: true, message: 'Message envoyé' });
+    return NextResponse.json({ success: true });
   } catch (e: any) {
     console.error('Contact form error:', e);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
