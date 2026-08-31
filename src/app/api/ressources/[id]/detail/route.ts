@@ -48,6 +48,21 @@ export async function GET(
     const ratings = await db.prepare(
       'SELECT r.id, r.value as stars, r.createdAt FROM Rating r WHERE r.resourceId = ? ORDER BY r.createdAt DESC LIMIT 10'
     ).bind(r.id).all();
+
+    // ResourceMetadata — AI-extracted content (keyPoints, exerciseInsights, shortKeyPoints, etc.)
+    // 2026-08-31: previously missing from the response, so the resource detail page
+    // didn't show the "Aperçu des exercices" or "Points clés" accordions.
+    const meta = await db.prepare(
+      `SELECT systemName, subject, profNames, dossierTechnique, shortKeyPoints,
+              keyPoints, topics, level, estimatedTimeMinutes, prerequisites,
+              keyInsights, exerciseInsights
+       FROM ResourceMetadata WHERE resourceId = ? LIMIT 1`
+    ).bind(r.id).first();
+
+    // ResourceSummary — AI-generated full text summary
+    const sum = await db.prepare(
+      'SELECT summary, modelUsed, generatedAt FROM ResourceSummary WHERE resourceId = ? LIMIT 1'
+    ).bind(r.id).first();
     
     // Comments - simple
     const comments = await db.prepare(
@@ -72,6 +87,23 @@ export async function GET(
         teacher: r.t_id ? { id: r.t_id, numericId: r.t_numericId, slug: r.t_slug, firstName: r.t_firstName, lastName: r.t_lastName } : null,
         viewsCount: r.viewsCount || 0, downloadsCount: r.downloadsCount || 0, avgRating: r.avgRating || 0,
         ratingCount: r.ratingsCount || 0, commentsCount: r.commentsCount || 0,
+        // AI metadata — populates "Aperçu des exercices" + "Points clés" accordions
+        metadata: meta ? {
+          systemName: meta.systemName || null,
+          subject: meta.subject || null,
+          profNames: meta.profNames ? JSON.parse(meta.profNames as string) : null,
+          dossierTechnique: meta.dossierTechnique || null,
+          shortKeyPoints: meta.shortKeyPoints ? JSON.parse(meta.shortKeyPoints as string) : null,
+          keyPoints: meta.keyPoints ? JSON.parse(meta.keyPoints as string) : null,
+          topics: meta.topics ? JSON.parse(meta.topics as string) : null,
+          level: meta.level || null,
+          estimatedTimeMinutes: meta.estimatedTimeMinutes || null,
+          prerequisites: meta.prerequisites ? JSON.parse(meta.prerequisites as string) : null,
+          keyInsights: meta.keyInsights ? JSON.parse(meta.keyInsights as string) : null,
+          exerciseInsights: meta.exerciseInsights ? JSON.parse(meta.exerciseInsights as string) : null,
+        } : null,
+        // AI full text summary
+        summary: sum?.summary || null,
       },
       ratings: ratings?.results || [],
       comments: comments?.results || [],
