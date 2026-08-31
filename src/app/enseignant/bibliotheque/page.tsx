@@ -6,6 +6,21 @@ import { d1All, d1First } from '@/lib/db-d1';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Extract a timestamp from a file key like
+ * "teacher-library/{teacherId}/1786589609365-filename.pdf".
+ * Returns ISO string or undefined.
+ */
+function extractTimestampFromKey(key: string): string | undefined {
+  if (!key) return undefined;
+  const m = /\/(\d{13,})-/.exec(key);
+  if (m) {
+    const ts = Number(m[1]);
+    if (ts > 1_000_000_000_000) return new Date(ts).toISOString();
+  }
+  return undefined;
+}
+
 export default async function TeacherLibraryPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
@@ -48,11 +63,16 @@ export default async function TeacherLibraryPage() {
       ...f,
       isActive: Boolean(f.isActive),
       originalFormat: fmt || 'other',
-      // createdAt is a number (ms) from D1, convert to ISO string for client
+      // createdAt is a number (ms) from D1, convert to ISO string for client.
+      // If createdAt is 0 / null / undefined (legacy Vercel Blob records that
+      // were imported without timestamps), use fileKey timestamp as fallback
+      // or fall back to the current date so we don't show "01 janv. 1970".
       createdAt:
-        typeof f.createdAt === 'number'
+        typeof f.createdAt === 'number' && f.createdAt > 0
           ? new Date(f.createdAt).toISOString()
-          : f.createdAt,
+          : typeof f.fileKey === 'string'
+            ? extractTimestampFromKey(f.fileKey)
+            : f.createdAt,
     };
   });
 
