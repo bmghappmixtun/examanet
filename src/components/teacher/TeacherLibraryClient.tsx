@@ -56,8 +56,13 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(d: string): string {
-  return new Date(d).toLocaleDateString('fr-FR', {
+function formatDate(d: string | null | undefined): string {
+  if (!d) return 'Date inconnue';
+  const date = new Date(d);
+  if (isNaN(date.getTime()) || date.getFullYear() <= 1970) {
+    return 'Date inconnue';
+  }
+  return date.toLocaleDateString('fr-FR', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

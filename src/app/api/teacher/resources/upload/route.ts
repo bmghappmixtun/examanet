@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     await bucket.put(fileName, arrayBuffer, {
       httpMetadata: { contentType: 'application/pdf' },
     });
-    const fileUrl = `https://r2.examanet.com/${fileName}`;
+    const fileUrl = `/api/files/${fileName}`;
 
     return NextResponse.json({
       success: true,

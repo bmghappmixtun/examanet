@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Build a public URL — for now use a placeholder (real CDN URL would be set in a custom domain binding)
-    const fileUrl = `https://r2.examanet.com/${originalKey}`;
+    const fileUrl = `/api/files/${originalKey}`;
 
     // 2. PDF conversion: not available on CF Workers. We mark SKIPPED in the
     //    response and warn the client. For docx/doc/odt uploads, the user

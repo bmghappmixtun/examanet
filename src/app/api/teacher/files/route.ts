@@ -20,6 +20,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { d1All, d1Run } from '@/lib/db-d1';
 
+/**
+ * Extract a timestamp from a file key like
+ * "teacher-library/{teacherId}/1786589609365-filename.pdf".
+ * Returns ISO string or undefined.
+ */
+function extractTimestampFromKey(key: string | null | undefined): string | undefined {
+  if (!key) return undefined;
+  const m = /\/(\d{13,})-/.exec(key);
+  if (m) {
+    const ts = Number(m[1]);
+    if (ts > 1_000_000_000_000) return new Date(ts).toISOString();
+  }
+  return undefined;
+}
+
+/**
+ * Pick the best available timestamp for a file:
+ * - createdAt (ms) if > 0
+ * - else: extract from fileKey
+ * - else: return null (caller decides)
+ */
+function resolveCreatedAt(f: any): string | null {
+  if (typeof f.createdAt === 'number' && f.createdAt > 0) {
+    return new Date(f.createdAt).toISOString();
+  }
+  return extractTimestampFromKey(f.fileKey) || null;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user = await getCurrentUser();
@@ -41,7 +69,14 @@ export async function GET(req: NextRequest) {
     sql += ' ORDER BY createdAt DESC LIMIT 200';
 
     const files = await d1All(sql, ...params);
-    return NextResponse.json({ files });
+    // Normalize: keep createdAt as ISO string (or null for missing timestamps)
+    const normalized = (files || []).map((f: any) => ({
+      ...f,
+      isActive: Boolean(f.isActive),
+      createdAt: resolveCreatedAt(f),
+      updatedAt: resolveCreatedAt(f),
+    }));
+    return NextResponse.json({ files: normalized });
   } catch (e: any) {
     console.error('[api/teacher/files] error:', e.message);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });
