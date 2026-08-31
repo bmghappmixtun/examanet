@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { Lock } from 'lucide-react';
@@ -144,17 +144,30 @@ export default function TeacherLibraryClient({
   });
   const [view, setView] = useState<'grid' | 'list'>('grid');
 
-  // Check if teacher is allowed to upload (status === ACTIVE)
+  // Check if teacher is allowed to upload (status === ACTIVE).
+  // Only run if initialCanUpload was not already provided (saves a network roundtrip
+  // on every mount when SSR pre-fetch already has the answer).
   useEffect(() => {
+    if (initialCanUpload) return; // SSR already has it, skip
     fetch('/api/teacher/status')
       .then((r) => r.json())
       .then((data) => {
         if (data?.canUpload !== undefined) setCanUpload(data.canUpload);
       })
       .catch(() => setCanUpload(true));
-  }, []);
+  }, [initialCanUpload]);
+
+  // Track whether we've done the initial mount. We only want to fetch
+  // when the user changes a filter, not on initial mount (the page.tsx
+  // pre-fetches the same data via SSR and passes it as initialFiles).
+  const initialMountRef = useRef(true);
 
   const loadFiles = useCallback(async () => {
+    // Skip the initial mount: SSR already gave us initialFiles.
+    if (initialMountRef.current) {
+      initialMountRef.current = false;
+      return;
+    }
     setLoading(true);
     try {
       const params = new URLSearchParams();
