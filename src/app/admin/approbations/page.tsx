@@ -49,7 +49,7 @@ export default async function AdminApprovalsPage() {
   const resourcesR = await db.prepare(`
     SELECT 
       r.id, r.title, r.status, r.createdAt, r.type, r.classId, r.subjectId,
-      r.fileKey, r.fileUrl, r.fileName,
+      r.fileKey, r.fileUrl,
       s.nameFr AS subjectNameFr,
       c.nameFr AS classNameFr,
       t.firstName AS teacherFirstName, t.lastName AS teacherLastName, t.email AS teacherEmail, t.schoolName AS teacherSchoolName
@@ -95,7 +95,7 @@ export default async function AdminApprovalsPage() {
     createdAt: ms(r.createdAt),
     fileKey: r.fileKey,
     fileUrl: r.fileUrl,
-    fileName: r.fileName,
+    
     subject: { nameFr: r.subjectNameFr },
     class: { nameFr: r.classNameFr },
     teacher: {
