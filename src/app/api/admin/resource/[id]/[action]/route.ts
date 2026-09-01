@@ -45,15 +45,23 @@ export async function POST(
     }
     // Notify the teacher (fire-and-forget) — in-app + email
     if (resource.teacherId) {
-      notifyResourceStatusChange({
-        teacherId: resource.teacherId,
-        resourceId: resource.id,
-        resourceTitle: resource.title,
-        numericId: resource.numericId,
-        slug: resource.slug,
-        approved: true,
-        reason: body.reason,
-      }).catch((e) => console.error('[admin/resource action] notify teacher failed:', e));
+      // Pre-fetch DB so the function has a working context, and AWAIT the call
+      // (fire-and-forget in CF Workers loses context — the function never runs)
+      const db = await getD1();
+      try {
+        await notifyResourceStatusChange({
+          db,
+          teacherId: resource.teacherId,
+          resourceId: resource.id,
+          resourceTitle: resource.title,
+          numericId: resource.numericId,
+          slug: resource.slug,
+          approved: true,
+          reason: body.reason,
+        });
+      } catch (e) {
+        console.error('[admin/resource action] notify teacher (approve) failed:', e?.message, e?.stack);
+      }
     }
     return NextResponse.json({ success: true, status: 'PUBLISHED' });
   } else {
@@ -68,15 +76,23 @@ export async function POST(
     );
     if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
     if (resource.teacherId) {
-      notifyResourceStatusChange({
-        teacherId: resource.teacherId,
-        resourceId: resource.id,
-        resourceTitle: resource.title,
-        numericId: resource.numericId,
-        slug: resource.slug,
-        approved: false,
-        reason: rejectReason,
-      }).catch((e) => console.error('[admin/resource action] notify teacher failed:', e));
+      // Pre-fetch DB so the function has a working context, and AWAIT the call
+      // (fire-and-forget in CF Workers loses context — the function never runs)
+      const db = await getD1();
+      try {
+        await notifyResourceStatusChange({
+          db,
+          teacherId: resource.teacherId,
+          resourceId: resource.id,
+          resourceTitle: resource.title,
+          numericId: resource.numericId,
+          slug: resource.slug,
+          approved: false,
+          reason: rejectReason,
+        });
+      } catch (e) {
+        console.error('[admin/resource action] notify teacher (reject) failed:', e?.message, e?.stack);
+      }
     }
     return NextResponse.json({ success: true, status: 'REJECTED' });
   }
@@ -85,8 +101,13 @@ export async function POST(
 /**
  * Notify the teacher when their resource is approved or rejected.
  * Sends both an in-app Notification (D1) and an email (Resend).
+ *
+ * IMPORTANT: Must be AWAITED by the caller. Fire-and-forget in CF Workers
+ * loses context — the function never runs.
+ * The `db` argument must be pre-fetched in the request handler.
  */
 async function notifyResourceStatusChange(opts: {
+  db: any;  // Pre-fetched D1 binding
   teacherId: string;
   resourceId: string;
   resourceTitle: string;
@@ -95,11 +116,13 @@ async function notifyResourceStatusChange(opts: {
   approved: boolean;
   reason?: string;
 }) {
-  const db = await getD1();
-  const teacher = await d1First(
-    'SELECT id, email, firstName, lastName FROM User WHERE id = ?',
-    opts.teacherId,
-  );
+  const { db } = opts;
+
+  // Get teacher using the pre-fetched db (avoids getD1 context loss)
+  const teacher = await db
+    .prepare('SELECT id, email, firstName, lastName FROM User WHERE id = ?')
+    .bind(opts.teacherId)
+    .first();
   if (!teacher || !teacher.email) return;
 
   const firstName = teacher.firstName || 'Enseignant';
@@ -132,21 +155,17 @@ async function notifyResourceStatusChange(opts: {
 
   // 2) Email (use a dedicated template for rejections so the motif is rendered
   //    prominently and the prof can act on it)
-  try {
-    if (opts.approved) {
-      const { sendResourceApprovedEmail } = await import('@/lib/email');
-      await sendResourceApprovedEmail(teacher.email, firstName, title, true, resourceUrl);
-    } else {
-      const { sendResourceRejectedEmail } = await import('@/lib/email');
-      await sendResourceRejectedEmail(
-        teacher.email,
-        firstName,
-        title,
-        opts.reason || 'Aucun motif fourni',
-        resourceUrl,
-      );
-    }
-  } catch (e) {
-    console.error('[notifyResourceStatusChange] email send failed:', e);
+  if (opts.approved) {
+    const { sendResourceApprovedEmail } = await import('@/lib/email');
+    await sendResourceApprovedEmail(teacher.email, firstName, title, true, resourceUrl);
+  } else {
+    const { sendResourceRejectedEmail } = await import('@/lib/email');
+    await sendResourceRejectedEmail(
+      teacher.email,
+      firstName,
+      title,
+      opts.reason || 'Aucun motif fourni',
+      resourceUrl,
+    );
   }
 }
