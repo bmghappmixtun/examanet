@@ -590,7 +590,7 @@ export default function ApprobationsClient({
               return (
                 <div
                   key={item.id}
-                  className={`bg-white rounded-2xl border-2 p-4 transition ${
+                  className={`bg-white rounded-2xl border-2 p-4 transition overflow-hidden ${
                     isSelected
                       ? 'border-primary-400 bg-primary-50/30 shadow-md'
                       : isTeacher
@@ -598,7 +598,7 @@ export default function ApprobationsClient({
                         : 'border-orange-200 hover:border-orange-300'
                   }`}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex flex-col sm:flex-row items-start gap-3 min-w-0">
                     {/* Checkbox */}
                     <button onClick={() => toggleSelect(item.id)} className="mt-1 flex-shrink-0">
                       {isSelected ? (
@@ -690,7 +690,9 @@ export default function ApprobationsClient({
                               <FileText className="w-5 h-5 text-slate-400" />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div className="font-bold truncate">{r.title}</div>
+                              <div className="font-bold line-clamp-2 break-words" title={r.title}>
+                                {r.title}
+                              </div>
                               <div className="text-xs text-slate-500 truncate">
                                 {r.subject?.nameFr} · {r.class?.nameFr} · {r.type}
                               </div>
@@ -722,7 +724,7 @@ export default function ApprobationsClient({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex sm:flex-col gap-2 flex-shrink-0">
+                    <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto sm:flex-shrink-0 flex-wrap">
                       <button
                         onClick={() => {
                           // Warn admin if prof hasn't verified their email yet
