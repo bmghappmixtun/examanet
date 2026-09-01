@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 
 interface ResourceAgeProps {
-  /** ISO date string or Date object */
-  publishedAt: string | Date | null | undefined;
+  /** ISO date string, Date object, or Unix ms timestamp (D1 returns integer ms) */
+  publishedAt: string | Date | number | null | undefined;
   /** Server-computed timeAgo (e.g., "1sem", "2j", "hier"). Used as initial value
    *  to match the SSR HTML byte-for-byte and avoid hydration mismatches. */
   initialLabel: string;
@@ -44,8 +44,19 @@ export default function ResourceAge({ publishedAt, initialLabel }: ResourceAgePr
 }
 
 /** Pure formatter — same logic as the previous server-side timeAgo(). */
-function computeTimeAgo(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+function computeTimeAgo(date: Date | string | number | null | undefined): string {
+  if (date == null || date === 0 || date === '') return "aujourd'hui";
+  let d: Date;
+  if (typeof date === 'number') {
+    d = new Date(date);
+  } else if (typeof date === 'string' && /^\d+$/.test(date)) {
+    d = new Date(Number(date));
+  } else if (typeof date === 'string') {
+    d = new Date(date);
+  } else {
+    d = date;
+  }
+  if (isNaN(d.getTime())) return "aujourd'hui";
   const days = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
   if (days < 1) return "aujourd'hui";
   if (days === 1) return 'hier';
