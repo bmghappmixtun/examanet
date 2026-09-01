@@ -95,7 +95,6 @@ export default async function AdminApprovalsPage() {
     createdAt: ms(r.createdAt),
     fileKey: r.fileKey,
     fileUrl: r.fileUrl,
-    
     subject: { nameFr: r.subjectNameFr },
     class: { nameFr: r.classNameFr },
     teacher: {
