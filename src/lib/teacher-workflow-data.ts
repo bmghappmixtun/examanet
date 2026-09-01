@@ -37,10 +37,10 @@ export const CLASSES: ClassOption[] = [
   { slug: '8eme', name: '8ème année (Collège)', level: 'college' },
   { slug: '9eme', name: '9ème année (Collège)', level: 'college' },
   // Lycée
-  { slug: '1ere-annee', name: '1ère année (Lycée)', level: 'lycee' },
-  { slug: '2eme-annee', name: '2ème année (Lycée)', level: 'lycee' },
-  { slug: '3eme-annee', name: '3ème année (Lycée)', level: 'lycee' },
-  { slug: '4eme-annee', name: '4ème année — Bac (Lycée)', level: 'lycee' },
+  { slug: '1ere-secondaire', name: '1ère année (Lycée)', level: 'lycee' },
+  { slug: '2eme-secondaire', name: '2ème année (Lycée)', level: 'lycee' },
+  { slug: '3eme-secondaire', name: '3ème année (Lycée)', level: 'lycee' },
+  { slug: '4eme-secondaire', name: '4ème année — Bac (Lycée)', level: 'lycee' },
 ];
 
 // ============================================================================
@@ -56,9 +56,9 @@ export const SECTIONS_BY_CLASS: Record<ClassSlug, { slug: SectionSlug; name: str
   '8eme': [],
   '9eme': [],
   // 1AS — tronc commun
-  '1ere-annee': [],
+  '1ere-secondaire': [],
   // 2AS — 5 sections
-  '2eme-annee': [
+  '2eme-secondaire': [
     { slug: 'sciences', name: 'Sciences' },
     { slug: 'technologies-informatique', name: "Technologies de l'Informatique (TI)" },
     { slug: 'eco-services', name: 'Économie et Services' },
@@ -66,7 +66,7 @@ export const SECTIONS_BY_CLASS: Record<ClassSlug, { slug: SectionSlug; name: str
     { slug: 'sport', name: 'Sport' },
   ],
   // 3AS — 7 sections
-  '3eme-annee': [
+  '3eme-secondaire': [
     { slug: 'maths', name: 'Mathématiques' },
     { slug: 'sciences', name: 'Sciences Expérimentales' },
     { slug: 'technique', name: 'Sciences Techniques' },
@@ -76,7 +76,7 @@ export const SECTIONS_BY_CLASS: Record<ClassSlug, { slug: SectionSlug; name: str
     { slug: 'sport', name: 'Sport' },
   ],
   // 4AS (Bac) — 7 sections
-  '4eme-annee': [
+  '4eme-secondaire': [
     { slug: 'maths', name: 'Bac Mathématiques' },
     { slug: 'sciences', name: 'Bac Sciences Expérimentales' },
     { slug: 'technique', name: 'Bac Sciences Techniques' },
@@ -92,7 +92,7 @@ export function getSectionsForClass(classSlug: string): { slug: SectionSlug; nam
 }
 
 export function isTroncCommun(classSlug: string): boolean {
-  return ['7eme', '8eme', '9eme', '1ere-annee'].includes(classSlug);
+  return ['7eme', '8eme', '9eme', '1ere-secondaire'].includes(classSlug);
 }
 
 // ============================================================================
@@ -258,29 +258,29 @@ export const SUBJECTS_INDEX: Record<string, SubjectOption[]> = {
   '8eme::': COLLEGE_COMMON,
   '9eme::': COLLEGE_COMMON,
   // 1AS — tronc commun lycée
-  '1ere-annee::': LYCEE_1AS,
+  '1ere-secondaire::': LYCEE_1AS,
   // 2AS — 5 sections
-  '2eme-annee::sciences': LYCEE_2AS_SCIENCES,
-  '2eme-annee::technologies-informatique': LYCEE_2AS_TI,
-  '2eme-annee::eco-services': LYCEE_2AS_ECO,
-  '2eme-annee::lettres': LYCEE_2AS_LETTRES,
-  '2eme-annee::sport': LYCEE_2AS_SPORT,
+  '2eme-secondaire::sciences': LYCEE_2AS_SCIENCES,
+  '2eme-secondaire::technologies-informatique': LYCEE_2AS_TI,
+  '2eme-secondaire::eco-services': LYCEE_2AS_ECO,
+  '2eme-secondaire::lettres': LYCEE_2AS_LETTRES,
+  '2eme-secondaire::sport': LYCEE_2AS_SPORT,
   // 3AS — 7 sections
-  '3eme-annee::maths': LYCEE_MATHS,
-  '3eme-annee::sciences': LYCEE_SC_EXP,
-  '3eme-annee::technique': LYCEE_TECHNIQUE,
-  '3eme-annee::sciences-informatique': LYCEE_SI,
-  '3eme-annee::eco-gestion': LYCEE_ECO,
-  '3eme-annee::lettres': LYCEE_LETTRES,
-  '3eme-annee::sport': LYCEE_SPORT,
+  '3eme-secondaire::maths': LYCEE_MATHS,
+  '3eme-secondaire::sciences': LYCEE_SC_EXP,
+  '3eme-secondaire::technique': LYCEE_TECHNIQUE,
+  '3eme-secondaire::sciences-informatique': LYCEE_SI,
+  '3eme-secondaire::eco-gestion': LYCEE_ECO,
+  '3eme-secondaire::lettres': LYCEE_LETTRES,
+  '3eme-secondaire::sport': LYCEE_SPORT,
   // 4AS — 7 sections (BAC)
-  '4eme-annee::maths': LYCEE_MATHS,
-  '4eme-annee::sciences': LYCEE_SC_EXP,
-  '4eme-annee::technique': LYCEE_TECHNIQUE,
-  '4eme-annee::sciences-informatique': LYCEE_SI,
-  '4eme-annee::eco-gestion': LYCEE_ECO,
-  '4eme-annee::lettres': LYCEE_LETTRES,
-  '4eme-annee::sport': LYCEE_SPORT,
+  '4eme-secondaire::maths': LYCEE_MATHS,
+  '4eme-secondaire::sciences': LYCEE_SC_EXP,
+  '4eme-secondaire::technique': LYCEE_TECHNIQUE,
+  '4eme-secondaire::sciences-informatique': LYCEE_SI,
+  '4eme-secondaire::eco-gestion': LYCEE_ECO,
+  '4eme-secondaire::lettres': LYCEE_LETTRES,
+  '4eme-secondaire::sport': LYCEE_SPORT,
 };
 
 /**
