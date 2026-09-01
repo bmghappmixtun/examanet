@@ -22,11 +22,10 @@
   "observability": {
     "enabled": true
   },
-  "triggers": {
-    "crons": [
-      "2 * * * *"
-    ]
-  },
+  // NOTE: cron trigger removed. The /api/cron/agent-poll route was designed
+  // for Vercel Cron (uses prisma) and currently has no CF-native scheduled
+  // handler. Re-add a "triggers.crons" entry when a CF scheduled handler is
+  // implemented (opennext 1.20+ supports default.scheduled override).
   "r2_buckets": [
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
