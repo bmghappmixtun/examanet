@@ -57,10 +57,14 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const search = (searchParams.get('search') || '').trim();
 
-    let sql = `SELECT id, teacherId, resourceId, fileName, fileKey, fileUrl, r2Key, r2PdfKey,
-                      fileSize, mimeType, isActive, createdAt, updatedAt
-               FROM TeacherFile
-               WHERE teacherId = ?`;
+    let sql = `SELECT f.id, f.teacherId, f.resourceId, f.fileName, f.fileKey, f.fileUrl, f.r2Key, f.r2PdfKey,
+                      f.fileSize, f.mimeType, f.isActive, f.createdAt, f.updatedAt,
+                      r.id AS r_id, r.numericId AS r_numericId, r.slug AS r_slug,
+                      r.status AS r_status, r.title AS r_title,
+                      r.rejectionReason AS r_rejectionReason, r.rejectionAt AS r_rejectionAt
+               FROM TeacherFile f
+               LEFT JOIN Resource r ON f.resourceId = r.id
+               WHERE f.teacherId = ?`;
     const params: any[] = [user.id];
     if (search) {
       sql += ' AND fileName LIKE ?';
@@ -70,12 +74,26 @@ export async function GET(req: NextRequest) {
 
     const files = await d1All(sql, ...params);
     // Normalize: keep createdAt as ISO string (or null for missing timestamps)
-    const normalized = (files || []).map((f: any) => ({
-      ...f,
-      isActive: Boolean(f.isActive),
-      createdAt: resolveCreatedAt(f),
-      updatedAt: resolveCreatedAt(f),
-    }));
+    const normalized = (files || []).map((f: any) => {
+      const resource = f.r_id
+        ? {
+            id: f.r_id,
+            numericId: f.r_numericId ?? null,
+            slug: f.r_slug ?? null,
+            status: f.r_status,
+            title: f.r_title,
+            rejectionReason: f.r_rejectionReason ?? null,
+            rejectionAt: f.r_rejectionAt ?? null,
+          }
+        : null;
+      return {
+        ...f,
+        isActive: Boolean(f.isActive),
+        resource,
+        createdAt: resolveCreatedAt(f),
+        updatedAt: resolveCreatedAt(f),
+      };
+    });
     return NextResponse.json({ files: normalized });
   } catch (e: any) {
     console.error('[api/teacher/files] error:', e.message);
