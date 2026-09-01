@@ -47,9 +47,19 @@ function formatSize(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function timeAgo(date: Date | string | null | undefined): string {
-  if (!date) return '';
-  const d = typeof date === 'string' ? new Date(date) : date;
+function timeAgo(date: Date | string | number | null | undefined): string {
+  if (date == null || date === 0 || date === '') return '';
+  let d: Date;
+  if (typeof date === 'number') {
+    d = new Date(date);
+  } else if (typeof date === 'string' && /^\d+$/.test(date)) {
+    d = new Date(Number(date));
+  } else if (typeof date === 'string') {
+    d = new Date(date);
+  } else {
+    d = date;
+  }
+  if (isNaN(d.getTime())) return '';
   const days = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
   if (days < 1) return "aujourd'hui";
   if (days === 1) return 'hier';
