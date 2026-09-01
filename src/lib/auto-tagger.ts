@@ -160,10 +160,10 @@ const CLASS_KEYWORDS: Record<string, string[]> = {
   '7eme': ['7eme', '7eme-annee', 'college', 'enseignement-base'],
   '8eme': ['8eme', '8eme-annee', 'college', 'enseignement-base'],
   '9eme': ['9eme', '9eme-annee', 'college', 'enseignement-base', 'concours-9eme'],
-  '1ere-annee': ['1ere-annee', '1as', 'lycee', 'seconde', 'tronc-commun'],
-  '2eme-annee': ['2eme-annee', '2as', 'lycee'],
-  '3eme-annee': ['3eme-annee', '3as', 'lycee', 'bac'],
-  '4eme-annee': ['4eme-annee', '4as', 'bac', 'terminale', 'baccalaureat'],
+  '1ere-secondaire': ['1ere-secondaire', '1as', 'lycee', 'seconde', 'tronc-commun'],
+  '2eme-secondaire': ['2eme-secondaire', '2as', 'lycee'],
+  '3eme-secondaire': ['3eme-secondaire', '3as', 'lycee', 'bac'],
+  '4eme-secondaire': ['4eme-secondaire', '4as', 'bac', 'terminale', 'baccalaureat'],
 };
 
 // ============================================================================
@@ -258,7 +258,7 @@ export function autoGenerateTags(input: AutoTaggerInput): string[] {
 
   // 4) Section keywords
   if (input.sectionSlug) {
-    const isLycee = ['3eme-annee', '4eme-annee'].includes(input.classSlug);
+    const isLycee = ['3eme-secondaire', '4eme-secondaire'].includes(input.classSlug);
     const sectionKw = isLycee
       ? SECTION_KEYWORDS_3AS_4AS[input.sectionSlug] || SECTION_KEYWORDS[input.sectionSlug]
       : SECTION_KEYWORDS[input.sectionSlug];
