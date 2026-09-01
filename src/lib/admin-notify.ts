@@ -159,6 +159,34 @@ export async function notifyAdminsNewResource(resourceId: string, teacherName?: 
   const db = await getD1();
   const adminEmails = getAdminEmailsFromConfig();
 
+  // If teacherName/resourceTitle weren't passed in, fetch from DB so the email
+  // body is meaningful (this avoids silent failures when callers forget args,
+  // and the previous version called renderNewResourceEmail with subject=undefined
+  // which crashed the email send).
+  let resolvedTeacherName = teacherName;
+  let resolvedResourceTitle = resourceTitle;
+  let subjectName: string | null = null;
+  if (!resolvedTeacherName || !resolvedResourceTitle) {
+    const resource = await db
+      .prepare(
+        `SELECT r.title as resourceTitle, u.firstName, u.lastName, s.nameFr as subjectName
+         FROM Resource r
+         LEFT JOIN User u ON r.teacherId = u.id
+         LEFT JOIN Subject s ON r.subjectId = s.id
+         WHERE r.id = ?
+         LIMIT 1`,
+      )
+      .bind(resourceId)
+      .first();
+    if (resource) {
+      resolvedTeacherName = resolvedTeacherName || `${resource.firstName || ''} ${resource.lastName || ''}`.trim();
+      resolvedResourceTitle = resolvedResourceTitle || (resource.resourceTitle as string);
+      subjectName = (resource.subjectName as string) || null;
+    }
+  }
+  resolvedTeacherName = resolvedTeacherName || 'Un enseignant';
+  resolvedResourceTitle = resolvedResourceTitle || 'une ressource';
+
   // Get admins
   const adminsResult = await db
     .prepare("SELECT id, email FROM User WHERE role = 'ADMIN'")
@@ -178,7 +206,7 @@ export async function notifyAdminsNewResource(resourceId: string, teacherName?: 
         genId(),
         admin.id,
         '📄 Nouvelle ressource à approuver',
-        `${teacherName || 'Un enseignant'} a soumis "${resourceTitle || 'une ressource'}" pour approbation.`,
+        `${resolvedTeacherName} a soumis "${resolvedResourceTitle}" pour approbation.`,
         now,
       )
       .run();
@@ -191,7 +219,7 @@ export async function notifyAdminsNewResource(resourceId: string, teacherName?: 
   }
 
   try {
-    const html = renderNewResourceEmail(teacherName || '', resourceTitle || '');
+    const html = renderNewResourceEmail(resolvedTeacherName, resolvedResourceTitle, subjectName || '');
     const recipients = new Set<string>(adminEmails);
     for (const admin of admins) {
       if (admin.email) recipients.add(admin.email);
