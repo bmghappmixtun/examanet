@@ -101,7 +101,7 @@ async function notifyResourceStatusChange(opts: {
   const title = opts.resourceTitle || 'votre ressource';
   const resourceUrl =
     opts.numericId && opts.slug
-      ? `${process.env.SITE_URL || 'https://examanet.com'}/fr/ressources/${opts.numericId}/${opts.slug}`
+      ? `${process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com'}/fr/ressources/${opts.numericId}/${opts.slug}`
       : undefined;
 
   // 1) In-app notification
