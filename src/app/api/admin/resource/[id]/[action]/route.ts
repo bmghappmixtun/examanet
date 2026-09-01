@@ -57,9 +57,14 @@ export async function POST(
     }
     return NextResponse.json({ success: true, status: 'PUBLISHED' });
   } else {
+    const rejectReason = (body.reason || '').trim() || 'Aucun motif fourni';
+    const rejectedAt = Date.now();
     const r = await d1Run(
-      "UPDATE Resource SET status = 'REJECTED', updatedAt = ? WHERE id = ?",
-      Date.now(), id,
+      "UPDATE Resource SET status = 'REJECTED', rejectionReason = ?, rejectionAt = ?, updatedAt = ? WHERE id = ?",
+      rejectReason,
+      rejectedAt,
+      rejectedAt,
+      id,
     );
     if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
     if (resource.teacherId) {
@@ -70,7 +75,7 @@ export async function POST(
         numericId: resource.numericId,
         slug: resource.slug,
         approved: false,
-        reason: body.reason,
+        reason: rejectReason,
       }).catch((e) => console.error('[admin/resource action] notify teacher failed:', e));
     }
     return NextResponse.json({ success: true, status: 'REJECTED' });
@@ -125,16 +130,22 @@ async function notifyResourceStatusChange(opts: {
     )
     .run();
 
-  // 2) Email
+  // 2) Email (use a dedicated template for rejections so the motif is rendered
+  //    prominently and the prof can act on it)
   try {
-    const { sendResourceApprovedEmail } = await import('@/lib/email');
-    await sendResourceApprovedEmail(
-      teacher.email,
-      firstName,
-      title,
-      opts.approved,
-      resourceUrl,
-    );
+    if (opts.approved) {
+      const { sendResourceApprovedEmail } = await import('@/lib/email');
+      await sendResourceApprovedEmail(teacher.email, firstName, title, true, resourceUrl);
+    } else {
+      const { sendResourceRejectedEmail } = await import('@/lib/email');
+      await sendResourceRejectedEmail(
+        teacher.email,
+        firstName,
+        title,
+        opts.reason || 'Aucun motif fourni',
+        resourceUrl,
+      );
+    }
   } catch (e) {
     console.error('[notifyResourceStatusChange] email send failed:', e);
   }

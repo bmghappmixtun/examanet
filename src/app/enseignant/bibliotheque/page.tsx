@@ -33,11 +33,15 @@ export default async function TeacherLibraryPage() {
     d1All('SELECT id, nameFr, nameAr, slug FROM "Class" ORDER BY "order" ASC'),
     d1All('SELECT id, nameFr, nameAr, slug, color, icon FROM Subject ORDER BY nameFr ASC'),
     d1All(
-      `SELECT id, teacherId, resourceId, fileName, fileKey, fileUrl, r2Key, r2PdfKey,
-              fileSize, mimeType, isActive, createdAt, updatedAt
-       FROM TeacherFile
-       WHERE teacherId = ? AND isActive = 1
-       ORDER BY createdAt DESC
+      `SELECT f.id, f.teacherId, f.resourceId, f.fileName, f.fileKey, f.fileUrl, f.r2Key, f.r2PdfKey,
+              f.fileSize, f.mimeType, f.isActive, f.createdAt, f.updatedAt,
+              r.id AS r_id, r.numericId AS r_numericId, r.slug AS r_slug, r.status AS r_status,
+              r.rejectionReason AS r_rejectionReason, r.rejectionAt AS r_rejectionAt,
+              r.title AS r_title
+       FROM TeacherFile f
+       LEFT JOIN Resource r ON f.resourceId = r.id
+       WHERE f.teacherId = ? AND f.isActive = 1
+       ORDER BY f.createdAt DESC
        LIMIT 200`,
       user.id,
     ),
@@ -59,10 +63,24 @@ export default async function TeacherLibraryPage() {
       else if (mt.includes('word') || mt.includes('document')) fmt = 'docx';
       else if (mt.includes('opendocument')) fmt = 'odt';
     }
+    // Populate `resource` from the JOIN (so the prof library shows resource status
+    // badges like "📤 Publiée" / "❌ Refusée — motif" / "⏳ En attente").
+    const resource = f.r_id
+      ? {
+          id: f.r_id,
+          numericId: f.r_numericId ?? null,
+          slug: f.r_slug ?? null,
+          status: f.r_status,
+          title: f.r_title,
+          rejectionReason: f.r_rejectionReason ?? null,
+          rejectionAt: f.r_rejectionAt ?? null,
+        }
+      : null;
     return {
       ...f,
       isActive: Boolean(f.isActive),
       originalFormat: fmt || 'other',
+      resource,
       // createdAt is a number (ms) from D1, convert to ISO string for client.
       // If createdAt is 0 / null / undefined (legacy Vercel Blob records that
       // were imported without timestamps), use fileKey timestamp as fallback

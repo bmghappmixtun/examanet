@@ -25,7 +25,7 @@ type TeacherFile = {
   tags?: string | null;
   notes?: string | null;
   resourceId?: string | null;
-  resource?: { id: string; numericId?: number | null; slug?: string; status: string } | null;
+  resource?: { id: string; numericId?: number | null; slug?: string; status: string; rejectionReason?: string | null; rejectionAt?: number | null } | null;
   createdAt: string;
   class?: { id: string; nameFr: string; nameAr: string } | null;
   section?: { id: string; nameFr: string; nameAr: string } | null;
@@ -521,12 +521,34 @@ function FileCard({
             <span>⏳</span> En attente d'approbation
           </div>
         )}
-        {file.resource &&
-          (file.resource.status === 'REJECTED' || file.resource.status === 'DRAFT') && (
-            <div className="mb-3 px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1">
-              <span>📝</span> Brouillon / Rejeté
+        {file.resource && file.resource.status === 'REJECTED' && (
+          <>
+            <div className="mb-2 px-2 py-1 rounded-md bg-red-50 dark:bg-red-900/20 text-xs text-red-700 dark:text-red-300 flex items-center gap-1 font-semibold">
+              <span>❌</span> Ressource refusée
+              {file.resource.rejectionAt && (
+                <span className="text-red-500/80 dark:text-red-400/70 font-normal">
+                  · {new Date(file.resource.rejectionAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                </span>
+              )}
             </div>
-          )}
+            {file.resource.rejectionReason && (
+              <div
+                className="mb-3 px-3 py-2 rounded-md bg-red-50/60 dark:bg-red-900/10 border-l-2 border-red-400 text-xs text-red-800 dark:text-red-300 italic"
+                title="Motif du refus communiqué par l'administrateur"
+              >
+                <div className="not-italic font-semibold text-[10px] uppercase tracking-wider text-red-600 dark:text-red-400 mb-1">
+                  💬 Motif de l'administrateur
+                </div>
+                {file.resource.rejectionReason}
+              </div>
+            )}
+          </>
+        )}
+        {file.resource && file.resource.status === 'DRAFT' && (
+          <div className="mb-3 px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1">
+            <span>📝</span> Brouillon
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-1">
