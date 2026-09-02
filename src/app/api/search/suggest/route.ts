@@ -1,18 +1,13 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { unstable_cache as nextCache } from 'next/cache';
-import { prisma } from '@/lib/prisma';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export const runtime = 'nodejs';
-// PERF 2026-08-16: This endpoint was the single hottest API route (called
-// on every keystroke in the search bar). Adding `revalidate=60` lets Vercel
-// CDN serve identical queries from edge cache instead of hitting the
-// serverless function. Reduced Function Invocations by ~70% in testing.
+export const revalidate = 60; // 5 min cache
 
 const SUGGEST_TYPES = ['resource', 'teacher', 'subject', 'class', 'section'] as const;
 type SuggestType = (typeof SUGGEST_TYPES)[number];
 
-// Suggest results structure
 interface SuggestResult {
   type: SuggestType;
   id: string;
@@ -22,285 +17,109 @@ interface SuggestResult {
   icon?: string;
 }
 
-// Get current user (for personalized results)
-async function getCurrentUser() {
-  try {
-    const { getCurrentUser: getUser } = await import('@/lib/auth');
-    return await getUser();
-  } catch {
-    return null;
-  }
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
 }
 
-// Search resources with full-text + trigram
-async function searchResources(q: string, limit: number): Promise<SuggestResult[]> {
+async function searchResources(db: any, q: string, limit: number): Promise<SuggestResult[]> {
   const trimmed = q.trim();
   if (!trimmed) return [];
 
-  // Use websearch_to_tsquery for natural language (handles typos, multiple words)
-  // Fall back to plainto_tsquery if websearch not available
-  const results = await prisma.$queryRaw<any[]>`
-    SELECT 
-      r.id, r."numericId", r.title, r.slug, r.type,
-      s."nameFr" as "subjectName",
-      c."nameFr" as "className",
-      ts_rank(r.search_vector, websearch_to_tsquery('french', ${trimmed})) as rank,
-      similarity(unaccent(r.title), unaccent(${trimmed})) as sim
-    FROM "Resource" r
-    LEFT JOIN "Subject" s ON r."subjectId" = s.id
-    LEFT JOIN "Class" c ON r."classId" = c.id
-    WHERE r.status = 'PUBLISHED'
-      AND (
-        r.search_vector @@ websearch_to_tsquery('french', ${trimmed})
-        OR unaccent(r.title) % unaccent(${trimmed})
-        OR unaccent(r.title) ILIKE ${'%' + trimmed + '%'}
-      )
-    ORDER BY rank DESC, sim DESC, r."publishedAt" DESC NULLS LAST
-    LIMIT ${limit}
-  `;
-
-  return (results as any[]).map((r) => ({
+  const like = `%${trimmed}%`;
+  const r = await db.prepare(`
+    SELECT r.id, r.numericId, r.title, r.slug, r.type,
+           s.nameFr as subjectName, c.nameFr as className
+    FROM Resource r
+    LEFT JOIN \`Subject\` s ON r.subjectId = s.id
+    LEFT JOIN \`Class\` c ON r.classId = c.id
+    WHERE r.status = 'PUBLISHED' 
+      AND (r.title LIKE ? OR r.description LIKE ? OR r.summary LIKE ?)
+    ORDER BY r.viewsCount DESC
+    LIMIT ?
+  `).bind(like, like, like, limit).all();
+  
+  return (r?.results || []).map((row: any) => ({
     type: 'resource' as SuggestType,
-    id: r.id,
-    title: r.title,
-    subtitle: [r.subjectName, r.className, typeLabel(r.type)].filter(Boolean).join(' · '),
-    href: `/ressources/${r.numericId}/${r.slug}`,
-    icon: typeIcon(r.type),
+    id: row.id,
+    numericId: row.numericId,
+    title: row.title,
+    subtitle: [row.subjectName, row.className].filter(Boolean).join(' • '),
+    href: `/fr/ressources/${row.numericId || row.id}/${row.slug}`,
+    icon: 'file-text',
   }));
 }
 
-// Search teachers
-async function searchTeachers(q: string, limit: number): Promise<SuggestResult[]> {
+async function searchTeachers(db: any, q: string, limit: number): Promise<SuggestResult[]> {
   const trimmed = q.trim();
   if (!trimmed) return [];
 
-  const results = await prisma.$queryRaw<any[]>`
-    SELECT 
-      u.id, u."numericId", u."slug", u."firstName", u."lastName", u."schoolName", u."avatarUrl",
-      (SELECT COUNT(*) FROM "Resource" r WHERE r."teacherId" = u.id AND r.status = 'PUBLISHED')::int as "resourceCount"
-    FROM "User" u
-    WHERE u.role = 'TEACHER' AND u.status = 'ACTIVE'
-      AND (
-        unaccent(u."firstName" || ' ' || u."lastName") ILIKE unaccent(${`%${trimmed}%`})
-        OR unaccent(COALESCE(u."schoolName", '')) ILIKE unaccent(${`%${trimmed}%`})
-      )
-    ORDER BY "resourceCount" DESC
-    LIMIT ${limit}
-  `;
-
-  return (results as any[]).map((u) => ({
+  const like = `%${trimmed}%`;
+  const r = await db.prepare(`
+    SELECT id, numericId, slug, firstName, lastName, schoolName
+    FROM User
+    WHERE role = 'TEACHER' AND status = 'ACTIVE'
+      AND (LOWER(firstName) LIKE LOWER(?) OR LOWER(lastName) LIKE LOWER(?) OR LOWER(IFNULL(schoolName, '')) LIKE LOWER(?))
+    LIMIT ?
+  `).bind(like, like, like, limit).all();
+  
+  return (r?.results || []).map((row: any) => ({
     type: 'teacher' as SuggestType,
-    id: u.id,
-    title: `${u.firstName || ''} ${u.lastName || ''}`,
-    subtitle: [u.schoolName, `${u.resourceCount} ressource(s)`].filter(Boolean).join(' · '),
-    href: `/professeurs/${u.numericId}/${u.slug}`,
-    icon: '👨‍🏫',
+    id: row.id,
+    numericId: row.numericId,
+    title: `${row.firstName} ${row.lastName}`,
+    subtitle: row.schoolName || 'Enseignant',
+    href: `/fr/professeurs/${row.numericId || row.id}`,
+    icon: 'user',
   }));
 }
 
-// Search subjects
-async function searchSubjects(q: string, limit: number): Promise<SuggestResult[]> {
-  const trimmed = q.trim();
+async function searchSubjects(db: any, q: string, limit: number): Promise<SuggestResult[]> {
+  const trimmed = q.trim().toLowerCase();
   if (!trimmed) return [];
-
-  const results = await prisma.$queryRaw<any[]>`
-    SELECT 
-      s.id, s.slug, s."nameFr", s."nameAr", s.icon, s.color,
-      (SELECT COUNT(*) FROM "Resource" r WHERE r."subjectId" = s.id AND r.status = 'PUBLISHED')::int as "resourceCount"
-    FROM "Subject" s
-    WHERE unaccent(s."nameFr") ILIKE unaccent(${`%${trimmed}%`})
-       OR unaccent(COALESCE(s."nameAr", '')) ILIKE unaccent(${`%${trimmed}%`})
-    ORDER BY "resourceCount" DESC
-    LIMIT ${limit}
-  `;
-
-  return (results as any[]).map((s) => ({
+  
+  const like = `%${trimmed}%`;
+  const r = await db.prepare(`
+    SELECT id, slug, nameFr, nameAr
+    FROM Subject
+    WHERE LOWER(nameFr) LIKE ? OR LOWER(nameAr) LIKE ?
+    ORDER BY nameFr ASC
+    LIMIT ?
+  `).bind(like, like, limit).all();
+  
+  return (r?.results || []).map((row: any) => ({
     type: 'subject' as SuggestType,
-    id: s.id,
-    title: s.nameFr,
-    subtitle: `${s.resourceCount} ressource(s)`,
-    href: `/matieres/${s.slug}`,
-    icon: s.icon || '📚',
+    id: row.id,
+    title: row.nameFr,
+    href: `/fr/matieres/${row.slug}`,
+    icon: 'book',
   }));
-}
-
-// Search classes
-async function searchClasses(q: string, limit: number): Promise<SuggestResult[]> {
-  const trimmed = q.trim();
-  if (!trimmed) return [];
-
-  const results = await prisma.$queryRaw<any[]>`
-    SELECT 
-      c.id, c.slug, c."nameFr", c."nameAr",
-      l.slug as "levelSlug", l."nameFr" as "levelName",
-      (SELECT COUNT(*) FROM "Resource" r WHERE r."classId" = c.id AND r.status = 'PUBLISHED')::int as "resourceCount"
-    FROM "Class" c
-    LEFT JOIN "Level" l ON c."levelId" = l.id
-    WHERE unaccent(c."nameFr") ILIKE unaccent(${`%${trimmed}%`})
-       OR unaccent(COALESCE(c."nameAr", '')) ILIKE unaccent(${`%${trimmed}%`})
-    ORDER BY c."order" ASC
-    LIMIT ${limit}
-  `;
-
-  return (results as any[]).map((c) => ({
-    type: 'class' as SuggestType,
-    id: c.id,
-    title: c.nameFr,
-    subtitle: [c.levelName, `${c.resourceCount} ressource(s)`].filter(Boolean).join(' · '),
-    href: `/niveaux/${c.levelSlug}#${c.slug}`,
-    icon: '🎒',
-  }));
-}
-
-// Sections
-async function searchSections(q: string, limit: number): Promise<SuggestResult[]> {
-  const trimmed = q.trim();
-  if (!trimmed) return [];
-
-  const results = await prisma.$queryRaw<any[]>`
-    SELECT 
-      s.id, s.slug, s."nameFr", s."nameAr",
-      c.slug as "classSlug", c."nameFr" as "className",
-      l.slug as "levelSlug",
-      (SELECT COUNT(*) FROM "Resource" r WHERE r."sectionId" = s.id AND r.status = 'PUBLISHED')::int as "resourceCount"
-    FROM "Section" s
-    LEFT JOIN "Class" c ON s."classId" = c.id
-    LEFT JOIN "Level" l ON c."levelId" = l.id
-    WHERE unaccent(s."nameFr") ILIKE unaccent(${`%${trimmed}%`})
-       OR unaccent(COALESCE(s."nameAr", '')) ILIKE unaccent(${`%${trimmed}%`})
-    LIMIT ${limit}
-  `;
-
-  return (results as any[]).map((s) => ({
-    type: 'section' as SuggestType,
-    id: s.id,
-    title: s.nameFr,
-    subtitle: [s.className, `${s.resourceCount} ressource(s)`].filter(Boolean).join(' · '),
-    href: `/niveaux/${s.levelSlug}#${s.classSlug}`,
-    icon: '📁',
-  }));
-}
-
-// Helpers
-function typeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    COURSE: 'Cours',
-    DEVOIR: 'Devoir',
-    EXERCISE: 'Exercice',
-    SERIES: 'Série',
-    BAC_SUBJECT: 'Sujet Bac',
-    CORRECTION: 'Corrigé',
-    SUMMARY: 'Résumé',
-    CARD: 'Fiche',
-  };
-  return labels[type] || type;
-}
-
-function typeIcon(type: string): string {
-  const icons: Record<string, string> = {
-    COURSE: '📖',
-    DEVOIR: '📝',
-    EXERCISE: '✏️',
-    SERIES: '📚',
-    BAC_SUBJECT: '🎓',
-    CORRECTION: '✅',
-    SUMMARY: '📄',
-    CARD: '🗂️',
-  };
-  return icons[type] || '📄';
 }
 
 export async function GET(req: NextRequest) {
-  const start = Date.now();
-  const q = req.nextUrl.searchParams.get('q') || '';
-  const limit = Math.min(parseInt(req.nextUrl.searchParams.get('limit') || '8'), 20);
-  const types = (req.nextUrl.searchParams.get('types') || 'resource,teacher,subject,class')
-    .split(',')
-    .filter((t) => SUGGEST_TYPES.includes(t as SuggestType)) as SuggestType[];
-
-  if (!q.trim() || q.length < 2) {
+  try {
+    const q = (req.nextUrl.searchParams.get('q') || '').trim();
+    if (!q || q.length < 2) {
+      return NextResponse.json({ results: [] });
+    }
+    
+    const db = await getD1();
+    if (!db) {
+      return NextResponse.json({ results: [], error: 'DB not available' }, { status: 503 });
+    }
+    
+    const [resources, teachers, subjects] = await Promise.all([
+      searchResources(db, q, 5),
+      searchTeachers(db, q, 3),
+      searchSubjects(db, q, 3),
+    ]);
+    
     return NextResponse.json({
-      query: q,
-      results: [],
-      groups: {},
-      took: Date.now() - start,
+      results: [...resources, ...teachers, ...subjects],
     });
+  } catch (e: any) {
+    console.error('[search/suggest] error:', e?.message);
+    return NextResponse.json({ results: [], error: e?.message }, { status: 500 });
   }
-
-  // Run all searches in parallel — each is cached individually for 60s
-  // by query string. Identical queries from different users hit the cache
-  // instead of re-running the $queryRaw full-text search.
-  const [resources, teachers, subjects, classes, sections] = await Promise.all([
-    types.includes('resource') ? getCachedResources(q, limit) : Promise.resolve([]),
-    types.includes('teacher') ? getCachedTeachers(q, 3) : Promise.resolve([]),
-    types.includes('subject') ? getCachedSubjects(q, 3) : Promise.resolve([]),
-    types.includes('class') ? getCachedClasses(q, 3) : Promise.resolve([]),
-    types.includes('section') ? getCachedSections(q, 2) : Promise.resolve([]),
-  ]);
-
-  // Combine all results
-  const all = [...resources, ...teachers, ...subjects, ...classes, ...sections];
-
-  // Group by type
-  const groups: Record<string, SuggestResult[]> = {
-    resource: resources,
-    teacher: teachers,
-    subject: subjects,
-    class: classes,
-    section: sections,
-  };
-
-  return NextResponse.json(
-    {
-      query: q,
-      results: all.slice(0, limit * 2),
-      groups,
-      counts: {
-        resource: resources.length,
-        teacher: teachers.length,
-        subject: subjects.length,
-        class: classes.length,
-        section: sections.length,
-        total: all.length,
-      },
-      took: Date.now() - start,
-    },
-    {
-      headers: {
-        // Vercel CDN cache: identical queries served from edge for 60s
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
-      },
-    },
-  );
 }
-
-// =========================================================================
-// Cached wrappers around the raw search functions. unstable_cache dedupes
-// identical query strings for 60s and serves from in-memory LRU.
-// Tagged for surgical revalidation when resources/teachers/subjects change.
-// =========================================================================
-const getCachedResources = nextCache(
-  async (q: string, limit: number) => searchResources(q, limit),
-  ['suggest-resources-v1'],
-  { revalidate: 60, tags: ['suggest', 'resources'] },
-);
-const getCachedTeachers = nextCache(
-  async (q: string, limit: number) => searchTeachers(q, limit),
-  ['suggest-teachers-v1'],
-  { revalidate: 60, tags: ['suggest', 'teachers'] },
-);
-const getCachedSubjects = nextCache(
-  async (q: string, limit: number) => searchSubjects(q, limit),
-  ['suggest-subjects-v1'],
-  { revalidate: 60, tags: ['suggest', 'subjects'] },
-);
-const getCachedClasses = nextCache(
-  async (q: string, limit: number) => searchClasses(q, limit),
-  ['suggest-classes-v1'],
-  { revalidate: 60, tags: ['suggest', 'classes'] },
-);
-const getCachedSections = nextCache(
-  async (q: string, limit: number) => searchSections(q, limit),
-  ['suggest-sections-v1'],
-  { revalidate: 60, tags: ['suggest', 'sections'] },
-);

@@ -1,20 +1,20 @@
 // @ts-nocheck
-export const dynamic = 'force-dynamic';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { uploadFile } from '@/lib/storage';
 import { sendNewEditPendingEmail } from '@/lib/email';
 
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-/**
- * POST /api/teacher/resources/[id]/file
- * Replace the PDF file of a resource. Creates a pending edit that requires admin re-approval.
- * Body: multipart/form-data with field "file"
- */
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
+}
+
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getCurrentUser();
@@ -24,7 +24,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     const { id } = await params;
-    const resource = await prisma.resource.findUnique({ where: { id } });
+    const db = await getD1();
+    if (!db) return NextResponse.json({ error: 'DB not available' }, { status: 503 });
+
+    const resource: any = await db.prepare('SELECT * FROM Resource WHERE id = ?').bind(id).first();
     if (!resource) return NextResponse.json({ error: 'Ressource introuvable' }, { status: 404 });
 
     if (user.role !== 'ADMIN' && resource.teacherId !== user.id) {
@@ -32,19 +35,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     if (resource.editStatus === 'PENDING_EDIT_APPROVAL') {
-      return NextResponse.json(
-        {
-          error: "Une modification est déjà en attente d'approbation.",
-        },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: "Une modification est déjà en attente d'approbation." }, { status: 409 });
     }
 
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
-    if (!file) {
-      return NextResponse.json({ error: 'Aucun fichier fourni' }, { status: 400 });
-    }
+    if (!file) return NextResponse.json({ error: 'Aucun fichier fourni' }, { status: 400 });
     if (file.type !== 'application/pdf') {
       return NextResponse.json({ error: 'Le fichier doit être un PDF' }, { status: 400 });
     }
@@ -52,99 +48,54 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Fichier trop volumineux (max 50 MB)' }, { status: 400 });
     }
 
-    // Upload new file
     const buffer = Buffer.from(await file.arrayBuffer());
     const ext = file.name.split('.').pop() || 'pdf';
     const fileName = `resources/${id}/pending-${Date.now()}.${ext}`;
     const uploadResult: any = await uploadFile(fileName, buffer, 'application/pdf');
     const fileUrl = uploadResult.url || uploadResult;
+    const fileKey = uploadResult.key || fileName;
 
-    // Get current pendingEdit (or empty object) and merge file info
-    const currentPending = (resource.pendingEdit as any) || {};
+    const currentPending = (() => {
+      try {
+        return resource.pendingEdit ? (typeof resource.pendingEdit === 'string' ? JSON.parse(resource.pendingEdit) : resource.pendingEdit) : {};
+      } catch { return {}; }
+    })();
     const newPending = {
       ...currentPending,
-      fileKey: uploadResult.key || fileName,
+      fileKey,
       fileUrl,
       fileSize: file.size,
     };
 
-    // Admin: apply directly
     if (user.role === 'ADMIN') {
-      await prisma.resource.update({
-        where: { id },
-        data: {
-          fileKey: uploadResult.key || fileName,
-          fileUrl,
-          fileSize: file.size,
-        },
-      });
-      return NextResponse.json({
-        success: true,
-        mode: 'direct',
-        message: 'Fichier remplacé (admin)',
-      });
-    }
+      await db.prepare(
+        'UPDATE Resource SET fileKey = ?, fileUrl = ?, fileSize = ?, updatedAt = ? WHERE id = ?'
+      ).bind(fileKey, fileUrl, file.size, Date.now(), id).run();
+    } else {
+      await db.prepare(
+        "UPDATE Resource SET editStatus = 'PENDING_EDIT_APPROVAL', pendingEdit = ?, editRequestedAt = ?, editRequestedById = ?, updatedAt = ? WHERE id = ?"
+      ).bind(JSON.stringify(newPending), Date.now(), user.id, Date.now(), id).run();
 
-    // Track if the previous edit was rejected (for the admin email context)
-    const wasPreviouslyRejected = resource.editStatus === 'EDIT_REJECTED';
-    const previousRejectionReason = resource.editRejectionReason || undefined;
-    const fileSummary = `fichier remplacé (${(file.size / 1024 / 1024).toFixed(1)} MB)`;
-
-    // Teacher: pending edit
-    await prisma.resource.update({
-      where: { id },
-      data: {
-        pendingEdit: newPending,
-        editStatus: 'PENDING_EDIT_APPROVAL',
-        editRequestedAt: new Date(),
-        editRequestedById: user.id,
-        editSummary: fileSummary,
-        editRejectionReason: null,
-        editReviewedAt: null,
-        editReviewedById: null,
-      },
-    });
-
-    // Notify admins (in-app + email)
-    const admins = await prisma.user.findMany({
-      where: { role: 'ADMIN' },
-      select: { id: true, email: true, firstName: true },
-    });
-    await prisma.notification.createMany({
-      data: admins.map((a) => ({
-        userId: a.id,
-        type: 'edit_pending',
-        title: wasPreviouslyRejected ? 'Fichier re-soumis 🔄' : 'Fichier remplacé (en attente) ✏️',
-        message: `${user.firstName || ''} ${user.lastName || ''} a ${wasPreviouslyRejected ? 're-soumis le fichier de' : 'remplacé le fichier de'} "${resource.title}" — en attente d'approbation.`,
-        link: `/admin/ressources/editions`,
-      })),
-    });
-
-    // Send email to all admins
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
-    const reviewUrl = `${siteUrl}/admin/ressources/editions`;
-    const teacherFullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-    for (const admin of admins) {
-      if (admin.email && admin.firstName) {
-        await sendNewEditPendingEmail(
-          admin.email,
-          teacherFullName,
-          resource.title,
-          fileSummary,
-          reviewUrl,
-          wasPreviouslyRejected,
-          previousRejectionReason,
-        );
+      // Send email to admin
+      try {
+        const admin: any = await db.prepare("SELECT email FROM User WHERE role = 'ADMIN' LIMIT 1").first();
+        if (admin?.email) {
+          await sendNewEditPendingEmail({
+            to: admin.email,
+            teacherName: `${user.firstName} ${user.lastName}`,
+            resourceTitle: resource.title,
+            resourceId: id,
+            locale: 'fr',
+          });
+        }
+      } catch (e) {
+        console.error('[file] admin email failed:', e);
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      mode: 'pending',
-      message: "Nouveau fichier en attente d'approbation par un administrateur.",
-    });
+    return NextResponse.json({ success: true, fileKey, fileUrl });
   } catch (e: any) {
-    console.error('File upload error:', e);
-    return NextResponse.json({ error: e.message || 'Erreur serveur' }, { status: 500 });
+    console.error('[file POST] error:', e?.message);
+    return NextResponse.json({ error: e?.message }, { status: 500 });
   }
 }
