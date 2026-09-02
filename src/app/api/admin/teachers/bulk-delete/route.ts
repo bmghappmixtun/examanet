@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       }
     }
     // PERF 2026-09-02: bust user-count-* caches (count changed)
-    await invalidateCache(['user-count-teacher-v1', 'user-count-student-v1', 'user-count-admin-v1']);
+    await invalidateCache('user-counts-v1');
     return NextResponse.json({ ok: true, deleted, transferred, deletedFiles, errors });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 });

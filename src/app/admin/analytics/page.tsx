@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { Users, FileText, TrendingUp, Activity } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
+import { cachedD1Query } from '@/lib/kv-cache';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -25,42 +26,46 @@ export default async function AdminAnalyticsPage() {
   const thirtyDaysAgo = Date.now() - 30 * 86400 * 1000;
   const fourteenDaysAgo = Date.now() - 14 * 86400 * 1000;
 
-  // Aggregate counts (D1 has no View/Download/Comment/Rating/Favorite/Follow tables)
-  const [
-    totalUsersR,
-    newUsers7R,
-    newUsersPrev7R,
-    totalResourcesR,
-    publishedR,
-    newResources7R,
-    newResourcesPrev7R,
-    totalDownloadsR,
-    activeTeachersR,
-    pendingResourcesR,
-  ] = await Promise.all([
-    db.prepare('SELECT COUNT(*) as c FROM User').first(),
-    db.prepare('SELECT COUNT(*) as c FROM User WHERE createdAt > ?').bind(sevenDaysAgo).first(),
-    db.prepare('SELECT COUNT(*) as c FROM User WHERE createdAt > ? AND createdAt <= ?').bind(fourteenDaysAgo, sevenDaysAgo).first(),
-    db.prepare('SELECT COUNT(*) as c FROM Resource').first(),
-    db.prepare("SELECT COUNT(*) as c FROM Resource WHERE status = 'PUBLISHED'").first(),
-    db.prepare('SELECT COUNT(*) as c FROM Resource WHERE createdAt > ?').bind(sevenDaysAgo).first(),
-    db.prepare('SELECT COUNT(*) as c FROM Resource WHERE createdAt > ? AND createdAt <= ?').bind(fourteenDaysAgo, sevenDaysAgo).first(),
-    db.prepare("SELECT SUM(downloadsCount) as s FROM Resource WHERE status = 'PUBLISHED'").first(),
-    db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER' AND status = 'ACTIVE'").first(),
-    db.prepare("SELECT COUNT(*) as c FROM Resource WHERE status = 'PENDING_APPROVAL'").first(),
-  ]);
+  // PERF 2026-09-02: Batch 10 COUNT queries into 1 query (Step 9).
+  // All counts come from User + Resource tables; combining them into a single
+  // query with subqueries reduces 10 round trips to 1. KV cache (5min TTL)
+  // serves the result on subsequent page loads.
+  // Note: D1 has no View/Download/Comment/Rating/Favorite/Follow tables.
+  const counts: any = await cachedD1Query({
+    key: 'analytics-stats-v1',
+    ttl: 300, // 5 min — analytics doesn't need to be real-time
+    query: () =>
+      db
+        .prepare(
+          [
+            'SELECT',
+            '  (SELECT COUNT(*) FROM User) AS totalUsers,',
+            '  (SELECT COUNT(*) FROM User WHERE createdAt > ?) AS newUsers7,',
+            '  (SELECT COUNT(*) FROM User WHERE createdAt > ? AND createdAt <= ?) AS newUsersPrev7,',
+            '  (SELECT COUNT(*) FROM Resource) AS totalResources,',
+            '  (SELECT COUNT(*) FROM Resource WHERE status = \'PUBLISHED\') AS published,',
+            '  (SELECT COUNT(*) FROM Resource WHERE createdAt > ?) AS newResources7,',
+            '  (SELECT COUNT(*) FROM Resource WHERE createdAt > ? AND createdAt <= ?) AS newResourcesPrev7,',
+            '  (SELECT SUM(downloadsCount) FROM Resource WHERE status = \'PUBLISHED\') AS totalDownloads,',
+            '  (SELECT COUNT(*) FROM User WHERE role = \'TEACHER\' AND status = \'ACTIVE\') AS activeTeachers,',
+            '  (SELECT COUNT(*) FROM Resource WHERE status = \'PENDING_APPROVAL\') AS pendingResources',
+          ].join('\n'),
+        )
+        .bind(sevenDaysAgo, fourteenDaysAgo, sevenDaysAgo, sevenDaysAgo, fourteenDaysAgo, sevenDaysAgo)
+        .first(),
+  });
 
   const num = (v: any) => (v == null ? 0 : Number(v) || 0);
-  const totalUsers = num(totalUsersR?.c);
-  const newUsers7 = num(newUsers7R?.c);
-  const newUsersPrev7 = num(newUsersPrev7R?.c);
-  const totalResources = num(totalResourcesR?.c);
-  const published = num(publishedR?.c);
-  const newResources7 = num(newResources7R?.c);
-  const newResourcesPrev7 = num(newResourcesPrev7R?.c);
-  const totalDownloads = num(totalDownloadsR?.s);
-  const activeTeachers = num(activeTeachersR?.c);
-  const pendingResources = num(pendingResourcesR?.c);
+  const totalUsers = num(counts?.totalUsers);
+  const newUsers7 = num(counts?.newUsers7);
+  const newUsersPrev7 = num(counts?.newUsersPrev7);
+  const totalResources = num(counts?.totalResources);
+  const published = num(counts?.published);
+  const newResources7 = num(counts?.newResources7);
+  const newResourcesPrev7 = num(counts?.newResourcesPrev7);
+  const totalDownloads = num(counts?.totalDownloads);
+  const activeTeachers = num(counts?.activeTeachers);
+  const pendingResources = num(counts?.pendingResources);
 
   const userDelta = newUsersPrev7 > 0 ? Math.round(((newUsers7 - newUsersPrev7) / newUsersPrev7) * 100) : 0;
   const resourceDelta = newResourcesPrev7 > 0 ? Math.round(((newResources7 - newResourcesPrev7) / newResourcesPrev7) * 100) : 0;
