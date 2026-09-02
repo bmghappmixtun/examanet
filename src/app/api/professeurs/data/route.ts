@@ -13,6 +13,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { cachedD1Query } from '@/lib/kv-cache';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 60; // cache for 60s
@@ -60,28 +61,43 @@ export async function GET(request: NextRequest) {
     };
 
     // ----- Q1 (parallel): global stats + filter options -----
-    // Combined 3 COUNT(*) into 1 conditional aggregation
-    // Also gets the distinct subjects/classes taught (cached in client)
-    const [statsRow, subjectsTaught, classesTaught] = await Promise.all([
-      safeFirst(`
-        SELECT
-          (SELECT COUNT(*) FROM User WHERE role = 'TEACHER' AND status = 'ACTIVE') AS totalActive,
-          (SELECT COUNT(*) FROM User WHERE role = 'TEACHER' AND status = 'ACTIVE' AND isVerifiedTeacher = 1) AS totalVerified,
-          (SELECT COUNT(*) FROM Resource WHERE status = 'PUBLISHED' AND teacherId IS NOT NULL) AS totalResources
-      `),
-      safeQuery(`
-        SELECT s.slug, s.nameFr, s.nameAr, s.color
-        FROM Subject s
-        WHERE EXISTS (SELECT 1 FROM Resource r WHERE r.subjectId = s.id AND r.status = 'PUBLISHED' AND r.teacherId IS NOT NULL)
-        ORDER BY s.nameFr ASC
-      `),
-      safeQuery(`
-        SELECT c.slug, c.nameFr, c.nameAr
-        FROM "Class" c
-        WHERE EXISTS (SELECT 1 FROM Resource r WHERE r.classId = c.id AND r.status = 'PUBLISHED' AND r.teacherId IS NOT NULL)
-        ORDER BY c."order" ASC
-      `),
-    ]);
+    // PERF 2026-09-02 (Step 3.5): Cache Q1 (the subjects/classes queries were the bottleneck — ~800ms)
+    // The subjects query has 28 EXISTS subqueries (N+1 over subjects table)
+    // Cache the whole Q1 result for 5min (data changes rarely: only on new teacher/resource)
+    const q1Data = await cachedD1Query({
+      key: 'profs-q1-v1',
+      ttl: 300, // 5 min
+      query: async () => {
+        const [statsRow, subjectsTaught, classesTaught] = await Promise.all([
+          safeFirst(`
+            SELECT
+              (SELECT COUNT(*) FROM User WHERE role = 'TEACHER' AND status = 'ACTIVE') AS totalActive,
+              (SELECT COUNT(*) FROM User WHERE role = 'TEACHER' AND status = 'ACTIVE' AND isVerifiedTeacher = 1) AS totalVerified,
+              (SELECT COUNT(*) FROM Resource WHERE status = 'PUBLISHED' AND teacherId IS NOT NULL) AS totalResources
+          `),
+          safeQuery(`
+            SELECT s.slug, s.nameFr, s.nameAr, s.color
+            FROM Subject s
+            WHERE EXISTS (SELECT 1 FROM Resource r WHERE r.subjectId = s.id AND r.status = 'PUBLISHED' AND r.teacherId IS NOT NULL)
+            ORDER BY s.nameFr ASC
+          `),
+          safeQuery(`
+            SELECT c.slug, c.nameFr, c.nameAr
+            FROM "Class" c
+            WHERE EXISTS (SELECT 1 FROM Resource r WHERE r.classId = c.id AND r.status = 'PUBLISHED' AND r.teacherId IS NOT NULL)
+            ORDER BY c."order" ASC
+          `),
+        ]);
+        return {
+          statsRow: statsRow || { totalActive: 0, totalVerified: 0, totalResources: 0 },
+          subjectsTaught,
+          classesTaught,
+        };
+      },
+    });
+    const statsRow = q1Data.statsRow;
+    const subjectsTaught = q1Data.subjectsTaught;
+    const classesTaught = q1Data.classesTaught;
 
     const totalActive = num(statsRow?.totalActive);
     const totalVerified = num(statsRow?.totalVerified);
@@ -161,6 +177,21 @@ export async function GET(request: NextRequest) {
     const teacherWhereSql = teacherConds.join(' AND ');
     const fromUserSql = filterJoinSql ? `User u ${filterJoinSql}` : 'User u';
 
+    // PERF 2026-09-02 (Step 3): Build cache key from filter params
+    // Cache the full data assembly (queries + result transformation)
+    const cacheFilterKey = [
+      `sort=${sort}`,
+      `q=${q}`,
+      `sub=${subjectSlugs.join(',')}`,
+      `cls=${classSlugs.join(',')}`,
+      `v=${verifiedOnly ? 1 : 0}`,
+      `p=${page}`,
+    ].join('&');
+    const cacheKey = `profs-data-v1-${fnv1a(cacheFilterKey).toString(16)}`;
+    // Popular default = 60s, filtered = 30s
+    const hasFilters = q || subjectSlugs.length || classSlugs.length || verifiedOnly;
+    const cacheTtl = hasFilters ? 30 : 60;
+
     // ----- Q2: totalMatching + teachers + stats in one shot -----
     // Single query: COUNT + paginated teachers with LEFT JOIN to aggregated stats
     const offset = (page - 1) * PAGE_SIZE;
@@ -188,64 +219,76 @@ export async function GET(request: NextRequest) {
     // Main query: gets count + page in one round trip via window function trick
     // Actually we need both: total count + paginated rows
     // Use 2 parallel queries: one COUNT, one paginated SELECT with stats
-    const [countRow, teacherRows] = await Promise.all([
-      safeFirst(`SELECT COUNT(*) as c FROM ${fromUserSql} WHERE ${teacherWhereSql}`, teacherParams),
-      safeQuery(
-        `SELECT u.id, u.numericId, u.slug, u.firstName, u.lastName, u.firstNameAr, u.lastNameAr,
-                u.avatarUrl, u.bio, u.schoolName, u.governorate, u.isVerifiedTeacher, u.createdAt,
-                rs.files, rs.views, rs.downloads, rs.rating
-         FROM ${fromUserSql}
-         LEFT JOIN (${statsSubquery}) rs ON rs.teacherId = u.id
-         WHERE ${teacherWhereSql}
-         ORDER BY ${orderBySql}
-         LIMIT ? OFFSET ?`,
-        [...teacherParams, PAGE_SIZE, offset]
-      ),
-    ]);
-
-    const totalMatching = num(countRow?.c);
-    const totalPages = Math.max(1, Math.ceil(totalMatching / PAGE_SIZE));
+    // PERF 2026-09-02 (Step 3): Wrap the entire data assembly in cachedD1Query
+    // This caches the FULL JSON response (60s TTL for default, 30s for filtered)
+    // On cache hit, no D1 queries are run, response is instant (~30ms)
+    const dataPayload = await cachedD1Query({
+      key: cacheKey,
+      ttl: cacheTtl,
+      query: async () => {
+        const [_countRow, _teacherRows] = await Promise.all([
+          safeFirst(`SELECT COUNT(*) as c FROM ${fromUserSql} WHERE ${teacherWhereSql}`, teacherParams),
+          safeQuery(
+            `SELECT u.id, u.numericId, u.slug, u.firstName, u.lastName, u.firstNameAr, u.lastNameAr,
+                    u.avatarUrl, u.bio, u.schoolName, u.governorate, u.isVerifiedTeacher, u.createdAt,
+                    rs.files, rs.views, rs.downloads, rs.rating
+             FROM ${fromUserSql}
+             LEFT JOIN (${statsSubquery}) rs ON rs.teacherId = u.id
+             WHERE ${teacherWhereSql}
+             ORDER BY ${orderBySql}
+             LIMIT ? OFFSET ?`,
+            [...teacherParams, PAGE_SIZE, offset]
+          ),
+        ]);
+        const _totalMatching = num(_countRow?.c);
+        const _totalPages = Math.max(1, Math.ceil(_totalMatching / PAGE_SIZE));
+        return {
+          totalActive,
+          totalVerified,
+          totalResources,
+          totalMatching: _totalMatching,
+          totalPages: _totalPages,
+          page,
+          pageSize: PAGE_SIZE,
+          sort,
+          q,
+          teachers: _teacherRows.map((t: any) => ({
+            id: t.id,
+            numericId: t.numericId,
+            slug: t.slug,
+            firstName: t.firstName,
+            lastName: t.lastName,
+            firstNameAr: t.firstNameAr,
+            lastNameAr: t.lastNameAr,
+            avatarUrl: t.avatarUrl,
+            bio: t.bio,
+            schoolName: t.schoolName,
+            governorate: t.governorate,
+            isVerifiedTeacher: !!t.isVerifiedTeacher,
+            createdAt: t.createdAt,
+            stats: {
+              files: num(t.files),
+              views: num(t.views),
+              downloads: num(t.downloads),
+              rating: Number(t.rating) || 0,
+              followers: 0, // Follow table is empty
+            },
+          })),
+          subjectsTaught,
+          classesTaught,
+        };
+      },
+    });
 
     return NextResponse.json(
       {
-        totalActive,
-        totalVerified,
-        totalResources,
-        totalMatching,
-        totalPages,
-        page,
-        pageSize: PAGE_SIZE,
-        sort,
-        q,
-        teachers: teacherRows.map((t: any) => ({
-          id: t.id,
-          numericId: t.numericId,
-          slug: t.slug,
-          firstName: t.firstName,
-          lastName: t.lastName,
-          firstNameAr: t.firstNameAr,
-          lastNameAr: t.lastNameAr,
-          avatarUrl: t.avatarUrl,
-          bio: t.bio,
-          schoolName: t.schoolName,
-          governorate: t.governorate,
-          isVerifiedTeacher: !!t.isVerifiedTeacher,
-          createdAt: t.createdAt,
-          stats: {
-            files: num(t.files),
-            views: num(t.views),
-            downloads: num(t.downloads),
-            rating: Number(t.rating) || 0,
-            followers: 0, // Follow table is empty
-          },
-        })),
-        subjectsTaught,
-        classesTaught,
+        ...dataPayload,
         ms: Date.now() - t0,
       },
       {
         headers: {
           'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+          'X-Cache-Key': cacheKey,
         },
       }
     );
@@ -256,4 +299,16 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * FNV-1a 32-bit hash. Fast and good enough for cache keys.
+ */
+function fnv1a(str: string): number {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
 }
