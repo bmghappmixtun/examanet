@@ -2,6 +2,7 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import UsersManagementClient from '@/components/admin/UsersManagementClient';
+import { cachedD1Query, invalidateCache } from '@/lib/kv-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,11 +51,25 @@ export default async function AdminUsersPage(props: {
 
   const isStatsSort = ['files', 'views', 'downloads', 'favorites', 'comments', 'rating'].includes(sort);
 
-  // Counts (always)
+  // Counts (always) — PERF 2026-09-02: cache role counts (60s TTL)
+  // These change only when users are added/removed, so 60s is safe.
+  // filteredTotalR is NOT cached because it depends on search params.
   const [teacherCount, studentCount, adminCount, filteredTotalR] = await Promise.all([
-    db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER'").first().catch(() => ({ c: 0 })),
-    db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'STUDENT'").first().catch(() => ({ c: 0 })),
-    db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'ADMIN'").first().catch(() => ({ c: 0 })),
+    cachedD1Query({
+      key: 'user-count-teacher-v1',
+      ttl: 60,
+      query: () => db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER'").first().catch(() => ({ c: 0 })),
+    }),
+    cachedD1Query({
+      key: 'user-count-student-v1',
+      ttl: 60,
+      query: () => db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'STUDENT'").first().catch(() => ({ c: 0 })),
+    }),
+    cachedD1Query({
+      key: 'user-count-admin-v1',
+      ttl: 60,
+      query: () => db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'ADMIN'").first().catch(() => ({ c: 0 })),
+    }),
     db.prepare(`SELECT COUNT(*) as c FROM User u WHERE ${whereSql}`).bind(...params).first().catch(() => ({ c: 0 })),
   ]);
 
