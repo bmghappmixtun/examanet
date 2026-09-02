@@ -36,7 +36,7 @@ case "$ACTION" in
     ;;
   deploy)
     echo "→ Deploying to Cloudflare"
-    CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgresql://stub:stub@localhost:5432/stub" \
+    # HYPERDRIVE removed 2026-09-02 — using D1 only
       npx wrangler deploy
     ;;
   build)
