@@ -44,6 +44,10 @@
     {
       "binding": "NEXT_TAG_CACHE_KV",
       "id": "c71ef22c749349b0a68266c3f2ecb6b4"
+    },
+    {
+      "binding": "APP_CACHE",
+      "id": "b06e8c86184c45b690594f5fd7aa524f"
     }
   ],
   "hyperdrive": [

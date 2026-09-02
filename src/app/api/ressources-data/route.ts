@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { cachedD1Query } from '@/lib/kv-cache';
 
 // Single endpoint that returns ALL data needed by /fr/ressources page:
 // - 24 resources with subject/class/teacher joined (1 query with LEFT JOIN)
 // - Total count (1 query)
 // - Facet counts (1 query with GROUP BY on multiple columns)
 // - Class/Section/Subject lists (1 query for all)
-// 
+//
+// PERF 2026-09-02: Added KV cache for the static lookup tables (Class/Section/Subject)
+// which are queried on EVERY request. Main resources query is NOT cached because:
+// - It changes frequently (new resources, views/downloads)
+// - Filter combinations make the cache key space large
+// - CDN cache headers (60-300s) already provide edge caching for popular filter combos
+//
 // Total: ~3-4 SQL queries vs 22+ in the current prisma-compat implementation
 
 export async function GET(request: NextRequest) {
@@ -177,10 +184,25 @@ export async function GET(request: NextRequest) {
     }
     
     // ============== Get class/section/subject names (small lookup tables) ==============
+    // PERF 2026-09-02: Wrap in KV cache (1h TTL). These tables change rarely
+    // (admin only) but are queried on every /fr/ressources page load.
+    // Expected saving: ~3 D1 queries per page load.
     const [allClasses, allSections, allSubjects] = await Promise.all([
-      db.prepare("SELECT id, slug, nameFr, nameAr, levelId FROM `Class`").all(),
-      db.prepare("SELECT id, slug, nameFr, nameAr, numericId FROM `Section`").all(),
-      db.prepare("SELECT id, slug, nameFr, nameAr, color, icon FROM `Subject`").all(),
+      cachedD1Query({
+        key: 'all-classes-v1',
+        ttl: 3600,
+        query: () => db.prepare("SELECT id, slug, nameFr, nameAr, levelId FROM `Class`").all(),
+      }),
+      cachedD1Query({
+        key: 'all-sections-v1',
+        ttl: 3600,
+        query: () => db.prepare("SELECT id, slug, nameFr, nameAr, numericId FROM `Section`").all(),
+      }),
+      cachedD1Query({
+        key: 'all-subjects-v1',
+        ttl: 3600,
+        query: () => db.prepare("SELECT id, slug, nameFr, nameAr, color, icon FROM `Subject`").all(),
+      }),
     ]);
     
     const classMap = new Map<string, any>();
@@ -312,21 +334,28 @@ export async function GET(request: NextRequest) {
 }
 
 // Cache levelClassIds for the category filters
+// PERF 2026-09-02: Wrap in KV cache (1h TTL) — these class IDs change rarely
 async function getLevelClassIds(db: any): Promise<{ college: string[], lycee: string[] }> {
-  const levels = await db.prepare("SELECT id, slug FROM `Level`").all();
-  const collegeLevel = (levels.results || []).find((l: any) => l.slug === 'college');
-  const lyceeLevel = (levels.results || []).find((l: any) => l.slug === 'lycee');
-  
-  const result: { college: string[], lycee: string[] } = { college: [], lycee: [] };
-  
-  if (collegeLevel) {
-    const classes = await db.prepare("SELECT id FROM `Class` WHERE levelId = ?").bind(collegeLevel.id).all();
-    result.college = (classes.results || []).map((c: any) => c.id);
-  }
-  if (lyceeLevel) {
-    const classes = await db.prepare("SELECT id FROM `Class` WHERE levelId = ?").bind(lyceeLevel.id).all();
-    result.lycee = (classes.results || []).map((c: any) => c.id);
-  }
-  
-  return result;
+  return cachedD1Query({
+    key: 'level-class-ids-v1',
+    ttl: 3600,
+    query: async () => {
+      const levels = await db.prepare("SELECT id, slug FROM `Level`").all();
+      const collegeLevel = (levels.results || []).find((l: any) => l.slug === 'college');
+      const lyceeLevel = (levels.results || []).find((l: any) => l.slug === 'lycee');
+
+      const result: { college: string[], lycee: string[] } = { college: [], lycee: [] };
+
+      if (collegeLevel) {
+        const classes = await db.prepare("SELECT id FROM `Class` WHERE levelId = ?").bind(collegeLevel.id).all();
+        result.college = (classes.results || []).map((c: any) => c.id);
+      }
+      if (lyceeLevel) {
+        const classes = await db.prepare("SELECT id FROM `Class` WHERE levelId = ?").bind(lyceeLevel.id).all();
+        result.lycee = (classes.results || []).map((c: any) => c.id);
+      }
+
+      return result;
+    },
+  });
 }
