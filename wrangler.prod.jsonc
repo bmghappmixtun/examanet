@@ -51,12 +51,6 @@
       "id": "b06e8c86184c45b690594f5fd7aa524f"
     }
   ],
-  "hyperdrive": [
-    {
-      "binding": "HYPERDRIVE",
-      "id": "f229c4a38255449198890e4259aef52e"
-    }
-  ],
   "d1_databases": [
     {
       "binding": "DB",
