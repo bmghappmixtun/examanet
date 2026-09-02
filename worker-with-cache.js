@@ -1,67 +1,68 @@
 /**
- * Custom Worker with edge cache.
+ * Custom Worker with edge cache (v14 - production).
  * 
- * Wraps the opennext worker and adds CF Cache API for public pages.
- * The opennext worker is at .open-next/worker.js
+ * Properly checks cache for HTML requests and stores successful responses.
  */
 
-// Cached public URL patterns (must match next.config.js headers)
 const CACHEABLE_PATTERNS = [
-  /^\/(fr|ar)$/,
-  /^\/(fr|ar)\/ressources$/,
-  /^\/(fr|ar)\/niveaux$/,
-  /^\/(fr|ar)\/matieres$/,
-  /^\/(fr|ar)\/professeurs$/,
-  /^\/(fr|ar)\/bac\/archives$/,
+  /^\/(fr|ar)(\?.*)?$/,
+  /^\/(fr|ar)\/ressources(\?.*)?$/,
+  /^\/(fr|ar)\/niveaux(\?.*)?$/,
+  /^\/(fr|ar)\/matieres(\?.*)?$/,
+  /^\/(fr|ar)\/professeurs(\?.*)?$/,
+  /^\/(fr|ar)\/bac\/archives(\?.*)?$/,
 ];
 
 function isCacheable(url) {
-  return CACHEABLE_PATTERNS.some((p) => p.test(url.pathname));
+  return CACHEABLE_PATTERNS.some((p) => p.test(url.pathname + url.search));
 }
 
-// Import the opennext worker
 import openNextWorker from './.open-next/worker.js';
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    
-    // Only cache GET requests for cacheable paths
-    if (request.method !== 'GET' || !isCacheable(url)) {
-      return openNextWorker.fetch(request, env, ctx);
-    }
-    
-    // Use CF Cache API
-    const cache = caches.default;
-    const cacheKey = new Request(url, { method: 'GET' });
-    
-    // Check cache (only for browsers - pass through for Next.js prefetch)
-    const accept = request.headers.get('accept') || '';
+    const method = request.method;
+    const accept = (request.headers.get('accept') || '').toLowerCase();
     const isPrefetch = request.headers.get('next-router-prefetch') === '1';
+    const isHtml = accept.includes('text/html') || accept === '' || accept === '*/*' || accept.includes('application/xhtml');
+    const cacheable = method === 'GET' && isCacheable(url) && isHtml && !isPrefetch;
     
-    if (!isPrefetch && accept.includes('text/html')) {
+    if (cacheable) {
+      const cache = caches.default;
+      const urlNoQuery = new URL(url);
+      urlNoQuery.search = '';
+      const cacheKey = new Request(urlNoQuery.toString(), { method: 'GET' });
       const cached = await cache.match(cacheKey);
       if (cached) {
-        const response = new Response(cached.body, cached);
-        response.headers.set('cf-cache-status', 'HIT');
-        response.headers.set('x-cache-source', 'cloudflare-cache-api');
-        return response;
+        const headers = new Headers(cached.headers);
+        headers.set('cf-cache-status', 'HIT');
+        headers.set('x-cache-wrapper', 'v14-HIT');
+        return new Response(cached.body, {
+          status: cached.status,
+          statusText: cached.statusText,
+          headers: headers
+        });
       }
     }
     
-    // Cache miss - run the opennext worker
     const response = await openNextWorker.fetch(request, env, ctx);
     
-    // Only cache successful responses without Set-Cookie
-    if (response.ok && !response.headers.has('set-cookie') && !isPrefetch) {
-      const responseToCache = response.clone();
-      // Add HIT status to original response
-      const newResponse = new Response(responseToCache.body, response);
-      newResponse.headers.set('cf-cache-status', 'MISS');
-      ctx.waitUntil(cache.put(cacheKey, responseToCache));
-      return newResponse;
+    if (cacheable && response.ok && !response.headers.has('set-cookie')) {
+      const cache = caches.default;
+      const urlNoQuery = new URL(url);
+      urlNoQuery.search = '';
+      const cacheKey = new Request(urlNoQuery.toString(), { method: 'GET' });
+      ctx.waitUntil(cache.put(cacheKey, response.clone()));
     }
     
-    return response;
+    const headers = new Headers(response.headers);
+    headers.set('x-cache-wrapper', cacheable ? 'v14-MISS' : 'v14-bypass');
+    
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: headers
+    });
   },
 };
