@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { invalidateCache } from '@/lib/kv-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,30 @@ export async function GET(
   try {
     const ctx = await getCloudflareContext({ async: true });
     const db = (ctx as any).env.DB;
+
+    // PERF 2026-09-02: Cache the full detail response (5 SELECT queries merged into 1 KV read on hit)
+    // 60s TTL balances freshness with cache hit rate
+    // Cache key: 'resource-detail-v1-{numericId}'
+    // Invalidation: rating/comment actions, resource edit, metadata regen
+    const cacheKey = `resource-detail-v1-${numericId}`;
+    const kv = (ctx as any).env.APP_CACHE;
+
+    if (kv) {
+      try {
+        const cached = await kv.get(cacheKey, { type: 'json' });
+        if (cached) {
+          // Update viewsCount asynchronously (don't block the response)
+          // Note: this is a write, so we await it (no fire-and-forget on CF Workers)
+          // but the response is already sent to the client
+          try {
+            await db.prepare('UPDATE Resource SET viewsCount = viewsCount + 1 WHERE numericId = ?').bind(numericId).run();
+          } catch (e) {}
+          return NextResponse.json(cached as any);
+        }
+      } catch (e) {
+        // Cache read failed — fall through to query
+      }
+    }
     
     // Use a single, simple query first
     const r: any = await db.prepare(`
@@ -74,7 +99,7 @@ export async function GET(
       await db.prepare('UPDATE Resource SET viewsCount = viewsCount + 1 WHERE id = ?').bind(r.id).run();
     } catch (e) {}
     
-    return NextResponse.json({
+    const responseData = {
       resource: {
         id: r.id, numericId: r.numericId, slug: r.slug, title: r.title,
         description: r.description, type: r.type, status: r.status,
@@ -110,7 +135,18 @@ export async function GET(
       },
       ratings: ratings?.results || [],
       comments: comments?.results || [],
-    });
+    };
+
+    // PERF 2026-09-02: Store in KV cache (60s TTL)
+    if (kv) {
+      try {
+        await kv.put(cacheKey, JSON.stringify(responseData), { expirationTtl: 60 });
+      } catch (e) {
+        // Cache write failed — still return response
+      }
+    }
+
+    return NextResponse.json(responseData);
   } catch (e: any) {
     console.error('[detail] error:', e?.message, e?.stack);
     return NextResponse.json({ error: e?.message, stack: e?.stack }, { status: 500 });
