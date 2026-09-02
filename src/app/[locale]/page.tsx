@@ -2,139 +2,150 @@
 import type { Metadata } from 'next';
 import { unstable_cache as nextCache } from 'next/cache';
 
-import { prisma } from '@/lib/prisma';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import HomeClient from '@/components/home/HomeClient';
 
-// PERF 2026-08-16: Home page is the most-hit page on the site (~620K function
-// invocations over 22 days contributed $7.42 to the Aug-2026 Vercel bill).
-// Each render fired 8 Prisma queries (resource.findMany x2, count x4,
-// subject.findMany, user.favorites) which (a) blew through the Prisma pool
-// (connection_limit=2 per Lambda) and (b) generated one observability event
-// per query.
-//
-// We now:
-// 1. Cache the static data (popular, recent, stats, subjects) for 5 min
-//    via unstable_cache with explicit tags for surgical invalidation.
-// 2. Move favorites to a client-side fetch (personalized, must be per-user).
-// 3. Drop the `getUserFavorites` server call from getHomeData().
-//
-// Result: home page is now 1 Prisma call (subjects, cached) instead of 8,
-// and never times out due to pool exhaustion.
+// PERF 2026-09-02: Migrated from Prisma to D1 direct.
+// The original used Prisma + Hyperdrive which returned empty data.
+// Now uses D1 directly with unstable_cache (5 min TTL) for performance.
+
 const REVALIDATE_S = 300;
+
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
+}
+
 const getCachedHomeData = nextCache(
   async () => {
-    const [popular, recent, statsArr, subjects] = await Promise.all([
-      prisma.resource.findMany({
-        where: { status: 'PUBLISHED' },
-        take: 8,
-        orderBy: [{ viewsCount: 'desc' }, { publishedAt: 'desc' }],
-        include: {
-          subject: true,
-          class: true,
-          teacher: {
-            select: { firstName: true, lastName: true, firstNameAr: true, lastNameAr: true },
-          },
-        },
-      }),
-      prisma.resource.findMany({
-        where: { status: 'PUBLISHED' },
-        take: 8,
-        orderBy: { publishedAt: 'desc' },
-        include: {
-          subject: true,
-          class: true,
-          teacher: {
-            select: { firstName: true, lastName: true, firstNameAr: true, lastNameAr: true },
-          },
-        },
-      }),
-      Promise.all([
-        prisma.resource.count({ where: { status: 'PUBLISHED' } }),
-        prisma.user.count({ where: { role: 'TEACHER', status: 'ACTIVE' } }),
-        prisma.user.count({ where: { role: 'STUDENT', status: 'ACTIVE' } }),
-        prisma.resource.aggregate({ _sum: { downloadsCount: true } }),
-      ]),
-      prisma.subject.findMany({ orderBy: { order: 'asc' } }),
+    const db = await getD1();
+    if (!db) return { popular: [], recent: [], stats: { resources: 0, teachers: 0, students: 0, downloads: 0 }, subjects: [] };
+
+    // Popular resources (by views)
+    const popularResult: any = await db.prepare(`
+      SELECT r.id, r.numericId, r.slug, r.title, r.description, r.summary, r.type, r.year,
+             r.hasCorrection, r.viewsCount, r.downloadsCount, r.avgRating, r.ratingsCount, r.publishedAt,
+             r.subjectId, r.classId, r.sectionId, r.teacherId, r.thumbnailUrl, r.thumbnailKey,
+             s.id as s_id, s.slug as s_slug, s.nameFr as s_nameFr, s.nameAr as s_nameAr, s.color as s_color, s.icon as s_icon,
+             c.id as c_id, c.slug as c_slug, c.nameFr as c_nameFr,
+             sec.id as sec_id, sec.slug as sec_slug, sec.nameFr as sec_nameFr,
+             t.id as t_id, t.firstName as t_firstName, t.lastName as t_lastName,
+             t.firstNameAr as t_firstNameAr, t.lastNameAr as t_lastNameAr,
+             t.avatarUrl as t_avatarUrl
+      FROM Resource r
+      LEFT JOIN \`Subject\` s ON r.subjectId = s.id
+      LEFT JOIN \`Class\` c ON r.classId = c.id
+      LEFT JOIN \`Section\` sec ON r.sectionId = sec.id
+      LEFT JOIN \`User\` t ON r.teacherId = t.id
+      WHERE r.status = 'PUBLISHED'
+      ORDER BY r.viewsCount DESC, r.publishedAt DESC
+      LIMIT 8
+    `).all();
+
+    // Recent resources
+    const recentResult: any = await db.prepare(`
+      SELECT r.id, r.numericId, r.slug, r.title, r.description, r.summary, r.type, r.year,
+             r.hasCorrection, r.viewsCount, r.downloadsCount, r.avgRating, r.ratingsCount, r.publishedAt,
+             r.subjectId, r.classId, r.sectionId, r.teacherId, r.thumbnailUrl, r.thumbnailKey,
+             s.id as s_id, s.slug as s_slug, s.nameFr as s_nameFr, s.nameAr as s_nameAr, s.color as s_color, s.icon as s_icon,
+             c.id as c_id, c.slug as c_slug, c.nameFr as c_nameFr,
+             sec.id as sec_id, sec.slug as sec_slug, sec.nameFr as sec_nameFr,
+             t.id as t_id, t.firstName as t_firstName, t.lastName as t_lastName,
+             t.firstNameAr as t_firstNameAr, t.lastNameAr as t_lastNameAr,
+             t.avatarUrl as t_avatarUrl
+      FROM Resource r
+      LEFT JOIN \`Subject\` s ON r.subjectId = s.id
+      LEFT JOIN \`Class\` c ON r.classId = c.id
+      LEFT JOIN \`Section\` sec ON r.sectionId = sec.id
+      LEFT JOIN \`User\` t ON r.teacherId = t.id
+      WHERE r.status = 'PUBLISHED'
+      ORDER BY r.publishedAt DESC
+      LIMIT 8
+    `).all();
+
+    // Stats (parallel)
+    const [totalResources, totalTeachers, totalStudents, totalDownloads] = await Promise.all([
+      db.prepare("SELECT COUNT(*) as c FROM Resource WHERE status = 'PUBLISHED'").first(),
+      db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER' AND status = 'ACTIVE'").first(),
+      db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'STUDENT' AND status = 'ACTIVE'").first(),
+      db.prepare("SELECT COALESCE(SUM(downloadsCount), 0) as s FROM Resource WHERE status = 'PUBLISHED'").first(),
     ]);
-    return { popular, recent, statsArr, subjects };
+
+    // Subjects
+    const subjectsResult: any = await db.prepare(
+      "SELECT id, slug, nameFr, nameAr, icon, color, `order` FROM `Subject` ORDER BY `order` ASC"
+    ).all();
+
+    return {
+      popular: (popularResult?.results || []).map(formatResource),
+      recent: (recentResult?.results || []).map(formatResource),
+      stats: {
+        resources: totalResources?.c || 0,
+        teachers: totalTeachers?.c || 0,
+        students: totalStudents?.c || 0,
+        downloads: totalDownloads?.s || 0,
+      },
+      subjects: (subjectsResult?.results || []),
+    };
   },
-  ['home-data-v1'],
+  ['home-data-d1-v3'],
   { revalidate: REVALIDATE_S, tags: ['home', 'resources', 'subjects'] },
 );
 
-
-// PERF 2026-08-16: Static metadata. The previous version called `headers()`
-// to detect the AR locale, which forced the page into dynamic mode and
-// bypassed the ISR cache. The [locale] layout (parent) already handles
-// per-locale metadata (og:locale, hreflang, etc.), so this page only needs
-// to set the title/description which is the same for both locales.
-export const metadata: Metadata = {
-  // SEO 2026-08-22: trimmed from 71 to 50 chars (Google displays ~60 chars
-  // before truncating). Removed "gratuits" (already in description) and
-  // "en Tunisie" (the brand + description already imply Tunisia).
-  // Using `absolute: true` to opt out of the parent layout's title template
-  // (otherwise the rendered title would be "... | Examanet" — the brand
-  // appears twice on the homepage).
-  // Title is inherited from [locale] layout (per-locale, no template applied via absolute)
-  description:
-    'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés pour le Primaire, Collège et Lycée. Gratuit.',
-  // SEO 2026-08-22: don't override canonical here — the [locale] layout's
-  // generateMetadata sets the locale-prefixed canonical (and hreflang
-  // alternates) for both /fr and /ar.
-};
-
-
-export const revalidate = 300; // 5 min cache
-
-async function getHomeData() {
-  // PERF 2026-08-16: Use the cached fetcher (5 min TTL + tags). The favorites
-  // are now applied client-side via /api/favorites so they stay per-user and
-  // the server-rendered HTML can be cached safely.
-  const { popular, recent, statsArr, subjects } = await getCachedHomeData();
-  const [resourceCount, teacherCount, studentCount, downloads] = statsArr;
+// Format a resource row to match Prisma's include format
+function formatResource(r: any) {
   return {
-    popular: JSON.parse(JSON.stringify(popular)),
-    recent: JSON.parse(JSON.stringify(recent)),
-    subjects: JSON.parse(JSON.stringify(subjects)),
-    stats: {
-      resources: resourceCount,
-      teachers: teacherCount,
-      students: studentCount,
-      downloads: downloads._sum.downloadsCount || 0,
-    },
+    id: r.id,
+    numericId: r.numericId,
+    slug: r.slug,
+    title: r.title,
+    description: r.description,
+    summary: r.summary,
+    type: r.type,
+    year: r.year,
+    hasCorrection: !!r.hasCorrection,
+    viewsCount: r.viewsCount || 0,
+    downloadsCount: r.downloadsCount || 0,
+    avgRating: r.avgRating || 0,
+    ratingCount: r.ratingsCount || 0,  // Map D1's ratingsCount to component's expected ratingCount
+    commentsCount: r.commentsCount || 0,
+    favoritesCount: r.favoritesCount || 0,
+    publishedAt: r.publishedAt,
+    subjectId: r.subjectId,
+    classId: r.classId,
+    sectionId: r.sectionId,
+    teacherId: r.teacherId,
+    thumbnailUrl: r.thumbnailUrl,
+    thumbnailKey: r.thumbnailKey,
+    subject: r.s_id ? {
+      id: r.s_id, slug: r.s_slug, nameFr: r.s_nameFr, nameAr: r.s_nameAr,
+      color: r.s_color, icon: r.s_icon,
+    } : null,
+    class: r.c_id ? {
+      id: r.c_id, slug: r.c_slug, nameFr: r.c_nameFr,
+    } : null,
+    section: r.sec_id ? {
+      id: r.sec_id, slug: r.sec_slug, nameFr: r.sec_nameFr,
+    } : null,
+    teacher: r.t_id ? {
+      id: r.t_id, firstName: r.t_firstName, lastName: r.t_lastName,
+      firstNameAr: r.t_firstNameAr, lastNameAr: r.t_lastNameAr,
+      avatarUrl: r.t_avatarUrl,
+    } : null,
   };
 }
 
-// 2026-08-19 nightly fix (ERR-LKRCDG 3× + ERR-FGCMHE 1× React #419 on /fr):
-//
-// PREVIOUSLY this page wrapped HomeClient in `next/dynamic(..., { ssr: true })`
-// inside a redundant <div className="min-h-screen flex flex-col"> wrapper.
-// The dynamic() import created an extra React Suspense boundary (visible in
-// the SSR HTML as `<!--$-->...<!--/$-->` markers around the HomeClient
-// output), and the layout already provides a <main className="min-h-screen">
-// so the inner <main> from HomeClient (now fixed to <div>) plus the
-// outer layout <main> created a real HTML5 accessibility violation. The
-// dynamic() boundary also briefly showed its `loading` fallback
-// (<div className="min-h-screen bg-gradient-to-br from-primary-50...">)
-// during client-side navigations from the not-found boundary, which is
-// a different DOM tree than HomeClient's output — that swap (loading div
-// → real HomeClient div) is what triggered React #419 ("recovered from
-// hydration mismatch") on the navigation sequence:
-//   not-found.tsx Link "/" → middleware → /fr → hydrate
-//
-// FIX: import HomeClient directly (no dynamic()) and keep the page-level
-// flex wrapper so HomeClient's `flex-1` class still has a flex parent.
-// The layout's <main> + page wrapper <div> + HomeClient's <div> (no longer
-// <main>) is a single, consistent tree with no nested <main> and no
-// Suspense boundary swap. HomeClient already has 'use client' so it
-// hydrates naturally without needing a dynamic() boundary.
-export default async function HomePage() {
-  const data = await getHomeData();
+export const metadata: Metadata = {
+  description: 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés pour le Primaire, Collège et Lycée. Gratuit.',
+};
 
-  return (
-    <div className="flex flex-col">
-      <HomeClient {...data} />
-    </div>
-  );
+export const revalidate = 300;
+
+async function getHomeData() {
+  return await getCachedHomeData();
 }
-// 1784381489
+
+export default async function HomePage() {
+  const { popular, recent, subjects, stats } = await getHomeData();
+  retur
