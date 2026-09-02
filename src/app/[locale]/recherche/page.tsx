@@ -4,7 +4,12 @@ import type { Metadata } from 'next';
 import HideOnScrollSearchBar from '@/components/search/HideOnScrollSearchBar';
 import SearchResultsV2 from '@/components/search/SearchResultsV2';
 import { searchV2, SearchResponse, cachedSearchV2 } from '@/lib/search-v2-d1';
-import { prisma } from '@/lib/prisma';
+// Replaced prisma-compat with D1 direct (2026-09-02)
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
+}
 import { getLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
@@ -65,16 +70,30 @@ async function getInitialData(searchParams: any): Promise<{
   // Load filter options (subjects, classes, etc.) for the UI
   const [subjects, classes, sections, teachers, types, years, trimestres, languages] =
     await Promise.all([
-      prisma.subject.findMany({
-        select: { id: true, nameFr: true, slug: true, color: true, icon: true },
-      }),
-      prisma.class.findMany({ select: { id: true, nameFr: true, slug: true } }),
-      prisma.section.findMany({ select: { id: true, nameFr: true, slug: true, classId: true } }),
-      prisma.user.findMany({
-        where: { role: 'TEACHER', status: 'ACTIVE' },
-        select: { id: true, firstName: true, lastName: true },
-        take: 30,
-      }),
+      (async () => {
+        const db = await getD1();
+        if (!db) return [];
+        const r: any = await db.prepare("SELECT id, nameFr, slug, color, icon FROM `Subject` ORDER BY `order`").all();
+        return r?.results || [];
+      })(),
+      (async () => {
+        const db = await getD1();
+        if (!db) return [];
+        const r: any = await db.prepare("SELECT id, nameFr, slug FROM `Class` ORDER BY numericId ASC").all();
+        return r?.results || [];
+      })(),
+      (async () => {
+        const db = await getD1();
+        if (!db) return [];
+        const r: any = await db.prepare("SELECT id, nameFr, slug, classId FROM `Section`").all();
+        return r?.results || [];
+      })(),
+      (async () => {
+        const db = await getD1();
+        if (!db) return [];
+        const r: any = await db.prepare("SELECT id, firstName, lastName FROM `User` WHERE role = 'TEACHER' AND status = 'ACTIVE' LIMIT 30").all();
+        return r?.results || [];
+      })(),
       Object.entries(data.facets.type).map(([value, count]) => ({ value, count })),
       Object.entries(data.facets.year)
         .map(([value, count]) => ({ value, count }))

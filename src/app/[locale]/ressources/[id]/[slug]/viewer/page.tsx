@@ -2,7 +2,12 @@
 import { notFound } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import { headers } from 'next/headers';
-import { prisma } from '@/lib/prisma';
+// Replaced prisma-compat with D1 direct (2026-09-02)
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
+}
 import { getVisitorIp, isBotOrPlaceholder } from '@/lib/visitor';
 import PDFViewer from '@/components/resources/PDFViewer';
 import { ChevronLeft, Download } from 'lucide-react';
@@ -24,18 +29,29 @@ export default async function ResourceViewerPage({
   } catch {
     slug = rawSlug;
   }
-  const resource = await prisma.resource.findUnique({ where: { numericId }, select: { id: true, numericId: true, title: true, fileUrl: true, r2Key: true, status: true } });
+  const db = await getD1();
+  if (!db) notFound();
+  const r: any = await db.prepare(
+    "SELECT id, numericId, title, fileUrl, fileKey, r2Key, status FROM Resource WHERE numericId = ? LIMIT 1"
+  ).bind(numericId).first();
+  const resource = r ? { ...r, hasFile: !!(r.fileKey || r.r2Key) } : null;
   if (!resource || resource.status !== 'PUBLISHED') notFound();
 
   // Increment view (use real IP, skip bots)
   const ip = getVisitorIp();
   const ua = headers().get('user-agent');
   if (!isBotOrPlaceholder(ip, ua)) {
-    await prisma.view.create({ data: { resourceId: resource.id, ipAddress: ip, userAgent: ua } });
-    await prisma.resource.update({
-      where: { id: resource.id },
-      data: { viewsCount: { increment: 1 } },
-    });
+    // Try to insert view (may fail silently if duplicate)
+    try {
+      await db.prepare(
+        "INSERT INTO View (id, resourceId, userId, ipAddress, userAgent, createdAt) VALUES (lower(hex(randomblob(12))), ?, NULL, ?, ?, ?)"
+      ).bind(resource.id, ip || null, ua || null, Date.now()).run();
+    } catch {}
+    try {
+      await db.prepare(
+        "UPDATE Resource SET viewsCount = viewsCount + 1 WHERE id = ?"
+      ).bind(resource.id).run();
+    } catch {}
   }
 
   async function downloadAction() {
@@ -43,11 +59,18 @@ export default async function ResourceViewerPage({
     const ip = getVisitorIp();
     const ua = headers().get('user-agent');
     if (isBotOrPlaceholder(ip, ua)) return;
-    await prisma.download.create({ data: { resourceId: resource!.id, ipAddress: ip } });
-    await prisma.resource.update({
-      where: { id: resource!.id },
-      data: { downloadsCount: { increment: 1 } },
-    });
+    const db2 = await getD1();
+    if (!db2) return;
+    try {
+      await db2.prepare(
+        "INSERT INTO Download (id, resourceId, userId, ipAddress, userAgent, original, createdAt) VALUES (lower(hex(randomblob(12))), ?, NULL, ?, ?, 1, ?)"
+      ).bind(resource!.id, ip || null, ua || null, Date.now()).run();
+    } catch {}
+    try {
+      await db2.prepare(
+        "UPDATE Resource SET downloadsCount = downloadsCount + 1 WHERE id = ?"
+      ).bind(resource!.id).run();
+    } catch {}
   }
 
   return (
