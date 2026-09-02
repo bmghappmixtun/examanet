@@ -1,4 +1,6 @@
 // @ts-nocheck
+// PERF 2026-09-02: 5min ISR cache for public page (Step 6)
+export const revalidate = 300;
 /**
  * /fr/matieres (list) — THIN SHELL
  *

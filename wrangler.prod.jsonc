@@ -2,7 +2,7 @@
 // Used for DNS swap from Vercel to Cloudflare
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "main": ".open-next/worker.js",
+  "main": "worker-with-cache.js",
   "name": "examanet-prod",
   "compatibility_date": "2025-09-01",
   "compatibility_flags": [
