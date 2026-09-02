@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import HideOnScrollSearchBar from '@/components/search/HideOnScrollSearchBar';
 import SearchResultsV2 from '@/components/search/SearchResultsV2';
-import { searchV2, SearchResponse, cachedSearchV2 } from '@/lib/search-v2';
+import { searchV2, SearchResponse, cachedSearchV2 } from '@/lib/search-v2-d1';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from 'next-intl/server';
 

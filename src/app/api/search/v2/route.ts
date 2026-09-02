@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cachedSearchV2 } from '@/lib/search-v2';
+import { cachedSearchV2 } from '@/lib/search-v2-d1';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
