@@ -6,7 +6,7 @@
 import TeachersClient from '@/components/teachers/TeachersClient';
 import { headers } from 'next/headers';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120; // PERF 2026-09-02: 2min ISR cache for public page
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ q?: string; subject?: string }> }) {
   const sp = await searchParams;

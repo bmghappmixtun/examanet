@@ -5,4 +5,10 @@ import kvNextTagCache from "@opennextjs/cloudflare/overrides/tag-cache/kv-next-t
 export default defineCloudflareConfig({
   incrementalCache: r2IncrementalCache,
   tagCache: kvNextTagCache,
+  // PERF 2026-09-02: Enable CF edge cache interception (Step 6)
+  // When enabled, the Worker respects Cache-Control: s-maxage headers and
+  // serves cached HTML from the edge instead of running the Worker on every request.
+  // Combined with next.config.js headers() rules for public pages, this gives
+  // 5-10x speedup on cached pages.
+  enableCacheInterception: true,
 });

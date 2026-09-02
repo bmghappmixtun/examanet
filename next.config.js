@@ -106,6 +106,47 @@ const nextConfig = {
         source: '/fonts/:path*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
+      // PERF 2026-09-02: Edge cache HTML for public pages (Step 6)
+      // Public pages don't have user-specific data in the SSR HTML.
+      // CF Workers will cache the HTML at the edge for `s-maxage` seconds.
+      // `stale-while-revalidate` serves the stale version while regenerating.
+      // 5 min = good balance between freshness and cache hit rate.
+      {
+        source: '/:locale(fr|ar)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' },
+        ],
+      },
+      {
+        source: '/:locale(fr|ar)/ressources',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=120, stale-while-revalidate=300' },
+        ],
+      },
+      {
+        source: '/:locale(fr|ar)/niveaux',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' },
+        ],
+      },
+      {
+        source: '/:locale(fr|ar)/matieres',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' },
+        ],
+      },
+      {
+        source: '/:locale(fr|ar)/professeurs',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=300, stale-while-revalidate=600' },
+        ],
+      },
+      {
+        source: '/:locale(fr|ar)/bac/archives',
+        headers: [
+          { key: 'Cache-Control', value: 'public, s-maxage=600, stale-while-revalidate=1200' },
+        ],
+      },
       // SECURITY: API routes - no cache + nosniff
       {
         source: '/api/:path*',

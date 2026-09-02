@@ -40,7 +40,7 @@ export async function generateMetadata({
   };
 }
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 120; // PERF 2026-09-02: 2min ISR cache for public page
 
 function toArr(v: string | string[] | undefined): string[] {
   if (!v) return [];
