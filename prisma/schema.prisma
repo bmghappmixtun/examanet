@@ -1,0 +1,970 @@
+// Prisma Schema - Examanet
+// Plateforme pédagogique tunisienne
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUMS (as strings for SQLite compat) ============
+// UserRole: VISITOR | STUDENT | TEACHER | ADMIN
+// UserStatus: PENDING_OTP | PENDING_APPROVAL | ACTIVE | SUSPENDED | BANNED
+// ResourceStatus: DRAFT | PENDING_APPROVAL | PUBLISHED | REJECTED | ARCHIVED
+// ResourceType: COURSE | HOMEWORK | EXERCISE | REVISION | EXAM | BAC_SUBJECT | CORRECTION | SUMMARY | OTHER
+// ReportReason: INAPPROPRIATE | COPYRIGHT | SPAM | WRONG_CONTENT | OTHER
+
+// ============ USERS ============
+model User {
+  id              String      @id @default(cuid())
+  email           String      @unique
+  emailVerifiedAt DateTime?
+  passwordHash    String?
+  role            String    @default("STUDENT")
+  status          String  @default("PENDING_OTP")
+
+  // OAuth
+  oauthProvider   String?
+  oauthId         String?
+
+  // Profile
+  firstName       String?
+  lastName        String?
+  // Bilingual names: French (Latin) + Arabic (for Tunisian teachers who teach in Arabic)
+  firstNameAr     String?
+  lastNameAr      String?
+  avatarUrl       String?
+  bio             String?
+  phone           String?
+  website         String?
+  schoolLevel     String?
+  classLevel      String?
+  section         String?
+  schoolName      String?
+  schoolNameAr    String?
+  governorate     String?
+
+  // Teacher specific
+  teachingSubjects String?  // JSON array as string
+  teachingLevels   String?  // JSON array as string
+  cvUrl           String?
+  diploma         String?
+  isVerifiedTeacher Boolean  @default(false)
+  approvedAt      DateTime?
+  approvedById    String?
+
+  // URL identity (Etsy-style: stable numericId + cosmetic slug)
+  /// Sequential numeric ID (1, 2, 3, ...) used in URLs as the stable identifier.
+  /// The slug is purely cosmetic; this numericId never changes.
+  numericId       Int?           @unique @default(autoincrement())
+  /// URL slug — purely cosmetic / SEO. NOT unique. Lookup is by numericId.
+  /// Format: firstname-lastname (or email-local-part if no name).
+  slug            String
+
+  // Preferences
+  preferredLang   String     @default("fr")
+  themePref       String     @default("light")
+  notifyEmail     Boolean    @default(true)
+  notifyInApp     Boolean    @default(true)
+
+  // Invitation tracking
+  invitationStatus String?       // PENDING_INVITATION | INVITED | INVITATION_EXPIRED | ACTIVATED
+  invitationSentAt DateTime?
+  invitationActivatedAt DateTime?
+  lastInvitationId String?  @unique
+  lastInvitation   TeacherInvitation? @relation("UserInvitation", fields: [lastInvitationId], references: [id])
+  mustChangePassword Boolean   @default(false)
+  passwordSetAt    DateTime?
+
+  // SECURITY: account lockout after N failed login attempts
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+  lastFailedLoginAt DateTime?
+
+  // File verification (for new non-invited teachers, admin requests 5 sample docs)
+  verificationFilesRequestedAt DateTime?
+  verificationFilesRequestedById String?
+  verificationFilesRequestedBy   User? @relation("VerificationFilesRequestedBy", fields: [verificationFilesRequestedById], references: [id])
+  verificationFilesNote String?  // Admin's note when requesting files
+  verificationFilesCount Int     @default(0)  // Number of sample files received
+  verificationFilesReceivedAt DateTime?
+
+  // Relations
+  uploadedFiles   Resource[]    @relation("UploadedBy")
+  editsRequested  Resource[]   @relation("EditRequestedBy")
+  editsReviewed   Resource[]   @relation("EditReviewedBy")
+  library         TeacherFile[] @relation("TeacherLibrary")
+  verificationFiles TeacherVerificationFile[] @relation("TeacherVerificationFiles")
+  approvedFiles   Resource[]    @relation("ApprovedBy")
+  approvedBy      User?         @relation("ApprovedUsers", fields: [approvedById], references: [id])
+  approvedUsers   User[]        @relation("ApprovedUsers")
+  verificationFilesRequested  User[] @relation("VerificationFilesRequestedBy")
+  comments        Comment[]
+  ratings         Rating[]
+  favorites       Favorite[]
+  views           View[]
+  downloads       Download[]
+  reports         Report[]
+  otpCodes        OtpCode[]
+  sessions        Session[]
+  notifications   Notification[]
+  following       Follow[]       @relation("Follower")
+  followers       Follow[]       @relation("Following")
+  convAsStudent   Conversation[] @relation("ConvStudent")
+  convAsTeacher   Conversation[] @relation("ConvTeacher")
+  sentMessages    Message[]      @relation("MessageSender")
+  invitations     TeacherInvitation[] @relation("UserAllInvitations")
+  invitationsSent TeacherInvitation[] @relation("InvitedBy")
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  lastLoginAt     DateTime?
+
+  @@index([role, status])
+  @@index([email])
+}
+
+model OtpCode {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code        String
+  purpose     String
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([userId, purpose])
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String   @unique
+  userAgent   String?
+  ipAddress   String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ============ TAXONOMY ============
+model Level {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  nameFr    String
+  nameAr    String
+  order     Int      @default(0)
+  classes   Class[]
+}
+
+model Class {
+  id        String   @id @default(cuid())
+  levelId   String
+  level     Level    @relation(fields: [levelId], references: [id])
+  slug      String   @unique
+  nameFr    String
+  nameAr    String
+  order     Int      @default(0)
+  sections  Section[]
+  resources       Resource[]
+  teacherFiles    TeacherFile[]
+}
+
+model Section {
+  id        String   @id @default(cuid())
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id])
+  slug      String
+  nameFr    String
+  nameAr    String
+  resources     Resource[]
+  teacherFiles  TeacherFile[]
+
+  @@unique([classId, slug])
+}
+
+model Subject {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  nameFr       String
+  nameAr       String
+  icon         String?
+  color        String?
+  order        Int      @default(0)
+  resources    Resource[]
+  teacherFiles TeacherFile[]
+}
+
+// ============ RESOURCES ============
+model Resource {
+  id              String         @id @default(cuid())
+  /// Sequential numeric ID (1, 2, 3, ...) used in URLs as the stable identifier.
+  /// The slug is purely cosmetic; this numericId never changes.
+  numericId       Int?           @unique @default(autoincrement())
+  /// URL slug — purely cosmetic / SEO. NOT unique. Lookup is by numericId.
+  slug            String
+
+  title           String
+  description     String?
+  summary         String?     // Short summary (1-2 lines) extracted from description for card display
+  type            String
+  status          String @default("DRAFT")
+
+  fileKey         String
+  /// Public URL of the file (Vercel Blob or R2). Unique per file — prevents accidental re-imports of the same blob.
+  fileUrl         String         @unique
+  fileSize        Int            @default(0)
+  pageCount       Int?
+  thumbnailKey    String?
+  thumbnailUrl    String?
+  /// 2026-08-24: R2 object key for this file (same as fileKey/pathname). NULL until
+  /// the r2Key migration runs on the CF POC database (see scripts/_one-off/populate-r2key.mjs).
+  /// The Vercel site continues to use fileUrl (Vercel Blob); the CF POC uses r2Key when set.
+  r2Key           String?
+
+  classId         String?
+  class           Class?         @relation(fields: [classId], references: [id])
+  sectionId       String?
+  section         Section?       @relation(fields: [sectionId], references: [id])
+  subjectId       String
+  subject         Subject        @relation(fields: [subjectId], references: [id])
+  teacherId       String?
+  teacher         User?          @relation("UploadedBy", fields: [teacherId], references: [id])
+
+  @@index([slug])
+  trimester       String?
+  year            String?
+  tags            String?        // comma-separated
+  language        String         @default("fr")
+
+  // AI-generated SEO fields
+  metaDescription    String?       // SEO meta description (≤155 chars), same language as description
+  descriptionGeneratedAt DateTime? // When the AI description was last generated
+  descriptionSource  String?       // "agent-v2-multilingual" | "manual" | etc.
+
+  // Header data extracted from PDF text (school, teacher, level, year, type, etc.)
+  headerData         Json?         // Structured fields from PDF header via text extraction
+  schoolName         String?       // School name extracted from PDF header
+  /// Teacher name in Arabic (الأستاذ), extracted from PDF header.
+  /// NOT a relation to the User table — this is display/SEO info for the resource
+  /// page and search engines. The User relation is the uploader, not the named prof.
+  teacherNameAr      String?
+
+  // Homework subtype: only when type=HOMEWORK
+  // CONTROL = Devoir de Contrôle, SYNTHESIS = Devoir de Synthèse, HOUSEWORK = Devoir de Maison
+  homeworkSubtype     String?  // "CONTROL" | "SYNTHESIS" | "HOUSEWORK"
+  homeworkNumber      Int?     // N°1, N°2, N°3, ... (4, 5+ allowed for college/lycée)
+
+  // School type (only display "Pilote" badge, never "Public")
+  schoolType          String?  // "PUBLIC" | "PILOTE"
+
+  // Technology product (المنتج) - free text, in Arabic, only meaningful for college technologie
+  product             String?
+
+  // Whether the file contains a correction/corrigé integrated in the same PDF
+  hasCorrection       Boolean  @default(false)
+  correctionSummary   String?  // Optional description of the correction contents
+
+  viewsCount      Int            @default(0)
+  downloadsCount  Int            @default(0)
+  sharesCount     Int            @default(0)
+  favoritesCount  Int            @default(0)
+  commentsCount   Int            @default(0)
+  avgRating       Float          @default(0)
+  ratingCount     Int            @default(0)
+
+  approvedAt      DateTime?
+  approvedById    String?
+  approvedBy      User?          @relation("ApprovedBy", fields: [approvedById], references: [id])
+  rejectionReason String?
+  publishedAt     DateTime?
+
+  // Original file (Word, etc.) - kept in teacher's library
+  originalFileKey     String?
+  originalFileName     String?
+  originalFormat       String?  // docx, doc, etc.
+  originalFileSize     Int?
+
+  // Library link (if this resource was created from a teacher library file)
+  libraryFileId        String?  @unique
+  libraryFile          TeacherFile? @relation("FileResource")
+
+  // Admin import (from tunisiecollege.net, devoirat.net, etc.)
+  importedByAdmin      Boolean   @default(false)
+  importedAt           DateTime?
+  importedFrom          String?   // "tunisiecollege.net" | "devoirat.net" | "jotform"
+  originalSubmissionId String?   // JotForm submission ID (if applicable)
+
+  // Edit workflow (teacher can edit after publishing, needs admin re-approval)
+  // Full-text search (PostgreSQL tsvector, managed by trigger)
+  search_vector       Unsupported("tsvector")?
+
+  pendingEdit         Json?     // Full proposed new resource
+  editStatus          String?   // PENDING_EDIT_APPROVAL, EDIT_REJECTED, null
+  editRequestedAt     DateTime?
+  editRequestedById   String?
+  editRequestedBy     User?     @relation("EditRequestedBy", fields: [editRequestedById], references: [id])
+  editReviewedAt      DateTime?
+  editReviewedById    String?
+  editReviewedBy      User?     @relation("EditReviewedBy", fields: [editReviewedById], references: [id])
+  editRejectionReason String?
+  editSummary         String?
+
+  comments        Comment[]
+  ratings         Rating[]
+  favorites       Favorite[]
+  views           View[]
+  downloads       Download[]
+  shares          Share[]
+  reports         Report[]
+
+  // AI-extracted content (created by /workspace/scripts/latest/watermark_remover.py pipeline)
+  metadata        ResourceMetadata?
+  aiSummary       ResourceSummary?  @relation("ResourceAISummary")
+  content         ResourceContent?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([status, publishedAt])
+  @@index([subjectId, classId])
+  @@index([teacherId])
+  @@index([type])
+  @@index([search_vector], type: Gin)
+}
+
+// ============ AI EXTRACTION (GPT-4o-mini / Tesseract) ============
+// Created 2026-07-20 by Mavis. Schema added after tables already created in DB
+// (edutunisie_app role lacks ALTER permission — tables created via raw SQL).
+
+/// Raw text + page-level extraction. First stage of the AI pipeline.
+model ResourceContent {
+  id                    String   @id @default(cuid())
+  resourceId            String   @unique
+  resource              Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  fullText              String?  @db.Text
+  pageCount             Int?
+  wordCount             Int?
+  extractionMethod      String?  // "pymupdf" | "tesseract-ocr" | "gpt-4o-vision-ocr"
+  extractionDurationMs  Int?
+  extractionError       String?
+  extractedAt           DateTime @default(now())
+  modelUsed             String?  // "pymupdf+gpt-4o-mini" | etc.
+
+  @@index([resourceId])
+}
+
+/// Structured metadata extracted by AI (GPT-4o-mini) from PDF text.
+model ResourceMetadata {
+  id                    String   @id @default(cuid())
+  resourceId            String   @unique
+  resource              Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  profNames             String[] // ["Mr. X", "Mme Y"]
+  schoolName            String?
+  year                  String?  // "2025-2026" format
+  type                  String?  // "devoir" | "série" | "cours" | etc.
+  subtype               String?  // "synthèse" | "contrôle" | etc.
+  subject               String?  // objet principal
+  generalSubject        String?  // sujet général du document (max 6 mots, FR/AR selon la langue du PDF)
+  dossierTechnique      String?  // for Technologie/Sciences techniques
+  systemName            String?  // for Technologie/Sciences techniques
+  courseSubject         String?  // for Technologie COURS: sujet principal du cours (max 8 mots)
+  duration              String?  // "2h" | "1h30"
+  level                 String?  // "standard" | "avancé"
+  keyPoints             String[] // 3-5 points clés (longs, depuis l'extraction initiale)
+  shortKeyPoints        String[] // 2-5 mots chacun, générés pour affichage compact (card IA)
+  topics                String[] // tags sémantiques
+  difficulty            String?  // "facile" | "moyen" | "difficile"
+  estimatedTimeMinutes  Int?
+  prerequisites         String[] // prérequis
+  keyInsights           String[] // insights profonds (générique, type "L'importance de...")
+  /// Exercise-by-exercise breakdown OR section-by-section for courses.
+  /// Format: "Exercice N: sujet - résumé" (DEVOIR/EXERCISE) or "Titre: résumé" (COURS)
+  /// Populated by the math-lycee / physique-lycee AI pipeline (2026-08-12).
+  exerciseInsights      String[] // insights détaillés par exercice ou section
+  extractedAt           DateTime @default(now())
+  modelUsed             String?
+
+  @@index([resourceId])
+  @@index([systemName])
+  @@index([dossierTechnique])
+  @@index([topics], type: Gin)
+}
+
+/// AI-generated summary (3-5 phrases du contenu principal).
+model ResourceSummary {
+  id               String   @id @default(cuid())
+  resourceId       String   @unique
+  resource         Resource @relation("ResourceAISummary", fields: [resourceId], references: [id], onDelete: Cascade)
+  summary          String   @db.Text
+  /// Summary in the original document language (de/it/es for 3ème Langue files).
+  /// When set, the UI displays both summaries in the same card (FR on top, original below).
+  summaryOriginal  String?  @db.Text
+  extractedAt      DateTime @default(now())
+  modelUsed        String?
+
+  @@index([resourceId])
+}
+
+
+// =============================================================================
+// TEACHER LIBRARY - personal file archive (Word, PDF, etc.)
+// =============================================================================
+model TeacherVerificationFile {
+  id                String   @id @default(cuid())
+
+  // File
+  fileName          String
+  originalFormat    String   // docx, doc, pdf, etc.
+  fileKey           String   // storage key
+  fileUrl           String   // public URL
+  fileSize          Int
+  pageCount         Int?     // optional, for PDFs
+
+  // Metadata
+  type              String?  // COURSE, HOMEWORK, EXERCISE, REVISION, EXAM, OTHER
+  description       String?  // teacher's description of this sample
+  year              String?  // 2024, 2023, etc.
+  trimester         String?
+
+  // Teacher
+  teacherId         String
+  teacher           User     @relation("TeacherVerificationFiles", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  // Linked to verification request
+  requestId         String?  // optional reference to track which request this satisfies
+  reviewedByAdmin   Boolean  @default(false)
+  reviewedAt        DateTime?
+  reviewNote        String?  // admin's note about this file
+
+  uploadedAt        DateTime @default(now())
+
+  @@index([teacherId])
+}
+
+model TeacherFile {
+  id                String   @id @default(cuid())
+
+  // Original file
+  fileName          String
+  originalFormat    String   // docx, doc, pdf, odt, etc.
+  fileKey           String   // storage key for the original file
+  fileUrl           String   // public URL
+  fileSize          Int
+
+  // Optional generated PDF (if we converted from Word)
+  pdfKey            String?  // storage key for the generated PDF
+  pdfUrl            String?
+  pdfSize           Int?
+  conversionStatus  String?  // PENDING, SUCCESS, FAILED
+  /// 2026-08-24: R2 object keys (NULL until populated by the migration script on the CF POC DB).
+  /// CF proxy route uses these when set; Vercel site keeps using fileUrl/pdfUrl.
+  r2Key             String?  // R2 key for the original file (same as fileKey)
+  r2PdfKey          String?  // R2 key for the generated PDF (same as pdfKey)
+
+  // Categorization (matches Resource so teacher can re-publish later)
+  type              String?  // COURSE, HOMEWORK, EXERCISE, etc.
+  classId           String?
+  class             Class?   @relation(fields: [classId], references: [id])
+  sectionId         String?
+  section           Section? @relation(fields: [sectionId], references: [id])
+  subjectId         String?
+  subject           Subject? @relation(fields: [subjectId], references: [id])
+  trimester         String?
+  year              String?
+  tags              String?  // comma-separated
+  notes             String?  // teacher's personal notes
+
+  // Teacher
+  teacherId         String
+  teacher           User     @relation("TeacherLibrary", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  // If this file was used to create a Resource
+  resourceId        String?  @unique
+  resource          Resource? @relation("FileResource", fields: [resourceId], references: [id])
+
+  // Admin import (from tunisiecollege.net, devoirat.net, etc.)
+  importedByAdmin      Boolean   @default(false)
+  importedAt           DateTime?
+  importedFrom         String?   // "tunisiecollege.net" | "devoirat.net" | "jotform"
+  originalSubmissionId String?   // JotForm submission ID
+  readOnly             Boolean   @default(false)  // imported files can't be modified/deleted by teacher
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([teacherId, createdAt])
+  @@index([teacherId, type])
+  @@index([teacherId, classId])
+  @@index([originalFormat])
+}
+
+// ============ ENGAGEMENT ============
+model Comment {
+  id          String   @id @default(cuid())
+  resourceId  String
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  content     String
+  parentId    String?
+  parent      Comment? @relation("Replies", fields: [parentId], references: [id])
+  replies     Comment[] @relation("Replies")
+  isHidden    Boolean  @default(false)
+  likes       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([resourceId, createdAt])
+}
+
+model Rating {
+  id          String   @id @default(cuid())
+  resourceId  String
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  stars       Int
+  review      String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([resourceId, userId])
+}
+
+model Favorite {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resourceId  String
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, resourceId])
+}
+
+model View {
+  id          String   @id @default(cuid())
+  resourceId  String
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  ipAddress   String
+  userAgent   String?
+  duration    Int?
+
+  createdAt   DateTime @default(now())
+
+  @@index([resourceId, createdAt])
+}
+
+model Download {
+  id          String   @id @default(cuid())
+  resourceId  String
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  ipAddress   String
+
+  createdAt   DateTime @default(now())
+
+  @@index([resourceId, createdAt])
+}
+
+model Share {
+  id          String   @id @default(cuid())
+  resourceId  String
+  resource    Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  platform    String
+  userId      String?
+  ipAddress   String
+
+  createdAt   DateTime @default(now())
+
+  @@index([resourceId])
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  resourceId  String?
+  resource    Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  reason      String
+  description String?
+  status      String   @default("PENDING")
+  resolvedAt  DateTime?
+
+  createdAt   DateTime @default(now())
+}
+
+// ============ NOTIFICATIONS ============
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String
+  title       String
+  message     String
+  link        String?
+  isRead      Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId, isRead, createdAt])
+}
+
+// ============ NEWSLETTER ============
+model Newsletter {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+// ============ TEACHER INVITATIONS ============
+// Track each invitation sent to a teacher: who was invited, when, link clicks, activation
+model TeacherInvitation {
+  id              String   @id @default(cuid())
+
+  // Targeted teacher
+  teacherId       String
+  teacher         User     @relation("UserAllInvitations", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  // Email snapshot at time of invitation (in case teacher email changes later)
+  email           String
+
+  // Secure token used in the invitation link
+  token           String   @unique
+
+  // Unique random password (8 chars) shown to teacher in the email
+  tempPassword    String   // Plain-text (only valid until activation or expiry)
+
+  // Status flow: PENDING → SENT → CLICKED → ACTIVATED (terminal)
+  //                                       ↘ EXPIRED (after 10 days)
+  //                                       ↘ CANCELLED (by admin)
+  status          String   @default("PENDING")
+
+  // Invitation lifecycle timestamps
+  createdAt       DateTime @default(now())      // When the invitation record was created
+  emailSentAt     DateTime?                     // When the email was actually sent (Resend call)
+  linkClickedAt   DateTime?                     // First time the teacher opened the accept page
+  activatedAt     DateTime?                     // When the teacher set their own password
+  cancelledAt     DateTime?                     // When an admin cancelled this invitation
+  expiresAt       DateTime                      // createdAt + 10 days
+
+  // Engagement metadata
+  clickIpAddress  String?
+  clickUserAgent  String?
+  clickCount      Int      @default(0)
+  activateIpAddress String?
+  activateUserAgent String?
+
+  // Who sent the invitation (admin user)
+  invitedById     String?
+  invitedBy       User?    @relation("InvitedBy", fields: [invitedById], references: [id])
+
+  // Inverse relation for User.lastInvitation
+  lastInvitationFor User? @relation("UserInvitation")
+
+  // Optional message from admin included in the email
+  customMessage   String?
+
+  // Resend email tracking (delivery status from Resend API)
+  resendMessageId    String?   // Resend email ID for status sync
+  deliveryStatus     String?   // sent, delivered, bounced, complained, failed
+  deliverySyncedAt   DateTime? // Last time we checked Resend for delivery status
+  deliveryDetail     String?   // bounce/complaint reason if any
+
+  // Open tracking (Resend tracking pixel)
+  openedAt           DateTime? // First time the email was opened
+  openCount          Int       @default(0) // Total opens (per Resend)
+
+  updatedAt       DateTime @updatedAt
+
+  @@index([teacherId])
+  @@index([token])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([email])
+  @@index([resendMessageId])
+  @@index([deliveryStatus])
+}
+
+// ============ SETTINGS ============
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ============ FOLLOWS (Students follow teachers) ============
+model Follow {
+  id           String   @id @default(cuid())
+  followerId   String
+  follower     User     @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId  String
+  following    User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followingId, createdAt])
+}
+
+// ============ CONVERSATIONS ============
+model Conversation {
+  id          String    @id @default(cuid())
+  studentId   String
+  student     User      @relation("ConvStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  teacherId   String
+  teacher     User      @relation("ConvTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  subject     String?
+  lastMessageAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  messages    Message[]
+
+  @@unique([studentId, teacherId])
+  @@index([studentId, lastMessageAt])
+  @@index([teacherId, lastMessageAt])
+}
+
+// ============ MESSAGES ============
+model Message {
+  id              String       @id @default(cuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId        String
+  sender          User         @relation("MessageSender", fields: [senderId], references: [id])
+  content         String
+  isRead          Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// ============ CONTACT MESSAGES ============
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String   @default("other")
+  message   String
+  ip        String?
+  userAgent String?
+  isRead    Boolean  @default(false)
+  repliedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([isRead])
+}
+
+model SearchSynonym {
+  id        String   @id @default(cuid())
+  term      String   // 'math'
+  synonyms  String[] // ['mathematiques', 'رياضيات']
+  language  String   @default("all")  // 'fr' | 'ar' | 'all'
+  category  String   @default("free") // 'subject' | 'type' | 'class' | 'free'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?  // userId
+
+  @@unique([term, language, category])
+  @@index([term])
+  @@index([category])
+}
+
+model SearchLog {
+  id           String   @id @default(cuid())
+  query        String
+  resultCount  Int
+  clickedId    String?
+  durationMs   Int?
+  userId       String?
+  sessionId    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([query])
+  @@index([createdAt])
+}
+
+
+// ============================================================================
+// CONVERSION PROVIDER CONFIG (admin-managed API keys for iLoveAPI, APIConvert)
+// ============================================================================
+
+model ApiProvider {
+  id              String   @id @default(cuid())
+  // 'iloveapi' | 'apiconvert'
+  provider        String   @unique
+  // Display name override (e.g. "iLoveAPI (production)")
+  displayName     String?
+  // For iLoveAPI: the public key
+  publicKey       String?
+  // The secret key/token (stored encrypted in DB)
+  secretKey       String
+  // Whether this provider is currently active
+  enabled         Boolean  @default(true)
+  // Optional monthly quota set by the admin (e.g. 250 for iLoveAPI free tier)
+  monthlyQuota    Int?
+  // Optional custom API URL (for self-hosted or alternative endpoints)
+  apiUrl          String?
+  // Free-form notes
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  usages          ApiProviderUsage[]
+
+  @@index([enabled])
+}
+
+model ApiProviderUsage {
+  id              String   @id @default(cuid())
+  providerId      String
+  provider        ApiProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  // true if the conversion succeeded
+  success         Boolean
+  // File metadata
+  fileName        String
+  fileSize        Int      // bytes
+  // Step where it failed (only set when success=false)
+  failedStep      String?
+  // For month bucketing (denormalized for fast queries)
+  year            Int
+  month           Int      // 1-12
+  createdAt       DateTime @default(now())
+
+  @@index([providerId, year, month])
+  @@index([createdAt])
+}
+
+// ===========================================
+// ErrorLog — global error tracking
+// Catches all unhandled errors (client + server)
+// ===========================================
+model ErrorLog {
+  id              String   @id @default(cuid())
+  // Short reference ID shown to user (e.g., "ERR-A1B2C3")
+  reference       String   @unique
+  // Type of error
+  source          ErrorSource
+  // Severity
+  severity        ErrorSeverity @default(ERROR)
+  // Error details
+  message         String
+  // Stack trace (truncated for storage)
+  stack           String?  @db.Text
+  // URL where error occurred (client side: window.location.href, server: req.url)
+  url             String?
+  // HTTP method
+  method          String?
+  // User agent (client) or user identifier
+  userAgent       String?
+  // Authenticated user ID (if any)
+  userId          String?
+  // User email (denormalized for emails without join)
+  userEmail       String?
+  // Vercel region
+  region          String?
+  // Vercel request ID (for log correlation)
+  requestId       String?
+  // Additional context (component, action, etc.)
+  context         Json?
+  // Whether the user was notified by email
+  emailSent       Boolean  @default(false)
+  // When email was sent
+  emailedAt       DateTime?
+  // Whether the agent was notified
+  agentNotified   Boolean  @default(false)
+  // When agent was notified
+  agentNotifiedAt DateTime?
+  // Resolved status
+  resolved        Boolean  @default(false)
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  // Whether Mavis (the agent) has seen this error in a session
+  agentSeen       Boolean  @default(false)
+  agentSeenAt     DateTime?
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([source, createdAt])
+  @@index([severity, createdAt])
+  @@index([resolved, createdAt])
+  @@index([reference])
+  @@index([userId, createdAt])
+  @@index([agentSeen, createdAt])
+}
+
+enum ErrorSource {
+  CLIENT     // React component / browser
+  SERVER     // API route / server component
+  BUILD      // Build-time error
+  CRON       // Scheduled job
+  EXTERNAL   // Third-party API failure
+}
+
+enum ErrorSeverity {
+  DEBUG
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+// ============================================================================
+// VercelLog: Runtime logs from Vercel via Log Drain
+// ============================================================================
+model VercelLog {
+  id                String   @id @default(cuid())
+  // External ID from Vercel (for dedup)
+  externalId        String   @unique
+  // Timestamp from Vercel
+  timestamp         DateTime
+  // Log level
+  level             String   // "error" | "warning" | "info"
+  // Vercel metadata
+  deploymentId      String?
+  source            String?  // "function" | "edge" | "build" | "static"
+  domain            String?
+  // Request details
+  requestMethod     String?
+  requestPath       String?
+  responseStatusCode Int?
+  requestId         String?
+  // Environment
+  environment       String?  // "production" | "preview"
+  branch            String?
+  cache             String?
+  // The actual log content
+  message           String   @db.Text
+  // Project
+  projectId         String?
+  // Has been reviewed by the user/agent?
+  reviewed          Boolean  @default(false)
+  reviewedAt        DateTime?
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([level, timestamp])
+  @@index([deploymentId, timestamp])
+  @@index([requestPath, timestamp])
+  @@index([responseStatusCode, timestamp])
+  @@index([reviewed, timestamp])
+  @@index([timestamp])
+}

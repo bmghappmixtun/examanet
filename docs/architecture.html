@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Examanet — Architecture Stack</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 40px 20px;
+      line-height: 1.5;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.025em;
+    }
+    .subtitle { color: #94a3b8; font-size: 1.05rem; margin-bottom: 3rem; }
+
+    /* Layers */
+    .layer {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+    .layer-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #94a3b8;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .layer-title::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #0ea5e9;
+    }
+
+    /* Cards grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 10px;
+      padding: 12px 14px;
+      transition: all 0.2s;
+    }
+    .card:hover {
+      border-color: rgba(14, 165, 233, 0.5);
+      transform: translateY(-2px);
+    }
+    .card-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 2px;
+    }
+    .card-sub {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      line-height: 1.4;
+    }
+    .card-version {
+      font-size: 0.68rem;
+      color: #64748b;
+      font-family: "SF Mono", "Monaco", monospace;
+      margin-top: 2px;
+    }
+
+    /* Color tags */
+    .tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin-top: 4px;
+      margin-right: 4px;
+    }
+    .tag-blue   { background: #0ea5e922; color: #38bdf8; border: 1px solid #0ea5e944; }
+    .tag-purple { background: #8b5cf622; color: #a78bfa; border: 1px solid #8b5cf644; }
+    .tag-green  { background: #22c55e22; color: #4ade80; border: 1px solid #22c55e44; }
+    .tag-amber  { background: #f59e0b22; color: #fbbf24; border: 1px solid #f59e0b44; }
+    .tag-pink   { background: #ec489922; color: #f472b6; border: 1px solid #ec489944; }
+    .tag-cyan   { background: #06b6d422; color: #22d3ee; border: 1px solid #06b6d444; }
+    .tag-gray   { background: #64748b22; color: #94a3b8; border: 1px solid #64748b44; }
+
+    /* Arrow between layers */
+    .arrow-down {
+      text-align: center;
+      color: #475569;
+      font-size: 1.4rem;
+      margin: -2px 0;
+      line-height: 1;
+    }
+
+    /* 3-col split */
+    .split-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 900px) { .split-3 { grid-template-columns: 1fr; } }
+    .col {
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .col-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 10px;
+    }
+    .col-item {
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    }
+    .col-item:last-child { border-bottom: none; }
+    .col-item strong { color: #f1f5f9; }
+
+    /* Flow diagram */
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      align-items: stretch;
+    }
+    @media (max-width: 900px) { .flow { grid-template-columns: 1fr 1fr; } }
+    .flow-step {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 10px;
+      padding: 14px;
+      position: relative;
+    }
+    .flow-step::after {
+      content: '→';
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #0ea5e9;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .flow-step:last-child::after { content: none; }
+    .flow-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+      color: white;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+    .flow-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+    }
+    .flow-desc {
+      font-size: 0.74rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    /* Footer / stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 32px;
+      padding: 20px;
+      background: rgba(14, 165, 233, 0.08);
+      border: 1px solid rgba(14, 165, 233, 0.2);
+      border-radius: 12px;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #0ea5e9;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Section spacing */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin: 28px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 18px;
+      background: linear-gradient(180deg, #0ea5e9, #8b5cf6);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <h1>Examanet — Architecture Fullstack</h1>
+    <p class="subtitle">
+      Plateforme pédagogique tunisienne #1 — Cours, exercices et corrigés pour le Primaire, Collège et Lycée.<br/>
+      Stack technique complet, déployé sur Vercel + Neon PostgreSQL.
+    </p>
+
+    <!-- ============================================================ -->
+    <!-- LAYER 1 : CLIENT -->
+    <!-- ============================================================ -->
+    <div class="layer">
+      <div class="layer-title">👥 Couche 1 — Clients (Browsers, Bots)</div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">👤 Élèves & Profs</div>
+          <div class="card-sub">Navigation, recherche, consultation PDF, favoris</div>
+          <div class="card-version">Chrome / Safari / Firefox / Mobile</div>
+        </div>
+        <div class="card">
+          <div class="card-title">🕷️ Googlebot / Bingbot</div>
+          <div class="card-sub">Crawl des 15 673 URLs du sitemap + hreflang</div>
+          <span class="tag tag-blue">SEO</span>
+        </div>
+        <div class="card">
+          <div class="card-title">🤖 AI Crawlers</div>
+          <div class="card-sub">GPTBot, ClaudeBot, PerplexityBot, Google-Extended</div>
+          <span class="tag tag-purple">GEO</span>
+        </div>
+        <div class="card">
+          <div class="card-title">🛰️ Vercel Log Drain</div>
+          <div class="card-sub">POST runtime logs vers /api/log-drain</div>
+          <span class="tag tag-cyan">Observability</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">▼</div>
+
+    <!-- ============================================================ -->
+    <!-- LAYER 2 : EDGE / CDN -->
+    <!-- ============================================================ -->
+    <div class="layer">
+      <div class="layer-title">🌐 Couche 2 — Edge & CDN (Vercel)</div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">⚡ Vercel Edge Network</div>
+          <div class="card-sub">17 régions globales, ISR, cache HTTP</div>
+          <span class="tag tag-amber">Vercel</span>
+        </div>
+        <div class="card">
+          <div class="card-title">📡 Vercel Image Optimization</div>
+          <div class="card-sub">/_next/image, formats WebP/AVIF</div>
+        </div>
+        <div class="card">
+          <div class="card-title">🔒 HTTPS + DDoS Protection</div>
+          <div class="card-sub">TLS auto, edge firewall</div>
+        </div>
+        <div class="card">
+          <div class="card-title">⏰ Vercel Cron (5 jobs)</div>
+          <div class="card-sub">/api/db-sync, agent-poll, nightly-cleanup, etc.</div>
+          <span class="tag tag-gray">Scheduler</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">▼</div>
+
+    <!-- ============================================================ -->
+    <!-- LAYER 3 : FRONTEND (Next.js) -->
+    <!-- ============================================================ -->
+    <div class="layer">
+      <div class="layer-title">⚛️ Couche 3 — Frontend (Next.js 14 App Router)</div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">Next.js 14.2</div>
+          <div class="card-sub">App Router, RSC, SSR, streaming</div>
+          <div class="card-version">14.2.35</div>
+          <span class="tag tag-blue">React</span>
+        </div>
+        <div class="card">
+          <div class="card-title">TypeScript</div>
+          <div class="card-sub">Strict mode, type-safe</div>
+          <div class="card-version">5.5.3</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Tailwind CSS</div>
+          <div class="card-sub">Utility-first, JIT, self-host fonts</div>
+          <div class="card-version">3.4.6</div>
+          <span class="tag tag-purple">CSS</span>
+        </div>
+        <div class="card">
+          <div class="card-title">next-intl</div>
+          <div class="card-sub">i18n FR / AR avec routing /fr et /ar</div>
+          <div class="card-version">4.13.6</div>
+          <span class="tag tag-cyan">i18n</span>
+        </div>
+        <div class="card">
+          <div class="card-title">React PDF Viewer</div>
+          <div class="card-sub">Rendu PDF page par page (perf)</div>
+          <div class="card-version">react-pdf 9.x</div>
+        </div>
+        <div class="card">
+          <div class="card-title">@tanstack/react-virtual</div>
+          <div class="card-sub">Listes virtualisées (15k+ items)</div>
+        </div>
+        <div class="card">
+          <div class="card-title">@radix-ui (Popover, Switch, Toggle)</div>
+          <div class="card-sub">Composants UI accessibles</div>
+        </div>
+        <div class="card">
+          <div class="card-title">nuqs</div>
+          <div class="card-sub">URL search params state</div>
+        </div>
+        <div class="card">
+          <div class="card-title">lucide-react</div>
+          <div class="card-sub">Icônes SVG</div>
+        </div>
+        <div class="card">
+          <div class="card-title">@statsig/* (analytics)</div>
+          <div class="card-sub">Web analytics + session replay</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">▼</div>
+
+    <!-- ============================================================ -->
+    <!-- LAYER 4 : BACKEND (Next.js API Routes) -->
+    <!-- ============================================================ -->
+    <div class="layer">
+      <div class="layer-title">🔌 Couche 4 — Backend (Next.js API Routes, ~30 endpoints)</div>
+      <div class="split-3">
+        <div class="col">
+          <div class="col-title">🔐 Auth & User</div>
+          <div class="col-item">/api/auth/* (NextAuth)</div>
+          <div class="col-item">/api/user/* (profil, prefs)</div>
+          <div class="col-item">/api/invitation/[token]</div>
+          <div class="col-item">/api/password/* (reset)</div>
+        </div>
+        <div class="col">
+          <div class="col-title">📚 Resources</div>
+          <div class="col-item">/api/resources/* (CRUD)</div>
+          <div class="col-item">/api/ressources/[id]/[slug]</div>
+          <div class="col-item">/api/upload (teachers)</div>
+          <div class="col-item">/api/blob-teacher/* (proxy)</div>
+        </div>
+        <div class="col">
+          <div class="col-title">🤖 AI / Admin</div>
+          <div class="col-item">/api/ai/* (OpenAI proxy)</div>
+          <div class="col-item">/api/admin/*</div>
+          <div class="col-item">/api/og/* (OG image gen)</div>
+          <div class="col-item">/api/concours-file</div>
+        </div>
+        <div class="col">
+          <div class="col-title">⏰ Cron & Maintenance</div>
+          <div class="col-item">/api/db-sync (DB self-heal)</div>
+          <div class="col-item">/api/cron/nightly-cleanup</div>
+          <div class="col-item">/api/cron/agent-poll</div>
+          <div class="col-item">/api/cron/cleanup-views</div>
+        </div>
+        <div class="col">
+          <div class="col-title">🛰️ Observability</div>
+          <div class="col-item">/api/log-drain (Vercel logs)</div>
+          <div class="col-item">/api/errors/log (client errors)</div>
+          <div class="col-item">/api/health</div>
+          <div class="col-item">/api/agent/nightly-report</div>
+        </div>
+        <div class="col">
+          <div class="col-title">📧 Communication</div>
+          <div class="col-item">/api/contact (form)</div>
+          <div class="col-item">/api/newsletter</div>
+          <div class="col-item">/api/conversations</div>
+          <div class="col-item">/api/notifications</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">▼</div>
+
+    <!-- ============================================================ -->
+    <!-- LAYER 5 : DATA & ORMs -->
+    <!-- ============================================================ -->
+    <div class="layer">
+      <div class="layer-title">🗄️ Couche 5 — Data & ORM</div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">Prisma ORM</div>
+          <div class="card-sub">Type-safe queries, migrations</div>
+          <div class="card-version">5.18.0</div>
+          <span class="tag tag-cyan">TypeScript</span>
+        </div>
+        <div class="card">
+          <div class="card-title">PostgreSQL Client (pg)</div>
+          <div class="card-sub">Raw queries pour analytics & bulk</div>
+          <div class="card-version">8.22.0</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Zod (validation)</div>
+          <div class="card-sub">Schema validation TS</div>
+        </div>
+        <div class="card">
+          <div class="card-title">bcryptjs</div>
+          <div class="card-sub">Hashing passwords</div>
+          <div class="card-version">2.4.3</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">▼</div>
+
+    <!-- ============================================================ -->
+    <!-- LAYER 6 : DATABASES & STORAGE -->
+    <!-- ============================================================ -->
+    <div class="layer">
+      <div class="layer-title">💾 Couche 6 — Bases de données & Stockage</div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">🗄️ Neon PostgreSQL</div>
+          <div class="card-sub">Base principale, 519 MB, 30 modèles Prisma</div>
+          <div class="card-version">Postgres 17 (eu-central-1)</div>
+          <span class="tag tag-blue">Primary DB</span>
+        </div>
+        <div class="card">
+          <div class="card-title">📦 Vercel Blob</div>
+          <div class="card-sub">PDFs uploadés par les profs</div>
+          <span class="tag tag-amber">Object Storage</span>
+        </div>
+        <div class="card">
+          <div class="card-title">📧 Resend</div>
+          <div class="card-sub">Emails transactionnels (invitations, reset)</div>
+          <div class="card-version">resend 4.0.0</div>
+          <span class="tag tag-pink">Email API</span>
+        </div>
+        <div class="card">
+          <div class="card-title">🌐 Google APIs</div>
+          <div class="card-sub">Search Console, Webmasters (SEO)</div>
+          <span class="tag tag-green">SEO</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">▼</div>
+
+    <!-- ============================================================ -->
+    <!-- LAYER 7 : AI / EXTERNAL SERVICES -->
+    <!-- ============================================================ -->
+    <div class="layer">
+      <div class="layer-title">🧠 Couche 7 — Services AI & Externes</div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">OpenAI gpt-4o-mini</div>
+          <div class="card-sub">AI summaries, translitération, classification</div>
+          <span class="tag tag-green">Primary LLM</span>
+        </div>
+        <div class="card">
+          <div class="card-title">Mistral Small</div>
+          <div class="card-sub">Fallback LLM FR/AR</div>
+          <span class="tag tag-blue">Mistral</span>
+        </div>
+        <div class="card">
+          <div class="card-title">Gemini 2.5 Flash</div>
+          <div class="card-sub">OCR PDF + extraction métadonnées</div>
+          <span class="tag tag-purple">Google</span>
+        </div>
+        <div class="card">
+          <div class="card-title">Groq (qwen3.6-27b)</div>
+          <div class="card-sub">LLM ultra-rapide (1000 req/jour)</div>
+          <span class="tag tag-amber">Groq</span>
+        </div>
+        <div class="card">
+          <div class="card-title">Cerebras</div>
+          <div class="card-sub">LLM haute perf (1M tokens/jour)</div>
+          <span class="tag tag-cyan">Cerebras</span>
+        </div>
+        <div class="card">
+          <div class="card-title">iLovePDF API</div>
+          <div class="card-sub">Conversion PDF (compression, split)</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Playwright</div>
+          <div class="card-sub">Tests E2E</div>
+          <div class="card-version">1.61.0</div>
+          <span class="tag tag-gray">Testing</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">▼</div>
+
+    <!-- ============================================================ -->
+    <!-- LAYER 8 : INFRASTRUCTURE -->
+    <!-- ============================================================ -->
+    <div class="layer">
+      <div class="layer-title">☁️ Couche 8 — Infrastructure (Vercel + Neon)</div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">▲ Vercel Hosting</div>
+          <div class="card-sub">Production + Preview deploys automatiques</div>
+          <div class="card-version">Region: fra1</div>
+          <span class="tag tag-amber">Hosting</span>
+        </div>
+        <div class="card">
+          <div class="card-title">🗄️ Neon (Serverless Postgres)</div>
+          <div class="card-sub">Auto-scaling 0.25-2 CU, PITR, branching</div>
+          <span class="tag tag-blue">DBaaS</span>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Vercel Analytics</div>
+          <div class="card-sub">Web vitals, page performance</div>
+        </div>
+        <div class="card">
+          <div class="card-title">🔑 GitHub</div>
+          <div class="card-sub">Source control, auto-deploy on push</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📈 Statsig</div>
+          <div class="card-sub">A/B testing, feature flags (planned)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- DATA FLOW: User Upload -->
+    <!-- ============================================================ -->
+    <div class="section-title">📊 Flux de données — Upload d'une ressource par un prof</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-title">Prof upload PDF</div>
+        <div class="flow-desc">/api/upload reçoit le fichier, valide taille/type</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-title">Vercel Blob</div>
+        <div class="flow-desc">Stockage objet (PDF original + preview)</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-title">Gemini OCR</div>
+        <div class="flow-desc">Extraction texte + métadonnées (matière, classe, prof)</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-title">OpenAI summary</div>
+        <div class="flow-desc">gpt-4o-mini génère résumé AR + FR + tags</div>
+      </div>
+    </div>
+    <div style="height: 12px"></div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-title">Prisma → Neon</div>
+        <div class="flow-desc">INSERT Resource + Content + Metadata + Summary</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <div class="flow-title">Cache invalidation</div>
+        <div class="flow-desc">/fr/ressources/[id] revalidatePath()</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">7</div>
+        <div class="flow-title">Sitemap update</div>
+        <div class="flow-desc">/sitemap.xml auto-mis à jour (1h cache)</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">8</div>
+        <div class="flow-title">Eleve voit la page</div>
+        <div class="flow-desc">/fr/ressources/[id]/[slug] avec JSON-LD Course schema</div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- DATA FLOW: Student View -->
+    <!-- ============================================================ -->
+    <div class="section-title">📊 Flux de données — Consultation par un élève</div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-title">Élève ouvre /fr/ressources</div>
+        <div class="flow-desc">Page SSR streaming (490KB HTML initial)</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-title">Vercel CDN</div>
+        <div class="flow-desc">Cache hit 95% (ISR 5min + revalidatePath)</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-title">React Server Components</div>
+        <div class="flow-desc">RSC fetch first 24 resources + facets</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-title">Élée clique</div>
+        <div class="flow-desc">/fr/ressources/[id]/[slug] → PDF viewer</div>
+      </div>
+    </div>
+    <div style="height: 12px"></div>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-title">react-pdf</div>
+        <div class="flow-desc">Rendu client-side page par page (5MB max)</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <div class="flow-title">Vercel Blob (CDN)</div>
+        <div class="flow-desc">Cache PDF par URL, edge delivery rapide</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">7</div>
+        <div class="flow-title">Statsig + Vercel Analytics</div>
+        <div class="flow-desc">Track: vue, scroll, download, time on page</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">8</div>
+        <div class="flow-title">Vercel log drain</div>
+        <div class="flow-desc">POST /api/log-drain (erreurs runtime)</div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- STATS -->
+    <!-- ============================================================ -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">15 673</div>
+        <div class="stat-label">URLs sitemap</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">30</div>
+        <div class="stat-label">Modèles Prisma</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">159</div>
+        <div class="stat-label">Pages statiques</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">2 450</div>
+        <div class="stat-label">Enseignants</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">30+</div>
+        <div class="stat-label">API routes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Cron jobs</div>
+      </div>
+    </div>
+
+    <p style="text-align: center; color: #475569; font-size: 0.78rem; margin-top: 32px;">
+      Examanet v2026.08 · Build deployed via Vercel · Database on Neon eu-central-1
+    </p>
+
+  </div>
+</body>
+</html>

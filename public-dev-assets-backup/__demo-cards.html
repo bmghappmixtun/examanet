@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Examanet - Card Design Preview</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<style>
+body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+.preview-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+</style>
+</head>
+<body class="p-8">
+
+<div class="max-w-6xl mx-auto">
+  <h1 class="text-2xl font-extrabold mb-2 text-slate-900">Aperçu design cartes ressources - Option A</h1>
+  <p class="text-sm text-slate-500 mb-8">Sans aperçu PDF, métadonnées en pills, hauture réduite</p>
+
+  <p class="preview-label">Comparaison avant/après</p>
+
+  <!-- AVANT (current) -->
+  <div class="mb-12">
+    <h2 class="text-sm font-bold text-red-600 mb-3">AVANT — avec aperçu PDF (aspect 4/3, ~427px de haut)</h2>
+    <div class="grid grid-cols-3 gap-4">
+      <!-- Card 1 -->
+      <a class="card card-hover overflow-hidden group block bg-white rounded-2xl border border-slate-100">
+        <div class="aspect-[4/3] bg-gradient-to-br from-slate-50 to-slate-100 relative">
+          <div class="w-full h-full bg-white flex items-center justify-center text-slate-300">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+          </div>
+          <div class="absolute top-2 left-2 px-2 py-1 bg-slate-900/80 backdrop-blur text-white text-[10px] font-bold rounded">Devoir</div>
+          <div class="absolute bottom-2 right-2 flex flex-col gap-1 items-end">
+            <span class="px-2 py-0.5 bg-white/90 text-[10px] font-bold rounded">7ème</span>
+          </div>
+        </div>
+        <div class="p-4">
+          <h3 class="font-bold text-sm line-clamp-2 mb-1">Devoir de Contrôle N°1 - Math DEVOIR - 7ème Mr GHARBI RIDHA</h3>
+          <p class="text-sm text-slate-500 line-clamp-2 mb-3">&lt;strong&gt;المادة :&lt;/strong&gt; الرياضيات... [aperçu inutile]</p>
+          <div class="flex items-center gap-4 text-xs text-slate-500">
+            <span>Mathématiques</span>
+            <span>👁 25</span>
+            <span>⬇ 0</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- APRÈS (Option A) -->
+  <div class="mb-8">
+    <h2 class="text-sm font-bold text-emerald-600 mb-3">APRÈS (Option A) — sans aperçu PDF, métadonnées en pills, ~140px de haut total</h2>
+    <div class="grid grid-cols-3 gap-4">
+
+      <!-- Card 1: Math 7ème, no correction -->
+      <a class="card card-hover overflow-hidden group block bg-white rounded-2xl border border-slate-100 hover:border-primary-300 transition">
+        <div class="p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded">📝 Devoir</span>
+              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded">7ème</span>
+            </div>
+            <span class="text-[10px] font-semibold text-slate-400">2020-21</span>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900 group-hover:text-primary-600 transition line-clamp-2 mb-3 min-h-[2.5rem]">
+            Devoir de Contrôle N°1 - Math DEVOIR - 7ème Mr GHARBI RIDHA
+          </h3>
+          <div class="flex items-center gap-1.5 flex-wrap mb-3">
+            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold">📐 Mathématiques</span>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">2.3 MB</span>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">12 pages</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 25</span>
+            <span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 0</span>
+            <span class="flex items-center gap-1 text-amber-500 font-semibold">⭐ 0.0</span>
+            <span class="ml-auto text-[10px] text-slate-400">il y a 14j</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Card 2: Math 8ème, WITH correction -->
+      <a class="card card-hover overflow-hidden group block bg-white rounded-2xl border border-slate-100 hover:border-primary-300 transition">
+        <div class="p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded">📝 Devoir</span>
+              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded">8ème</span>
+              <span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded flex items-center gap-1">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Corrigé
+              </span>
+            </div>
+            <span class="text-[10px] font-semibold text-slate-400">2021-22</span>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900 group-hover:text-primary-600 transition line-clamp-2 mb-3 min-h-[2.5rem]">
+            Devoir de Synthèse N°1 - Math - 8ème - Avec corrigé complet
+          </h3>
+          <div class="flex items-center gap-1.5 flex-wrap mb-3">
+            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold">📐 Mathématiques</span>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">1.8 MB</span>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">8 pages</span>
+            <span class="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">🇫🇷 + 🇹🇳</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 16</span>
+            <span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 3</span>
+            <span class="flex items-center gap-1 text-amber-500 font-semibold">⭐ 4.5</span>
+            <span class="ml-auto text-[10px] text-slate-400">il y a 2j</span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Card 3: SVT, no correction -->
+      <a class="card card-hover overflow-hidden group block bg-white rounded-2xl border border-slate-100 hover:border-primary-300 transition">
+        <div class="p-4">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded">📖 Cours</span>
+              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded">9ème</span>
+            </div>
+            <span class="text-[10px] font-semibold text-slate-400">2023-24</span>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900 group-hover:text-primary-600 transition line-clamp-2 mb-3 min-h-[2.5rem]">
+            Leçon - La cellule animale - SVT 9ème année
+          </h3>
+          <div class="flex items-center gap-1.5 flex-wrap mb-3">
+            <span class="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">🧬 SVT</span>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">5.2 MB</span>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">24 pages</span>
+            <span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">🇫🇷</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 89</span>
+            <span class="flex items-center gap-1"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 12</span>
+            <span class="flex items-center gap-1 text-amber-500 font-semibold">⭐ 4.8</span>
+            <span class="ml-auto text-[10px] text-slate-400">il y a 1sem</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- AFFICHAGE EN GRID MULTIPLE (cas concret : prof avec 91 ressources) -->
+  <div>
+    <h2 class="text-sm font-bold text-emerald-600 mb-3">Cas réel : grille de 6 cartes (style prof Ridha Gharbi avec 91 ressources)</h2>
+    <div class="grid grid-cols-3 gap-4">
+      <!-- 6 mini cards -->
+      <a class="block bg-white rounded-xl border border-slate-100 hover:border-primary-300 transition p-3 group">
+        <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <span class="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded">📝 Devoir</span>
+          <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded">7ème</span>
+        </div>
+        <h4 class="font-bold text-xs text-slate-900 group-hover:text-primary-600 transition line-clamp-2 mb-2">Devoir Contrôle N°1 - Math 7ème</h4>
+        <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+          <span>📐 Math</span>
+          <span>•</span>
+          <span>2020-21</span>
+          <span class="ml-auto">👁 25</span>
+        </div>
+      </a>
+      <a class="block bg-white rounded-xl border border-slate-100 hover:border-primary-300 transition p-3 group">
+        <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-bold rounded">📖 Cours</span>
+          <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded">9ème</span>
+          <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded">✅</span>
+        </div>
+        <h4 class="font-bold text-xs text-slate-900 group-hover:text-primary-600 transition line-clamp-2 mb-2">Algèbre - Équations 2nd degré</h4>
+        <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+          <span>📐 Math</span>
+          <span>•</span>
+          <span>2023-24</span>
+          <span class="ml-auto">👁 142</span>
+        </div>
+      </a>
+      <a class="block bg-white rounded-xl border border-slate-100 hover:border-primary-300 transition p-3 group">
+        <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[9px] font-bold rounded">✏️ Exercice</span>
+          <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded">8ème</span>
+        </div>
+        <h4 class="font-bold text-xs text-slate-900 group-hover:text-primary-600 transition line-clamp-2 mb-2">Séries d'exercices - Trigonométrie</h4>
+        <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+          <span>📐 Math</span>
+          <span>•</span>
+          <span>2022-23</span>
+          <span class="ml-auto">👁 67</span>
+        </div>
+      </a>
+      <a class="block bg-white rounded-xl border border-slate-100 hover:border-primary-300 transition p-3 group">
+        <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded">📚 Série</span>
+          <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded">7ème</span>
+        </div>
+        <h4 class="font-bold text-xs text-slate-900 group-hover:text-primary-600 transition line-clamp-2 mb-2">Série de révision - Algèbre</h4>
+        <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+          <span>📐 Math</span>
+          <span>•</span>
+          <span>2021-22</span>
+          <span class="ml-auto">👁 45</span>
+        </div>
+      </a>
+      <a class="block bg-white rounded-xl border border-slate-100 hover:border-primary-300 transition p-3 group">
+        <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <span class="px-1.5 py-0.5 bg-red-100 text-red-700 text-[9px] font-bold rounded">🎓 Bac</span>
+          <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded">4ème</span>
+          <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded">✅</span>
+        </div>
+        <h4 class="font-bold text-xs text-slate-900 group-hover:text-primary-600 transition line-clamp-2 mb-2">Sujet Bac - Mathématiques 2023</h4>
+        <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+          <span>📐 Math</span>
+          <span>•</span>
+          <span>2023</span>
+          <span class="ml-auto">👁 312</span>
+        </div>
+      </a>
+      <a class="block bg-white rounded-xl border border-slate-100 hover:border-primary-300 transition p-3 group">
+        <div class="flex items-center gap-1.5 mb-1.5 flex-wrap">
+          <span class="px-1.5 py-0.5 bg-pink-100 text-pink-700 text-[9px] font-bold rounded">🗂️ Fiche</span>
+          <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-bold rounded">9ème</span>
+        </div>
+        <h4 class="font-bold text-xs text-slate-900 group-hover:text-primary-600 transition line-clamp-2 mb-2">Fiche de révision - Géométrie</h4>
+        <div class="flex items-center gap-1.5 text-[10px] text-slate-500">
+          <span>📐 Math</span>
+          <span>•</span>
+          <span>2024-25</span>
+          <span class="ml-auto">👁 89</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,143 @@
+{
+  "12075": {
+    "metadata": {
+      "profNames": [
+        "Me Toumi Imen"
+      ],
+      "schoolName": "Lycée KORBA",
+      "year": "2009-2010",
+      "type": "devoir",
+      "subtype": "contrôle",
+      "subject": "Système de lavage des bidons",
+      "dossierTechnique": "Habitat",
+      "systemName": "Système de lavage des bidons",
+      "duration": null,
+      "level": null,
+      "keyPoints": null,
+      "topics": null,
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document présente un devoir de contrôle sur le système de lavage des bidons, destiné à nettoyer des bidons vides par un processus automatisé. Il décrit le fonctionnement du système, incluant le transfert, le serrage, le lavage et le desserrage des bidons, ainsi que les composants techniques tels que les vérins et capteurs. Les exercices demandent aux élèves de compléter des tableaux et de modéliser le système en utilisant des termes techniques appropriés.",
+      "prerequisites": [
+        "Connaissance des systèmes automatisés",
+        "Compréhension des composants pneumatiques"
+      ],
+      "keyInsights": [
+        "Le système utilise des vérins pour le mouvement et le lavage des bidons",
+        "L'automate programmable joue un rôle clé dans le contrôle du processus",
+        "Les capteurs détectent la présence des bidons pour initier le cycle de lavage"
+      ]
+    },
+    "tokens_used": 4059,
+    "pages": 3,
+    "words": 1000
+  },
+  "12258": {
+    "metadata": {
+      "profNames": [
+        "Mrs Trabelsi-Frikha-Makni",
+        "Ben salah"
+      ],
+      "schoolName": null,
+      "year": null,
+      "type": "devoir",
+      "subtype": null,
+      "subject": "Technologie",
+      "dossierTechnique": "Génie mécanique",
+      "systemName": "Fraiseuse",
+      "duration": "2H",
+      "level": null,
+      "keyPoints": null,
+      "topics": null,
+      "difficulty": null,
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document présente le fonctionnement d'une fraiseuse, une machine outil pour l'usinage de pièces mécaniques, en détaillant le dispositif de serrage et la rotation de l'arbre moteur. Il inclut des exercices pratiques sur le dessin technique, la modélisation d'une alimentation stabilisée, et l'étude des fonctions électroniques comme le redressement et le filtrage. Les élèves doivent compléter des schémas et des tableaux pour démontrer leur compréhension des concepts abordés.",
+      "prerequisites": [
+        "Connaissances de base en mécanique",
+        "Notions d'électricité et d'électronique"
+      ],
+      "keyInsights": [
+        "Compréhension du fonctionnement d'une fraiseuse",
+        "Importance du dispositif de serrage dans l'usinage",
+        "Fonctions électroniques d'une alimentation stabilisée"
+      ]
+    },
+    "tokens_used": 2569,
+    "pages": 6,
+    "words": 436
+  },
+  "13328": {
+    "metadata": {
+      "profNames": [],
+      "schoolName": null,
+      "year": null,
+      "type": "devoir",
+      "subtype": null,
+      "subject": "Technologie",
+      "dossierTechnique": "Énergie",
+      "systemName": "Mini-perceuse",
+      "duration": null,
+      "level": null,
+      "keyPoints": [],
+      "topics": [],
+      "difficulty": null,
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document traite de l'adaptation de la tension pour une mini-perceuse utilisant un convertisseur électrique. Il aborde les problèmes d'amplitude et de nature de la tension, ainsi que les solutions via un transformateur pour élever ou abaisser la tension. Les fonctions de redressement, filtrage et stabilisation sont également expliquées, avec des détails sur les composants nécessaires et leur fonctionnement.",
+      "prerequisites": [
+        "Connaissances de base en électricité",
+        "Compréhension des circuits électriques"
+      ],
+      "keyInsights": [
+        "Importance du transformateur pour adapter la tension",
+        "Rôle des diodes dans le redressement de la tension",
+        "Fonctionnalité des condensateurs dans le filtrage de la tension"
+      ]
+    },
+    "tokens_used": 3169,
+    "pages": 5,
+    "words": 726
+  },
+  "4991": {
+    "metadata": {
+      "profNames": [
+        "RHIMI Jalel"
+      ],
+      "schoolName": "L.S.ELMANAR KASSERINE",
+      "year": "2010-2011",
+      "type": "devoir",
+      "subtype": "synthèse",
+      "subject": "Technologie des systèmes techniques",
+      "dossierTechnique": null,
+      "systemName": null,
+      "duration": "120 mn",
+      "level": "standard",
+      "keyPoints": null,
+      "topics": [
+        "Systèmes de numération et codes"
+      ],
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": 120
+    },
+    "summary": {
+      "summary": "Le document présente un devoir de synthèse sur le système de préparation de teinture de tissus dans une usine textile. Il décrit le fonctionnement du système, y compris le dosage, le malaxage et le stockage des produits. Les élèves doivent réaliser des activités d'analyse fonctionnelle et de conversion de systèmes de numération, notamment en binaire, octal et hexadécimal.",
+      "prerequisites": [
+        "Connaissance des systèmes techniques",
+        "Compréhension des systèmes de numération"
+      ],
+      "keyInsights": [
+        "Le système utilise des clapets et des moteurs pour contrôler le processus de teinture.",
+        "Les élèves doivent maîtriser la conversion entre différents systèmes de numération.",
+        "L'analyse fonctionnelle est essentielle pour comprendre le fonctionnement des systèmes techniques."
+      ]
+    },
+    "tokens_used": 4204,
+    "pages": 11,
+    "words": 1662
+  }
+}

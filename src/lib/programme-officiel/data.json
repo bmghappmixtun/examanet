@@ -1,0 +1,3573 @@
+{
+  "_meta": {
+    "title": "Programme Officiel Tunisien",
+    "year": "2024-2025",
+    "country": "Tunisia",
+    "source": "Ministère de l'Éducation Tunisien — edunet.tn — cnp.com.tn — bac.com.tn"
+  },
+  "levels": [
+    {
+      "key": "7eme",
+      "title": "7ème année",
+      "subtitle": "Enseignement de base",
+      "num": 7,
+      "subjects": [
+        {
+          "slug": "mathematiques",
+          "name": "Mathématiques",
+          "nameAr": "الرياضيات",
+          "icon": "📐",
+          "color": "amber",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Mathématiques",
+            "nameAr": "الرياضيات",
+            "language": "ar",
+            "trimestre1": [
+              "الأعداد الصحيحة الطبيعية — مقارنة، عمليات، خواص",
+              "القوى الصحيحة لعدد طبيعي",
+              "قابلية القسمة على 2، 5، 3، 9، 4، 25، 10",
+              "الأعداد الأولية — تحليل عدد إلى جداء عوامل أولية",
+              "الأعداد الصحيحة النسبية — قيمة مطلقة، جمع، طرح، ضرب",
+              "الأعداد العشرية — كتابة، عمليات، تقريب",
+              "مستقيم، قطعة مستقيم، منتصف قطعة"
+            ],
+            "trimestre2": [
+              "تحديد نقطة على مستقيم مدرج",
+              "الزوايا — قطاعات زاوية",
+              "الكسور — تقديم، اختزال، مقارنة",
+              "التناسبية — النسبة المئوية",
+              "التناظر المركزي",
+              "الدائرة والقرص"
+            ],
+            "trimestre3": [
+              "قوى عدد جذري",
+              "المثلثات — المتوسطات، الارتفاعات",
+              "الرباعيات",
+              "المساحات والمحيطات",
+              "الحجوم — متوازي المستطيلات، المكعب",
+              "الإحصاء — مقدمة"
+            ]
+          }
+        },
+        {
+          "slug": "physique",
+          "name": "Sciences Physiques",
+          "nameAr": "علوم فيزيائية",
+          "icon": "⚛️",
+          "color": "blue",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Sciences Physiques",
+            "nameAr": "علوم فيزيائية",
+            "language": "ar",
+            "trimestre1": [
+              "الماء في الطبيعة — خصائصه وحالاته الفيزيائية",
+              "الدارة الكهربائية البسيطة — عمود، مصباح، أسلاك، قاطعة",
+              "المحاليل المائية — الذوبان، المذيب، المذاب",
+              "الكتلة والحجم — قياس، وحدات",
+              "مصادر الضوء — طبيعية وصناعية",
+              "الهواء — مكوناته وخصائصه"
+            ],
+            "trimestre2": [
+              "كثافة جسم — صلب، سائل",
+              "شدة التيار الكهربائي — الأمبيرمتر",
+              "التوتر الكهربائي — الفولطمتر",
+              "المحاليل المائية — التركيز، الإذابة",
+              "الضوء — مصادر أولية وثانوية، الظلال",
+              "تغيرات الحالة الفيزيائية للمادة"
+            ],
+            "trimestre3": [
+              "الدارة الكهربائية على التسلسل والتفرع",
+              "النواقل والعوازل",
+              "انعكاس الضوء",
+              "الطاقة الكهربائية",
+              "الأعمدة والمراكم",
+              "تركيب ومراجعة"
+            ]
+          }
+        },
+        {
+          "slug": "svt",
+          "name": "Sciences de la Vie et de la Terre",
+          "nameAr": "علوم الحياة والأرض",
+          "icon": "🧬",
+          "color": "emerald",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Sciences de la Vie et de la Terre",
+            "nameAr": "علوم الحياة والأرض",
+            "language": "ar",
+            "manualUrl": "https://www.tadris.tn/app/190/السنة-السابعة-أساسي/علوم-الحياة-و-الأرض",
+            "trimestre1": [
+              "الوسط البيئي — مكونات الوسط الحي (نباتات، حيوانات، كائنات دقيقة) والعناصر اللاحيّة (تربة، ماء، هواء)",
+              "العلاقات الغذائية — السلاسل الغذائية والشبكات الغذائية",
+              "تأثير العوامل المناخية على الكائنات الحية وعلى التربة",
+              "التوازنات الطبيعية داخل الوسط البيئي"
+            ],
+            "trimestre2": [
+              "التغذية عند الإنسان — الأغذية البسيطة والمركبة",
+              "الهضم الميكانيكي والكيميائي — الفم، المعدة، المعي الدقيق",
+              "الامتصاص المعوي والزغابات المعوية",
+              "التبادلات الغازية التنفسية — الرئتان، الشعب الهوائية",
+              "الجهاز الدوراني — القلب، الشرايين، الأوردة، الشعيرات",
+              "التثقيف الصحي والتوازن الغذائي"
+            ],
+            "trimestre3": [
+              "التوالد عند النباتات الزهرية — الزهرة، التأبير، الإخصاب",
+              "تصنيف النباتات — زهرية، عاريات البذور، لا زهرية",
+              "التوالد عند الإنسان — الجهاز التناسلي، الإخصاب",
+              "التوالد عند الحيوانات — الولودة، البيوضة",
+              "الحمل والولادة والصحة الإنجابية"
+            ]
+          }
+        },
+        {
+          "slug": "technologie",
+          "name": "Technologie",
+          "nameAr": "تكنولوجيا",
+          "icon": "🔧",
+          "color": "purple",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Technologie",
+            "nameAr": "تكنولوجيا",
+            "language": "ar",
+            "trimestre1": [
+              "الدرس 1: المنتوج التقني وتطوره",
+              "الدرس 2: التحليل الوظيفي الخارجي والداخلي",
+              "الدرس 3: الحاجة والتطور التاريخي",
+              "الدرس 4: النشاط البشري والتكنولوجيا",
+              "الدرس 5: المواد المستعملة"
+            ],
+            "trimestre2": [
+              "الدرس 6: العائلة التكنولوجية",
+              "الدرس 7: المحيط",
+              "الدرس 8: الدارة الكهربائية",
+              "الدرس 9: الجمل التقني"
+            ],
+            "trimestre3": [
+              "الدرس 10: المخطط الوظيفي",
+              "الدرس 11: المخطط البياني",
+              "الدرس 12: الرسم التقني",
+              "الدرس 13: المشروع التقني"
+            ]
+          }
+        },
+        {
+          "slug": "informatique",
+          "name": "Informatique",
+          "nameAr": "الإعلامية",
+          "icon": "💻",
+          "color": "indigo",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Informatique",
+            "nameAr": "الإعلامية",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/aide_info_college.pdf",
+            "trimestre1": [
+              "Chapitre 1: Environnement informatique de travail (périphériques, composants, RAM, disque dur)",
+              "Chapitre 2: Systèmes d'exploitation (PC, Mobile — Android, iOS)",
+              "Chapitre 3: Gestion de fichiers (créer, copier, renommer, déplacer, supprimer)",
+              "Chapitre 4: Sécurité informatique (mots de passe, antivirus, pare-feu)"
+            ],
+            "trimestre2": [
+              "Chapitre 5: Internet et recherche d'information (moteurs, mots clés, IA générative)",
+              "Chapitre 6: Téléchargement et droits d'auteur",
+              "Chapitre 7: Messagerie et communication en ligne",
+              "Chapitre 8: Logiciels — traitement de texte, présentation"
+            ],
+            "trimestre3": [
+              "Chapitre 9: Pensée computationnelle — algorithmique débranchée (sériation, inclusion, exclusion)",
+              "Chapitre 10: Programmation visuelle — Scratch (lutins, scènes, mouvements, apparences)",
+              "Chapitre 11: Événements et structures de contrôle (Si...Alors, Boucle Répéter)",
+              "Chapitre 12: Projet (multimédia: image + son + texte)"
+            ]
+          }
+        },
+        {
+          "slug": "anglais",
+          "name": "Anglais",
+          "nameAr": "اللغة الإنجليزية",
+          "icon": "🇬🇧",
+          "color": "cyan",
+          "lang": "en",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Anglais",
+            "nameAr": "اللغة الإنجليزية",
+            "language": "en/fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/preparatoire/langues/anglais_college.pdf",
+            "trimestre1": [
+              "Module 1: Family Life — family composition, family relationships, pocket money",
+              "Module 2: Free Time and Entertainment — travel, holidays, hobbies, sports",
+              "Skills: Reading (compréhension écrite), Writing (phrases simples)"
+            ],
+            "trimestre2": [
+              "Module 3: Relations with Peers — clubs, friendship, invitations",
+              "Module 4: Civility — voluntary work, children's rights, tolerance, fair play",
+              "Skills: Listening (écoute), Speaking (expression orale)"
+            ],
+            "trimestre3": [
+              "Module 5: Health — keeping fit, hygiene, ailments, nutrition",
+              "Module 6: Education — school life, school rules, exams",
+              "Skills: Reading et Writing (synthèse)"
+            ]
+          }
+        },
+        {
+          "slug": "francais",
+          "name": "Français",
+          "nameAr": "اللغة الفرنسية",
+          "icon": "📖",
+          "color": "slate",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Français",
+            "nameAr": "اللغة الفرنسية",
+            "language": "fr",
+            "trimestre1": [
+              "Le récit d'aventures",
+              "Les types de phrases (déclaratif, interrogatif, exclamatif, impératif)",
+              "Le présent de l'indicatif",
+              "Lecture et compréhension de textes"
+            ],
+            "trimestre2": [
+              "Le récit fantastique",
+              "Le groupe nominal (déterminants, noms, adjectifs)",
+              "L'accord dans le groupe nominal",
+              "Production écrite — le portrait"
+            ],
+            "trimestre3": [
+              "Le récit de science-fiction",
+              "Les temps du passé (passé composé, imparfait)",
+              "L'expression des sentiments",
+              "Lecture de poésie"
+            ]
+          }
+        },
+        {
+          "slug": "arabe",
+          "name": "Arabe",
+          "nameAr": "اللغة العربية",
+          "icon": "ع",
+          "color": "red",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Arabe",
+            "nameAr": "اللغة العربية",
+            "language": "ar",
+            "trimestre1": [
+              "الجملة الاسمية — المبتدأ والخبر",
+              "الجملة الفعلية — الفعل والفاعل والمفعول به",
+              "الأفعال الخمسة",
+              "النكرة والمعرفة",
+              "القراءة والفهم"
+            ],
+            "trimestre2": [
+              "المثنى وجمع المذكر السالم",
+              "الممنوع من الصرف",
+              "كان وأخواتها",
+              "إن وأخواتها",
+              "الإنشاء — كتابة رسالة"
+            ],
+            "trimestre3": [
+              "اسم الفاعل واسم المفعول",
+              "الصفة المشبهة",
+              "أسلوب التعجب",
+              "القراءة الأدبية — قصة قصيرة",
+              "الإنشاء — كتابة موضوع"
+            ]
+          }
+        },
+        {
+          "slug": "histoire-geographie",
+          "name": "Histoire-Géographie",
+          "nameAr": "التاريخ والجغرافيا",
+          "icon": "🌍",
+          "color": "yellow",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Histoire-Géographie",
+            "nameAr": "التاريخ والجغرافيا",
+            "language": "ar",
+            "trimestre1": [
+              "التاريخ — الحضارات القديمة في تونس (قرطاجة)",
+              "التاريخ — الفينيقيون والرومان",
+              "الجغرافيا — تضاريس تونس",
+              "الجغرافيا — المناخ والبيئة"
+            ],
+            "trimestre2": [
+              "التاريخ — الفتوحات الإسلامية في تونس",
+              "التاريخ — الدولة الأغلبية والفاطمية",
+              "الجغرافيا — الموقع الجغرافي لتونس",
+              "الجغرافيا — السكان في تونس"
+            ],
+            "trimestre3": [
+              "التاريخ — الدولة الحفصية",
+              "التاريخ — الاستعمار الفرنسي",
+              "الجغرافيا — الموارد الطبيعية",
+              "الجغرافيا — القطاعات الاقتصادية"
+            ]
+          }
+        },
+        {
+          "slug": "education-islamique",
+          "name": "Éducation Islamique",
+          "nameAr": "التربية الإسلامية",
+          "icon": "إسلامية",
+          "color": "green",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Éducation Islamique",
+            "nameAr": "التربية الإسلامية",
+            "language": "ar",
+            "trimestre1": [
+              "القرآن الكريم — سورة الفاتحة والمختصرات",
+              "الحديث الشريف — مفهومه ومصادره",
+              "العقيدة — أركان الإسلام والإيمان"
+            ],
+            "trimestre2": [
+              "الفقه — الطهارة والصلاة",
+              "السيرة النبوية — مولد النبي",
+              "الأخلاق — الصدق والأمانة"
+            ],
+            "trimestre3": [
+              "القرآن — قصص الأنبياء",
+              "الحديث — أحاديث الأخلاق",
+              "الفقه — الزكاة والصوم"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "8eme",
+      "title": "8ème année",
+      "subtitle": "Enseignement de base",
+      "num": 8,
+      "subjects": [
+        {
+          "slug": "mathematiques",
+          "name": "Mathématiques",
+          "nameAr": "الرياضيات",
+          "icon": "📐",
+          "color": "amber",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Mathématiques",
+            "nameAr": "الرياضيات",
+            "language": "ar",
+            "trimestre1": [
+              "الأعداد العشرية — عمليات، تحويل، مدور عدد عشري",
+              "القوى — خاصيات، رتبة قدر",
+              "الجذور التربيعية — تعريف، خواص",
+              "التناسبية — السرعة المتوسطة، سلم التصاميم، النسبة المئوية",
+              "النشر والتعميل — المتطابقات الشهيرة",
+              "الكسور — العمليات، المقارنة",
+              "التناظر المحوري"
+            ],
+            "trimestre2": [
+              "المعادلات من الدرجة الأولى ذات المجهول الواحد",
+              "حل المعادلات في مجموعة الأعداد النسبية",
+              "حل المعادلات في مجموعة الأعداد الحقيقية",
+              "المتراجحات من الدرجة الأولى",
+              "الزوايا — خواص، مجموع زوايا مثلث",
+              "المثلثات القائمة — نظرية فيثاغورس"
+            ],
+            "trimestre3": [
+              "الدوال — دالة خطية، دالة تآلفية",
+              "تمثيل بياني لدالة خطية وتآلفية",
+              "المتجهات — تعريف، مجموع، ضرب بعدد",
+              "الإحصاء — المتوسط الحسابي، الوسيط، المدى",
+              "الاحتمالات — مقدمة"
+            ]
+          }
+        },
+        {
+          "slug": "physique",
+          "name": "Sciences Physiques",
+          "nameAr": "علوم فيزيائية",
+          "icon": "⚛️",
+          "color": "blue",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Sciences Physiques",
+            "nameAr": "علوم فيزيائية",
+            "language": "ar",
+            "trimestre1": [
+              "الحركة والسكون — مفاهيم أساسية، مرجع، مسار",
+              "السرعة المتوسطة — حساب، وحدات",
+              "الكتلة الحجمية — تعريف، حساب",
+              "الحركة المنتظمة — قانون المسافة، التمثيل"
+            ],
+            "trimestre2": [
+              "القوى — تعريف، تأثير، وحدة القياس",
+              "القصور الذاتي",
+              "القوة والكتلة — علاقة، قياس",
+              "تأثيرات القوى — التشوه، السكون، الحركة"
+            ],
+            "trimestre3": [
+              "الحرارة والحرارة النوعية",
+              "التسخين والتبريد",
+              "تأثير الحرارة على الأجسام",
+              "الضوء — الانعكاس على المرايا المستوية",
+              "تركيب ومراجعة عامة"
+            ]
+          }
+        },
+        {
+          "slug": "svt",
+          "name": "Sciences de la Vie et de la Terre",
+          "nameAr": "علوم الحياة والأرض",
+          "icon": "🧬",
+          "color": "emerald",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Sciences de la Vie et de la Terre",
+            "nameAr": "علوم الحياة والأرض",
+            "language": "ar",
+            "manualUrl": "https://www.tadris.tn/app/202/السنة-الثامنة-أساسي/علوم-الحياة-و-الأرض",
+            "trimestre1": [
+              "التغذية عند الإنسان — المغذيات (الغلوسيدات، الدسمونيات، البروتيدات، الفيتامينات)",
+              "الجهاز الهضمي (التفاصيل)",
+              "الامتصاص المعوي والكبدي",
+              "التبادلات الغازية التنفسية (المستوى الخلوي)"
+            ],
+            "trimestre2": [
+              "الجهاز الدوري — الدم، القلب، الدورة الدموية",
+              "الجهاز الإفرازي — الغدد الصماء، الهرمونات",
+              "الاستجابة المناعية",
+              "اللقاحات والمصول"
+            ],
+            "trimestre3": [
+              "التوازنات البيئية — النظام البيئي",
+              "التنوع البيولوجي والتصنيف",
+              "التلوث وحماية البيئة",
+              "الاستنساخ والاستزراع"
+            ]
+          }
+        },
+        {
+          "slug": "technologie",
+          "name": "Technologie",
+          "nameAr": "تكنولوجيا",
+          "icon": "🔧",
+          "color": "purple",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Technologie",
+            "nameAr": "تكنولوجيا",
+            "language": "ar",
+            "trimestre1": [
+              "الدرس 1: المنتوج التقني (دراسة حالة)",
+              "الدرس 2: التحليل الوظيفي والتخطيط",
+              "الدرس 3: الوصف التقني للمنتوج"
+            ],
+            "trimestre2": [
+              "الدرس 4: المواد المستعملة في التصنيع",
+              "الدرس 5: العمليات التقنية على المواد",
+              "الدرس 6: المخطط التقني المتقدم"
+            ],
+            "trimestre3": [
+              "الدرس 7: التركيب والتجميع",
+              "الدرس 8: الاختبار والمراقبة",
+              "الدرس 9: المشروع التقني التطبيقي"
+            ]
+          }
+        },
+        {
+          "slug": "informatique",
+          "name": "Informatique",
+          "nameAr": "الإعلامية",
+          "icon": "💻",
+          "color": "indigo",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Informatique",
+            "nameAr": "الإعلامية",
+            "language": "fr",
+            "trimestre1": [
+              "Révision environnement de travail",
+              "Réseau local — services de base, partage de fichiers",
+              "Traitement de texte avancé — insertion d'objets, mise en forme"
+            ],
+            "trimestre2": [
+              "Tableur — saisie, mise en forme, formules, fonctions",
+              "Tableur — graphiques",
+              "Internet — téléchargement de fichiers, partage"
+            ],
+            "trimestre3": [
+              "Production multimedia — son, vidéo, montage",
+              "Projet intégrateur (image + son + texte + vidéo)",
+              "Introduction à la programmation — concepts avancés (Scratch)"
+            ]
+          }
+        },
+        {
+          "slug": "anglais",
+          "name": "Anglais",
+          "nameAr": "اللغة الإنجليزية",
+          "icon": "🇬🇧",
+          "color": "cyan",
+          "lang": "en",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Anglais",
+            "nameAr": "اللغة الإنجليزية",
+            "language": "en/fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/preparatoire/langues/anglais_college.pdf",
+            "trimestre1": [
+              "Module 1: Family Life (approfondissement) — bullying, harassment, respect, solidarity",
+              "Module 2: Free Time and Entertainment — sports, cinema, music, parties",
+              "Skills: Reading, Listening"
+            ],
+            "trimestre2": [
+              "Module 3: Health (approfondissement) — ailments, treatments, hospitals",
+              "Module 4: Education — school life, exams, distance learning",
+              "Skills: Writing (paragraphes), Speaking"
+            ],
+            "trimestre3": [
+              "Module 5: Environmental Issues — pollution, recycling, weather",
+              "Module 6: Services — shopping, public transport, internet",
+              "Skills: Production écrite (essay), Oral (débat)"
+            ]
+          }
+        },
+        {
+          "slug": "francais",
+          "name": "Français",
+          "nameAr": "اللغة الفرنسية",
+          "icon": "📖",
+          "color": "slate",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Français",
+            "nameAr": "اللغة الفرنسية",
+            "language": "fr",
+            "trimestre1": [
+              "Le récit historique",
+              "Les classes grammaticales",
+              "Le passé simple et l'imparfait",
+              "L'expression de la cause"
+            ],
+            "trimestre2": [
+              "Le texte argumentatif",
+              "L'accord du participe passé",
+              "Le conditionnel présent",
+              "Production écrite — la lettre"
+            ],
+            "trimestre3": [
+              "Le théâtre",
+              "Le subjonctif présent",
+              "L'expression de l'hypothèse",
+              "Lecture de textes argumentatifs"
+            ]
+          }
+        },
+        {
+          "slug": "arabe",
+          "name": "Arabe",
+          "nameAr": "اللغة العربية",
+          "icon": "ع",
+          "color": "red",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Arabe",
+            "nameAr": "اللغة العربية",
+            "language": "ar",
+            "trimestre1": [
+              "التمييز بين الجمل الاسمية والفعلية",
+              "النواسخ — كان، إن، كاد، أوشك",
+              "الاسم الموصول",
+              "القراءة — النصوص الأدبية"
+            ],
+            "trimestre2": [
+              "المفعول المطلق",
+              "المفعول لأجله",
+              "المفعول فيه (الظرف)",
+              "أسلوب النفي والاستفهام",
+              "الإنشاء"
+            ],
+            "trimestre3": [
+              "البدل والعطف",
+              "التوكيد",
+              "المسائل البلاغية — التشبيه",
+              "الاستعارة",
+              "الأدب — القراءة الموجهة"
+            ]
+          }
+        },
+        {
+          "slug": "histoire-geographie",
+          "name": "Histoire-Géographie",
+          "nameAr": "التاريخ والجغرافيا",
+          "icon": "🌍",
+          "color": "yellow",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Histoire-Géographie",
+            "nameAr": "التاريخ والجغرافيا",
+            "language": "ar",
+            "trimestre1": [
+              "التاريخ — أوروبا في العصور الوسطى",
+              "التاريخ — العالم الإسلامي في القرون الوسطى",
+              "الجغرافيا — قارة أوروبا",
+              "الجغرافيا — دول الاتحاد الأوروبي"
+            ],
+            "trimestre2": [
+              "التاريخ — النهضة الأوروبية",
+              "التاريخ — الإصلاح الديني",
+              "الجغرافيا — السكان في العالم",
+              "الجغرافيا — الهجرة"
+            ],
+            "trimestre3": [
+              "التاريخ — الثورة الفرنسية",
+              "التاريخ — الاستعمار في القرن 19",
+              "الجغرافيا — العولمة",
+              "الجغرافيا — التحديات البيئية العالمية"
+            ]
+          }
+        },
+        {
+          "slug": "education-islamique",
+          "name": "Éducation Islamique",
+          "nameAr": "التربية الإسلامية",
+          "icon": "إسلامية",
+          "color": "green",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Éducation Islamique",
+            "nameAr": "التربية الإسلامية",
+            "language": "ar",
+            "trimestre1": [
+              "القرآن — سور مختارة",
+              "الحديث — أحاديث العبادات",
+              "الفقه — الصلاة وأحكامها"
+            ],
+            "trimestre2": [
+              "السيرة — الهجرة",
+              "الفقه — الزكاة",
+              "الأخلاق — بر الوالدين"
+            ],
+            "trimestre3": [
+              "القرآن — قصص الأنبياء (إبراهيم، موسى، عيسى)",
+              "الفقه — الصوم والحج",
+              "الأخلاق — الصدق والأمانة"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "9eme",
+      "title": "9ème année",
+      "subtitle": "Enseignement de base",
+      "num": 9,
+      "subjects": [
+        {
+          "slug": "mathematiques",
+          "name": "Mathématiques",
+          "nameAr": "الرياضيات",
+          "icon": "📐",
+          "color": "amber",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Mathématiques",
+            "nameAr": "الرياضيات",
+            "language": "ar",
+            "trimestre1": [
+              "الجذور التربيعية — تعريف، خواص، عمليات",
+              "القوى — قوى عدد جذري ذات أسس صحيحة",
+              "العمليات على الجذور",
+              "المعادلات من الدرجة الأولى",
+              "نظمة معادلتين من الدرجة الأولى بمجهولين",
+              "المتراجحات من الدرجة الأولى"
+            ],
+            "trimestre2": [
+              "الدوال — الدالة المربعة والدالة الجذرية",
+              "التمثيل البياني للدوال",
+              "الزوايا — خواص في مثلثات ومضلعات",
+              "الدائرة — محاور تماثل، مماسات",
+              "نظرية طاليس",
+              "الإحصاء — المتوسط الحسابي، الموزع الإحصائي"
+            ],
+            "trimestre3": [
+              "الاحتمالات — أحداث، احتمالات",
+              "الإحصاء — مؤشرات التشتت",
+              "المتجهات والإزاحة",
+              "جيب وجيب تمام زاوية حادة في مثلث قائم",
+              "حساب المساحات والحجوم",
+              "مراجعة شاملة"
+            ]
+          }
+        },
+        {
+          "slug": "physique",
+          "name": "Sciences Physiques",
+          "nameAr": "علوم فيزيائية",
+          "icon": "⚛️",
+          "color": "blue",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Sciences Physiques",
+            "nameAr": "علوم فيزيائية",
+            "language": "ar",
+            "trimestre1": [
+              "الحركة المستقيمة المنتظمة — قانون السرعة، التمثيل البياني",
+              "الحركة المستقيمة المتغيرة بانتظام",
+              "القوة — مفهوم، تأثير، محصلة قوتين"
+            ],
+            "trimestre2": [
+              "القوى المؤثرة على جسم — الوزن، الاحتكاك، رد الفعل",
+              "الضغط — مفهوم، وحدات، الضغط في الموائع",
+              "قاعدة أرخميدس — الطفو"
+            ],
+            "trimestre3": [
+              "العدسات — أنواعها، خصائصها، الصورة",
+              "العين وتصحيح عيوب البصر",
+              "الطاقة — أشكالها، تحولاتها",
+              "الكهرباء — التيار المتناوب، القدرة",
+              "تركيب ومراجعة"
+            ]
+          }
+        },
+        {
+          "slug": "svt",
+          "name": "Sciences de la Vie et de la Terre",
+          "nameAr": "علوم الحياة والأرض",
+          "icon": "🧬",
+          "color": "emerald",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Sciences de la Vie et de la Terre",
+            "nameAr": "علوم الحياة والأرض",
+            "language": "ar",
+            "manualUrl": "https://www.tadris.tn/app/214/السنة-التاسعة-أساسي/علوم-الحياة-و-الأرض",
+            "trimestre1": [
+              "المغذيات والطاقة — دور الأغذية في الجسم",
+              "الاستقلاب (التمثيل الغذائي) — تركيب البروتينات",
+              "المادة الوراثية (ADN) — بنية ووظيفة",
+              "الانقسام الخلوي — الانقسام المتساوي والاختزالي"
+            ],
+            "trimestre2": [
+              "علم الوراثة — قوانين مندل، الأنماط الوراثية",
+              "التوالد البشري — الإخصاب، تطور الجنين",
+              "الصحة الإنجابية",
+              "الأمراض الوراثية والمزمنة"
+            ],
+            "trimestre3": [
+              "التنوع البيولوجي — الأنواع، الجماعات، النظم البيئية",
+              "التطور والانتخاب الطبيعي",
+              "حماية البيئة والمحافظة على التنوع",
+              "الاستنساخ والهندسة الوراثية (أخلاقيات)"
+            ]
+          }
+        },
+        {
+          "slug": "technologie",
+          "name": "Technologie",
+          "nameAr": "تكنولوجيا",
+          "icon": "🔧",
+          "color": "purple",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Technologie",
+            "nameAr": "تكنولوجيا",
+            "language": "ar",
+            "trimestre1": [
+              "الدرس 1: التحليل الوظيفي المتقدم",
+              "الدرس 2: المخطط الآلي",
+              "الدرس 3: الرموز والتمثيلات البيانية"
+            ],
+            "trimestre2": [
+              "الدرس 4: المشروع التقني — التخطيط",
+              "الدرس 5: التصنيع والتجميع",
+              "الدرس 6: مراقبة الجودة"
+            ],
+            "trimestre3": [
+              "الدرس 7: الاختبار النهائي للمشروع",
+              "الدرس 8: التوثيق التقني",
+              "الدرس 9: تقديم المشروع"
+            ]
+          }
+        },
+        {
+          "slug": "informatique",
+          "name": "Informatique",
+          "nameAr": "الإعلامية",
+          "icon": "💻",
+          "color": "indigo",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Informatique",
+            "nameAr": "الإعلامية",
+            "language": "fr",
+            "trimestre1": [
+              "Révision environnement réseau",
+              "Tableur avancé — fonctions SI, RECHERCHEV",
+              "Bases de données (introduction) — concept de tables"
+            ],
+            "trimestre2": [
+              "Algorithmique — décomposition de problèmes",
+              "Algorithmique — sous-programmes",
+              "Algorithmique — structures de données (tableaux)"
+            ],
+            "trimestre3": [
+              "Projet intégrateur — site web HTML/CSS",
+              "Projet intégrateur — base de données simple",
+              "Synthèse et révision"
+            ]
+          }
+        },
+        {
+          "slug": "anglais",
+          "name": "Anglais",
+          "nameAr": "اللغة الإنجليزية",
+          "icon": "🇬🇧",
+          "color": "cyan",
+          "lang": "en",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Anglais",
+            "nameAr": "اللغة الإنجليزية",
+            "language": "en/fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/preparatoire/langues/anglais_college.pdf",
+            "trimestre1": [
+              "Module 1: Family Life and Relationships — coopération, harcèlement, altruisme, honnêteté",
+              "Module 2: Science and Technology — computers, internet, inventions, genetic engineering",
+              "Skills: Reading complexe, Listening détaillé"
+            ],
+            "trimestre2": [
+              "Module 3: Social Problems — violence, youth problems, discrimination, overpopulation",
+              "Module 4: Communicating with Others — correspondence, e-mail, social media",
+              "Skills: Production écrite (article, lettre), Oral (débat)"
+            ],
+            "trimestre3": [
+              "Module 5: Education — studying abroad, school life, distance learning, degrees",
+              "Module 6: Professional Life — employment, jobs, careers, promotion",
+              "Skills: Synthèse toutes compétences (préparation au lycée)"
+            ]
+          }
+        },
+        {
+          "slug": "francais",
+          "name": "Français",
+          "nameAr": "اللغة الفرنسية",
+          "icon": "📖",
+          "color": "slate",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Français",
+            "nameAr": "اللغة الفرنسية",
+            "language": "fr",
+            "trimestre1": [
+              "Le récit au présent et au passé",
+              "La phrase complexe (propositions, conjonctions)",
+              "Le discours rapporté",
+              "L'expression du but et de la conséquence"
+            ],
+            "trimestre2": [
+              "Le texte poétique",
+              "Les figures de style",
+              "La voix passive",
+              "Production écrite — l'essai"
+            ],
+            "trimestre3": [
+              "Le texte journalistique",
+              "Le système des temps du récit",
+              "La modalisation",
+              "Préparation au lycée"
+            ]
+          }
+        },
+        {
+          "slug": "arabe",
+          "name": "Arabe",
+          "nameAr": "اللغة العربية",
+          "icon": "ع",
+          "color": "red",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Arabe",
+            "nameAr": "اللغة العربية",
+            "language": "ar",
+            "trimestre1": [
+              "أسلوب الشرط — أدوات الشرط الجازمة",
+              "الجمل الشرطية",
+              "القراءة — النصوص النثرية المعاصرة",
+              "التعبير الكتابي — المقال"
+            ],
+            "trimestre2": [
+              "الممنوع من الصرف (مراجعة)",
+              "الاسم الممدود والمقصور",
+              "التشبيه وأنواعه",
+              "الكتابة الإبداعية",
+              "الأدب — الشعر الحديث"
+            ],
+            "trimestre3": [
+              "المراجعة الشاملة للنحو",
+              "البلاغة — الكناية",
+              "الأدب — المسرح",
+              "الإنتاج الكتابي (المقال)",
+              "التحضير للباكالوريا"
+            ]
+          }
+        },
+        {
+          "slug": "histoire-geographie",
+          "name": "Histoire-Géographie",
+          "nameAr": "التاريخ والجغرافيا",
+          "icon": "🌍",
+          "color": "yellow",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Histoire-Géographie",
+            "nameAr": "التاريخ والجغرافيا",
+            "language": "ar",
+            "trimestre1": [
+              "التاريخ — الحرب العالمية الأولى",
+              "التاريخ — بين الحربين",
+              "الجغرافيا — العالم بعد 1945",
+              "الجغرافيا — الكتل الكبرى"
+            ],
+            "trimestre2": [
+              "التاريخ — الحرب العالمية الثانية",
+              "التاريخ — الحرب الباردة",
+              "الجغرافيا — العالم العربي والقضية الفلسطينية",
+              "الجغرافيا — التنمية في العالم"
+            ],
+            "trimestre3": [
+              "التاريخ — تونس منذ الاستقلال",
+              "التاريخ — العالم المعاصر",
+              "الجغرافيا — الأقطار النامية",
+              "الجغرافيا — الاتحاد الأوروبي والمغرب العربي"
+            ]
+          }
+        },
+        {
+          "slug": "education-islamique",
+          "name": "Éducation Islamique",
+          "nameAr": "التربية الإسلامية",
+          "icon": "إسلامية",
+          "color": "green",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Éducation Islamique",
+            "nameAr": "التربية الإسلامية",
+            "language": "ar",
+            "trimestre1": [
+              "القرآن — قصص الأنبياء (محمد)",
+              "الحديث — أحاديث المعاملات",
+              "الفقه — أحكام البيع"
+            ],
+            "trimestre2": [
+              "السيرة — الفتوحات الإسلامية",
+              "الفقه — أحكام الأسرة",
+              "الأخلاق — الإسلام والقيم الإنسانية"
+            ],
+            "trimestre3": [
+              "العقيدة — أركان الإيمان",
+              "الفقه — المواريث (مقدمة)",
+              "حضارة الإسلام — الإسهام في الحضارة"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "1AS",
+      "title": "1ère année Secondaire",
+      "subtitle": "Lycée — Tronc commun",
+      "num": 1,
+      "subjects": [
+        {
+          "slug": "mathematiques",
+          "name": "Mathématiques",
+          "nameAr": "الرياضيات",
+          "icon": "📐",
+          "color": "amber",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Mathématiques (Tronc commun)",
+            "nameAr": "الرياضيات",
+            "language": "fr",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "Rappel collège — nombres réels, puissances, racines",
+              "Calcul vectoriel dans le plan",
+              "Droites et plans dans l'espace",
+              "Barycentre de points pondérés"
+            ],
+            "trimestre2": [
+              "Fonctions — généralités, domaine, parité",
+              "Fonctions affines et linéaires",
+              "Équations et inéquations du 1er degré",
+              "Systèmes d'équations linéaires 2×2"
+            ],
+            "trimestre3": [
+              "Statistiques — effectifs, fréquences, moyenne, médiane",
+              "Étude de fonctions usuelles (racine, valeur absolue)",
+              "Trigonométrie dans le triangle rectangle",
+              "Synthèse et bilan"
+            ]
+          }
+        },
+        {
+          "slug": "physique",
+          "name": "Sciences Physiques",
+          "nameAr": "علوم فيزيائية",
+          "icon": "⚛️",
+          "color": "blue",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Sciences Physiques (Tronc commun)",
+            "nameAr": "علوم فيزيائية",
+            "language": "fr",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "L'eau — propriétés, solvant, mélanges",
+              "Le circuit électrique — intensité, tension, dipôles",
+              "Mesure d'une tension et d'une intensité",
+              "Loi d'Ohm — résistance"
+            ],
+            "trimestre2": [
+              "Les mélanges — homogène, hétérogène",
+              "Séparation des constituants d'un mélange",
+              "La masse volumique — unités, mesure",
+              "Les états de la matière et changements d'état"
+            ],
+            "trimestre3": [
+              "La lumière — sources, propagation, ombres",
+              "Réflexion et réfraction de la lumière",
+              "Synthèse et révision"
+            ]
+          }
+        },
+        {
+          "slug": "svt",
+          "name": "Sciences de la Vie et de la Terre",
+          "nameAr": "علوم الحياة والأرض",
+          "icon": "🧬",
+          "color": "emerald",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Sciences de la Vie et de la Terre",
+            "nameAr": "علوم الحياة والأرض",
+            "language": "fr",
+            "section": "Tronc commun",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/sciences/sciences_vie_terre_1.pdf",
+            "trimestre1": [
+              "L'organisme humain et l'immunité — barrières naturelles, système immunitaire",
+              "Les cellules immunitaires — lymphocytes T, B, phagocytes",
+              "La réaction inflammatoire"
+            ],
+            "trimestre2": [
+              "La réponse immunitaire spécifique — anticorps, antigènes",
+              "Les groupes sanguins et transfusions",
+              "Le SIDA et les maladies immunitaires"
+            ],
+            "trimestre3": [
+              "La génétique — ADN, gènes, chromosomes",
+              "La division cellulaire — mitose, méiose",
+              "L'hérédité — lois de Mendel, transmission des caractères"
+            ]
+          }
+        },
+        {
+          "slug": "technologie",
+          "name": "Technologie",
+          "nameAr": "تكنولوجيا",
+          "icon": "🔧",
+          "color": "purple",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Technologie (Tronc commun)",
+            "nameAr": "تكنولوجيا",
+            "language": "fr",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "Introduction à la technologie",
+              "Analyse fonctionnelle d'un objet technique",
+              "Le besoin, le produit, le système"
+            ],
+            "trimestre2": [
+              "Les matériaux — propriétés, classification",
+              "La chaîne d'énergie et la chaîne d'information",
+              "Le schéma cinématique"
+            ],
+            "trimestre3": [
+              "Représentation graphique d'un objet technique",
+              "Projet technologique — conception et réalisation",
+              "Synthèse et évaluation"
+            ]
+          }
+        },
+        {
+          "slug": "informatique",
+          "name": "Informatique",
+          "nameAr": "الإعلامية",
+          "icon": "💻",
+          "color": "indigo",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Informatique",
+            "nameAr": "الإعلامية",
+            "language": "fr",
+            "section": "Tronc commun",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/aide_info_scientifique.pdf",
+            "trimestre1": [
+              "Chapitre 1: Environnement numérique (système, fichiers, réseau)",
+              "Chapitre 2: Pensée computationnelle — algorithmes simples",
+              "Chapitre 3: Types de données (entier, réel, caractère, booléen, chaîne)"
+            ],
+            "trimestre2": [
+              "Chapitre 4: Structures de contrôle (Si, Pour)",
+              "Chapitre 5: Lecture et écriture",
+              "Chapitre 6: Implémentation en Python (int, float, str, bool)"
+            ],
+            "trimestre3": [
+              "Chapitre 7: Introduction à la programmation modulaire",
+              "Chapitre 8: Test et validation de programmes",
+              "Chapitre 9: Projet intégrateur"
+            ]
+          }
+        },
+        {
+          "slug": "anglais",
+          "name": "Anglais",
+          "nameAr": "اللغة الإنجليزية",
+          "icon": "🇬🇧",
+          "color": "cyan",
+          "lang": "en",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Anglais",
+            "nameAr": "اللغة الإنجليزية",
+            "language": "en/fr",
+            "section": "Tronc commun",
+            "manualUrl": "http://edunet.tn/ressources/pedagogie/programmes/secondaire/anglais_sec.pdf",
+            "trimestre1": [
+              "Thème 1: Intercultural Exchanges — correspondence, e-mails",
+              "Thème 2: Communication / The Press — news, journalism, media"
+            ],
+            "trimestre2": [
+              "Thème 3: Environment / Pollution / The World of Animals",
+              "Thème 4: Innovation and Technology"
+            ],
+            "trimestre3": [
+              "Thème 5: Famous People (Lettres) — biographies, history",
+              "Skills: Reading, Listening, Writing, Speaking (synthèse)"
+            ]
+          }
+        },
+        {
+          "slug": "francais",
+          "name": "Français",
+          "nameAr": "اللغة الفرنسية",
+          "icon": "📖",
+          "color": "slate",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Français",
+            "nameAr": "اللغة الفرنسية",
+            "language": "fr",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "Le récit — la narration, le point de vue",
+              "Genres et types de textes",
+              "L'argumentation — convaincre et persuader"
+            ],
+            "trimestre2": [
+              "Le texte poétique — figures de style, versification",
+              "L'argumentation dans la presse",
+              "Production écrite — l'essai argumentatif"
+            ],
+            "trimestre3": [
+              "Le théâtre — texte et représentation",
+              "L'analyse littéraire (introduction)",
+              "Synthèse et préparation au passage 2AS"
+            ]
+          }
+        },
+        {
+          "slug": "arabe",
+          "name": "Arabe",
+          "nameAr": "اللغة العربية",
+          "icon": "ع",
+          "color": "red",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Arabe",
+            "nameAr": "اللغة العربية",
+            "language": "ar",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "النحو — مراجعة شاملة لما تم دراسته في السنة التاسعة",
+              "البلاغة — التشبيه والاستعارة",
+              "القراءة — الشعر العربي القديم"
+            ],
+            "trimestre2": [
+              "النحو — إعراب الجمل",
+              "البلاغة — الكناية",
+              "القراءة — الأدب الحديث والمعاصر",
+              "الإنشاء"
+            ],
+            "trimestre3": [
+              "القراءة — النصوص النثرية",
+              "البلاغة — الصور البيانية",
+              "التعبير الكتابي والشفوي",
+              "مراجعة عامة"
+            ]
+          }
+        },
+        {
+          "slug": "histoire-geographie",
+          "name": "Histoire-Géographie",
+          "nameAr": "التاريخ والجغرافيا",
+          "icon": "🌍",
+          "color": "yellow",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Histoire-Géographie",
+            "nameAr": "التاريخ والجغرافيا",
+            "language": "ar",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "التاريخ — الحضارات القديمة (مصر، بلاد الرافدين، فينيقيا)",
+              "التاريخ — اليونان القديمة",
+              "الجغرافيا — خريطة العالم"
+            ],
+            "trimestre2": [
+              "التاريخ — روما",
+              "التاريخ — ظهور الإسلام",
+              "الجغرافيا — السكان في العالم"
+            ],
+            "trimestre3": [
+              "التاريخ — أوروبا في العصور الوسطى",
+              "الجغرافيا — تنظيم الفضاء العالمي"
+            ]
+          }
+        },
+        {
+          "slug": "education-islamique",
+          "name": "Éducation Islamique",
+          "nameAr": "التربية الإسلامية",
+          "icon": "إسلامية",
+          "color": "green",
+          "lang": "ar",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Éducation Islamique",
+            "nameAr": "التربية الإسلامية",
+            "language": "ar",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "القرآن — المختصرات",
+              "الحديث — أحاديث الأخلاق والمعاملات",
+              "العقيدة — الإيمان والكفر"
+            ],
+            "trimestre2": [
+              "الفقه — أحكام العبادات",
+              "السيرة — محطات في حياة النبي",
+              "الأخلاق والقيم"
+            ],
+            "trimestre3": [
+              "الفكر الإسلامي — منابع الفكر",
+              "قضايا معاصرة",
+              "مراجعة عامة"
+            ]
+          }
+        },
+        {
+          "slug": "economie",
+          "name": "Économie",
+          "nameAr": "الاقتصاد",
+          "icon": "💼",
+          "color": "orange",
+          "lang": "fr",
+          "taughtIn": [
+            "all"
+          ],
+          "data": {
+            "nameFr": "Économie (Initiation)",
+            "nameAr": "الاقتصاد",
+            "language": "fr",
+            "section": "Initiation — Tronc commun",
+            "trimestre1": [
+              "Introduction à l'économie — définition, objet, méthode",
+              "Les agents économiques (ménages, entreprises, État, banques, reste du monde)",
+              "Les grandes fonctions économiques (production, répartition, consommation, accumulation)"
+            ],
+            "trimestre2": [
+              "Le consommateur — revenu, consommation, épargne",
+              "Le producteur — fonction de production, facteurs de production",
+              "Le marché — mécanismes, offre et demande, prix d'équilibre"
+            ],
+            "trimestre3": [
+              "La monnaie — fonctions, formes, masse monétaire",
+              "L'échange et le commerce — intérieur et international",
+              "Synthèse et bilan"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "2AS",
+      "title": "2ème année Secondaire",
+      "subtitle": "Lycée — Sections",
+      "num": 2,
+      "subjects": [
+        {
+          "slug": "histoire-geographie",
+          "name": "Histoire-Géographie",
+          "nameAr": "التاريخ والجغرافيا",
+          "icon": "🌍",
+          "color": "yellow",
+          "lang": "ar",
+          "taughtIn": [
+            "lettres",
+            "sciences",
+            "eco-gestion",
+            "technologie"
+          ],
+          "data": {
+            "nameFr": "Histoire-Géographie",
+            "nameAr": "التاريخ والجغرافيا",
+            "language": "ar",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "التاريخ — النهضة والإصلاح",
+              "الجغرافيا — الكتل الكبرى في العالم"
+            ],
+            "trimestre2": [
+              "التاريخ — الحرب العالمية الأولى",
+              "الجغرافيا — التفاوت في التنمية"
+            ],
+            "trimestre3": [
+              "التاريخ — الحرب العالمية الثانية",
+              "الجغرافيا — التحديات البيئية"
+            ]
+          }
+        },
+        {
+          "slug": "informatique",
+          "name": "Informatique",
+          "nameAr": "الإعلامية",
+          "icon": "💻",
+          "color": "indigo",
+          "lang": "fr",
+          "taughtIn": [
+            "lettres",
+            "sciences",
+            "eco-gestion",
+            "technologie",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Informatique (par section)",
+            "nameAr": "الإعلامية",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/aide_info_scientifique.pdf",
+            "sections": {
+              "sciences": {
+                "nameFr": "Informatique (Sciences)",
+                "nameAr": "الإعلامية (علوم)",
+                "trimestre1": [
+                  "Étapes de résolution d'un problème",
+                  "Élaboration de solutions sous forme d'algorithmes",
+                  "Structures de données (constantes, variables, types)",
+                  "Structures simples (Lecture, affichage, affectation)"
+                ],
+                "trimestre2": [
+                  "Structures de contrôle conditionnelles (Si...Alors, Si...Sinon)",
+                  "Structures de contrôle itératives (Pour, Tant Que)",
+                  "Sous-programmes (fonctions, procédures)",
+                  "Tableaux à une dimension"
+                ],
+                "trimestre3": [
+                  "Récursivité",
+                  "Algorithmes de tri et de recherche",
+                  "Implémentation Python avancée",
+                  "Projet intégrateur"
+                ]
+              },
+              "technologie": {
+                "nameFr": "Informatique (Technologie de l'informatique)",
+                "nameAr": "الإعلامية (تكنولوجيا)",
+                "trimestre1": [
+                  "Système d'exploitation (approfondissement)",
+                  "Réseaux et Internet",
+                  "Algorithmes — bases"
+                ],
+                "trimestre2": [
+                  "Programmation Python (bases)",
+                  "Tableur avancé (formules, graphiques)",
+                  "Base de données (introduction)"
+                ],
+                "trimestre3": [
+                  "HTML / CSS (introduction)",
+                  "Projet technique",
+                  "Synthèse"
+                ]
+              },
+              "eco-gestion": {
+                "nameFr": "Informatique (Économie-Gestion)",
+                "trimestre1": [
+                  "Environnement numérique (système, fichiers, réseau)",
+                  "Traitement de texte (avancé)"
+                ],
+                "trimestre2": [
+                  "Tableur — formules, fonctions, graphiques",
+                  "Présentation (PowerPoint)"
+                ],
+                "trimestre3": [
+                  "Internet et recherche",
+                  "Outils collaboratifs"
+                ]
+              },
+              "lettres": {
+                "nameFr": "Informatique (Lettres)",
+                "trimestre1": [
+                  "Environnement numérique (bureautique)",
+                  "Traitement de texte"
+                ],
+                "trimestre2": [
+                  "Internet et recherche",
+                  "Présentation"
+                ],
+                "trimestre3": [
+                  "Outils collaboratifs",
+                  "Synthèse"
+                ]
+              },
+              "sport": {
+                "nameFr": "Informatique (Sport)",
+                "trimestre1": [
+                  "Environnement numérique",
+                  "Bureautique de base"
+                ],
+                "trimestre2": [
+                  "Internet et recherche",
+                  "Traitement de texte"
+                ],
+                "trimestre3": [
+                  "Outils collaboratifs",
+                  "Synthèse"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "slug": "technologie",
+          "name": "Technologie",
+          "nameAr": "تكنولوجيا",
+          "icon": "🔧",
+          "color": "purple",
+          "lang": "fr",
+          "taughtIn": [
+            "sciences",
+            "technologie"
+          ],
+          "data": {
+            "nameFr": "Technologie (2AS Sciences)",
+            "nameAr": "تكنولوجيا",
+            "language": "fr",
+            "section": "Sciences et Technologies",
+            "trimestre1": [
+              "Le produit technique — analyse, conception",
+              "Système technique et environnement",
+              "Chaîne d'énergie et chaîne d'information"
+            ],
+            "trimestre2": [
+              "Matériaux — propriétés, choix",
+              "Procédés de fabrication",
+              "Schéma cinématique — liaisons, mouvements"
+            ],
+            "trimestre3": [
+              "Projet technique — cahier des charges",
+              "Fabrication et assemblage",
+              "Évaluation et présentation"
+            ]
+          }
+        },
+        {
+          "slug": "arabe",
+          "name": "Arabe",
+          "nameAr": "اللغة العربية",
+          "icon": "ع",
+          "color": "red",
+          "lang": "ar",
+          "taughtIn": [
+            "lettres",
+            "sciences",
+            "eco-gestion",
+            "technologie",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Arabe",
+            "nameAr": "اللغة العربية",
+            "language": "ar",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "النحو — التوابع (نعت، توكيد، عطف، بدل)",
+              "البلاغة — التشبيه المجمل والمفصل",
+              "القراءة — الشعر الجاهلي"
+            ],
+            "trimestre2": [
+              "النحو — الإحالة",
+              "البلاغة — المجاز المرسل",
+              "القراءة — الأدب في العصر العباسي"
+            ],
+            "trimestre3": [
+              "النحو — الإعراب والبناء",
+              "البلاغة — الجمع",
+              "الأدب — المدرسة الرومانسية",
+              "الإنشاء الكتابي"
+            ]
+          }
+        },
+        {
+          "slug": "francais",
+          "name": "Français",
+          "nameAr": "اللغة الفرنسية",
+          "icon": "📖",
+          "color": "slate",
+          "lang": "fr",
+          "taughtIn": [
+            "lettres",
+            "sciences",
+            "eco-gestion",
+            "technologie"
+          ],
+          "data": {
+            "nameFr": "Français",
+            "language": "fr",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "Le roman et la nouvelle (XIXe siècle)",
+              "Le réalisme et le naturalisme",
+              "Les figures de style approfondissement"
+            ],
+            "trimestre2": [
+              "La poésie moderne et contemporaine",
+              "L'argumentation et la rhétorique",
+              "Production écrite — le commentaire littéraire"
+            ],
+            "trimestre3": [
+              "Le théâtre classique et moderne",
+              "L'analyse littéraire — méthode du commentaire",
+              "Synthèse et préparation au passage 3AS"
+            ]
+          }
+        },
+        {
+          "slug": "economie",
+          "name": "Économie",
+          "nameAr": "الاقتصاد",
+          "icon": "💼",
+          "color": "orange",
+          "lang": "fr",
+          "taughtIn": [
+            "eco-gestion"
+          ],
+          "data": {
+            "nameFr": "Économie (2AS Économie et Services)",
+            "nameAr": "الاقتصاد",
+            "language": "fr",
+            "section": "Économie et Services",
+            "trimestre1": [
+              "Le marché et les mécanismes de l'économie de marché",
+              "La structure des marchés (concurrentiel, monopolistique, oligopolistique, monopolistique)",
+              "La consommation et l'épargne (ménages)"
+            ],
+            "trimestre2": [
+              "La fonction de production (court terme, long terme, productivité)",
+              "L'investissement — types, modes de financement, effets",
+              "Le circuit économique et les agrégats (PIB, PNB, RN, revenu disponible)"
+            ],
+            "trimestre3": [
+              "Description et mesure de l'activité économique tunisienne",
+              "Comptabilité nationale — consommation finale, FBCF, variations de stocks",
+              "Synthèse et révision"
+            ]
+          }
+        },
+        {
+          "slug": "svt",
+          "name": "Sciences de la Vie et de la Terre",
+          "nameAr": "علوم الحياة والأرض",
+          "icon": "🧬",
+          "color": "emerald",
+          "lang": "fr",
+          "taughtIn": [
+            "lettres",
+            "sciences",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Sciences de la Vie et de la Terre",
+            "nameAr": "علوم الحياة والأرض",
+            "language": "fr",
+            "section": "Tronc commun",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/sciences/sciences_vie_terre_2.pdf",
+            "trimestre1": [
+              "Organisation de l'organisme et l'immunité (approfondissement)",
+              "L'immunité adaptative — mémoire immunitaire, vaccination"
+            ],
+            "trimestre2": [
+              "Neurophysiologie — neurone, influx nerveux, synapse",
+              "Le système nerveux — central, périphérique, autonome"
+            ],
+            "trimestre3": [
+              "La reproduction humaine — hormones, cycles, contraception",
+              "La génétique des populations (introduction)"
+            ]
+          }
+        },
+        {
+          "slug": "anglais",
+          "name": "Anglais",
+          "nameAr": "اللغة الإنجليزية",
+          "icon": "🇬🇧",
+          "color": "cyan",
+          "lang": "en",
+          "taughtIn": [
+            "lettres",
+            "sciences",
+            "eco-gestion",
+            "technologie"
+          ],
+          "data": {
+            "nameFr": "Anglais",
+            "nameAr": "اللغة الإنجليزية",
+            "language": "en/fr",
+            "section": "Tronc commun (2AS)",
+            "manualUrl": "http://edunet.tn/ressources/pedagogie/programmes/secondaire/anglais_sec.pdf",
+            "trimestre1": [
+              "Thème 1: Identity and Culture",
+              "Thème 2: Travel and Tourism"
+            ],
+            "trimestre2": [
+              "Thème 3: Education and Learning",
+              "Thème 4: Technology and Innovation"
+            ],
+            "trimestre3": [
+              "Thème 5: Work and Profession",
+              "Skills: Production écrite (essay), Argumentation, Listening"
+            ]
+          }
+        },
+        {
+          "slug": "physique",
+          "name": "Sciences Physiques",
+          "nameAr": "علوم فيزيائية",
+          "icon": "⚛️",
+          "color": "blue",
+          "lang": "fr",
+          "taughtIn": [
+            "sciences",
+            "technologie"
+          ],
+          "data": {
+            "nameFr": "Sciences Physiques",
+            "nameAr": "علوم فيزيائية",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/programme_phys_2as.pdf",
+            "trimestre1": [
+              "Mécanique — mouvement, vitesse, référentiel",
+              "Types de mouvement — rectiligne, circulaire",
+              "Force et interaction — principe d'inertie",
+              "Équilibre d'un solide soumis à deux forces"
+            ],
+            "trimestre2": [
+              "Électricité — intensité, tension, loi d'Ohm",
+              "Circuits série et dérivation",
+              "Puissance et énergie électriques",
+              "Conducteurs ohmiques et non ohmiques"
+            ],
+            "trimestre3": [
+              "Optique — sources lumineuses, propagation",
+              "Réflexion de la lumière, miroirs plans",
+              "Synthèse et bilan"
+            ]
+          }
+        },
+        {
+          "slug": "education-islamique",
+          "name": "Éducation Islamique",
+          "nameAr": "التربية الإسلامية",
+          "icon": "إسلامية",
+          "color": "green",
+          "lang": "ar",
+          "taughtIn": [
+            "lettres",
+            "sciences",
+            "eco-gestion",
+            "technologie"
+          ],
+          "data": {
+            "nameFr": "Éducation Islamique",
+            "nameAr": "التربية الإسلامية",
+            "language": "ar",
+            "section": "Tronc commun",
+            "trimestre1": [
+              "القرآن — السور المختارة",
+              "الحديث — دراسات",
+              "الفقه — المعاملات المالية"
+            ],
+            "trimestre2": [
+              "السيرة — الفتوحات والدولة الأموية",
+              "الفقه — الأحوال الشخصية",
+              "الأخلاق التطبيقية"
+            ],
+            "trimestre3": [
+              "العقيدة — قضايا معاصرة",
+              "الإسلام والقضايا المعاصرة",
+              "مراجعة شاملة"
+            ]
+          }
+        },
+        {
+          "slug": "gestion",
+          "name": "Gestion",
+          "nameAr": "التصرف",
+          "icon": "📊",
+          "color": "orange",
+          "lang": "fr",
+          "taughtIn": [
+            "eco-gestion"
+          ],
+          "data": {
+            "nameFr": "Gestion (2AS Économie et Services)",
+            "nameAr": "التصرف",
+            "language": "fr",
+            "section": "Économie et Services",
+            "trimestre1": [
+              "L'entreprise — définition, types, organisation, environnement",
+              "Le processus de décision dans l'entreprise (stratégie, gestion)",
+              "Le cycle d'exploitation — notion, flux physiques et financiers, partie double"
+            ],
+            "trimestre2": [
+              "Le cycle d'investissement — notion, types d'investissement, financement",
+              "Les modes de production — production en stock, production à la commande",
+              "Le processus de fabrication — étapes, organisation"
+            ],
+            "trimestre3": [
+              "La fonction approvisionnement et la fonction commerciale",
+              "La fonction financière — introduction",
+              "Synthèse et révision"
+            ]
+          }
+        },
+        {
+          "slug": "mathematiques",
+          "name": "Mathématiques",
+          "nameAr": "الرياضيات",
+          "icon": "📐",
+          "color": "amber",
+          "lang": "fr",
+          "taughtIn": [
+            "lettres",
+            "sciences",
+            "eco-gestion",
+            "technologie",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Mathématiques",
+            "nameAr": "الرياضيات",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/programme_math_2as.pdf",
+            "trimestre1": [
+              "Fonctions — domaine, parité, monotonie, extrema",
+              "Fonctions de référence (carré, inverse, cube, racine)",
+              "Sens de variation — opérations et composition",
+              "Valeur absolue — propriétés, équations et inéquations"
+            ],
+            "trimestre2": [
+              "Vecteurs du plan — produit scalaire",
+              "Repère orthonormé — coordonnées",
+              "Théorème de la médiane, des cosinus",
+              "Trigonométrie — angles associés, formules"
+            ],
+            "trimestre3": [
+              "Statistiques — moyenne, écart-type, variance",
+              "Probabilités — événements, arbre",
+              "Géométrie dans l'espace — droites et plans",
+              "Synthèse et révision"
+            ]
+          }
+        }
+      ],
+      "sections": [
+        {
+          "key": "lettres",
+          "nameFr": "Lettres",
+          "nameAr": "آداب",
+          "icon": "fa-feather-alt"
+        },
+        {
+          "key": "sciences",
+          "nameFr": "Sciences",
+          "nameAr": "علوم",
+          "icon": "fa-flask"
+        },
+        {
+          "key": "eco-gestion",
+          "nameFr": "Économie-Gestion",
+          "nameAr": "اقتصاد وتصرف",
+          "icon": "fa-chart-line"
+        },
+        {
+          "key": "technologie",
+          "nameFr": "Technologie Info.",
+          "nameAr": "تكنولوجيا الإعلامية",
+          "icon": "fa-laptop-code"
+        },
+        {
+          "key": "sport",
+          "nameFr": "Sport",
+          "nameAr": "رياضة",
+          "icon": "fa-running"
+        }
+      ]
+    },
+    {
+      "key": "3AS",
+      "title": "3ème année Secondaire",
+      "subtitle": "Lycée — Sections",
+      "num": 3,
+      "subjects": [
+        {
+          "slug": "histoire-geographie",
+          "name": "Histoire-Géographie",
+          "nameAr": "التاريخ والجغرافيا",
+          "icon": "🌍",
+          "color": "yellow",
+          "lang": "ar",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Histoire",
+            "nameAr": "التاريخ",
+            "language": "ar",
+            "trimestre1": [
+              "العالم بعد 1945",
+              "الحرب الباردة"
+            ],
+            "trimestre2": [
+              "العالم العربي والقضية الفلسطينية",
+              "تونس منذ الاستقلال"
+            ],
+            "trimestre3": [
+              "النظام العالمي الجديد",
+              "العولمة والتحديات المعاصرة"
+            ]
+          }
+        },
+        {
+          "slug": "informatique",
+          "name": "Informatique",
+          "nameAr": "الإعلامية",
+          "icon": "💻",
+          "color": "indigo",
+          "lang": "fr",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Algorithmique et Programmation",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/aide_info_scientifique.pdf",
+            "sections": {
+              "sciences-techniques": {
+                "nameFr": "Algorithmique (Génie Mécanique / Électrique)",
+                "trimestre1": [
+                  "Rappel 2AS — types, variables, structures de contrôle",
+                  "Tableaux à une dimension",
+                  "Structures de contrôle conditionnelles avancées (Selon, Si imbriqué)"
+                ],
+                "trimestre2": [
+                  "Structures de contrôle itératives (Tant Que, Répéter)",
+                  "Sous-programmes (procédures, fonctions)",
+                  "Approche modulaire"
+                ],
+                "trimestre3": [
+                  "Algorithmes de tri (à bulles, sélection, insertion)",
+                  "Algorithmes de recherche (séquentielle, dichotomique)",
+                  "Projet technique"
+                ]
+              },
+              "sciences-informatique": {
+                "nameFr": "Algorithmique et Programmation (Sciences de l'Informatique)",
+                "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/aide_info_ScInfo.pdf",
+                "trimestre1": [
+                  "Rappel 2AS",
+                  "Tableaux à une et deux dimensions",
+                  "Structures de contrôle avancées"
+                ],
+                "trimestre2": [
+                  "Sous-programmes (procédures, fonctions, passage de paramètres)",
+                  "Approche modulaire — décomposition en modules",
+                  "Algorithmes de tri (sélection, insertion, fusion, rapide)"
+                ],
+                "trimestre3": [
+                  "Algorithmes de recherche (séquentielle, dichotomique)",
+                  "Récursivité (introduction)",
+                  "Complexité des algorithmes"
+                ]
+              },
+              "mathematiques": {
+                "nameFr": "Algorithmique (Section Mathématiques)",
+                "trimestre1": [
+                  "Rappel 2AS",
+                  "Tableaux à une dimension",
+                  "Structures de contrôle avancées"
+                ],
+                "trimestre2": [
+                  "Sous-programmes",
+                  "Algorithmes de tri et recherche",
+                  "Approche modulaire"
+                ],
+                "trimestre3": [
+                  "Algorithmes avancés",
+                  "Récursivité (parties)",
+                  "Synthèse"
+                ]
+              },
+              "sciences-experimentales": {
+                "nameFr": "Algorithmique (Sciences Expérimentales)",
+                "trimestre1": [
+                  "Rappel 2AS",
+                  "Tableaux à une dimension"
+                ],
+                "trimestre2": [
+                  "Sous-programmes",
+                  "Algorithmes de tri (parties)"
+                ],
+                "trimestre3": [
+                  "Synthèse et révision",
+                  "Projet"
+                ]
+              },
+              "eco-gestion": {
+                "nameFr": "Informatique (Économie-Gestion)",
+                "trimestre1": [
+                  "Tableur avancé",
+                  "Base de données (introduction)"
+                ],
+                "trimestre2": [
+                  "HTML / CSS (introduction)",
+                  "Outils collaboratifs"
+                ],
+                "trimestre3": [
+                  "Projet",
+                  "Synthèse"
+                ]
+              },
+              "lettres": {
+                "nameFr": "Informatique (Lettres)",
+                "trimestre1": [
+                  "Bureautique avancée"
+                ],
+                "trimestre2": [
+                  "Internet et sécurité"
+                ],
+                "trimestre3": [
+                  "Synthèse"
+                ]
+              },
+              "sport": {
+                "nameFr": "Informatique (Sport)",
+                "trimestre1": [
+                  "Bureautique de base"
+                ],
+                "trimestre2": [
+                  "Internet et outils"
+                ],
+                "trimestre3": [
+                  "Synthèse"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "slug": "technologie",
+          "name": "Technologie",
+          "nameAr": "تكنولوجيا",
+          "icon": "🔧",
+          "color": "purple",
+          "lang": "fr",
+          "taughtIn": [
+            "sciences-techniques"
+          ],
+          "data": {
+            "nameFr": "Technologie (Sciences Techniques)",
+            "nameAr": "تكنولوجيا",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn/lycee/3annee/sciences-techniques",
+            "sections": {
+              "sciences-techniques": {
+                "nameFr": "Technologie (Sciences Techniques)",
+                "trimestre1": [
+                  "Axe 1 — Analyse fonctionnelle externe et interne d'un produit (cahier des charges, diagramme pieuvre, FAST)",
+                  "Axe 1 — Décomposition d'un produit en chaînes fonctionnelles (chaîne d'énergie, chaîne d'information)",
+                  "Axe 2 — Analyse structurelle d'un mécanisme (schéma cinématique, liaisons, degrés de liberté)",
+                  "Axe 2 — Étude des transmissions et transformations de mouvement (engrenages, poulies-courroie, roues de friction, vis-écrou)"
+                ],
+                "trimestre2": [
+                  "Axe 3 — Statique des solides — forces, moments, équilibre",
+                  "Axe 3 — Principe fondamental de la statique",
+                  "Axe 4 — Résistance des matériaux (traction, compression, flexion)",
+                  "Axe 5 — Introduction à la commande des systèmes (logique combinatoire, capteurs, actionneurs)"
+                ],
+                "trimestre3": [
+                  "Axe 6 — Projet technique — conception, fabrication, tests",
+                  "Axe 6 — Documentation technique, mise en plan",
+                  "Synthèse et évaluation du projet",
+                  "Préparation au BAC"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "slug": "arabe",
+          "name": "Arabe",
+          "nameAr": "اللغة العربية",
+          "icon": "ع",
+          "color": "red",
+          "lang": "ar",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Arabe",
+            "nameAr": "اللغة العربية",
+            "language": "ar",
+            "trimestre1": [
+              "النحو — الأساليب والتراكيب",
+              "البلاغة — المحسنات اللفظية والمعنوية",
+              "القراءة — الشعر الحديث"
+            ],
+            "trimestre2": [
+              "النحو — الإعراب التفصيلي",
+              "البلاغة — الطباق والمقابلة",
+              "القراءة — النثر الحديث"
+            ],
+            "trimestre3": [
+              "القراءة — الأدب المغاربي",
+              "النقد الأدبي",
+              "مراجعة شاملة للتحضير للباكالوريا"
+            ]
+          }
+        },
+        {
+          "slug": "francais",
+          "name": "Français",
+          "nameAr": "اللغة الفرنسية",
+          "icon": "📖",
+          "color": "slate",
+          "lang": "fr",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Français",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn",
+            "trimestre1": [
+              "Roman et engagement",
+              "Littérature et société",
+              "Méthode du commentaire composé"
+            ],
+            "trimestre2": [
+              "Poésie et modernité",
+              "Le théâtre de l'absurde",
+              "L'essai philosophique"
+            ],
+            "trimestre3": [
+              "Les courants littéraires XXe-XXIe",
+              "Dissertation littéraire",
+              "Synthèse et préparation Bac"
+            ]
+          }
+        },
+        {
+          "slug": "philosophie",
+          "name": "Philosophie",
+          "nameAr": "الفلسفة",
+          "icon": "🤔",
+          "color": "fuchsia",
+          "lang": "ar",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Philosophie (introduction)",
+            "nameAr": "الفلسفة",
+            "language": "ar",
+            "trimestre1": [
+              "مدخل إلى الفلسفة — تعريف الفلسفة",
+              "التمييز بين الفلسفة والعلوم",
+              "التفكير الفلسفي والتفكير العلمي",
+              "أقسام الفلسفة — الميتافيزيقا، الأخلاق، المنطق، الجمال"
+            ],
+            "trimestre2": [
+              "التفكير النقدي والحجاج",
+              "المنطق — الاستدلال والاستنتاج",
+              "المغالطات المنطقية"
+            ],
+            "trimestre3": [
+              "الفلسفة اليونانية — سقراط، أفلاطون، أرسطو",
+              "النص الفلسفي — قراءة وتحليل"
+            ]
+          }
+        },
+        {
+          "slug": "economie",
+          "name": "Économie",
+          "nameAr": "الاقتصاد",
+          "icon": "💼",
+          "color": "orange",
+          "lang": "fr",
+          "taughtIn": [
+            "eco-gestion"
+          ],
+          "data": {
+            "nameFr": "Économie (3AS Économie-Gestion)",
+            "nameAr": "الاقتصاد",
+            "language": "fr",
+            "section": "Économie et Gestion",
+            "trimestre1": [
+              "L'équilibre du consommateur (utilité, contrainte budgétaire, optimum)",
+              "La demande de biens et services",
+              "L'élasticité de la demande par rapport au prix et au revenu"
+            ],
+            "trimestre2": [
+              "L'équilibre du producteur (recettes, coûts, profit)",
+              "Le marché du travail (offre, demande, chômage, salaire)",
+              "Les imperfections du marché et les interventions de l'État"
+            ],
+            "trimestre3": [
+              "Le commerce international — avantages, libre-échange, protectionnisme",
+              "La balance des paiements",
+              "Synthèse et révision"
+            ]
+          }
+        },
+        {
+          "slug": "svt",
+          "name": "Sciences de la Vie et de la Terre",
+          "nameAr": "علوم الحياة والأرض",
+          "icon": "🧬",
+          "color": "emerald",
+          "lang": "fr",
+          "taughtIn": [
+            "sciences-experimentales"
+          ],
+          "data": {
+            "nameFr": "Sciences de la Vie et de la Terre",
+            "language": "fr",
+            "sections": {
+              "sciences-experimentales": {
+                "nameFr": "SVT (Sciences Expérimentales)",
+                "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/sciences_vie_terre_3.pdf",
+                "trimestre1": [
+                  "Immunologie — réponse humorale et cellulaire, mémoire immunitaire",
+                  "Génétique — lois de Mendel, crossing-over, linkage",
+                  "Phénotype — expression des gènes, épigénétique"
+                ],
+                "trimestre2": [
+                  "Neurophysiologie — synapse, neuromédiateurs, plasticité",
+                  "Reproduction — hormones, régulation, contraception",
+                  "Génétique des populations — Hardy-Weinberg"
+                ],
+                "trimestre3": [
+                  "Évolution — sélection naturelle, spéciation",
+                  "Phylogénie — arbre phylogénétique",
+                  "Écologie — écosystèmes, dynamique des populations"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "slug": "anglais",
+          "name": "Anglais",
+          "nameAr": "اللغة الإنجليزية",
+          "icon": "🇬🇧",
+          "color": "cyan",
+          "lang": "en",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Anglais",
+            "language": "en/fr",
+            "manualUrl": "http://edunet.tn/ressources/pedagogie/programmes/secondaire/anglais_sec.pdf",
+            "trimestre1": [
+              "Thème 1: Media and Society",
+              "Thème 2: Science and Technology"
+            ],
+            "trimestre2": [
+              "Thème 3: Environment and Sustainability",
+              "Thème 4: Cultural Diversity"
+            ],
+            "trimestre3": [
+              "Thème 5: Global Issues",
+              "Skills: Reading critique, Argumentation avancée"
+            ]
+          }
+        },
+        {
+          "slug": "physique",
+          "name": "Sciences Physiques",
+          "nameAr": "علوم فيزيائية",
+          "icon": "⚛️",
+          "color": "blue",
+          "lang": "fr",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique"
+          ],
+          "data": {
+            "nameFr": "Sciences Physiques",
+            "nameAr": "علوم فيزيائية",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/programme_phys_3as.pdf",
+            "sections": {
+              "mathematiques": {
+                "nameFr": "Physique (Section Mathématiques)",
+                "trimestre1": [
+                  "Mécanique — cinématique, dynamique, référentiel",
+                  "Travail d'une force, énergie cinétique et potentielle",
+                  "Théorème de l'énergie cinétique"
+                ],
+                "trimestre2": [
+                  "Électricité — circuits RC, RL, RLC",
+                  "Magnétisme — champ magnétique, force de Laplace",
+                  "Ondes mécaniques — propagation"
+                ],
+                "trimestre3": [
+                  "Optique ondulatoire — diffraction, interférences",
+                  "Physique nucléaire — radioactivité, fission",
+                  "Synthèse"
+                ]
+              },
+              "sciences-experimentales": {
+                "nameFr": "Physique (Sciences Expérimentales)",
+                "trimestre1": [
+                  "Mécanique — forces, mouvement, énergie",
+                  "Travail et puissance d'une force"
+                ],
+                "trimestre2": [
+                  "Électricité — circuits RC, RL",
+                  "Magnétisme"
+                ],
+                "trimestre3": [
+                  "Optique ondulatoire (introduction)",
+                  "Physique nucléaire (introduction)",
+                  "Synthèse"
+                ]
+              },
+              "sciences-techniques": {
+                "nameFr": "Physique (Sciences Techniques)",
+                "trimestre1": [
+                  "Mécanique appliquée — forces, moments",
+                  "Travail et énergie mécaniques"
+                ],
+                "trimestre2": [
+                  "Électricité industrielle — machines",
+                  "Magnétisme"
+                ],
+                "trimestre3": [
+                  "Ondes — applications techniques",
+                  "Synthèse"
+                ]
+              },
+              "sciences-informatique": {
+                "nameFr": "Physique (Sciences de l'Informatique)",
+                "trimestre1": [
+                  "Mécanique — forces, mouvement",
+                  "Énergie cinétique, potentielle"
+                ],
+                "trimestre2": [
+                  "Électricité — circuits RC, RL",
+                  "Magnétisme"
+                ],
+                "trimestre3": [
+                  "Ondes — propagation, applications",
+                  "Synthèse"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "slug": "education-islamique",
+          "name": "Éducation Islamique",
+          "nameAr": "التربية الإسلامية",
+          "icon": "إسلامية",
+          "color": "green",
+          "lang": "ar",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Éducation Islamique",
+            "nameAr": "التربية الإسلامية",
+            "language": "ar",
+            "trimestre1": [
+              "القرآن والحديث — نصوص",
+              "الفقه — أحكام الأسرة والميراث"
+            ],
+            "trimestre2": [
+              "السيرة — تاريخ الدولة الإسلامية",
+              "الفكر الإسلامي المعاصر"
+            ],
+            "trimestre3": [
+              "الإسلام والمجتمع المعاصر",
+              "مراجعة شاملة"
+            ]
+          }
+        },
+        {
+          "slug": "gestion",
+          "name": "Gestion",
+          "nameAr": "التصرف",
+          "icon": "📊",
+          "color": "orange",
+          "lang": "fr",
+          "taughtIn": [
+            "eco-gestion"
+          ],
+          "data": {
+            "nameFr": "Gestion (3AS Économie-Gestion)",
+            "nameAr": "التصرف",
+            "language": "fr",
+            "section": "Économie et Gestion",
+            "trimestre1": [
+              "L'exécution et le suivi des ventes (facturation, TVA, encaissements)",
+              "Les objectifs de la fonction financière (équilibre, rentabilité, solvabilité)",
+              "Les besoins de financement — besoin d'exploitation, besoin d'investissement"
+            ],
+            "trimestre2": [
+              "Les modes de financement (autofinancement, emprunt, crédit-bail, subvention)",
+              "L'étude de l'équilibre financier — bilan fonctionnel, FR, BFR, TN",
+              "Les ratios d'analyse financière — liquidité, solvabilité, rentabilité"
+            ],
+            "trimestre3": [
+              "Le diagnostic financier de l'entreprise",
+              "Les décisions de financement et d'investissement",
+              "Synthèse et révision"
+            ]
+          }
+        },
+        {
+          "slug": "mathematiques",
+          "name": "Mathématiques",
+          "nameAr": "الرياضيات",
+          "icon": "📐",
+          "color": "amber",
+          "lang": "fr",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Mathématiques",
+            "nameAr": "الرياضيات",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/programme_math_3as.pdf",
+            "sections": {
+              "mathematiques": {
+                "nameFr": "Mathématiques (Section Mathématiques)",
+                "trimestre1": [
+                  "Limites et continuité — opérations, théorèmes",
+                  "Asymptotes — horizontales, verticales, obliques",
+                  "Dérivation — taux d'accroissement, fonction dérivée",
+                  "Étude de fonctions (exp, ln, trigonométriques)"
+                ],
+                "trimestre2": [
+                  "Dérivation — théorèmes, opérations",
+                  "Fonctions réciproques",
+                  "Primitives et calcul intégral",
+                  "Équations différentielles y'=ay+b"
+                ],
+                "trimestre3": [
+                  "Suites numériques — définitions, sens de variation",
+                  "Suites arithmétiques et géométriques",
+                  "Convergence d'une suite",
+                  "Probabilités — conditionnelles, Bayes"
+                ]
+              },
+              "sciences-experimentales": {
+                "nameFr": "Mathématiques (Sciences Expérimentales)",
+                "trimestre1": [
+                  "Limites et continuité",
+                  "Dérivation et applications",
+                  "Étude de fonctions usuelles"
+                ],
+                "trimestre2": [
+                  "Primitives et intégrales",
+                  "Suites arithmétiques et géométriques"
+                ],
+                "trimestre3": [
+                  "Probabilités",
+                  "Statistiques — estimation",
+                  "Synthèse"
+                ]
+              },
+              "sciences-techniques": {
+                "nameFr": "Mathématiques (Sciences Techniques)",
+                "trimestre1": [
+                  "Limites et continuité",
+                  "Dérivation et applications",
+                  "Fonctions logarithme et exponentielle"
+                ],
+                "trimestre2": [
+                  "Primitives et calcul intégral",
+                  "Suites numériques"
+                ],
+                "trimestre3": [
+                  "Nombres complexes (introduction)",
+                  "Probabilités",
+                  "Synthèse"
+                ]
+              },
+              "sciences-informatique": {
+                "nameFr": "Mathématiques (Sciences de l'Informatique)",
+                "trimestre1": [
+                  "Limites et continuité",
+                  "Dérivation et applications",
+                  "Fonctions logarithme et exponentielle"
+                ],
+                "trimestre2": [
+                  "Primitives et calcul intégral",
+                  "Suites numériques"
+                ],
+                "trimestre3": [
+                  "Probabilités",
+                  "Statistiques",
+                  "Synthèse"
+                ]
+              },
+              "eco-gestion": {
+                "nameFr": "Mathématiques (Économie-Gestion)",
+                "trimestre1": [
+                  "Suites numériques — arithmétiques, géométriques",
+                  "Limites et continuité",
+                  "Dérivation — applications économiques"
+                ],
+                "trimestre2": [
+                  "Fonctions — coût, recette, bénéfice",
+                  "Élasticité — prix, revenu",
+                  "Statistiques — séries simples, doubles"
+                ],
+                "trimestre3": [
+                  "Probabilités — conditionnelles, Bayes",
+                  "Crédits et amortissements",
+                  "Synthèse"
+                ]
+              },
+              "lettres": {
+                "nameFr": "Mathématiques (Lettres)",
+                "trimestre1": [
+                  "Statistiques — moyenne, médiane, écart-type",
+                  "Suites numériques — arithmétiques, géométriques"
+                ],
+                "trimestre2": [
+                  "Probabilités — événements",
+                  "Fonctions — lectures graphiques"
+                ],
+                "trimestre3": [
+                  "Statistiques — estimation, sondages",
+                  "Synthèse"
+                ]
+              },
+              "sport": {
+                "nameFr": "Mathématiques (Sport)",
+                "trimestre1": [
+                  "Statistiques descriptives",
+                  "Suites arithmétiques (parties)"
+                ],
+                "trimestre2": [
+                  "Probabilités",
+                  "Fonctions affines (parties)"
+                ],
+                "trimestre3": [
+                  "Synthèse et révision"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "sections": [
+        {
+          "key": "mathematiques",
+          "nameFr": "Mathématiques",
+          "nameAr": "رياضيات",
+          "icon": "fa-calculator"
+        },
+        {
+          "key": "sciences-experimentales",
+          "nameFr": "Sciences Exp.",
+          "nameAr": "علوم تجريبية",
+          "icon": "fa-flask"
+        },
+        {
+          "key": "sciences-techniques",
+          "nameFr": "Sciences Tech.",
+          "nameAr": "علوم تقنية",
+          "icon": "fa-cogs"
+        },
+        {
+          "key": "sciences-informatique",
+          "nameFr": "Sciences Info.",
+          "nameAr": "علوم الإعلامية",
+          "icon": "fa-laptop-code"
+        },
+        {
+          "key": "eco-gestion",
+          "nameFr": "Économie-Gestion",
+          "nameAr": "اقتصاد وتصرف",
+          "icon": "fa-chart-line"
+        },
+        {
+          "key": "lettres",
+          "nameFr": "Lettres",
+          "nameAr": "آداب",
+          "icon": "fa-feather-alt"
+        },
+        {
+          "key": "sport",
+          "nameFr": "Sport",
+          "nameAr": "رياضة",
+          "icon": "fa-running"
+        }
+      ]
+    },
+    {
+      "key": "4AS",
+      "title": "4ème année Secondaire (BAC)",
+      "subtitle": "Baccalauréat — Sections par matière",
+      "num": 4,
+      "subjects": [
+        {
+          "slug": "histoire-geographie",
+          "name": "Histoire-Géographie",
+          "nameAr": "التاريخ والجغرافيا",
+          "icon": "🌍",
+          "color": "yellow",
+          "lang": "ar",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Histoire (BAC)",
+            "nameAr": "التاريخ",
+            "language": "ar",
+            "themes": [
+              {
+                "theme": "المحور 1: العالم بعد الحرب العالمية الثانية (1945-1991)",
+                "duree": "15h",
+                "content": "نهاية الحرب العالمية الثانية، النظام الدولي الجديد، الحرب الباردة، استقلال دول العالم الثالث"
+              },
+              {
+                "theme": "المحور 2: العالم العربي منذ 1945",
+                "duree": "20h",
+                "content": "القضية الفلسطينية، الحروب العربية الإسرائيلية، الاستقلالات العربية، الوحدة العربية"
+              },
+              {
+                "theme": "المحور 3: تونس منذ الاستقلال (1956)",
+                "duree": "15h",
+                "content": "بناء الدولة الوطنية، الإصلاحات، السياسة الخارجية، التطور الاقتصادي والاجتماعي"
+              },
+              {
+                "theme": "المحور 4: العالم المعاصر",
+                "duree": "10h",
+                "content": "العولمة، التحديات البيئية، الأزمات الاقتصادية"
+              }
+            ]
+          }
+        },
+        {
+          "slug": "informatique",
+          "name": "Informatique",
+          "nameAr": "الإعلامية",
+          "icon": "💻",
+          "color": "indigo",
+          "lang": "fr",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Algorithmique et Programmation + Bases de Données",
+            "language": "fr",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/aide_info_ScInfo.pdf",
+            "sections": {
+              "sciences-informatique": {
+                "nameFr": "Sciences de l'Informatique (BAC)",
+                "themes": [
+                  {
+                    "theme": "Algorithmique et Programmation (4AS Sc Info)",
+                    "duree": "60h",
+                    "content": "Structures de données avancées (enregistrements, fichiers), algorithmes récursifs, algorithmes de tri et de calcul numérique, arbres, graphes. Implémentation en Python."
+                  },
+                  {
+                    "theme": "Bases de Données (4AS Sc Info)",
+                    "duree": "40h",
+                    "content": "Modèle relationnel, SQL (SELECT, INSERT, UPDATE, DELETE), SGBDR (Access, MySQL), conception de bases de données, formulaires et états. Applications de gestion."
+                  }
+                ]
+              },
+              "sciences-techniques": {
+                "nameFr": "Informatique (Génie Mécanique / Électrique)",
+                "themes": [
+                  {
+                    "theme": "Algorithmique (4AS Sc Tech)",
+                    "duree": "40h",
+                    "content": "Programmes de tri (sélection, insertion, à bulles, fusion) et de recherche (séquentielle, dichotomique). Algorithmes numériques. Implémentation en Python."
+                  }
+                ]
+              },
+              "mathematiques": {
+                "nameFr": "Algorithmique (4AS Mathématiques)",
+                "themes": [
+                  {
+                    "theme": "Algorithmique (4AS Math)",
+                    "duree": "30h",
+                    "content": "Programmes de tri et recherche. Structures de données. Introduction à la complexité."
+                  }
+                ]
+              },
+              "sciences-experimentales": {
+                "nameFr": "Informatique (Sciences Expérimentales)",
+                "themes": [
+                  {
+                    "theme": "Algorithmique (4AS Sc Exp)",
+                    "duree": "30h",
+                    "content": "Algorithmes de tri et de recherche. Implémentation Python."
+                  }
+                ]
+              },
+              "eco-gestion": {
+                "nameFr": "Informatique (Économie-Gestion)",
+                "themes": [
+                  {
+                    "theme": "Bases de données (4AS Eco)",
+                    "duree": "30h",
+                    "content": "SGBDR, création de tables, requêtes SQL, formulaires. Applications de gestion."
+                  }
+                ]
+              },
+              "lettres": {
+                "nameFr": "Informatique (Lettres)",
+                "themes": [
+                  {
+                    "theme": "Bureautique avancée (4AS Lettres)",
+                    "duree": "20h",
+                    "content": "Tableur avancé, outils collaboratifs, sécurité informatique."
+                  }
+                ]
+              },
+              "sport": {
+                "nameFr": "Informatique (Sport)",
+                "themes": [
+                  {
+                    "theme": "Bureautique (4AS Sport)",
+                    "duree": "20h",
+                    "content": "Outils bureautiques, internet, présentation."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "slug": "technologie",
+          "name": "Technologie",
+          "nameAr": "تكنولوجيا",
+          "icon": "🔧",
+          "color": "purple",
+          "lang": "fr",
+          "taughtIn": [
+            "sciences-techniques"
+          ],
+          "data": {
+            "nameFr": "Technologie (BAC Sciences Techniques)",
+            "nameAr": "تكنولوجيا",
+            "language": "fr",
+            "section": "BAC Sciences Techniques",
+            "manualUrl": "http://www.edunet.tn/lycee/4annee/sciences-techniques",
+            "sections": {
+              "sciences-techniques": {
+                "nameFr": "Technologie (BAC Sciences Techniques)",
+                "trimestre1": [
+                  "Axe 1 — Analyse fonctionnelle interne d'un produit (décomposition en chaînes fonctionnelles, FAST, fonctions techniques, recherche de processeurs et solutions constructives)",
+                  "Axe 1 — Analyse structurelle et conception : communication technique, dessin technique, cotation, tolérances",
+                  "Axe 2 — Étude des systèmes mécaniques (transmission de mouvement, transformation de mouvement, freinage, embrayage)"
+                ],
+                "trimestre2": [
+                  "Axe 3 — Statique et résistance des matériaux (sollicitations simples, conditions de résistance, déformation)",
+                  "Axe 3 — Étude des systèmes hydrauliques et pneumatiques (vérins, compresseurs, distributeurs)",
+                  "Axe 4 — Commande des systèmes automatisés (GRAFCET, API, capteurs)"
+                ],
+                "trimestre3": [
+                  "Axe 5 — Projet technique BAC — étude complète, fabrication, mise en service",
+                  "Axe 5 — Documentation, rapport technique, soutenance orale",
+                  "Synthèse et préparation à l'examen",
+                  "Révisions et exercices types BAC"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "slug": "arabe",
+          "name": "Arabe",
+          "nameAr": "اللغة العربية",
+          "icon": "ع",
+          "color": "red",
+          "lang": "ar",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Arabe (BAC)",
+            "nameAr": "اللغة العربية",
+            "language": "ar",
+            "trimestre1": [
+              "النحو — مراجعة شاملة",
+              "البلاغة — الصور البلاغية المعاصرة",
+              "القراءة — الشعر والنثر"
+            ],
+            "trimestre2": [
+              "النقد الأدبي",
+              "البلاغة — أساليب بلاغية",
+              "النصوص الأدبية — تحليل"
+            ],
+            "trimestre3": [
+              "مراجعة شاملة — نحوية، بلاغية، أدبية",
+              "التعبير الكتابي",
+              "الامتحانات الجهوية والوطنية"
+            ]
+          }
+        },
+        {
+          "slug": "francais",
+          "name": "Français",
+          "nameAr": "اللغة الفرنسية",
+          "icon": "📖",
+          "color": "slate",
+          "lang": "fr",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Français (BAC)",
+            "language": "fr",
+            "trimestre1": [
+              "Genres et courants littéraires",
+              "Le commentaire composé",
+              "La dissertation littéraire (introduction)"
+            ],
+            "trimestre2": [
+              "Étude d'œuvres classiques et modernes",
+              "L'argumentation dans l'essai",
+              "Texte argumentatif et types de raisonnement"
+            ],
+            "trimestre3": [
+              "Révisions intensives Bac — commentaire, dissertation, texte argumentatif",
+              "Œuvres et auteurs au programme du Bac"
+            ]
+          }
+        },
+        {
+          "slug": "philosophie",
+          "name": "Philosophie",
+          "nameAr": "الفلسفة",
+          "icon": "🤔",
+          "color": "fuchsia",
+          "lang": "ar",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Philosophie (BAC)",
+            "nameAr": "الفلسفة",
+            "language": "ar",
+            "manualUrl": "https://www.bac.com.tn/dirasset/programme-philosophie-4as",
+            "themes": [
+              {
+                "theme": "مطلب التفكير الفلسفي من اليومي إلى الفلسفي (مقدمة)",
+                "duree": "10h",
+                "content": "التفكير والوعي، مفهوم السؤال الفلسفي، الفرق بين التفكير العلمي والفلسفي"
+              },
+              {
+                "theme": "الإشكاليات الكبرى للفلسفة",
+                "duree": "40h",
+                "content": "محاور الإشكاليات الكبرى: المعرفة، الوجود، القيم، السياسة، اللغة. أهم المؤلفات الفلسفية: ابن طفيل، الغزالي، ابن رشد، أفلاطون، باسكال"
+              },
+              {
+                "theme": "النص الفلسفي — تقنيات التحليل",
+                "duree": "20h",
+                "content": "كيفية تحليل النص الفلسفي: الإشكالية، الأطروحة، الحجج، الاستنتاجات. النصوص الرسمية لبرنامج الباكالوريا"
+              },
+              {
+                "theme": "إنشاء فلسفي",
+                "duree": "20h",
+                "content": "كتابة مقال فلسفي حول إشكالية ما. البنية: مقدمة، عرض، خاتمة. المنهجية والتقييم"
+              }
+            ]
+          }
+        },
+        {
+          "slug": "economie",
+          "name": "Économie",
+          "nameAr": "الاقتصاد",
+          "icon": "💼",
+          "color": "orange",
+          "lang": "fr",
+          "taughtIn": [
+            "eco-gestion"
+          ],
+          "data": {
+            "nameFr": "Économie (BAC Économie-Gestion)",
+            "nameAr": "الاقتصاد",
+            "language": "fr",
+            "section": "BAC Économie-Gestion",
+            "themes": [
+              {
+                "theme": "Thème 1: Comportement et équilibre du consommateur",
+                "duree": "30h",
+                "content": "L'utilité cardinale (préférences, contrainte budgétaire, équilibre du consommateur, courbe d'indifférence, taux marginal de substitution, optimum du consommateur, élasticité de la demande). L'utilité ordinale (relation de préférence, courbe d'indifférence, TMS, contrainte budgétaire, optimum). Applications et études de cas."
+              },
+              {
+                "theme": "Thème 2: Équilibre du producteur et théorie des coûts",
+                "duree": "25h",
+                "content": "La fonction de production (court terme, long terme, productivités moyenne et marginale, loi des rendements décroissants). Les coûts de production (coûts fixes, variables, totaux, moyens, marginaux, courbe en U). L'équilibre du producteur (recette totale, coût total, profit maximum)."
+              },
+              {
+                "theme": "Thème 3: Financement de l'économie",
+                "duree": "25h",
+                "content": "L'épargne (ménages, entreprises, administrations). L'investissement (FBCF, types, déterminants, accélérateur). Le système financier (banques, Bourse, taux d'intérêt, crédit, marché monétaire et marché des capitaux). La politique monétaire et budgétaire. Le multiplicateur d'investissement."
+              },
+              {
+                "theme": "Thème 4: Échanges extérieurs et développement",
+                "duree": "25h",
+                "content": "Les théories du commerce international (avantages absolus — Smith, avantages comparatifs — Ricardo, dotation factorielle — Heckscher-Ohlin). Le protectionnisme (droits de douane, quotas, barrières non tarifaires). La balance des paiements. Les accords commerciaux internationaux (GATT, OMC, accords régionaux). La croissance économique et le développement (indicateurs, facteurs, modèles)."
+              }
+            ]
+          }
+        },
+        {
+          "slug": "svt",
+          "name": "Sciences de la Vie et de la Terre",
+          "nameAr": "علوم الحياة والأرض",
+          "icon": "🧬",
+          "color": "emerald",
+          "lang": "fr",
+          "taughtIn": [
+            "sciences-experimentales"
+          ],
+          "data": {
+            "nameFr": "Sciences de la Vie et de la Terre (BAC)",
+            "language": "fr",
+            "sections": {
+              "sciences-experimentales": {
+                "nameFr": "Sciences de la Vie et de la Terre (Sciences Expérimentales BAC)",
+                "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/sciences_vie_terre_4.pdf",
+                "themes": [
+                  {
+                    "theme": "Thème 1 : Immunologie et génétique humaine",
+                    "duree": "30-35h",
+                    "content": "Réponse immunitaire spécifique, anticorps, lymphocytes T, mémoire immunitaire, vaccination, SIDA. Génétique humaine: hérédité autosomale, liée au sexe, arbres généalogiques, génie génétique"
+                  },
+                  {
+                    "theme": "Thème 2 : Neurophysiologie",
+                    "duree": "25-30h",
+                    "content": "Neurone et influx nerveux, potentiel de repos et d'action, synapses et neuromédiateurs, système nerveux central, drogues et addictions"
+                  },
+                  {
+                    "theme": "Thème 3 : Reproduction et hormonologie",
+                    "duree": "20-25h",
+                    "content": "Appareil reproducteur, hormones sexuelles, cycles menstruels et ovariens, régulation hormonale, contraception, IVG, grossesse et développement embryonnaire"
+                  },
+                  {
+                    "theme": "Thème 4 : Génétique des populations et évolution",
+                    "duree": "20-25h",
+                    "content": "Loi de Hardy-Weinberg, sélection naturelle, dérive génétique, spéciation, phylogénie, biodiversité"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "slug": "anglais",
+          "name": "Anglais",
+          "nameAr": "اللغة الإنجليزية",
+          "icon": "🇬🇧",
+          "color": "cyan",
+          "lang": "en",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Anglais (BAC)",
+            "language": "en/fr",
+            "manualUrl": "http://edunet.tn/ressources/pedagogie/programmes/secondaire/anglais_sec.pdf",
+            "trimestre1": [
+              "Thème 1: Individual and Society",
+              "Thème 2: Innovation and Future"
+            ],
+            "trimestre2": [
+              "Thème 3: Media and Communication",
+              "Thème 4: Cultural Identity"
+            ],
+            "trimestre3": [
+              "Thème 5: Ethics and Citizenship",
+              "Skills: Argumentation, Essay, Oral exam prep (Bac)"
+            ]
+          }
+        },
+        {
+          "slug": "physique",
+          "name": "Sciences Physiques",
+          "nameAr": "علوم فيزيائية",
+          "icon": "⚛️",
+          "color": "blue",
+          "lang": "fr",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique"
+          ],
+          "data": {
+            "nameFr": "Sciences Physiques (BAC)",
+            "nameAr": "علوم فيزيائية",
+            "language": "fr",
+            "section": "BAC",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/programme_phys_bac.pdf",
+            "sections": {
+              "mathematiques": {
+                "nameFr": "Sciences Physiques (BAC Mathématiques)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Mécanique",
+                    "duree": "30h",
+                    "content": "Cinématique du point matériel. Dynamique newtonienne. Travail et énergie. Théorème de l'énergie cinétique. Énergie potentielle. Conservation de l'énergie. Oscillations mécaniques libres et forcées. Pendule pesant."
+                  },
+                  {
+                    "theme": "Thème 2: Électricité et magnétisme",
+                    "duree": "30h",
+                    "content": "Champ électrostatique. Potentiel. Condensateurs. Circuits RC, RL, RLC. Champ magnétique. Force de Laplace. Induction électromagnétique. Auto-induction."
+                  },
+                  {
+                    "theme": "Thème 3: Ondes et optique",
+                    "duree": "20h",
+                    "content": "Ondes mécaniques progressives. Ondes stationnaires. Effet Doppler. Optique ondulatoire — diffraction, interférences. Optique géométrique — lentilles, miroirs."
+                  },
+                  {
+                    "theme": "Thème 4: Physique nucléaire",
+                    "duree": "15h",
+                    "content": "Noyau atomique. Radioactivité α, β, γ. Loi de décroissance radioactive. Réactions nucléaires. Fission. Fusion."
+                  }
+                ]
+              },
+              "sciences-experimentales": {
+                "nameFr": "Sciences Physiques (BAC Sciences Expérimentales)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Mécanique et électricité",
+                    "duree": "30h",
+                    "content": "Mécanique du point. Travail et énergie. Électricité — circuits RC, RL. Magnétisme. Induction."
+                  },
+                  {
+                    "theme": "Thème 2: Ondes, optique et nucléaire",
+                    "duree": "25h",
+                    "content": "Ondes mécaniques. Optique ondulatoire (diffraction). Physique nucléaire — radioactivité."
+                  },
+                  {
+                    "theme": "Thème 3: Chimie organique et minérale",
+                    "duree": "25h",
+                    "content": "Chimie organique — fonctions, réactions. Chimie minérale — acides, bases, sels, oxydoréduction."
+                  }
+                ]
+              },
+              "sciences-techniques": {
+                "nameFr": "Sciences Physiques (BAC Sciences Techniques)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Mécanique appliquée",
+                    "duree": "30h",
+                    "content": "Statique, dynamique. Transmission et transformation de mouvement. Frottement. Rendement mécanique."
+                  },
+                  {
+                    "theme": "Thème 2: Électricité et magnétisme",
+                    "duree": "25h",
+                    "content": "Courants continus, alternatifs. Machines électriques. Électromagnétisme. Transformateurs."
+                  },
+                  {
+                    "theme": "Thème 3: Thermodynamique et ondes",
+                    "duree": "20h",
+                    "content": "Thermodynamique — principes, applications. Ondes — propagation, applications techniques."
+                  }
+                ]
+              },
+              "sciences-informatique": {
+                "nameFr": "Sciences Physiques (BAC Sciences de l'Informatique)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Mécanique et électricité",
+                    "duree": "30h",
+                    "content": "Mécanique du point. Électricité — circuits RC, RL. Magnétisme. Induction."
+                  },
+                  {
+                    "theme": "Thème 2: Ondes, optique et nucléaire",
+                    "duree": "25h",
+                    "content": "Ondes mécaniques. Optique ondulatoire. Physique nucléaire — radioactivité."
+                  },
+                  {
+                    "theme": "Thème 3: Chimie (introduction)",
+                    "duree": "20h",
+                    "content": "Chimie organique (parties). Chimie minérale (parties)."
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "slug": "education-islamique",
+          "name": "Éducation Islamique",
+          "nameAr": "التربية الإسلامية",
+          "icon": "إسلامية",
+          "color": "green",
+          "lang": "ar",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres"
+          ],
+          "data": {
+            "nameFr": "Éducation Islamique (BAC)",
+            "nameAr": "التربية الإسلامية",
+            "language": "ar",
+            "themes": [
+              {
+                "theme": "محور 1: القرآن والحديث",
+                "duree": "15h",
+                "content": "القرآن — تفسير سور مختارة (الفاتحة، البقرة، آل عمران، النساء). الحديث — أحاديث في الأخلاق والمعاملات"
+              },
+              {
+                "theme": "محور 2: العقيدة",
+                "duree": "12h",
+                "content": "أركان الإيمان الستة. الإيمان بالغيب. القضاء والقدر. حسن الظن بالله"
+              },
+              {
+                "theme": "محور 3: الفقه الإسلامي",
+                "duree": "18h",
+                "content": "أحكام العبادات (الطهارة، الصلاة، الزكاة، الصوم، الحج). أحكام الأسرة (النكاح، الطلاق، الميراث). المعاملات المالية (البيع، الربا، القرض)"
+              },
+              {
+                "theme": "محور 4: السيرة النبوية",
+                "duree": "10h",
+                "content": "من مولد النبي إلى وفاته. غزوات (بدر، أحد، الخندق، فتح مكة). الهجرة والعودة"
+              },
+              {
+                "theme": "محور 5: الفكر الإسلامي والقضايا المعاصرة",
+                "duree": "10h",
+                "content": "الإسلام والعلمانية. المرأة في الإسلام. الحضارة الإسلامية. الإسلام في مواجهة التحديات"
+              }
+            ]
+          }
+        },
+        {
+          "slug": "gestion",
+          "name": "Gestion",
+          "nameAr": "التصرف",
+          "icon": "📊",
+          "color": "orange",
+          "lang": "fr",
+          "taughtIn": [
+            "eco-gestion"
+          ],
+          "data": {
+            "nameFr": "Gestion (BAC Économie-Gestion)",
+            "nameAr": "التصرف",
+            "language": "fr",
+            "section": "BAC Économie-Gestion",
+            "themes": [
+              {
+                "theme": "Thème 1: La politique d'investissement et de financement",
+                "duree": "20h",
+                "content": "La décision d'investissement — critères de choix (VAN, TIR, délai de récupération, indice de profitabilité). Le plan de financement. Le choix entre financement interne et externe. L'effet de levier financier."
+              },
+              {
+                "theme": "Thème 2: L'équilibre financier et la trésorerie",
+                "duree": "20h",
+                "content": "L'analyse du bilan fonctionnel (FR, BFR, TN). L'équilibre financier. Le diagnostic de la trésorerie (flux de trésorerie, budget de trésorerie, besoins et excédents de trésorerie). Les moyens de financement à court terme (escompte, découvert, factoring)."
+              },
+              {
+                "theme": "Thème 3: L'analyse des charges et des coûts",
+                "duree": "20h",
+                "content": "La distinction charges directes / indirectes, fixes / variables. Le calcul des coûts (coût d'achat, coût de production, coût de revient). La comptabilité analytique (coût complet, coût variable, coût direct, seuil de rentabilité). L'imputation rationnelle des charges fixes."
+              },
+              {
+                "theme": "Thème 4: La gestion prévisionnelle et la stratégie",
+                "duree": "20h",
+                "content": "Le budget des ventes, des achats, de production, de trésorerie. Le budget général et le compte de résultat prévisionnel. Le bilan prévisionnel. Le plan de financement prévisionnel. Le tableau de bord et le contrôle budgétaire. L'analyse des écarts."
+              }
+            ]
+          }
+        },
+        {
+          "slug": "mathematiques",
+          "name": "Mathématiques",
+          "nameAr": "الرياضيات",
+          "icon": "📐",
+          "color": "amber",
+          "lang": "fr",
+          "taughtIn": [
+            "mathematiques",
+            "sciences-experimentales",
+            "sciences-techniques",
+            "sciences-informatique",
+            "eco-gestion",
+            "lettres",
+            "sport"
+          ],
+          "data": {
+            "nameFr": "Mathématiques (BAC)",
+            "nameAr": "الرياضيات",
+            "language": "fr",
+            "section": "BAC",
+            "manualUrl": "http://www.edunet.tn/ressources/pedagogie/programmes/2024_2025/programme_math_bac.pdf",
+            "sections": {
+              "mathematiques": {
+                "nameFr": "Mathématiques (BAC Mathématiques)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Limites et continuité",
+                    "duree": "25h",
+                    "content": "Limites — opérations, formes indéterminées. Continuité — théorème des valeurs intermédiaires. Asymptotes — horizontales, verticales, obliques. Branches infinies."
+                  },
+                  {
+                    "theme": "Thème 2: Dérivation et applications",
+                    "duree": "30h",
+                    "content": "Fonction dérivée. Dérivées des fonctions usuelles (exp, ln, trigo, puissances). Opérations sur les dérivées. Théorème des accroissements finis. Étude complète de fonctions avec tableau de variations. Problèmes d'optimisation."
+                  },
+                  {
+                    "theme": "Thème 3: Primitives et calcul intégral",
+                    "duree": "25h",
+                    "content": "Primitives — définition, propriétés. Primitives des fonctions usuelles. Intégrale — définition, propriétés, théorème fondamental. Calcul d'aires. Valeur moyenne d'une fonction."
+                  },
+                  {
+                    "theme": "Thème 4: Nombres complexes",
+                    "duree": "20h",
+                    "content": "Forme algébrique. Conjugué. Module. Forme trigonométrique. Représentation géométrique. Équations du second degré. Transformations du plan (translation, rotation, homothétie)."
+                  },
+                  {
+                    "theme": "Thème 5: Géométrie dans l'espace",
+                    "duree": "15h",
+                    "content": "Vecteurs dans l'espace. Droites et plans. Représentation paramétrique. Équation cartésienne d'un plan. Sphères. Produit scalaire dans l'espace."
+                  }
+                ]
+              },
+              "sciences-experimentales": {
+                "nameFr": "Mathématiques (BAC Sciences Expérimentales)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Limites, continuité et dérivation",
+                    "duree": "30h",
+                    "content": "Limites et continuité. Dérivation — fonctions usuelles. Étude de fonctions. Asymptotes. Théorème des valeurs intermédiaires."
+                  },
+                  {
+                    "theme": "Thème 2: Primitives et intégrales",
+                    "duree": "25h",
+                    "content": "Primitives. Calcul intégral. Applications géométriques — calcul d'aires."
+                  },
+                  {
+                    "theme": "Thème 3: Suites numériques",
+                    "duree": "20h",
+                    "content": "Suites arithmétiques, géométriques. Convergence. Raisonnement par récurrence."
+                  },
+                  {
+                    "theme": "Thème 4: Probabilités et statistiques",
+                    "duree": "20h",
+                    "content": "Probabilités conditionnelles. Variables aléatoires. Loi binomiale. Statistiques — estimation, intervalle de confiance."
+                  }
+                ]
+              },
+              "sciences-techniques": {
+                "nameFr": "Mathématiques (BAC Sciences Techniques)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Limites, continuité et dérivation",
+                    "duree": "30h",
+                    "content": "Limites et continuité. Dérivation et applications."
+                  },
+                  {
+                    "theme": "Thème 2: Primitives et intégrales",
+                    "duree": "20h",
+                    "content": "Primitives. Calcul intégral."
+                  },
+                  {
+                    "theme": "Thème 3: Suites numériques et probabilités",
+                    "duree": "25h",
+                    "content": "Suites arithmétiques, géométriques. Probabilités conditionnelles. Variables aléatoires."
+                  },
+                  {
+                    "theme": "Thème 4: Nombres complexes (introduction)",
+                    "duree": "15h",
+                    "content": "Forme algébrique. Module. Représentation géométrique."
+                  }
+                ]
+              },
+              "sciences-informatique": {
+                "nameFr": "Mathématiques (BAC Sciences de l'Informatique)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Limites, continuité et dérivation",
+                    "duree": "30h",
+                    "content": "Limites et continuité. Dérivation et applications."
+                  },
+                  {
+                    "theme": "Thème 2: Primitives et intégrales",
+                    "duree": "20h",
+                    "content": "Primitives. Calcul intégral."
+                  },
+                  {
+                    "theme": "Thème 3: Suites numériques et probabilités",
+                    "duree": "25h",
+                    "content": "Suites arithmétiques, géométriques. Probabilités."
+                  },
+                  {
+                    "theme": "Thème 4: Logique et arithmétique",
+                    "duree": "15h",
+                    "content": "Logique mathématique. Arithmétique — congruences, PGCD, PPCM."
+                  }
+                ]
+              },
+              "eco-gestion": {
+                "nameFr": "Mathématiques (BAC Économie-Gestion)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Suites et fonctions",
+                    "duree": "20h",
+                    "content": "Suites arithmétiques, géométriques. Fonctions — coût, recette, bénéfice. Élasticité. Optimisation économique."
+                  },
+                  {
+                    "theme": "Thème 2: Probabilités et statistiques",
+                    "duree": "20h",
+                    "content": "Probabilités conditionnelles. Variables aléatoires. Loi binomiale. Statistiques — moyenne, variance, écart-type. Sondages et estimation."
+                  },
+                  {
+                    "theme": "Thème 3: Mathématiques financières",
+                    "duree": "20h",
+                    "content": "Intérêts simples, composés. Annuités. Amortissements. Emprunts obligataires. Choix d'investissement — VAN, TIR."
+                  },
+                  {
+                    "theme": "Thème 4: Convexité et optimisation",
+                    "duree": "15h",
+                    "content": "Fonctions convexes. Point d'inflexion. Optimisation sous contrainte (multiplicateur de Lagrange)."
+                  }
+                ]
+              },
+              "lettres": {
+                "nameFr": "Mathématiques (BAC Lettres)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Statistiques et probabilités",
+                    "duree": "25h",
+                    "content": "Statistiques descriptives. Probabilités — événements, conditionnelles. Variables aléatoires. Loi binomiale."
+                  },
+                  {
+                    "theme": "Thème 2: Suites et fonctions",
+                    "duree": "20h",
+                    "content": "Suites numériques. Fonctions — lectures, interprétation. Notion de limite (introduction)."
+                  },
+                  {
+                    "theme": "Thème 3: Modélisation",
+                    "duree": "20h",
+                    "content": "Phénomènes économiques et sociaux. Modèles mathématiques simples."
+                  }
+                ]
+              },
+              "sport": {
+                "nameFr": "Mathématiques (BAC Sport)",
+                "themes": [
+                  {
+                    "theme": "Thème 1: Statistiques et probabilités",
+                    "duree": "25h",
+                    "content": "Statistiques descriptives. Probabilités. Variables aléatoires."
+                  },
+                  {
+                    "theme": "Thème 2: Suites et fonctions (parties)",
+                    "duree": "20h",
+                    "content": "Suites arithmétiques. Fonctions affines et polynômes du 2nd degré (parties)."
+                  },
+                  {
+                    "theme": "Thème 3: Physique du sport et statistiques",
+                    "duree": "20h",
+                    "content": "Applications aux performances sportives. Mesures et statistiques."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "sections": [
+        {
+          "key": "mathematiques",
+          "nameFr": "Mathématiques",
+          "nameAr": "رياضيات",
+          "icon": "fa-calculator"
+        },
+        {
+          "key": "sciences-experimentales",
+          "nameFr": "Sciences Exp.",
+          "nameAr": "علوم تجريبية",
+          "icon": "fa-flask"
+        },
+        {
+          "key": "sciences-techniques",
+          "nameFr": "Sciences Tech.",
+          "nameAr": "علوم تقنية",
+          "icon": "fa-cogs"
+        },
+        {
+          "key": "sciences-informatique",
+          "nameFr": "Sciences Info.",
+          "nameAr": "علوم الإعلامية",
+          "icon": "fa-laptop-code"
+        },
+        {
+          "key": "eco-gestion",
+          "nameFr": "Économie-Gestion",
+          "nameAr": "اقتصاد وتصرف",
+          "icon": "fa-chart-line"
+        },
+        {
+          "key": "lettres",
+          "nameFr": "Lettres",
+          "nameAr": "آداب",
+          "icon": "fa-feather-alt"
+        },
+        {
+          "key": "sport",
+          "nameFr": "Sport",
+          "nameAr": "رياضة",
+          "icon": "fa-running"
+        }
+      ]
+    }
+  ]
+}

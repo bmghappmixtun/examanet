@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Examanet - 5 modèles cards 2026</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+body { font-family: 'Inter', sans-serif; }
+.font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+.font-space { font-family: 'Space Grotesk', sans-serif; }
+
+/* Bento card */
+.bento-card {
+  border-radius: 1.5rem;
+  background: white;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.bento-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
+  transform: translateY(-1px);
+}
+
+/* Glass card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-radius: 1.5rem;
+}
+
+/* Editorial / Brutalist */
+.editorial-card {
+  background: white;
+  border-radius: 0;
+  border: 2px solid #0f172a;
+  box-shadow: 6px 6px 0 #0f172a;
+  transition: all 0.15s ease;
+}
+.editorial-card:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 #0f172a;
+}
+
+/* Clay 3D */
+.clay-card {
+  background: linear-gradient(145deg, #ffffff, #f1f5f9);
+  border-radius: 1.5rem;
+  box-shadow: 
+    8px 8px 16px rgba(0, 0, 0, 0.06),
+    -8px -8px 16px rgba(255, 255, 255, 0.8),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+  transition: all 0.2s ease;
+}
+.clay-card:hover {
+  box-shadow: 
+    12px 12px 24px rgba(0, 0, 0, 0.08),
+    -4px -4px 12px rgba(255, 255, 255, 0.9),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Aurora */
+.aurora-card {
+  background: 
+    radial-gradient(at 20% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(236, 72, 153, 0.12) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(34, 197, 94, 0.12) 0px, transparent 50%),
+    white;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+.aurora-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(at 80% 80%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
+  pointer-events: none;
+}
+
+.fade-mask {
+  -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 60%, transparent 100%);
+}
+</style>
+</head>
+<body class="bg-slate-50 p-8">
+
+<div class="max-w-7xl mx-auto">
+  <h1 class="text-3xl font-extrabold mb-2 text-slate-900">5 modèles de cards ressources — 2026 trends</h1>
+  <p class="text-sm text-slate-500 mb-10">Tous mobile-friendly, avec TOUTES les infos utiles visibles</p>
+
+  <!-- MODEL 1: BENTO PREMIUM -->
+  <section class="mb-16">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="text-2xl">1</span>
+      <h2 class="text-xl font-bold text-slate-900">Bento Premium <span class="text-slate-400 font-normal text-sm ml-2">— Apple-style asymmetric grid</span></h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <a class="bento-card p-5 group block md:col-span-2">
+        <div class="flex flex-wrap items-center gap-1.5 mb-3">
+          <span class="px-2.5 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-wider rounded-full">📖 Cours</span>
+          <span class="px-2.5 py-1 bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider rounded-full">7ème année</span>
+          <span class="px-2.5 py-1 bg-violet-50 text-violet-700 text-[10px] font-bold uppercase tracking-wider rounded-full">📐 Mathématiques</span>
+          <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Corrigé inclus
+          </span>
+        </div>
+        <h3 class="text-lg font-extrabold text-slate-900 leading-snug mb-3 group-hover:text-primary-600 transition">
+          Chapitre 5 — Les fonctions affines et leur représentation graphique
+        </h3>
+        <p class="text-sm text-slate-600 leading-relaxed mb-4 line-clamp-2">
+          Fiche de cours complète avec 3 exemples détaillés, 8 exercices d'application progressifs et un QCM d'auto-évaluation de 10 questions.
+        </p>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded">📅 2023-2024</span>
+          <span class="text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded">📄 12 pages</span>
+          <span class="text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded">💾 2.3 MB</span>
+          <span class="text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded">🇫🇷 + 🇹🇳</span>
+        </div>
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+          <div class="flex items-center gap-4 text-xs text-slate-500">
+            <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><b class="text-slate-900">1,247</b></span>
+            <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><b class="text-slate-900">324</b></span>
+            <span class="flex items-center gap-1.5 text-amber-500">⭐ <b class="text-slate-900">4.8</b> <span class="text-slate-400">(127)</span></span>
+          </div>
+          <span class="text-xs text-slate-400">il y a 3 jours</span>
+        </div>
+      </a>
+      <a class="bento-card p-5 group block">
+        <div class="flex flex-wrap items-center gap-1.5 mb-3">
+          <span class="px-2.5 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider rounded-full">📝 Devoir</span>
+          <span class="px-2.5 py-1 bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider rounded-full">9ème année</span>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 leading-snug mb-3 group-hover:text-primary-600 transition">
+          Devoir de Synthèse N°2 — Mathématiques
+        </h3>
+        <p class="text-xs text-slate-600 leading-relaxed mb-3 line-clamp-2">Sujet complet avec corrigé type bac.</p>
+        <div class="flex items-center gap-1.5 mb-3 flex-wrap">
+          <span class="text-xs text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded">2022</span>
+          <span class="text-xs text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded">4p</span>
+          <span class="text-xs text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded">1.1MB</span>
+        </div>
+        <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+          <div class="flex items-center gap-3 text-xs text-slate-500">
+            <span>👁 89</span>
+            <span>⬇ 12</span>
+            <span class="text-amber-500">⭐ 4.5</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- MODEL 2: GLASSMORPHISM -->
+  <section class="mb-16 relative">
+    <div class="absolute inset-0 bg-gradient-to-br from-indigo-100 via-pink-50 to-cyan-100 rounded-3xl -z-10"></div>
+    <div class="p-6 rounded-3xl">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="text-2xl">2</span>
+      <h2 class="text-xl font-bold text-slate-900">Glassmorphism <span class="text-slate-500 font-normal text-sm ml-2">— Frosted glass sur gradient</span></h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <a class="glass-card p-5 group block">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2.5 py-1 bg-white/60 backdrop-blur text-blue-700 text-[10px] font-bold uppercase tracking-wider rounded-full">📖 Cours</span>
+            <span class="px-2.5 py-1 bg-white/60 backdrop-blur text-slate-700 text-[10px] font-bold rounded-full">7ème</span>
+          </div>
+          <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100/80 backdrop-blur px-2 py-0.5 rounded-full">✅ Corrigé</span>
+        </div>
+        <h3 class="text-lg font-extrabold text-slate-900 leading-snug mb-2 group-hover:text-blue-600 transition">
+          Le système solaire — Sciences de la Vie et de la Terre
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">par Prof. <b class="text-slate-700">Mme Ben Ali</b> · Collège de Sousse</p>
+        <p class="text-sm text-slate-600 leading-relaxed mb-4 line-clamp-2">
+          Cours illustré avec schémas des 8 planètes, caractéristiques orbitales, comparaisons Terre/Mars et exercices de mémorisation.
+        </p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div class="bg-white/40 backdrop-blur rounded-lg p-2 text-center">
+            <div class="text-[10px] text-slate-500">Année</div>
+            <div class="text-sm font-bold text-slate-900">2024-25</div>
+          </div>
+          <div class="bg-white/40 backdrop-blur rounded-lg p-2 text-center">
+            <div class="text-[10px] text-slate-500">Pages</div>
+            <div class="text-sm font-bold text-slate-900">18 p</div>
+          </div>
+          <div class="bg-white/40 backdrop-blur rounded-lg p-2 text-center">
+            <div class="text-[10px] text-slate-500">Taille</div>
+            <div class="text-sm font-bold text-slate-900">3.4 MB</div>
+          </div>
+          <div class="bg-white/40 backdrop-blur rounded-lg p-2 text-center">
+            <div class="text-[10px] text-slate-500">Langue</div>
+            <div class="text-sm font-bold text-slate-900">🇫🇷</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-slate-600 pt-3 border-t border-white/40">
+          <span class="flex items-center gap-1"><b class="text-slate-900 font-extrabold">892</b> vues</span>
+          <span>·</span>
+          <span class="flex items-center gap-1"><b class="text-slate-900 font-extrabold">201</b> DL</span>
+          <span>·</span>
+          <span class="flex items-center gap-1 text-amber-500">⭐ <b>4.9</b></span>
+          <span class="ml-auto text-[10px] text-slate-400">2j</span>
+        </div>
+      </a>
+      <a class="glass-card p-5 group block">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2.5 py-1 bg-white/60 backdrop-blur text-amber-700 text-[10px] font-bold uppercase tracking-wider rounded-full">📝 Devoir</span>
+            <span class="px-2.5 py-1 bg-white/60 backdrop-blur text-slate-700 text-[10px] font-bold rounded-full">8ème</span>
+          </div>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 leading-snug mb-2 group-hover:text-blue-600 transition">
+          Évaluation d'algèbre — Nombres premiers
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">par <b class="text-slate-700">M. Trabelsi</b></p>
+        <p class="text-sm text-slate-600 leading-relaxed mb-3 line-clamp-2">10 exercices progressifs sur la décomposition en facteurs premiers.</p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div class="bg-white/40 backdrop-blur rounded-lg p-2 text-center">
+            <div class="text-[10px] text-slate-500">Année</div>
+            <div class="text-sm font-bold text-slate-900">2021-22</div>
+          </div>
+          <div class="bg-white/40 backdrop-blur rounded-lg p-2 text-center">
+            <div class="text-[10px] text-slate-500">Pages</div>
+            <div class="text-sm font-bold text-slate-900">6 p</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-slate-600 pt-3 border-t border-white/40">
+          <span><b class="text-slate-900">234</b> vues</span>
+          <span>·</span>
+          <span><b class="text-slate-900">42</b> DL</span>
+          <span>·</span>
+          <span class="text-amber-500">⭐ <b>4.2</b></span>
+        </div>
+      </a>
+      <a class="glass-card p-5 group block">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2.5 py-1 bg-white/60 backdrop-blur text-purple-700 text-[10px] font-bold uppercase tracking-wider rounded-full">✏️ Exercice</span>
+            <span class="px-2.5 py-1 bg-white/60 backdrop-blur text-slate-700 text-[10px] font-bold rounded-full">9ème</span>
+          </div>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 leading-snug mb-2 group-hover:text-blue-600 transition">
+          Fiche méthode — Rédaction dissertation
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">par <b class="text-slate-700">Mme Khelifi</b></p>
+        <p class="text-sm text-slate-600 leading-relaxed mb-3 line-clamp-2">Plan détaillé + 2 exemples commentés.</p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div class="bg-white/40 backdrop-blur rounded-lg p-2 text-center">
+            <div class="text-[10px] text-slate-500">Année</div>
+            <div class="text-sm font-bold text-slate-900">2024-25</div>
+          </div>
+          <div class="bg-white/40 backdrop-blur rounded-lg p-2 text-center">
+            <div class="text-[10px] text-slate-500">Pages</div>
+            <div class="text-sm font-bold text-slate-900">4 p</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-slate-600 pt-3 border-t border-white/40">
+          <span><b class="text-slate-900">567</b> vues</span>
+          <span>·</span>
+          <span><b class="text-slate-900">189</b> DL</span>
+          <span>·</span>
+          <span class="text-amber-500">⭐ <b>4.7</b></span>
+        </div>
+      </a>
+    </div>
+    </div>
+  </section>
+
+  <!-- MODEL 3: EDITORIAL / BRUTALIST -->
+  <section class="mb-16 bg-slate-900 p-8 rounded-3xl">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="text-2xl">3</span>
+      <h2 class="text-xl font-bold text-white">Editorial Brutalist <span class="text-slate-400 font-normal text-sm ml-2">— Bold, hard borders, neo-newspaper</span></h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <a class="editorial-card p-5 bg-white group block">
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+          <span class="px-2 py-0.5 bg-slate-900 text-white text-[11px] font-black uppercase">Devoir</span>
+          <span class="px-2 py-0.5 border-2 border-slate-900 text-slate-900 text-[11px] font-black uppercase">7ème année</span>
+          <span class="px-2 py-0.5 border-2 border-slate-900 text-slate-900 text-[11px] font-black uppercase">📐 Math</span>
+        </div>
+        <h3 class="font-space text-2xl font-bold text-slate-900 leading-tight mb-3 group-hover:text-blue-600 transition" style="font-family: 'Space Grotesk', sans-serif;">
+          Fonctions linéaires <span class="text-slate-400">—</span> Devoir de contrôle
+        </h3>
+        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">
+          Par Prof. Karim Bouzid · Lycée Pilote Sfax · 2023-2024
+        </div>
+        <p class="text-sm text-slate-700 leading-relaxed mb-4">
+          Évaluation de 2h sur le chapitre 3 — 5 exercices progressifs, barème sur 20 points, niveau attendu pour le passage en 2nde.
+        </p>
+        <div class="grid grid-cols-4 gap-2 border-y-2 border-slate-900 py-3 mb-3">
+          <div class="text-center">
+            <div class="text-[10px] font-black text-slate-500 uppercase">Pages</div>
+            <div class="font-space text-lg font-bold" style="font-family: 'Space Grotesk', sans-serif;">8</div>
+          </div>
+          <div class="text-center">
+            <div class="text-[10px] font-black text-slate-500 uppercase">Taille</div>
+            <div class="font-space text-lg font-bold" style="font-family: 'Space Grotesk', sans-serif;">1.8 MB</div>
+          </div>
+          <div class="text-center">
+            <div class="text-[10px] font-black text-slate-500 uppercase">Format</div>
+            <div class="font-space text-lg font-bold" style="font-family: 'Space Grotesk', sans-serif;">PDF</div>
+          </div>
+          <div class="text-center">
+            <div class="text-[10px] font-black text-slate-500 uppercase">Langue</div>
+            <div class="font-space text-lg font-bold" style="font-family: 'Space Grotesk', sans-serif;">🇫🇷 AR</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="font-bold">👁 1,247 · ⬇ 324 · ⭐ 4.8</span>
+          <span class="px-2 py-1 bg-emerald-100 text-emerald-800 font-black text-[10px] uppercase">✅ Corrigé inclus</span>
+        </div>
+      </a>
+      <a class="editorial-card p-5 bg-white group block">
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+          <span class="px-2 py-0.5 bg-slate-900 text-white text-[11px] font-black uppercase">Cours</span>
+          <span class="px-2 py-0.5 border-2 border-slate-900 text-slate-900 text-[11px] font-black uppercase">9ème année</span>
+          <span class="px-2 py-0.5 border-2 border-slate-900 text-slate-900 text-[11px] font-black uppercase">🧬 SVT</span>
+        </div>
+        <h3 class="font-space text-2xl font-bold text-slate-900 leading-tight mb-3 group-hover:text-blue-600 transition" style="font-family: 'Space Grotesk', sans-serif;">
+          La cellule <span class="text-slate-400">—</span> Structure & fonctions
+        </h3>
+        <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">
+          Par Mme Leila Hamza · Lycée Bourguiba Tunis · 2022-2023
+        </div>
+        <p class="text-sm text-slate-700 leading-relaxed mb-4">
+          Fiche de cours illustrée — Schémas légendés, tableau comparatif, 12 QCM et un devoir maison de révision.
+        </p>
+        <div class="grid grid-cols-4 gap-2 border-y-2 border-slate-900 py-3 mb-3">
+          <div class="text-center">
+            <div class="text-[10px] font-black text-slate-500 uppercase">Pages</div>
+            <div class="font-space text-lg font-bold" style="font-family: 'Space Grotesk', sans-serif;">24</div>
+          </div>
+          <div class="text-center">
+            <div class="text-[10px] font-black text-slate-500 uppercase">Taille</div>
+            <div class="font-space text-lg font-bold" style="font-family: 'Space Grotesk', sans-serif;">5.2 MB</div>
+          </div>
+          <div class="text-center">
+            <div class="text-[10px] font-black text-slate-500 uppercase">Format</div>
+            <div class="font-space text-lg font-bold" style="font-family: 'Space Grotesk', sans-serif;">PDF</div>
+          </div>
+          <div class="text-center">
+            <div class="text-[10px] font-black text-slate-500 uppercase">Langue</div>
+            <div class="font-space text-lg font-bold" style="font-family: 'Space Grotesk', sans-serif;">🇫🇷</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs font-mono">
+          <span class="font-bold">👁 892 · ⬇ 201 · ⭐ 4.9</span>
+          <span class="font-bold text-slate-500">3 jours</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- MODEL 4: CLAY 3D / SOFT -->
+  <section class="mb-16 bg-slate-100 p-6 rounded-3xl">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="text-2xl">4</span>
+      <h2 class="text-xl font-bold text-slate-900">Clay 3D Soft <span class="text-slate-500 font-normal text-sm ml-2">— Pillowy, tactile, neumorphism 2026</span></h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <a class="clay-card p-5 group block">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2.5 py-1 bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm">📖 Cours</span>
+            <span class="px-2.5 py-1 bg-gradient-to-br from-slate-100 to-slate-200 text-slate-700 text-[10px] font-bold rounded-full shadow-sm">7ème</span>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg">
+            📐
+          </div>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 leading-snug mb-2 group-hover:text-blue-600 transition">
+          Théorème de Thalès — Cours complet
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">Prof. Mehdi Boutiti · 2024-25 · 📄 14p · 💾 2.8 MB · 🇫🇷</p>
+        <p class="text-sm text-slate-600 leading-relaxed mb-4 line-clamp-2">
+          Cours illustré avec 3 démonstrations pas-à-pas et 6 applications directes.
+        </p>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="flex-1 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full px-2 py-1 text-center shadow-sm">✅ Corrigé</span>
+          <span class="flex-1 bg-gradient-to-br from-amber-50 to-amber-100 text-amber-700 text-[10px] font-bold rounded-full px-2 py-1 text-center shadow-sm">⭐ 4.9</span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <div class="flex items-center gap-2">
+            <span class="flex items-center gap-1"><b class="text-slate-900">1,847</b> 👁</span>
+            <span class="flex items-center gap-1"><b class="text-slate-900">412</b> ⬇</span>
+          </div>
+          <span class="text-[10px]">2j</span>
+        </div>
+      </a>
+      <a class="clay-card p-5 group block">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2.5 py-1 bg-gradient-to-br from-amber-100 to-amber-200 text-amber-700 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm">📝 Devoir</span>
+            <span class="px-2.5 py-1 bg-gradient-to-br from-slate-100 to-slate-200 text-slate-700 text-[10px] font-bold rounded-full shadow-sm">8ème</span>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-white text-xl shadow-lg">
+            📝
+          </div>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 leading-snug mb-2 group-hover:text-blue-600 transition">
+          Évaluation Trimestre 1 — Math
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">Prof. Sami Zouari · 2023-24 · 📄 6p · 💾 1.2 MB · 🇫🇷</p>
+        <p class="text-sm text-slate-600 leading-relaxed mb-4 line-clamp-2">
+          Sujet + corrigé type bac, 4 exercices progressifs sur 20 points.
+        </p>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="flex-1 bg-gradient-to-br from-slate-100 to-slate-200 text-slate-600 text-[10px] font-bold rounded-full px-2 py-1 text-center shadow-sm">⭐ 4.5</span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <div class="flex items-center gap-2">
+            <span><b class="text-slate-900">456</b> 👁</span>
+            <span><b class="text-slate-900">89</b> ⬇</span>
+          </div>
+          <span class="text-[10px]">1sem</span>
+        </div>
+      </a>
+      <a class="clay-card p-5 group block">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2.5 py-1 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm">🧬 SVT</span>
+            <span class="px-2.5 py-1 bg-gradient-to-br from-slate-100 to-slate-200 text-slate-700 text-[10px] font-bold rounded-full shadow-sm">9ème</span>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white text-xl shadow-lg">
+            🧬
+          </div>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 leading-snug mb-2 group-hover:text-blue-600 transition">
+          La génétique mendélienne
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">Prof. Leila Hamza · 2022-23 · 📄 18p · 💾 4.1 MB · 🇫🇷</p>
+        <p class="text-sm text-slate-600 leading-relaxed mb-4 line-clamp-2">
+          Cours complet sur les lois de Mendel avec exercices de croisements.
+        </p>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="flex-1 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full px-2 py-1 text-center shadow-sm">✅ Corrigé</span>
+          <span class="flex-1 bg-gradient-to-br from-amber-50 to-amber-100 text-amber-700 text-[10px] font-bold rounded-full px-2 py-1 text-center shadow-sm">⭐ 4.7</span>
+        </div>
+        <div class="flex items-center justify-between text-xs text-slate-500">
+          <div class="flex items-center gap-2">
+            <span><b class="text-slate-900">2,341</b> 👁</span>
+            <span><b class="text-slate-900">678</b> ⬇</span>
+          </div>
+          <span class="text-[10px]">3sem</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- MODEL 5: AURORA / VIBRANT GRADIENT -->
+  <section class="mb-16">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="text-2xl">5</span>
+      <h2 class="text-xl font-bold text-slate-900">Aurora <span class="text-slate-500 font-normal text-sm ml-2">— Vibrant mesh gradient + micro-stats</span></h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <a class="aurora-card p-5 group block">
+        <div class="flex items-center justify-between mb-3">
+          <span class="px-2.5 py-1 bg-slate-900/90 text-white text-[10px] font-bold uppercase tracking-wider rounded-full">📖 Cours · 7ème</span>
+          <span class="text-[10px] font-bold text-slate-500">2024-25</span>
+        </div>
+        <h3 class="text-lg font-extrabold text-slate-900 leading-snug mb-1 group-hover:text-indigo-600 transition">
+          Trigonométrie — Sinus, Cosinus, Tangente
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">📐 Mathématiques · 📄 16 pages · 💾 3.2 MB · 🇫🇷 + 🇹🇳</p>
+        <p class="text-sm text-slate-700 leading-relaxed mb-4 line-clamp-2">
+          Maîtrise les 3 fonctions trigonométriques avec 4 exercices progressifs et un QCM de 15 questions.
+        </p>
+        <div class="grid grid-cols-3 gap-3 mb-4">
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-slate-900">1.2k</div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">Vues</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-slate-900">287</div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">DL</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-amber-500">4.9</div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">Note</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded-full">✅ Corrigé</span>
+          <span class="text-slate-500">il y a 2j</span>
+        </div>
+      </a>
+      <a class="aurora-card p-5 group block">
+        <div class="flex items-center justify-between mb-3">
+          <span class="px-2.5 py-1 bg-slate-900/90 text-white text-[10px] font-bold uppercase tracking-wider rounded-full">📝 Devoir · 8ème</span>
+          <span class="text-[10px] font-bold text-slate-500">2023-24</span>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 leading-snug mb-1 group-hover:text-indigo-600 transition">
+          Évaluation — Calcul littéral
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">📐 Mathématiques · 📄 4 pages · 💾 0.8 MB · 🇫🇷</p>
+        <p class="text-sm text-slate-700 leading-relaxed mb-4 line-clamp-2">
+          6 exercices sur le développement et la factorisation, barème 20 pts.
+        </p>
+        <div class="grid grid-cols-3 gap-3 mb-4">
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-slate-900">567</div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">Vues</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-slate-900">134</div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">DL</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-amber-500">4.3</div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">Note</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-slate-500">il y a 5j</span>
+        </div>
+      </a>
+      <a class="aurora-card p-5 group block">
+        <div class="flex items-center justify-between mb-3">
+          <span class="px-2.5 py-1 bg-slate-900/90 text-white text-[10px] font-bold uppercase tracking-wider rounded-full">🎓 Bac · 4ème</span>
+          <span class="text-[10px] font-bold text-slate-500">2023</span>
+        </div>
+        <h3 class="text-base font-extrabold text-slate-900 leading-snug mb-1 group-hover:text-indigo-600 transition">
+          Sujet Bac — Mathématiques
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">📐 Mathématiques · 📄 12 pages · 💾 2.1 MB · 🇫🇷</p>
+        <p class="text-sm text-slate-700 leading-relaxed mb-4 line-clamp-2">
+          Sujet officiel + corrigé détaillé. Épreuve principale session principale.
+        </p>
+        <div class="grid grid-cols-3 gap-3 mb-4">
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-slate-900">3.4k</div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">Vues</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-slate-900">892</div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">DL</div>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-extrabold text-amber-500">4.7</div>
+            <div class="text-[10px] text-slate-500 uppercase font-semibold">Note</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-bold rounded-full">✅ Corrigé</span>
+          <span class="text-slate-500">il y a 1an</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

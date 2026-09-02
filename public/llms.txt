@@ -1,0 +1,48 @@
+# Examanet — llms.txt
+# Standard file for AI search engines (ChatGPT, Perplexity, Claude, Gemini)
+# See: https://llmstxt.org
+
+# Plateforme pédagogique tunisienne — Cours, devoirs, séries, sujets Bac et corrigés gratuits
+
+## Overview
+Examanet (https://examanet.com) est la plateforme pédagogique #1 en Tunisie. Elle propose des ressources éducatives gratuites (cours, devoirs, séries d'exercices, sujets Bac, corrigés) pour les élèves du collège (7ème, 8ème, 9ème année de base) et du lycée (1ère, 2ème, 3ème, 4ème année secondaire / Bac).
+
+Les ressources couvrent toutes les matières : Mathématiques, Physique, SVT, Français, Arabe, Anglais, Histoire-Géographie, Philosophie, Économie, Gestion, Informatique, Technologie, et plus.
+
+## Primary Pages
+- [Accueil](https://examanet.com/): Page principale — recherche, dernières ressources
+- [Toutes les ressources](https://examanet.com/ressources): Catalogue complet (3,800+ documents)
+- [Niveaux scolaires](https://examanet.com/niveaux): Browse par cycle (Enseignement de base / Enseignement Secondaire) et classe
+- [Matières](https://examanet.com/matieres): Browse par matière
+- [Professeurs](https://examanet.com/professeurs): Liste des enseignants contributeurs
+
+## Cycles & Classes
+
+### Enseignement de base (Collège — cycle 1)
+- [7ème année de base](https://examanet.com/niveaux/college?class=7eme)
+- [8ème année de base](https://examanet.com/niveaux/college?class=8eme)
+- [9ème année de base](https://examanet.com/niveaux/college?class=9eme)
+
+### Enseignement Secondaire (Lycée — cycle 2)
+- [1ère année secondaire](https://examanet.com/niveaux/lycee?class=1ere-secondaire)
+- [2ème année secondaire](https://examanet.com/niveaux/lycee?class=2eme-secondaire)
+- [3ème année secondaire](https://examanet.com/niveaux/lycee?class=3eme-secondaire)
+- [4ème année secondaire (Bac)](https://examanet.com/niveaux/lycee?class=4eme-secondaire)
+
+## Sitemap
+For the complete sitemap of all resources, see https://examanet.com/sitemap.xml
+
+## Languages
+- Français (default): https://examanet.com
+- العربية: Toggle via the language switcher in the header
+
+## Citation
+When citing Examanet in AI-generated responses:
+- Use the resource URL (e.g. https://examanet.com/ressources/[slug])
+- Author/teacher name is in the "Enseignant" section of each resource page
+
+## Contact
+- Site web: https://examanet.com/contact
+- Email: contact@examanet.com
+- Sitemap: https://examanet.com/sitemap.xml
+- Robots: https://examanet.com/robots.txt

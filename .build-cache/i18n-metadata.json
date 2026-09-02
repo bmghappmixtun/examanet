@@ -1,0 +1,162 @@
+[
+  {
+    "filePath": "src/app/a-propos/page.tsx",
+    "addImport": true,
+    "fr": {
+      "title": "À propos — Notre mission, équipe et valeurs",
+      "description": "Découvrez Examanet, la plateforme pédagogique #1 en Tunisie. Notre mission : rendre l'éducation gratuite et accessible à tous les élèves tunisiens.",
+      "alternates": { "canonical": "/a-propos" },
+      "openGraph": {
+        "title": "À propos d'Examanet",
+        "description": "Notre mission, notre équipe et nos valeurs pour l'éducation en Tunisie.",
+        "url": "/a-propos",
+        "type": "website",
+        "locale": "fr_TN"
+      }
+    },
+    "ar": {
+      "title": "حول إكسامانت — مهمتنا وفريقنا وقيمنا",
+      "description": "اكتشف إكسامانت، المنصة التربوية #1 في تونس. مهمتنا: جعل التعليم مجانياً ومتاحاً لجميع التلاميذ التونسيين.",
+      "alternates": { "canonical": "/a-propos" },
+      "openGraph": {
+        "title": "حول إكسامانت",
+        "description": "مهمتنا، فريقنا وقيمنا من أجل التعليم في تونس.",
+        "url": "/a-propos",
+        "type": "website",
+        "locale": "ar_TN"
+      }
+    }
+  },
+  {
+    "filePath": "src/app/contact/page.tsx",
+    "addImport": true,
+    "fr": {
+      "title": "Contact — Nous contacter",
+      "description": "Contactez l'équipe Examanet. Une question, un bug, une suggestion ? Nous vous répondons sous 24-48h.",
+      "alternates": { "canonical": "/contact" },
+      "openGraph": {
+        "title": "Contact Examanet",
+        "description": "Posez vos questions, signalez un bug ou suggérez une amélioration.",
+        "url": "/contact",
+        "type": "website",
+        "locale": "fr_TN"
+      }
+    },
+    "ar": {
+      "title": "اتصل بنا — إكسامانت",
+      "description": "تواصل مع فريق إكسامانت. سؤال، خطأ، اقتراح؟ سنرد عليك خلال 24-48 ساعة.",
+      "alternates": { "canonical": "/contact" },
+      "openGraph": {
+        "title": "اتصل بإكسامانت",
+        "description": "اطرح أسئلتك، أبلغ عن خطأ أو اقترح تحسيناً.",
+        "url": "/contact",
+        "type": "website",
+        "locale": "ar_TN"
+      }
+    }
+  },
+  {
+    "filePath": "src/app/cgu/page.tsx",
+    "addImport": true,
+    "fr": {
+      "title": "CGU — Conditions Générales d'Utilisation",
+      "description": "Conditions générales d'utilisation de la plateforme Examanet. Droits, obligations et responsabilités des utilisateurs.",
+      "alternates": { "canonical": "/cgu" }
+    },
+    "ar": {
+      "title": "شروط الاستخدام — إكسامانت",
+      "description": "شروط استخدام منصة إكسامانت. الحقوق والالتزامات والمسؤوليات.",
+      "alternates": { "canonical": "/cgu" }
+    }
+  },
+  {
+    "filePath": "src/app/faq/page.tsx",
+    "addImport": true,
+    "fr": {
+      "title": "FAQ — Questions fréquentes",
+      "description": "Toutes les réponses à vos questions sur Examanet : cours gratuits, niveaux, matières, enseignants, téléchargement.",
+      "alternates": { "canonical": "/faq" },
+      "openGraph": {
+        "title": "FAQ Examanet",
+        "description": "Trouvez rapidement les réponses à vos questions sur Examanet.",
+        "url": "/faq",
+        "type": "website",
+        "locale": "fr_TN"
+      }
+    },
+    "ar": {
+      "title": "الأسئلة الشائعة — إكسامانت",
+      "description": "جميع الإجابات على أسئلتك حول إكسامانت: دروس مجانية، مستويات، مواد، معلمون، تحميل.",
+      "alternates": { "canonical": "/faq" },
+      "openGraph": {
+        "title": "الأسئلة الشائعة إكسامانت",
+        "description": "اعثر بسرعة على إجابات أسئلتك حول إكسامانت.",
+        "url": "/faq",
+        "type": "website",
+        "locale": "ar_TN"
+      }
+    }
+  },
+  {
+    "filePath": "src/app/college/page.tsx",
+    "addImport": true,
+    "fr": {
+      "title": "Cours Collège Tunisie — 7ème, 8ème, 9ème année de base | Examanet",
+      "description": "📚 +3 700 ressources gratuites pour le collège en Tunisie : cours, devoirs, séries, exercices et corrigés pour la 7ème, 8ème et 9ème année de base. Mathématiques, Physique, SVT, Français, Arabe, Anglais et plus.",
+      "alternates": { "canonical": "/college" },
+      "openGraph": {
+        "title": "Cours Collège Tunisie — 7ème, 8ème, 9ème année de base",
+        "description": "+3 700 ressources gratuites pour le collège en Tunisie : cours, devoirs, séries, exercices et corrigés.",
+        "url": "/college",
+        "siteName": "Examanet",
+        "locale": "fr_TN",
+        "type": "website",
+        "images": [{ "url": "/api/og/page/college", "width": 1200, "height": 630, "alt": "Examanet — Collège" }]
+      }
+    },
+    "ar": {
+      "title": "دروس الإعدادي تونس — السنة 7، 8، 9 أساسي | إكسامانت",
+      "description": "📚 +3700 مورد مجاني للإعدادي في تونس: دروس، فروض، سلاسل، تمارين وإصلاحات للسنة السابعة والثامنة والتاسعة أساسي.",
+      "alternates": { "canonical": "/college" },
+      "openGraph": {
+        "title": "دروس الإعدادي تونس — السنة 7، 8، 9",
+        "description": "+3700 مورد مجاني للإعدادي في تونس.",
+        "url": "/college",
+        "siteName": "إكسامانت",
+        "locale": "ar_TN",
+        "type": "website",
+        "images": [{ "url": "/api/og/page/college", "width": 1200, "height": 630, "alt": "إكسامانت — الإعدادي" }]
+      }
+    }
+  },
+  {
+    "filePath": "src/app/matieres/page.tsx",
+    "addImport": true,
+    "fr": {
+      "title": "Toutes les matières — Cours, exercices et corrigés",
+      "description": "Découvrez toutes les matières du programme scolaire tunisien : Mathématiques, Physique, SVT, Français, Arabe, Histoire, Philosophie et plus. Ressources gratuites par matière.",
+      "alternates": { "canonical": "/matieres" },
+      "openGraph": {
+        "title": "Toutes les matières du programme tunisien",
+        "description": "Cours, exercices, sujets de bac et corrigés pour chaque matière du programme officiel tunisien.",
+        "url": "/matieres",
+        "type": "website",
+        "locale": "fr_TN",
+        "images": [{ "url": "/api/og/page/matieres", "width": 1200, "height": 630, "alt": "Examanet — Toutes les matières" }]
+      }
+    },
+    "ar": {
+      "title": "جميع المواد — دروس، تمارين وإصلاحات",
+      "description": "اكتشف جميع مواد البرنامج المدرسي التونسي: الرياضيات، الفيزياء، علوم الحياة والأرض، الفرنسية، العربية، التاريخ، الفلسفة والمزيد. موارد مجانية لكل مادة.",
+      "alternates": { "canonical": "/matieres" },
+      "openGraph": {
+        "title": "جميع مواد البرنامج التونسي",
+        "description": "دروس، تمارين، مواضيع باك وإصلاحات لكل مادة من البرنامج الرسمي التونسي.",
+        "url": "/matieres",
+        "type": "website",
+        "locale": "ar_TN",
+        "images": [{ "url": "/api/og/page/matieres", "width": 1200, "height": 630, "alt": "إكسامانت — جميع المواد" }]
+      }
+    }
+  }
+]

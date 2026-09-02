@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Devoir de Synthèse N°1 - Génie mécanique système de fabrication de couvercles - Bac Technique (2014-2015) | Examanet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --primary: #ea580c;
+    --primary-light: #f97316;
+    --accent: #f59e0b;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .breadcrumb {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    font-size: 14px;
+  }
+  .breadcrumb-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    color: var(--text-muted);
+  }
+  .breadcrumb a { color: var(--primary); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+  }
+  .main { min-width: 0; }
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+    transform: translate(50%, -50%);
+  }
+  .header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+    margin-right: 8px;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .header .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 14px;
+  }
+  .header .meta-row span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+  .actions-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #f1f5f9; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .system-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .system-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -10%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .system-card .system-label {
+    color: #f59e0b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .system-card .system-name {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #fbbf24;
+  }
+  .system-card .system-sub {
+    color: #cbd5e1;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .system-card .system-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #334155;
+  }
+  .system-card .system-meta-item {
+    display: flex;
+    flex-direction: column;
+  }
+  .system-card .system-meta-label {
+    color: #94a3b8;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .system-card .system-meta-value {
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    margin-top: 2px;
+  }
+
+  .summary-card {
+    background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+    border: 1px solid #fdba74;
+  }
+  .summary-card h2 { color: var(--primary); }
+  .summary-text {
+    color: #334155;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  .key-points { list-style: none; display: grid; gap: 10px; }
+  .key-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: #fff7ed;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+  }
+  .key-points li::before {
+    content: "→";
+    color: var(--primary);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .topics { display: flex; flex-wrap: wrap; gap: 8px; }
+  .topic {
+    display: inline-block;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid #fde68a;
+  }
+  .topic:hover { background: var(--primary); color: white; border-color: var(--primary); }
+  .prereq-list { list-style: none; display: grid; gap: 6px; }
+  .prereq-list li { display: flex; gap: 8px; align-items: center; }
+  .prereq-list li::before { content: "✓"; color: var(--success); font-weight: bold; }
+  .file-preview {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    margin-top: 16px;
+  }
+  .file-preview-icon { font-size: 48px; margin-bottom: 12px; }
+  .file-preview-text { color: var(--text-muted); }
+  .sidebar { display: flex; flex-direction: column; gap: 16px; }
+  .info-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .info-card h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .label { color: var(--text-muted); font-size: 13px; }
+  .info-row .value { font-weight: 600; font-size: 14px; }
+  .prof-card {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .prof-card:hover { background: #f1f5f9; }
+  .prof-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .prof-name { font-weight: 600; font-size: 14px; }
+  .prof-meta { color: var(--text-muted); font-size: 12px; }
+  .related-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .related-card h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+  .related-item {
+    display: block;
+    padding: 10px 0;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .related-item:last-child { border-bottom: none; }
+  .related-item:hover .related-title { color: var(--primary); }
+  .related-title { font-size: 14px; font-weight: 500; }
+  .related-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .data-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(90deg, #dbeafe, #e0e7ff);
+    color: #3730a3;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+  .data-badge::before { content: "🤖"; }
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+    .header h1 { font-size: 22px; }
+    .system-card .system-name { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+  <nav class="breadcrumb">
+    <div class="breadcrumb-inner">
+      <a href="/ressources">Ressources</a> ›
+      <a href="/ressources?subject=Technologie">Technologie</a> ›
+      <a href="/ressources?class=4eme-annee-secondaire">4ème année secondaire (Bac)</a> ›
+      <a href="/ressources?section=bac-technique">Bac Technique</a> ›
+      <a href="/ressources?dossier=genie-mecanique">Génie mécanique</a> ›
+      <span>DT Unité de fabrication de couvercles</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main">
+      <div class="header">
+        <div>
+          <span class="badge">🔧 DEVOIR DE SYNTHÈSE N°1</span>
+          <span class="badge">⚙️ GÉNIE MÉCANIQUE</span>
+        </div>
+        <h1>Devoir de Synthèse N°1 - Génie mécanique : système de fabrication de couvercles <span class="data-badge">ENRICHI PAR AI</span></h1>
+        <div class="meta-row">
+          <span>🏭 Technologie</span>
+          <span>🎓 4ème année (Bac)</span>
+          <span>🔨 Bac Technique</span>
+          <span>📅 2014-2015</span>
+          <span>⏱️ 4 heures</span>
+        </div>
+      </div>
+
+      <div class="actions-bar">
+        <button class="btn btn-primary">
+          <span>⬇</span>
+          Télécharger le PDF
+        </button>
+        <button class="btn btn-secondary">
+          <span>👁</span>
+          Aperçu
+        </button>
+        <button class="btn btn-secondary">
+          <span>⭐</span>
+          Sauvegarder
+        </button>
+        <button class="btn btn-secondary">
+          <span>🖨</span>
+          Imprimer
+        </button>
+        <button class="btn btn-secondary">
+          <span>📤</span>
+          Partager
+        </button>
+      </div>
+
+      <!-- ⭐ SYSTEM CARD -->
+      <div class="card system-card">
+        <div class="system-label">⚙️ Système technique étudié</div>
+        <div class="system-name">Unité de fabrication de couvercles en béton</div>
+        <div class="system-sub">
+          Système semi-automatique composé de 5 postes de production :
+          malaxage, pressage, décollage, démoulage et palettisation.
+        </div>
+        <div class="system-meta">
+          <div class="system-meta-item">
+            <span class="system-meta-label">Dossier technique</span>
+            <span class="system-meta-value">Génie mécanique</span>
+          </div>
+          <div class="system-meta-item">
+            <span class="system-meta-label">Type</span>
+            <span class="system-meta-value">Semi-automatique</span>
+          </div>
+          <div class="system-meta-item">
+            <span class="system-meta-label">Section</span>
+            <span class="system-meta-value">Bac Technique</span>
+          </div>
+          <div class="system-meta-item">
+            <span class="system-meta-label">Nb de postes</span>
+            <span class="system-meta-value">5 (malaxage → palettisation)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="card summary-card">
+        <h2>📝 Résumé <span class="data-badge">AI</span></h2>
+        <p class="summary-text">
+          Le document présente un dossier technique sur une unité de fabrication de
+          couvercles en béton, détaillant les différents postes de production tels
+          que le malaxage, le pressage, le décollage et le démoulage. Chaque poste
+          est décrit avec ses composants et son fonctionnement, incluant des systèmes
+          de motorisation et de transmission. Les étudiants doivent réaliser des
+          exercices en génie mécanique et électrique sans documentation, en utilisant
+          des calculatrices non programmables.
+        </p>
+      </div>
+
+      <!-- Key Points -->
+      <div class="card">
+        <h2>🎯 Points clés du sujet <span class="data-badge">AI</span></h2>
+        <ul class="key-points">
+          <li>Le système de fabrication de couvercles en béton comprend cinq postes : malaxage, pressage, décollage, démoulage et palettisation.</li>
+          <li>Chaque poste a une fonction spécifique, comme le malaxage qui mélange le mortier et le pressage qui utilise une presse hydraulique.</li>
+          <li>Le fonctionnement du système est semi-automatique avec un démarrage automatique après la préparation initiale.</li>
+        </ul>
+      </div>
+
+      <!-- Topics -->
+      <div class="card">
+        <h2>🏷️ Sujets abordés <span class="data-badge">AI</span></h2>
+        <div class="topics">
+          <a href="/ressources?topic=genie-mecanique" class="topic">Génie mécanique</a>
+          <a href="/ressources?topic=fabrication" class="topic">Fabrication</a>
+          <a href="/ressources?topic=couvercles-beton" class="topic">Couvercles en béton</a>
+          <a href="/ressources?topic=automatisation" class="topic">Automatisation</a>
+          <a href="/ressources?topic=technologie" class="topic">Technologie</a>
+        </div>
+      </div>
+
+      <!-- Prerequisites -->
+      <div class="card">
+        <h2>📚 Prérequis</h2>
+        <ul class="prereq-list">
+          <li>Notions de motorisation et transmission de puissance</li>
+          <li>Compréhension des systèmes automatisés semi-industriels</li>
+          <li>Connaissance des constituants mécaniques (vérins, presses, engrenages)</li>
+          <li>Maîtrise des schémas cinématiques et fonctionnels</li>
+        </ul>
+      </div>
+
+      <!-- File preview -->
+      <div class="card">
+        <h2>📄 Aperçu du document</h2>
+        <div class="file-preview">
+          <div class="file-preview-icon">📑</div>
+          <div class="file-preview-text">
+            <strong>12 pages</strong> · 1 810 mots extraits · PDF
+            <br>Aperçu disponible après connexion
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="info-card">
+        <h3>📋 Informations</h3>
+        <div class="info-row">
+          <span class="label">Type</span>
+          <span class="value">Devoir de synthèse</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Numéro</span>
+          <span class="value">N°1</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Matière</span>
+          <span class="value">Technologie</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Dossier</span>
+          <span class="value" style="color: var(--primary);">Génie mécanique</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Pages</span>
+          <span class="value">12</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Durée</span>
+          <span class="value">4h</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>📊 Statistiques</h3>
+        <div class="info-row">
+          <span class="label">Vues</span>
+          <span class="value">2 134</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Téléchargements</span>
+          <span class="value">987</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Sauvegardes</span>
+          <span class="value">142</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Note</span>
+          <span class="value" style="color: var(--warning);">★ 4.6/5</span>
+        </div>
+      </div>
+
+      <div class="related-card">
+        <h3>📚 Même système - "Couvercles en béton"</h3>
+        <div style="text-align: center; padding: 8px 0;">
+          <span style="color: var(--text-muted); font-size: 13px;">Aucun autre fichier</span>
+        </div>
+      </div>
+
+      <div class="related-card">
+        <h3>📚 Même dossier - Génie mécanique</h3>
+        <a href="#" class="related-item">
+          <div class="related-title">Devoir de Contrôle N°1 - Génie mécanique</div>
+          <div class="related-meta">Bac Technique · 2014-2015</div>
+        </a>
+        <a href="#" class="related-item">
+          <div class="related-title">Devoir de Synthèse N°2 - Génie mécanique</div>
+          <div class="related-meta">Bac Technique · 2014-2015</div>
+        </a>
+        <a href="#" class="related-item">
+          <div class="related-title">Devoir Contrôle N°1 - Poste de perçage</div>
+          <div class="related-meta">Bac Technique · 2013-2014</div>
+        </a>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

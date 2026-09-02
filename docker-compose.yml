@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: edutunisie-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: edutunisie
+      POSTGRES_PASSWORD: edutunisie
+      POSTGRES_DB: edutunisie
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edutunisie"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: edutunisie-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://edutunisie:edutunisie@postgres:5432/edutunisie?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: dev-secret-change-in-production-1234567890
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:

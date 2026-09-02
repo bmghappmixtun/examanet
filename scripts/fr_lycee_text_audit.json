@@ -1,0 +1,3358 @@
+[
+  {
+    "numericId": 3990,
+    "fileKey": "teacher-library/cmr8gex4x00jtwmh4kcqmwb4n/imported/duty-sonia-1783296061588-322-AeTYAReUrSREk07cWlyfWja6LLJZW1.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - Bac - Section Lettres (2010-2011) : l'engagement de l'écrivain",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "yengui",
+        "lastName": "bouhajeb sonia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 9859,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 4591,
+    "fileKey": "teacher-library/cmr8i94gx00c4u3qnxx4lnkwu/imported/duty-lamou-1783299126541-627-NnoOFmnYNgTmilzeDImW4PnqDN1m8Q.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - Bac - Section Sciences Expérimentales (2017-2018) : conditions de vie des mineurs",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Lamourou",
+        "lastName": "Salem"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4467,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "cité  Devoir de synthèse  4ème lettres",
+      "yearInText": "2017-2018",
+      "teacherInText": "Lamourou"
+    },
+    "findings": [
+      "⚠️ Section texte=\"Lettres\" vs DB=\"Sciences Expérimentales\"",
+      "ℹ️ École détectée: \"cité  Devoir de synthèse  4ème lettres\"",
+      "✓ Prof \"Lamourou\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 4842,
+    "fileKey": "teacher-library/cmr8iztbe018bu3qnxxmsx5nn/imported/duty-mmb62-1783300369337-898-P7QF5u8BsJlrMtcZvWWkrqLvGMwoBk.pdf",
+    "title": "Série d'exercices - Français - 1ère AS - Lycée pilote (2012-2013) : les relations familiales",
+    "db": {
+      "schoolType": "PILOTE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Mohamed",
+        "lastName": "Majdi Belaïd"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 10153,
+      "corrigePattern": null,
+      "schoolTypeInText": "PILOTE",
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 5491,
+    "fileKey": "teacher-library/cmr8tp1z700dwezxrp66l4d6x/imported/duty2-1783318339824-621-aU1Ug8EoJyxaiHySZtwOj3LJ1KPBOL.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2010-2011) : les premiers sentiments amoureux",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "ben",
+        "lastName": "moumen"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3535,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Avicenne Mahdia DEVOIR DE CONTROLE 1 1S6",
+      "yearInText": "2010-2011",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Avicenne Mahdia DEVOIR DE CONTROLE 1 1S6\""
+    ]
+  },
+  {
+    "numericId": 7887,
+    "fileKey": "teacher-library/cmr8w6kzg00jqstsg7az9cneq/imported/duty2-1783322517030-577-eYedALDve7KUueFHdV7BIYl1RxoDEd.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2011-2012) : la découverte de l'autre",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Rabah",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7169,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "9 avril 1938 RABAH Nada",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"9 avril 1938 RABAH Nada\""
+    ]
+  },
+  {
+    "numericId": 7888,
+    "fileKey": "teacher-library/cmr8w6kzg00jqstsg7az9cneq/imported/duty2-1783322518236-99-FhQzWVapcTsiduY8B89GuUGJkX1enI.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 3ème AS - Section Technique (2011-2012) : le transport moderne",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technique",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "Rabah",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 9198,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "9 avril 1938",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"9 avril 1938\""
+    ]
+  },
+  {
+    "numericId": 7889,
+    "fileKey": "teacher-library/cmr8w6n7u00jzstsgnuj46nsn/imported/duty2-1783322519704-659-euGMkK3sJTbo6WEz6BjOId3aj8FphH.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2013-2014) : les relations amicales",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Mtiri",
+        "lastName": "Abdelkder"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5354,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": null,
+      "yearInText": "2013-2014",
+      "teacherInText": "Mtiri"
+    },
+    "findings": [
+      "✓ Prof \"Mtiri\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7890,
+    "fileKey": "teacher-library/cmr8w6oev00k4stsgo0l835zb/imported/duty2-1783322521237-19-QbzJYMIZt9YgWtzrlxyDfBJgm3M3as.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2014-2015) : la rencontre avec une baleine",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Assidi",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6403,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": ": Année : 2014/2015",
+      "yearInText": "2014-2015",
+      "teacherInText": "Assidi"
+    },
+    "findings": [
+      "ℹ️ École détectée: \": Année : 2014/2015\"",
+      "✓ Prof \"Assidi\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7891,
+    "fileKey": "teacher-library/cmr8w6phk00k9stsgfi0a9cy0/imported/duty2-1783322522795-970-otIwW0Z99eWCwJtqp50Txl77Cw3gHI.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2016-2017) : la rencontre inattendue",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Hammami",
+        "lastName": "Ahmed"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3317,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": "Hammami"
+    },
+    "findings": [
+      "✓ Prof \"Hammami\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7892,
+    "fileKey": "teacher-library/cmr8w6qgd00kestsg3mzyvazq/imported/duty2-1783322523931-637-uRJAvyXFm2LLu6oFWyXDhlBz6z0tgH.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2023-2024) : l'amitié et la solitude",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Tittey",
+        "lastName": "Ridha"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5887,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": "Ridha"
+    },
+    "findings": [
+      "✓ Prof \"Ridha\" trouvé dans le texte (lastName)"
+    ]
+  },
+  {
+    "numericId": 7893,
+    "fileKey": "teacher-library/cmr8w6rgu00kjstsgp4jb3ujl/imported/duty2-1783322525371-880-N6mlKctjJau6vyAQ5noFlGL8gSfSQY.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 1ère AS (2008-2009) : l'architecture et la modernité",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Cherif",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4912,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Slimène Ben Slimène Professeur : CHERIF",
+      "yearInText": "2008-2009",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Slimène Ben Slimène Professeur : CHERIF\""
+    ]
+  },
+  {
+    "numericId": 7894,
+    "fileKey": "teacher-library/cmr8w6rgu00kjstsgp4jb3ujl/imported/duty2-1783322526730-283-vmWHw7F4DpY4fWur9XFHROoFhuOh4g.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2008-2009) : le pouvoir royal",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Cherif",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 9878,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7895,
+    "fileKey": "teacher-library/cmr8w6rgu00kjstsgp4jb3ujl/imported/duty2-1783322527962-301-rol14jT1n9tzg3BvIlIv3t8UyuTZqb.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2008-2009) : la solitude et le voyage",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Cherif",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5004,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Slimène Ben Slimène Professeur : CHERIF",
+      "yearInText": "2008-2009",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Slimène Ben Slimène Professeur : CHERIF\""
+    ]
+  },
+  {
+    "numericId": 7896,
+    "fileKey": "teacher-library/cmr8w6rgu00kjstsgp4jb3ujl/imported/duty2-1783322529116-225-qq2b5Vp6w2B7nc4rz7NS2MBlfCTpZT.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - 1ère AS (2008-2009) : les aspirations des jeunes",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Cherif",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3295,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Slimène Ben Slimène Professeur : CHERIF",
+      "yearInText": "2008-2009",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Slimène Ben Slimène Professeur : CHERIF\""
+    ]
+  },
+  {
+    "numericId": 7897,
+    "fileKey": "teacher-library/cmr8w6rgu00kjstsgp4jb3ujl/imported/duty2-1783322530387-996-KZbi71mcHy1sPrdo4wBuogkIGuqK0r.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 1ère AS (2008-2009) : l'exploration en Amazonie",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Cherif",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4368,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "Bac",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7898,
+    "fileKey": "teacher-library/cmr8w6rgu00kjstsgp4jb3ujl/imported/duty2-1783322531452-304-rOxS4IzS7b4CcMzkLHXYWQpN2OzmlB.pdf",
+    "title": "Devoir de Synthèse N°3 - Français - 1ère AS (2008-2009) : l'utilisation de l'ordinateur",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Cherif",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4513,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": "1ère AS",
+      "schoolNameInText": "Slimène Ben Slimène Professeur : CHERIF",
+      "yearInText": "2008-2009",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Slimène Ben Slimène Professeur : CHERIF\""
+    ]
+  },
+  {
+    "numericId": 7899,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322532527-153-hSZruvp5N5ZSdpSutvtst6x5g528cD.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 1ère AS (2009-2010) : la ville moderne",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3618,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2009-2010",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7900,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322534205-162-y6SrHekTrhbWQSUGK949MnX8ZeUysI.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 1ère AS (2011-2012) : problèmes écologiques",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6028,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2011-2012",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7901,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322535814-518-MJfPnoJvCGqdKJoqzOJbzD55PKEBhu.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 1ère AS (2011-2012) : problèmes écologiques",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6028,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2011-2012",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7902,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322537544-79-15qSeqeKXRDVEMO1EiAcrfMLX9EPfx.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - 2ème AS - Section Lettres (2011-2012) : l'artisanat du bois",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7895,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2011-2012",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7903,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322539329-475-kShXtTeVQnuzwFCFQmSuvOH2PFJaFG.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 3ème AS - Section Mathématiques (2009-2010) : la découverte de Paris",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Mathématiques",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 2994,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2009-2010",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7904,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322540837-313-uUm6I97KwJTomTIFYR0y4R2UvbGoCV.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 3ème AS - Section Mathématiques (2009-2010) : la déception face à Paris",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Mathématiques",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 2994,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2009-2010",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7905,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322542408-940-Sbl0sxR9ghSnWMpYzDJVWJ89jOdcR9.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 3ème AS - Section Économie-Gestion (2009-2010) : la découverte de la mer",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie-Gestion",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4046,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7906,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322543817-691-BQMMczzPHDlA0CyuNN0IsS2Gioya4f.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 3ème AS - Section Économie-Gestion (2012-2013) : la lutte contre le racisme",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie-Gestion",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 8167,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "et aussi au foyer familial.",
+      "yearInText": "2012-2013",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"et aussi au foyer familial.\""
+    ]
+  },
+  {
+    "numericId": 7907,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322545519-142-P8M1ppBefvkxJXCAWQrrJZobOwHzcX.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - 3ème AS - Section Sciences Expérimentales (2009-2010) : la vieillesse et l'isolement",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3071,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7908,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322547047-737-Z968gI1jdfkyEy3E8mP5wgeMmRjiNf.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - 3ème AS - Section Mathématiques (2009-2010) : l'influence des stars",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Mathématiques",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3291,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2009-2010",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7909,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322548623-802-jBpzAKh663vKEbt4KeR8Kg1oWvFn8A.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 3ème AS - Section Mathématiques (2009-2010) : la vie de Bombard",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Mathématiques",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5780,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Sciences",
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "⚠️ Section texte=\"Sciences\" vs DB=\"Mathématiques\""
+    ]
+  },
+  {
+    "numericId": 7910,
+    "fileKey": "teacher-library/cmr8w7akb00mhstsgvc4y77cg/imported/duty2-1783322550044-41-pwsjwvdVnCvGH0XbsspbM23tUn8u8J.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 1ère AS (2011-2012) : le désir de la campagne",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "dahmani",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 8806,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": "GHARDIMAOU2",
+      "yearInText": "2011-2012",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"GHARDIMAOU2\""
+    ]
+  },
+  {
+    "numericId": 7911,
+    "fileKey": "teacher-library/cmr8w7bqx00mmstsgrt446dsy/imported/duty2-1783322551494-816-63X3kGsbN9djAKdqSsz1h2YqnQTbs2.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 1ère AS (2010-2011) : la vie à Paris",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "H",
+        "lastName": "Belgacem"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5315,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "cité essourour Devoir de profs : B.Essia +B.Habib",
+      "yearInText": "2010-2011",
+      "teacherInText": "H"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"cité essourour Devoir de profs : B.Essia +B.Habib\"",
+      "✓ Prof \"H\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7912,
+    "fileKey": "teacher-library/cmr8w7bqx00mmstsgrt446dsy/imported/duty2-1783322553178-834-ZmRfTJOdRKptLViNTXgVtv3wwsPE1C.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - 1ère AS (2009-2010) : impact de la télévision sur l'attention",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "H",
+        "lastName": "Belgacem"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6956,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "cité Essourour Gafsa Devoir de synthèse n°2 Prof : Belgacem",
+      "yearInText": "2009-2010",
+      "teacherInText": "H"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"cité Essourour Gafsa Devoir de synthèse n°2 Prof : Belgacem\"",
+      "✓ Prof \"H\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7913,
+    "fileKey": "teacher-library/cmr8w7f2q00mvstsgchnqdwvl/imported/duty2-1783322554990-155-Db6nb2tEsHJAqQQY89qCbOFJACoURh.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 1ère AS (2014-2015) : la vie à Paris",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Nasri",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3463,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2014-2015",
+      "teacherInText": "Nasri"
+    },
+    "findings": [
+      "✓ Prof \"Nasri\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7914,
+    "fileKey": "teacher-library/cmr8w7g6m00n0stsghw299243/imported/duty2-1783322557462-375-wqN6PIZddGfAR6t8yDBj4Mu79VkNMv.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2009-2010) : la passion artistique",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Saida",
+        "lastName": "Azzouz"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3331,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": "Saida"
+    },
+    "findings": [
+      "✓ Prof \"Saida\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7916,
+    "fileKey": "teacher-library/cmr8w7i8e00n9stsgles369pq/imported/duty2-1783322559998-409-kHsu1XsG5NNfVv8y6zJJOlvhEBpYEL.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2011-2012) : la déception familiale",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "khawla",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3854,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Al Aahd Devoir de contrôle Classe : 1S4",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Al Aahd Devoir de contrôle Classe : 1S4\""
+    ]
+  },
+  {
+    "numericId": 7917,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322561159-20-6r3rlCpJB512RoMw1dJMiVWDNgmvv0.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 1ère AS (2010-2011) : la chasse et ses conséquences",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4606,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2010-2011",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7919,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322564065-40-InfQBgrzOtAHn1Eg3JomAYar1USxY2.pdf",
+    "title": "Devoir de Synthèse N°3 - Français - 1ère AS (2011-2012) : l'impact des machines",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 10236,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7920,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322565629-231-c7O0xC947VlpkJ1ILL1KIitc7WaRU6.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 2ème AS - Section Économie et services (2009-2010) : la vie de Téréza",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie et services",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 2070,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Aviennce Mahdia 2 ECO ET SERVICES 3",
+      "yearInText": "2010-2011",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Aviennce Mahdia 2 ECO ET SERVICES 3\""
+    ]
+  },
+  {
+    "numericId": 7921,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322567224-770-XzWhBtzSRI0r1uzHRy1QMUD3wdyM19.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 2ème AS - Section Économie et services (2008-2009) : la misère et l'indifférence sociale",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie et services",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 2644,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7922,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322568873-234-YO7ECWLUXyqAtWmNCx1YT4imYGfgRr.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 2ème AS - Section Sciences (2011-2012) : l'immigration contemporaine",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6021,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2012-2013",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7923,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322570904-371-60Udb0xy4o06dZxIGKaF04VzA02zcl.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 2ème AS - Section Sciences (2013-2014) : les conditions de vie d'Amrita",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 8559,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Sciences",
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2013-2014",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7924,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322571835-524-sdvdz0pjPnNzsX53QqYixqgzCvXwzs.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - 2ème AS - Section Lettres (2011-2012) : l'artisanat du bois",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7880,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2011-2012",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7925,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322573249-831-9GQnMu1eWc7WXqqCfefMWauIyNQRKT.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 2ème AS - Section Sciences (2010-2011) : la crédulité et la rumeur",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6494,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2010-2011",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7926,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322574796-884-gleFccUhFpG1RKj2Q9iReHkawfq46c.pdf",
+    "title": "Devoir de Synthèse N°3 - Français - 2ème AS - Section Économie et services (2010-2011) : le refus des vacances",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie et services",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7680,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2010-2011",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7927,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322576265-532-vOFecJCiQmudZ1ClBE6jtyEmLDienx.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 3ème AS - Section Technique (2013-2014) : la communication et le voyage",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technique",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 9559,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Technique",
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2013-2014",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7928,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322577618-265-FB71sy0qi7A59tPBZFGZYG7aDF7uoY.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 3ème AS - Section Technique (2011-2012) : l'impact des célébrités",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technique",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6935,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2012-2013",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7929,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322579010-212-r5GwpD7cqndBpCADKBumZ2dju7nAMM.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 3ème AS - Section Technique (2011-2012) : la solitude de l'immigré",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technique",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6607,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Technique",
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7930,
+    "fileKey": "teacher-library/cmr8vrv8w026gq4p0zlnv7tp5/imported/duty2-1783322580496-142-8u54BpswNUoO40wJZ3fce5Pc5LGw1q.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 1ère AS (2014-2015) : influence de la publicité",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "amina",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3578,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Technique",
+      "classInText": null,
+      "schoolNameInText": "Classe: 1ère S 5",
+      "yearInText": "2014-2015",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Classe: 1ère S 5\""
+    ]
+  },
+  {
+    "numericId": 7931,
+    "fileKey": "teacher-library/cmr8w7zf300oystsg3s1ay65x/imported/duty2-1783322582010-951-rfKbLDnrnEvfcTVpX7I6FE4mb6aF5j.pdf",
+    "title": "Devoir de Synthèse N°3 - Français - 1ère AS (2010-2011) : l'impact des machines",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Chamekh",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 10617,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": "Chamekh"
+    },
+    "findings": [
+      "✓ Prof \"Chamekh\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7932,
+    "fileKey": "teacher-library/cmr8w80ny00p3stsgl92y8l2j/imported/duty2-1783322583643-937-gvxkYlZOjTE9GoQZN2J2t45ssmVhNY.pdf",
+    "title": "Devoir de Synthèse N°3 - Français - 1ère AS (2010-2011) : l'impact des machines",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "khaled",
+        "lastName": "chamekh"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 10617,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7933,
+    "fileKey": "teacher-library/cmr8w7zf300oystsg3s1ay65x/imported/duty2-1783322585330-880-0xf8ZyY2N1gOP8ukqUoYQftXo3M3GX.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 1ère AS (2010-2011) : la musique et l'émotion",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Chamekh",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 11448,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7934,
+    "fileKey": "teacher-library/cmr8u1lf101laezxrmz838fdd/imported/duty2-1783322586911-298-dWl3KnMp4h9g1hTzTUkjrGgfwJvKeM.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 2ème AS - Section Sciences (2010-2011) : la rencontre amoureuse",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "Atef",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6687,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "2ème AS",
+      "schoolNameInText": "Ibn Rochd",
+      "yearInText": "2010-2011",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Ibn Rochd\""
+    ]
+  },
+  {
+    "numericId": 7935,
+    "fileKey": "teacher-library/cmr8w6x5g00l8stsgefzl51m3/imported/duty2-1783322596221-158-7TrUsSLpthCo0ddHXkV5A6bxumsNzs.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 2ème AS - Section Économie et services (2011-2012) : la pauvreté et la richesse",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie et services",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "saad",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4435,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7936,
+    "fileKey": "teacher-library/cmr8w8fdh00qlstsgjprfb1a0/imported/duty2-1783322602966-660-kEXGa2J7Ym9bcpQ9GXZ3BxJOCQGkaN.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 3ème AS - Section Technique (2010-2011) : la voix et l'attraction",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technique",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "mansour",
+        "lastName": "samia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3338,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "de Benguerden",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Benguerden\""
+    ]
+  },
+  {
+    "numericId": 7937,
+    "fileKey": "teacher-library/cmr8w8fdh00qlstsgjprfb1a0/imported/duty2-1783322604315-420-Hygw5VXkXGUIHnL01YmSjtB79zLbvH.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2010-2011) : la rencontre amicale",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "mansour",
+        "lastName": "samia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3732,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "de Benguerden",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Benguerden\""
+    ]
+  },
+  {
+    "numericId": 7938,
+    "fileKey": "teacher-library/cmr8w8hab00qustsgaqxtgaiz/imported/duty2-1783322605466-695-qsCNeapJgHDeH9zBDvtaCunEZfClkX.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 3ème AS - Section Technique (2013-2014) : le voyage et la quête de liberté",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technique",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "Marzouki-Akremi",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5427,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Technique",
+      "classInText": "3ème AS",
+      "schoolNameInText": "Imam Moslem-MENZEH",
+      "yearInText": null,
+      "teacherInText": "Marzouki-Akremi"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Imam Moslem-MENZEH\"",
+      "✓ Prof \"Marzouki-Akremi\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7939,
+    "fileKey": "teacher-library/cmr8w8iif00qzstsgzww18nn8/imported/duty2-1783322606786-818-GenaIxkwmJRCcMNBkc38oKwZ0J1jPi.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 3ème AS - Section Économie-Gestion (2013-2014) : l'influence américaine",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie-Gestion",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "CH",
+        "lastName": "Saloua"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4894,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Technique",
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2013-2014",
+      "teacherInText": "CH"
+    },
+    "findings": [
+      "⚠️ Section texte=\"Technique\" vs DB=\"Économie-Gestion\"",
+      "✓ Prof \"CH\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7941,
+    "fileKey": "teacher-library/cmr8v4eh8055sezxrdtycr1do/imported/duty2-1783322609911-210-70hSZd9As0GpSvwKDm1p60QoIyBLjK.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 3ème AS - Section Sciences Expérimentales (2010-2011) : la quête de soi",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "Bouaziz",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4356,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Souk Lahad Prof. : Akram Bouaziz",
+      "yearInText": "2010-2011",
+      "teacherInText": "Bouaziz"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Souk Lahad Prof. : Akram Bouaziz\"",
+      "✓ Prof \"Bouaziz\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7942,
+    "fileKey": "teacher-library/cmr8w8m0y00rcstsgnji24ybs/imported/duty2-1783322611292-263-n7YspbDjxd9UE3Mnz0oOohkuh5pliO.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 3ème AS - Section Lettres (2012-2013) : le suicide de Didon",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "Rim",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 8374,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": "Bac",
+      "schoolNameInText": "les Aghlabites français Prof: Mme Meftah",
+      "yearInText": "2012-2013",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"les Aghlabites français Prof: Mme Meftah\""
+    ]
+  },
+  {
+    "numericId": 7944,
+    "fileKey": "teacher-library/cmr8w8pv000rostsgcitgxd96/imported/duty2-1783322616668-576-aKP4B3OipM14H5MWUVCvp0MkWfuilq.pdf",
+    "title": "Devoir de Synthèse N°3 - Français - 3ème AS - Section Sciences de l'informatique (2011-2012) : la représentation télévisuelle",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences de l'informatique",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "nesrine",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3565,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7945,
+    "fileKey": "teacher-library/cmr8w8r4m00rtstsgrzivyy01/imported/duty2-1783322618053-663-uaKQ9aT4JFcDo56bKkPhpRnTLMAYvP.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - Bac - Section Sciences Expérimentales (2011-2012) : les souvenirs d'enfance",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Ben",
+        "lastName": "Hammel Houda"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5448,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Cité Elmahrajène",
+      "yearInText": "2009-2001",
+      "teacherInText": "Ben"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Cité Elmahrajène\"",
+      "✓ Prof \"Ben\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7946,
+    "fileKey": "teacher-library/cmr8w8r4m00rtstsgrzivyy01/imported/duty2-1783322620027-381-8tdq5k8XK95jeqcsSe44qFteXxpdYV.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - Bac - Section Technique (2013-2014) : la lutte pour la liberté",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technique",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Ben",
+        "lastName": "Hammel Houda"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7475,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Iben Charaf",
+      "yearInText": "2009-2001",
+      "teacherInText": "Ben"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Iben Charaf\"",
+      "✓ Prof \"Ben\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7947,
+    "fileKey": "teacher-library/cmr8w8r4m00rtstsgrzivyy01/imported/duty2-1783322621992-721-aqSTJQKoMffDcmnQ7SNKM56r81yOvz.pdf",
+    "title": "Série d'exercices - Français - Bac - Section Sciences Expérimentales (2012-2013) : les articulateurs logiques",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Ben",
+        "lastName": "Hammel Houda"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3687,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Iben Charaf- Nadhour Professeur : Mme Benhammel Houda",
+      "yearInText": "2012-2013",
+      "teacherInText": "Ben"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Iben Charaf- Nadhour Professeur : Mme Benhammel Houda\"",
+      "✓ Prof \"Ben\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7948,
+    "fileKey": "teacher-library/cmr8w8vse00s6stsge9j7x6b7/imported/duty2-1783322623976-146-6aoTg0jhw39EEc05EEtOofEmIOoA6k.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - Bac - Section Sciences de l'informatique (2013-2014) : les souvenirs d'enfance",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences de l'informatique",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "CH",
+        "lastName": "Saloua"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3934,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Sciences",
+      "classInText": null,
+      "schoolNameInText": "testour Devoir de contrôle N°1 Prof : Mme CH.Saloua",
+      "yearInText": "2013-2014",
+      "teacherInText": "CH"
+    },
+    "findings": [
+      "⚠️ Section texte=\"Sciences\" vs DB=\"Sciences de l'informatique\"",
+      "ℹ️ École détectée: \"testour Devoir de contrôle N°1 Prof : Mme CH.Saloua\"",
+      "✓ Prof \"CH\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7949,
+    "fileKey": "teacher-library/cmr8w8vse00s6stsge9j7x6b7/imported/duty2-1783322625702-518-J8QDfegabn1h5qfaHgN1isQ40VoV3m.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - Bac - Section Sciences Expérimentales (2013-2014) : les relations familiales",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "CH",
+        "lastName": "Saloua"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3613,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "testour Devoir de contrôle N°1 Prof : Mme CH.Saloua",
+      "yearInText": "2013-2014",
+      "teacherInText": "CH"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"testour Devoir de contrôle N°1 Prof : Mme CH.Saloua\"",
+      "✓ Prof \"CH\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7950,
+    "fileKey": "teacher-library/cmr8w8vse00s6stsge9j7x6b7/imported/duty2-1783322627546-708-ESW3Jh5W54aNaaSkDSUiwRD2G4thwF.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - Bac - Section Sciences Expérimentales (2013-2014) : la guerre et ses conséquences",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "CH",
+        "lastName": "Saloua"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4873,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Ibn Zohr Testour Niveau : 4ème SI+ S.EXP",
+      "yearInText": "2013-2014",
+      "teacherInText": "CH"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Ibn Zohr Testour Niveau : 4ème SI+ S.EXP\"",
+      "✓ Prof \"CH\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7951,
+    "fileKey": "teacher-library/cmr8w8zqi00sjstsg4nbuwipj/imported/duty2-1783322629257-755-b0VO0iUsas7ExmMNMg6FZnzOjBtU97.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - Bac - Section Économie-Gestion (2016-2017) : la nostalgie de l'enfance",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie-Gestion",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Megbli",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3144,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Cité Mahrajene Tataouine DEVOIR DE CONTRÔLE Prof : M. Megbli",
+      "yearInText": "2016-2017",
+      "teacherInText": "Megbli"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Cité Mahrajene Tataouine DEVOIR DE CONTRÔLE Prof : M. Megbli\"",
+      "✓ Prof \"Megbli\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7953,
+    "fileKey": "teacher-library/cmr8w92cs00ststsglrndny0x/imported/duty2-1783322632473-79-fKKiCgUdiVmxQSzFQ807GHW9Lszm1F.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - Bac - Section Lettres (2015-2016) : la guerre et la paix",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Arouri",
+        "lastName": "Nejib"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7534,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "Devoir de synthèse n° 1 Niveau :",
+      "yearInText": "2015-2016",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Devoir de synthèse n° 1 Niveau :\""
+    ]
+  },
+  {
+    "numericId": 7954,
+    "fileKey": "teacher-library/cmr8w93ea00systsgq7fomev1/imported/duty2-1783322634118-3-17W3hsNF8dTh54CfwIw5TbWAsYQ9AM.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - Bac - Section Lettres (2009-2010) : la recherche scientifique",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Aloulou",
+        "lastName": "Mohamed"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4152,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Technique",
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": "Aloulou"
+    },
+    "findings": [
+      "⚠️ Section texte=\"Technique\" vs DB=\"Lettres\"",
+      "✓ Prof \"Aloulou\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 7956,
+    "fileKey": "teacher-library/cmr8w912l00sostsgxlorciat/imported/duty2-1783322637029-273-XN2pgfV3enq68Le7DuclhkqCi07yG2.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - Bac - Section Lettres (2014-2015) : le confort moderne",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "salem",
+        "lastName": "lamourou"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3432,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "cité Devoir de contrôle Niveau : 4ème lettres",
+      "yearInText": "2014-2015",
+      "teacherInText": "lamourou"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"cité Devoir de contrôle Niveau : 4ème lettres\"",
+      "✓ Prof \"lamourou\" trouvé dans le texte (lastName)"
+    ]
+  },
+  {
+    "numericId": 7958,
+    "fileKey": "teacher-library/cmr8w989u00tgstsgnyupvgix/imported/duty2-1783322640417-137-5T2XOdYLByRznuYQDOwUbauD6IUNio.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - Bac Lycée pilote - Section Sciences Expérimentales (2010-2011) : la guerre et ses conséquences",
+    "db": {
+      "schoolType": "PILOTE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "yahyaoui",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6037,
+      "corrigePattern": null,
+      "schoolTypeInText": "PILOTE",
+      "sectionInText": "Sciences",
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "⚠️ Section texte=\"Sciences\" vs DB=\"Sciences Expérimentales\""
+    ]
+  },
+  {
+    "numericId": 7959,
+    "fileKey": "teacher-library/cmr8w9ac300tqstsgt66l6z46/imported/duty2-1783322642975-385-0i91E1gZrkOVr9p4fsquOHggoAi7YV.pdf",
+    "title": "Série d'exercices - Français - 1ère AS (2012-2013) : les verbes passe-partout",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Ben",
+        "lastName": "Hammel Houda"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 2466,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 7960,
+    "fileKey": "teacher-library/cmqu2hss701cfq2n3w231z2mo/imported/duty2-1783322646206-636-1VnnLJAVCjBKI63Eo4s2yhgdWGKR1M.pdf",
+    "title": "Série d'exercices - Français - 1ère AS (2015-2016) : la remédiation en français",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Haffouz",
+        "lastName": "Wassim"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5351,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 8256,
+    "fileKey": "teacher-library/cmr8gex4x00jtwmh4kcqmwb4n/imported/conv-1783324640777-172-nH5zSrOH1JQBciYAK8IWhSxmWG8JUB.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2014-2015) : la vie nocturne à Paris",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "yengui",
+        "lastName": "bouhajeb sonia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5880,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 8257,
+    "fileKey": "teacher-library/cmr8gex4x00jtwmh4kcqmwb4n/imported/conv-1783324643899-841-v3QY8Sp6TyZJqQPNqzqdG83ISa8epJ.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 1ère AS (2024-2025) : le voyage intérieur",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "yengui",
+        "lastName": "bouhajeb sonia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6144,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Devoir de synthèse n°3 Prof : Mme Yengui",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Devoir de synthèse n°3 Prof : Mme Yengui\""
+    ]
+  },
+  {
+    "numericId": 8258,
+    "fileKey": "teacher-library/cmr8gex4x00jtwmh4kcqmwb4n/imported/conv-1783324647173-561-PuxbOQtXZ7vpoYP2vMhuuH7SdTbVQe.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 2ème AS - Section Lettres (2010-2011) : conditions de vie des ouvriers",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "yengui",
+        "lastName": "bouhajeb sonia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5213,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "de Devoir de Contrôle n°3 Prof : Mme Yengui",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Devoir de Contrôle n°3 Prof : Mme Yengui\""
+    ]
+  },
+  {
+    "numericId": 9005,
+    "fileKey": "teacher-library/cmr934nx100i3x6qu6qt4j3rb/imported/conv4-1783334184682-254-fIRMDdnessdiCLI6mgfGi6SHLSiuUT.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 2ème AS - Section Lettres (2014-2015) : la construction de l'identité féminine",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "Lamloumi",
+        "lastName": "Salem"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6024,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "Zarat Devoir de contrôle n°2 Prof : Lamloumi . Salem",
+      "yearInText": null,
+      "teacherInText": "Lamloumi"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Zarat Devoir de contrôle n°2 Prof : Lamloumi . Salem\"",
+      "✓ Prof \"Lamloumi\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 9007,
+    "fileKey": "teacher-library/cmr934tvf00icx6qus0wwl3o4/imported/conv4-1783334192330-96-3AGabn3Kry9VZSrtDWSx01nz5gIOw0.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2017-2018) : la publicité et la consommation",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Salwa",
+        "lastName": "Kanzali"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4604,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": "Avenue de La République Gabès",
+      "yearInText": null,
+      "teacherInText": "Salwa"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Avenue de La République Gabès\"",
+      "✓ Prof \"Salwa\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 9074,
+    "fileKey": "teacher-library/cmr934nx100i3x6qu6qt4j3rb/imported/ilovepdf2-1783334410297-334-wAntfvTJsapykslyxIXQisTqiFZwhK.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 2ème AS - Section Lettres (2014-2015) : la condition féminine",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "Lamloumi",
+        "lastName": "Salem"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6024,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "Zarat Devoir de contrôle n°2 Prof : Lamloumi . Salem",
+      "yearInText": null,
+      "teacherInText": "Lamloumi"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Zarat Devoir de contrôle n°2 Prof : Lamloumi . Salem\"",
+      "✓ Prof \"Lamloumi\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 9076,
+    "fileKey": "teacher-library/cmr934tvf00icx6qus0wwl3o4/imported/ilovepdf2-1783334425816-25-tLRx9fLdl6nqf4Rlvr7880B2TXp0Nb.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2017-2018) : la publicité et la consommation",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Salwa",
+        "lastName": "Kanzali"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4604,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": "Avenue de La République Gabès",
+      "yearInText": null,
+      "teacherInText": "Salwa"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Avenue de La République Gabès\"",
+      "✓ Prof \"Salwa\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 9324,
+    "fileKey": "teacher-library/cmr9472m100ckzpvnl6wo5jhw/imported/conv4-1783335976631-260-X1W6C8G0yvIH4FAz8xE6jsfC94jmDB.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2024-2025) : le bonheur et l'argent",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "zoughlami",
+        "lastName": "Mohsen"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4394,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "de Jérissa",
+      "yearInText": null,
+      "teacherInText": "Mohsen"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Jérissa\"",
+      "✓ Prof \"Mohsen\" trouvé dans le texte (lastName)"
+    ]
+  },
+  {
+    "numericId": 9405,
+    "fileKey": "teacher-library/cmr94ssat00mazpvn9l803dw8/imported/ilovepdf2-1783336989736-238-d7FYgaDTyLzBFY3fZTdV66H9UFgtDY.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2011-2012) : le transport ferroviaire",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "DIOP",
+        "lastName": "LHG"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 1703,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": "2011-2012",
+      "teacherInText": "DIOP"
+    },
+    "findings": [
+      "✓ Prof \"DIOP\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 9425,
+    "fileKey": "teacher-library/cmr94tqus0022l6sha47jq8mb/imported/conv4-1783337034364-955-sSi0FOLzaoNaqvFlv311adBGL38CM0.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - Bac - Section Lettres (2009-2010) : dialogue des civilisations",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Hasnaoui",
+        "lastName": "Adel"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3517,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "de Meknassy Devoir de contrôle n° : 1 Prof : Adel Hasnaoui",
+      "yearInText": null,
+      "teacherInText": "Hasnaoui"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Meknassy Devoir de contrôle n° : 1 Prof : Adel Hasnaoui\"",
+      "✓ Prof \"Hasnaoui\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 9469,
+    "fileKey": "teacher-library/cmr94vz81007dl6sh6u8yafbo/imported/conv4-1783337138597-368-sYfHo1Kb1Vg0H68vvONQPc6XQzrSxQ.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2010-2011) : la correspondance familiale",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Sana",
+        "lastName": "Jerjir"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7294,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": "15 Novembre1955 Devoir de contrôle n°2 Année scolaire : 2010",
+      "yearInText": "2010-2011",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"15 Novembre1955 Devoir de contrôle n°2 Année scolaire : 2010\""
+    ]
+  },
+  {
+    "numericId": 9631,
+    "fileKey": "teacher-library/cmr95w2vb005gy0gi16vu20dr/imported/ilovepdf2-1783338835569-390-O4tW7v48ZON34Sr0ubAjHR0gfNLei2.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 2ème AS - Section Lettres (2024-2025) : l'infidélité et ses justifications",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "Lajmi",
+        "lastName": "Houda"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7237,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": "2ème AS",
+      "schoolNameInText": "Sadiki Devoir de contrôle n°2 Professeur : Mme Lajmi",
+      "yearInText": null,
+      "teacherInText": "Lajmi"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Sadiki Devoir de contrôle n°2 Professeur : Mme Lajmi\"",
+      "✓ Prof \"Lajmi\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 9632,
+    "fileKey": "teacher-library/cmr95w2vb005gy0gi16vu20dr/imported/ilovepdf2-1783338842989-913-jVZmmKf76QZHAP1VsCZYwnEA911bhq.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 2ème AS - Section Lettres (2024-2025) : l'infidélité féminine",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "Lajmi",
+        "lastName": "Houda"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7237,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": "2ème AS",
+      "schoolNameInText": "Sadiki Devoir de contrôle n°2 Professeur : Mme Lajmi",
+      "yearInText": null,
+      "teacherInText": "Lajmi"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Sadiki Devoir de contrôle n°2 Professeur : Mme Lajmi\"",
+      "✓ Prof \"Lajmi\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 9633,
+    "fileKey": "teacher-library/cmr95w2vb005gy0gi16vu20dr/imported/ilovepdf2-1783338849009-622-86gvJj8J6Rp0CzhPKEWVcYOfom9NxG.pdf",
+    "title": "Cours - Français - 1ère AS (2024-2025) : la rencontre amoureuse",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Lajmi",
+        "lastName": "Houda"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 1847,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 9763,
+    "fileKey": "teacher-library/cmr96bit7008mxgtbldgbj60s/imported/ilovepdf2-1783339542365-639-RkQckWH1XGY4fAGlthwr9RfHwlityl.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2014-2015) : rencontre inattendue",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Nesrine",
+        "lastName": "Houaichi"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4908,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 9770,
+    "fileKey": "teacher-library/cmr96bit7008mxgtbldgbj60s/imported/conv4-1783339613964-160-EPQcjZxsKO2dhUgjFFJgbYH614yhRq.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2014-2015) : rencontre inattendue",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Nesrine",
+        "lastName": "Houaichi"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4908,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 13886,
+    "fileKey": "teacher-library/cmr99fwm302pa8djcchnrmlsb/imported/jimdo-quad3-1783344786870-762-7CfOwDK2ACwgaO53RiQeQ6PJxoFmcS.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2010-2011) : la découverte de l'art",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "samia",
+        "lastName": "mansour"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3338,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "de Benguerden",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Benguerden\""
+    ]
+  },
+  {
+    "numericId": 13890,
+    "fileKey": "teacher-library/cmr99fwm302pa8djcchnrmlsb/imported/jimdo-quad3-1783344788176-93-xm6ceAc0G4g0RMpFDC1flrhB4TnFpN.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2010-2011) : la rencontre amicale",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "samia",
+        "lastName": "mansour"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3732,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "de Benguerden",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Benguerden\""
+    ]
+  },
+  {
+    "numericId": 13892,
+    "fileKey": "teacher-library/cmr8iqk6c00u7u3qnl8780rbe/imported/jimdo-quad3-1783344789449-427-3uPqE8JWZiYtjlYddUcK8iHZoMO23K.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 1ère AS (2017-2018) : la rencontre amoureuse",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Megbli",
+        "lastName": "Tarek"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4238,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Cité Mahrajene",
+      "yearInText": "2017-2018",
+      "teacherInText": "Tarek"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Cité Mahrajene\"",
+      "✓ Prof \"Tarek\" trouvé dans le texte (lastName)"
+    ]
+  },
+  {
+    "numericId": 13897,
+    "fileKey": "teacher-library/cmr8iqk6c00u7u3qnl8780rbe/imported/jimdo-quad3-1783344790868-141-P40Imocw8zmDDOwgRamRlTQF8KUARV.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 1ère AS (2013-2014) : le voyage difficile",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Megbli",
+        "lastName": "Tarek"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5158,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": "Sidi Hassine Devoir de synthèse n°1 Prof : M. Megbli Tarek",
+      "yearInText": null,
+      "teacherInText": "Megbli"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Sidi Hassine Devoir de synthèse n°1 Prof : M. Megbli Tarek\"",
+      "✓ Prof \"Megbli\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 13902,
+    "fileKey": "teacher-library/cmr94vz81007dl6sh6u8yafbo/imported/jimdo-quad3-1783344792913-10-ywgxHipr4lpOLa6GuychtyiMUXr31E.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2009-2010) : les relations familiales",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Sana",
+        "lastName": "Jerjir"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7295,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": "15 Novembre1955 Devoir de contrôle n°2 Année scolaire : 2010",
+      "yearInText": "2010-2011",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"15 Novembre1955 Devoir de contrôle n°2 Année scolaire : 2010\""
+    ]
+  },
+  {
+    "numericId": 13906,
+    "fileKey": "teacher-library/cmr94855z00e6zpvn6lkuj3i9/imported/jimdo-quad3-1783344794784-384-wgWjP2mJ7nTl2EA0RcgewcdDcWvTFv.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2011-2012) : la jalousie et ses conséquences",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Boubaker",
+        "lastName": "Rym"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6090,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 13911,
+    "fileKey": "teacher-library/cmr8iqk6c00u7u3qnl8780rbe/imported/jimdo-quad3-1783344796205-669-YVY0LEhNN9JJTnXG9lMVz7cjEBskmW.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2014-2015) : les rêves et les relations familiales",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Megbli",
+        "lastName": "Tarek"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6087,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Pères Blancs Tunis 2",
+      "yearInText": "2014-2015",
+      "teacherInText": "Tarek"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Pères Blancs Tunis 2\"",
+      "✓ Prof \"Tarek\" trouvé dans le texte (lastName)"
+    ]
+  },
+  {
+    "numericId": 13915,
+    "fileKey": "teacher-library/cmr934tvf00icx6qus0wwl3o4/imported/jimdo-quad3-1783344797971-479-6EXr9x7XQMSjIFZlFamfYVclmCoIw5.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 1ère AS (2017-2018) : la publicité et la consommation",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Salwa",
+        "lastName": "Kanzali"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4604,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "1ère AS",
+      "schoolNameInText": "Avenue de La République Gabès",
+      "yearInText": null,
+      "teacherInText": "Salwa"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Avenue de La République Gabès\"",
+      "✓ Prof \"Salwa\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 13921,
+    "fileKey": "teacher-library/cmqu2i5te01doq2n3filsljnv/imported/jimdo-quad3-1783344799288-385-EUodoTZY3dp5jQhPWevP1lA7O1vuIz.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - 1ère AS (2011-2012) : les aspirations des jeunes",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "abdessamad",
+        "lastName": "asma"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5813,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Aboulkacem Chekki Devoir de synthèse n°2",
+      "yearInText": "2011-2012",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Aboulkacem Chekki Devoir de synthèse n°2\""
+    ]
+  },
+  {
+    "numericId": 13927,
+    "fileKey": "teacher-library/cmr8gex4x00jtwmh4kcqmwb4n/imported/jimdo-quad3-1783344800942-787-3Bl29khJ5mi32D74Jzbx8oPKtDno8z.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - 1ère AS (2011-2012) : les grèves en Tunisie",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "yengui",
+        "lastName": "bouhajeb sonia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7084,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 13932,
+    "fileKey": "teacher-library/cmr8gocxx00uqwmh47yixnzxy/imported/jimdo-quad3-1783344802991-496-R3jBQmtsJcc9LDYVLURtas4X7NlQGz.pdf",
+    "title": "Devoir de Synthèse N°3 - Français - 1ère AS (2016-2017) : pollution des océans",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "class": "1ère année secondaire",
+      "teacher": {
+        "firstName": "Ahmed",
+        "lastName": "Samiha"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3244,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 13937,
+    "fileKey": "teacher-library/cmr8gx2ih013wwmh4k1vpd5qo/imported/jimdo-quad3-1783344804606-675-8NfllGK0Z9safHrZnp2h7mAUuYclkW.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - 2ème AS - Section Lettres (2022-2023) : discrimination raciale",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "Titey",
+        "lastName": "Ridha"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5121,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "2ème AS",
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": "Ridha"
+    },
+    "findings": [
+      "✓ Prof \"Ridha\" trouvé dans le texte (lastName)"
+    ]
+  },
+  {
+    "numericId": 13949,
+    "fileKey": "teacher-library/cmr8gex4x00jtwmh4kcqmwb4n/imported/jimdo-quad3-1783344809742-132-wFMdsGLtgr6CvIE0jOOoCQWHv0LJYg.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 2ème AS - Section Économie et services (2010-2011) : conditions de vie des ouvriers",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie et services",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "yengui",
+        "lastName": "bouhajeb sonia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 5213,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "de Devoir de Contrôle n°3 Prof : Mme Yengui",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Devoir de Contrôle n°3 Prof : Mme Yengui\""
+    ]
+  },
+  {
+    "numericId": 13956,
+    "fileKey": "teacher-library/cmr8gex4x00jtwmh4kcqmwb4n/imported/jimdo-quad3-1783344811221-512-bFO8yckZDtfrclQYrlSkyPQGNHSi8P.pdf",
+    "title": "Devoir de Synthèse N°3 - Français - 2ème AS - Section Économie et services (2010-2011) : le voyage intérieur",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie et services",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "yengui",
+        "lastName": "bouhajeb sonia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6144,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Devoir de synthèse n°3 Prof : Mme Yengui",
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Devoir de synthèse n°3 Prof : Mme Yengui\""
+    ]
+  },
+  {
+    "numericId": 13972,
+    "fileKey": "teacher-library/cmr94855z00e6zpvn6lkuj3i9/imported/jimdo-quad3-1783344818172-41-apSMJRyLL5XDbzodmBJkFbzwCnl2hF.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 3ème AS - Section Économie-Gestion (2011-2012) : immigration et identité",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie-Gestion",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "Boubaker",
+        "lastName": "Rym"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3586,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "3ème AS",
+      "schoolNameInText": null,
+      "yearInText": "2011-2012",
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 13978,
+    "fileKey": "teacher-library/cmr94855z00e6zpvn6lkuj3i9/imported/jimdo-quad3-1783344819620-20-i95kEMa4oBh0IrnxbRmCD7etpuGlEx.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 3ème AS - Section Économie-Gestion (2011-2012) : l'immigration et l'identité",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie-Gestion",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "Boubaker",
+        "lastName": "Rym"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4787,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 13984,
+    "fileKey": "teacher-library/cmr94855z00e6zpvn6lkuj3i9/imported/jimdo-quad3-1783344821466-350-LC5ZdN3usDfNfwCbRp3i04P2kW93wh.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - 3ème AS - Section Économie-Gestion (2011-2012) : portrait caricatural",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie-Gestion",
+      "class": "3ème année secondaire",
+      "teacher": {
+        "firstName": "Boubaker",
+        "lastName": "Rym"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 8674,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 13992,
+    "fileKey": "teacher-library/cmr94tqus0022l6sha47jq8mb/imported/jimdo-quad3-1783344824998-499-v7JyPsQhn4BYlCn2xcEoZhdXRvRSm5.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - Bac - Section Lettres (2010-2011) : dialogue des civilisations",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Hasnaoui",
+        "lastName": "Adel"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3520,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "de Meknassy Devoir de contrôle n° : 1 Prof : Adel Hasnaoui",
+      "yearInText": null,
+      "teacherInText": "Hasnaoui"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Meknassy Devoir de contrôle n° : 1 Prof : Adel Hasnaoui\"",
+      "✓ Prof \"Hasnaoui\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 13997,
+    "fileKey": "teacher-library/cmr8iqk6c00u7u3qnl8780rbe/imported/jimdo-quad3-1783344826555-202-2jxCnMN4uuO7L5g2Aw6X3Lwhgcg01l.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - Bac - Section Technique (2016-2017) : les relations familiales",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technique",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Megbli",
+        "lastName": "Tarek"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3109,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Technique",
+      "classInText": null,
+      "schoolNameInText": "Cité Mahrajene",
+      "yearInText": "2016-2017",
+      "teacherInText": "Tarek"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Cité Mahrajene\"",
+      "✓ Prof \"Tarek\" trouvé dans le texte (lastName)"
+    ]
+  },
+  {
+    "numericId": 14001,
+    "fileKey": "teacher-library/cmr8jfcng008p70fakx8r600y/imported/jimdo-quad3-1783344828206-878-gXeRfvLFjhexdhkYf3pZz1vScj8zQ8.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - Bac - Section Sciences Expérimentales (2007-2008) : les relations amoureuses",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "abdelfatteh",
+        "lastName": "elmhamdi"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6405,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "de Midoun 2007/2008",
+      "yearInText": "2007-2008",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"de Midoun 2007/2008\""
+    ]
+  },
+  {
+    "numericId": 14010,
+    "fileKey": "teacher-library/cmr8iqk6c00u7u3qnl8780rbe/imported/jimdo-quad3-1783344831273-495-ROyl9FlLbR65hmWOAuq6x0mDhaie2r.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - Bac - Section Technique (2016-2017) : l'amour et ses conséquences",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technique",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Megbli",
+        "lastName": "Tarek"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3056,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Cité Mahrajene Tataouine",
+      "yearInText": "2016-2017",
+      "teacherInText": "Tarek"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Cité Mahrajene Tataouine\"",
+      "✓ Prof \"Tarek\" trouvé dans le texte (lastName)"
+    ]
+  },
+  {
+    "numericId": 14015,
+    "fileKey": "teacher-library/cmr8i94gx00c4u3qnxx4lnkwu/imported/jimdo-quad3-1783344833003-41-vosmRB4MWs7XtSPkL8jZBHIu704K0M.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - Bac - Section Lettres (2017-2018) : conditions de vie des mineurs",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Lamourou",
+        "lastName": "Salem"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4467,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "cité  Devoir de synthèse  4ème lettres",
+      "yearInText": "2017-2018",
+      "teacherInText": "Lamourou"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"cité  Devoir de synthèse  4ème lettres\"",
+      "✓ Prof \"Lamourou\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 14018,
+    "fileKey": "teacher-library/cmr8gpxzh00wuwmh4johaje5a/imported/jimdo-quad3-1783344834568-732-ZqoL1Idn3kmXMQgYxku1fjl8lMcKuy.pdf",
+    "title": "Devoir de Synthèse N°1 - Français - Bac Lycée pilote - Section Sciences Expérimentales (2023-2024) : les choix de vie",
+    "db": {
+      "schoolType": "PILOTE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Kassebi",
+        "lastName": "Sihem"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4263,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": "Bac",
+      "schoolNameInText": null,
+      "yearInText": "2023-2024",
+      "teacherInText": null
+    },
+    "findings": [
+      "? DB=PILOTE mais pas de mention \"Lycée pilote\" dans le texte (probablement OK si prof est à un lycée pilote)"
+    ]
+  },
+  {
+    "numericId": 14027,
+    "fileKey": "teacher-library/cmr948cyd00eszpvnxxhfwoxl/imported/jimdo-quad3-1783344838602-423-0pcEHe9w5QgsmNadYqYCjFy0mCyq9b.pdf",
+    "title": "Devoir de Contrôle N°3 - Français - Bac - Section Mathématiques (2011-2012) : les conséquences de la guerre",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Mathématiques",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Laâbidi",
+        "lastName": "Besma"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3242,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "avait pris feu et s’était presque aussitôt écroulée",
+      "yearInText": "2011-2012",
+      "teacherInText": "Laâbidi"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"avait pris feu et s’était presque aussitôt écroulée\"",
+      "✓ Prof \"Laâbidi\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 14034,
+    "fileKey": "teacher-library/cmr8gex4x00jtwmh4kcqmwb4n/imported/jimdo-quad3-1783344840116-48-51jCKWDaAtYSsrMHf7zhTpudmlAs1I.pdf",
+    "title": "Devoir de Synthèse N°3 - Français - Bac - Section Lettres (2010-2011) : l'engagement de l'écrivain",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "yengui",
+        "lastName": "bouhajeb sonia"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 9858,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 14039,
+    "fileKey": "teacher-library/cmr8i94gx00c4u3qnxx4lnkwu/imported/jimdo-quad3-1783344841910-983-M2834CjIErtbX54lW7zMFBYQkgQPnb.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - Bac - Section Sciences Expérimentales (2018-2019) : la peine de mort",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences Expérimentales",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Lamourou",
+        "lastName": "Salem"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4346,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Sciences",
+      "classInText": null,
+      "schoolNameInText": "cité  Devoir de synthèse  4ème sciences",
+      "yearInText": "2018-2019",
+      "teacherInText": "Lamourou"
+    },
+    "findings": [
+      "⚠️ Section texte=\"Sciences\" vs DB=\"Sciences Expérimentales\"",
+      "ℹ️ École détectée: \"cité  Devoir de synthèse  4ème sciences\"",
+      "✓ Prof \"Lamourou\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 14044,
+    "fileKey": "teacher-library/cmr8i94gx00c4u3qnxx4lnkwu/imported/jimdo-quad3-1783344843955-332-qICpM06ysNG7trxNORC3JtYcqM0Dnm.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - Bac - Section Lettres (2018-2019) : le zapping télévisuel",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Lettres",
+      "class": "4ème année secondaire (Bac)",
+      "teacher": {
+        "firstName": "Lamourou",
+        "lastName": "Salem"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4892,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "cité  Devoir de synthèse  4ème lettres",
+      "yearInText": "2018-2019",
+      "teacherInText": "Lamourou"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"cité  Devoir de synthèse  4ème lettres\"",
+      "✓ Prof \"Lamourou\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 15358,
+    "fileKey": "teacher-library/cmr8w87l700postsg7m17t35o/imported/duty2-1783322592893-116-aD5LZYCzOXtBj8GRD7Lh0oZSzARUIR.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 2ème AS - Section Économie et services (2009-2010) : l'amour et la correspondance",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie et services",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "Jaballah",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 2968,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": "Lettres",
+      "classInText": null,
+      "schoolNameInText": "Ibn Classe. 2ème Eco.",
+      "yearInText": null,
+      "teacherInText": "Jaballah"
+    },
+    "findings": [
+      "⚠️ Section texte=\"Lettres\" vs DB=\"Économie et services\"",
+      "ℹ️ École détectée: \"Ibn Classe. 2ème Eco.\"",
+      "✓ Prof \"Jaballah\" trouvé dans le texte (firstName)"
+    ]
+  },
+  {
+    "numericId": 15359,
+    "fileKey": "teacher-library/cmr8w890w00ptstsgmn6tv7dp/imported/duty2-1783322594324-277-oyCAJHXKu9chUG5i09Lo6y1d5ZF4Hx.pdf",
+    "title": "Devoir de Contrôle N°1 - Français - 2ème AS - Section Sciences (2012-2013) : l'amour et le désir",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Sciences",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "sahraoui",
+        "lastName": "ben mabrouk"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 7228,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Elmahassen Mme Sahraoui Ben",
+      "yearInText": "2012-2013",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Elmahassen Mme Sahraoui Ben\""
+    ]
+  },
+  {
+    "numericId": 15360,
+    "fileKey": "teacher-library/cmr8w8b5t00q2stsgbeks0xk5/imported/duty2-1783322597315-254-tKUuBNPUdZdY48dmO8laZDfov56bmd.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 2ème AS - Section Technologies de l'informatique (TI) (2009-2010) : la vie de chef de gare",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technologies de l'informatique (TI)",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "samar",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 3648,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "Farhat Hached Bizerte",
+      "yearInText": "2010-2011",
+      "teacherInText": null
+    },
+    "findings": [
+      "ℹ️ École détectée: \"Farhat Hached Bizerte\""
+    ]
+  },
+  {
+    "numericId": 15361,
+    "fileKey": "teacher-library/cmr8w8b5t00q2stsgbeks0xk5/imported/duty2-1783322598789-798-KTM9UvRGYDaigFeSfwaOm8mMLKcuxY.pdf",
+    "title": "Devoir de Contrôle N°2 - Français - 2ème AS - Section Technologies de l'informatique (TI) (2010-2011) : la rédemption et la souffrance",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Technologies de l'informatique (TI)",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "samar",
+        "lastName": "—"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 4555,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": null,
+      "yearInText": null,
+      "teacherInText": null
+    },
+    "findings": []
+  },
+  {
+    "numericId": 15363,
+    "fileKey": "teacher-library/cmr8w8egu00qgstsgfngas22q/imported/duty2-1783322601801-336-WOPZBHlAtIAAHzKs9sYMoGTzXinygn.pdf",
+    "title": "Devoir de Synthèse N°2 - Français - 2ème AS - Section Économie et services (2015-2016) : l'évasion romantique",
+    "db": {
+      "schoolType": "LYCEE",
+      "hasCorrection": false,
+      "section": "Économie et services",
+      "class": "2ème année secondaire",
+      "teacher": {
+        "firstName": "Khadraoui",
+        "lastName": "Walid"
+      }
+    },
+    "text": {
+      "method": "pdfplumber",
+      "length": 6867,
+      "corrigePattern": null,
+      "schoolTypeInText": null,
+      "sectionInText": null,
+      "classInText": null,
+      "schoolNameInText": "ElAyoun- Kasserine",
+      "yearInText": "2015-2016",
+      "teacherInText": "Khadraoui"
+    },
+    "findings": [
+      "ℹ️ École détectée: \"ElAyoun- Kasserine\"",
+      "✓ Prof \"Khadraoui\" trouvé dans le texte (firstName)"
+    ]
+  }
+]

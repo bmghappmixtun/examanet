@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+build
+public
+prisma/migrations
+scripts/one-off
+*.md
+*.json
+*.lock

@@ -1,0 +1,307 @@
+{
+  "mathematiques_15181": {
+    "title": "Exercices de Mathématiques pour le BAC",
+    "summary": "Ce document contient plusieurs exercices de mathématiques destinés aux élèves préparant le BAC. Les exercices couvrent des thèmes tels que les fonctions, les limites, les probabilités et les ajustements linéaires.",
+    "language": "mixed",
+    "type": "exercise",
+    "subtype": null,
+    "homeworkNumber": null,
+    "year": "2014-2015",
+    "trimester": null,
+    "schoolName": "Lycée Echebbi",
+    "profNames": [
+      "DK AHMED"
+    ],
+    "keyPoints": [
+      "Détermination de limites de fonctions",
+      "Calcul de dérivées",
+      "Probabilités et variables aléatoires",
+      "Ajustement linéaire et régression",
+      "Analyse de courbes et points d'inflexion"
+    ],
+    "topics": [
+      "fonctions",
+      "limites",
+      "probabilités",
+      "ajustement linéaire",
+      "dérivées"
+    ],
+    "difficulty": "medium",
+    "estimatedTimeMinutes": 180,
+    "prerequisites": [
+      "Connaissance des fonctions et de leurs propriétés",
+      "Notions de probabilités",
+      "Techniques de dérivation"
+    ],
+    "keyInsights": [
+      "L'importance de la représentation graphique pour comprendre les fonctions.",
+      "L'application des probabilités dans des situations réelles.",
+      "L'utilisation de l'ajustement linéaire pour modéliser des données."
+    ],
+    "forBacSection": [
+      "math"
+    ],
+    "detailedSummary": "Ce document éducatif est un exercice de mathématiques destiné aux élèves du BAC tunisien, couvrant divers concepts tels que les fonctions, les limites, les probabilités et les statistiques. Il se compose de plusieurs exercices, chacun abordant des thèmes spécifiques. Par exemple, le premier exercice traite de l'analyse de fonctions, y compris la détermination de limites et la recherche d'asymptotes. Le deuxième exercice explore les probabilités liées à un candidat préparant un examen, tandis que le troisième se concentre sur la modélisation de la consommation des ménages. Enfin, le quatrième exercice examine des fonctions logarithmiques et leur intégration.\n\nCe document est utile pour les étudiants car il leur permet de pratiquer des compétences mathématiques essentielles, de renforcer leur compréhension des concepts et de se préparer efficacement pour l'examen du BAC. Les exercices variés favorisent également l'application des théories mathématiques à des situations concrètes.",
+    "_cost_usd": 0.00131,
+    "_input_tokens": 6594,
+    "_output_tokens": 539
+  },
+  "physique_15343": {
+    "title": "Cours sur la Radioactivité",
+    "summary": "Ce document présente les concepts fondamentaux de la radioactivité, y compris la structure de l'atome, les isotopes, et les différents types de radioactivité (α, β-, β+). Il aborde également les lois de conservation lors des désintégrations nucléaires.",
+    "language": "fr",
+    "type": "course",
+    "subtype": "cours",
+    "homeworkNumber": null,
+    "year": "2009-2010",
+    "trimester": null,
+    "schoolName": null,
+    "profNames": [
+      "M. ESSOUFI"
+    ],
+    "keyPoints": [
+      "Structure de l'atome et ses composants (protons, neutrons, électrons)",
+      "Définition et caractéristiques des isotopes",
+      "Lois de conservation de Soddy lors des désintégrations nucléaires",
+      "Différents types de radioactivité (α, β-, β+)",
+      "Caractéristiques des particules émises lors de la radioactivité"
+    ],
+    "topics": [
+      "radioactivité",
+      "atome",
+      "isotopes",
+      "désintégration nucléaire",
+      "lois de conservation"
+    ],
+    "difficulty": "medium",
+    "estimatedTimeMinutes": 120,
+    "prerequisites": [
+      "Connaissances de base sur la structure atomique",
+      "Notions de chimie générale"
+    ],
+    "keyInsights": [
+      "La radioactivité est un phénomène naturel qui a des applications en médecine et en industrie.",
+      "Comprendre les lois de conservation est essentiel pour prédire les produits de désintégration."
+    ],
+    "forBacSection": [
+      "sciences"
+    ],
+    "detailedSummary": "Ce document éducatif aborde le thème de la radioactivité, essentiel pour les étudiants du BAC. Il commence par rappeler la structure de l'atome, en détaillant le noyau et ses composants, notamment les protons et les neutrons. Il explique ensuite les isotopes et la stabilité des noyaux atomiques, en introduisant les forces qui agissent à l'intérieur du noyau.\n\nLa partie centrale du document traite de la radioactivité, définie comme la désintégration des noyaux instables, et présente les différents types de radioactivité : α, β- et β+. Chaque type est illustré par des exemples et des équations de désintégration, accompagnés de caractéristiques des particules émises.\n\nCe document est un outil précieux pour les étudiants, leur permettant de comprendre les concepts fondamentaux de la radioactivité, d'apprendre à résoudre des équations nucléaires et de se préparer efficacement pour l'examen du BAC.",
+    "_cost_usd": 0.00097,
+    "_input_tokens": 4208,
+    "_output_tokens": 569
+  },
+  "svt_14746": {
+    "title": "L'évolution biologique",
+    "summary": "Ce document traite de l'évolution biologique, en abordant les preuves, les mécanismes et les théories de l'évolution. Il présente des arguments paléontologiques et anatomiques, ainsi que le rôle des mutations et de la sélection naturelle dans l'évolution des espèces.",
+    "language": "fr",
+    "type": "course",
+    "subtype": "cours",
+    "homeworkNumber": null,
+    "year": "2019-2020",
+    "trimester": null,
+    "schoolName": "Lycée Tabarka",
+    "profNames": [
+      "Prof: Salhi Mohamed"
+    ],
+    "keyPoints": [
+      "L'évolution est l'apparition de nouveaux types d'organismes à partir d'êtres préexistants.",
+      "Les mutations et la reproduction sexuée sont des processus complémentaires dans l'évolution.",
+      "La sélection naturelle favorise la transmission de certaines innovations génétiques."
+    ],
+    "topics": [
+      "évolution",
+      "paléontologie",
+      "anatomie comparée",
+      "mutations",
+      "sélection naturelle",
+      "théories de l'évolution"
+    ],
+    "difficulty": "medium",
+    "estimatedTimeMinutes": null,
+    "prerequisites": [],
+    "keyInsights": [
+      "L'évolution est soutenue par des preuves variées provenant de différentes disciplines scientifiques.",
+      "Les théories de l'évolution, comme le lamarckisme et le darwinisme, offrent des perspectives différentes sur les mécanismes de l'évolution."
+    ],
+    "forBacSection": [
+      "sciences",
+      "lettres"
+    ],
+    "detailedSummary": "Ce document éducatif, destiné aux élèves du Bac Lettres au Lycée Tabarka, aborde le thème de l'évolution biologique. Il présente les preuves scientifiques de l'évolution, notamment à travers des arguments paléontologiques et anatomiques, et explique les mécanismes sous-jacents tels que les mutations et la sélection naturelle. Les élèves découvrent également les théories de l'évolution, notamment celles de Lamarck et Darwin, qui offrent des perspectives différentes sur le processus évolutif. \n\nCe résumé permet aux étudiants de mieux comprendre les concepts fondamentaux de l'évolution, essentiels pour leur examen. En s'appuyant sur des exemples concrets et des activités d'analyse, ce document les aide à développer une pensée critique et à renforcer leur connaissance des sciences de la vie, ce qui est crucial pour leur réussite académique.",
+    "_cost_usd": 0.0008,
+    "_input_tokens": 3250,
+    "_output_tokens": 514
+  },
+  "francais_15364": {
+    "title": "Devoir de contrôle n°3 sur Gabriel Péri",
+    "summary": "Ce document présente un devoir de contrôle en Français sur le poème de Paul Eluard dédié à Gabriel Péri, un journaliste martyr. Les élèves doivent analyser le texte, étudier le vocabulaire et rédiger un essai argumentatif sur la liberté.",
+    "language": "fr",
+    "type": "exam",
+    "subtype": "controle",
+    "homeworkNumber": 3,
+    "year": "2011-2012",
+    "trimester": null,
+    "schoolName": "Lycée Pilote de Monastir",
+    "profNames": [
+      "Prof. Marouane yahyaoui"
+    ],
+    "keyPoints": [
+      "Analyse de l'opposition entre les ambitions de Péri et son sort",
+      "Identification des points communs entre l'espoir de Péri et celui des hommes",
+      "Portrait héroïque de Péri et procédés d'écriture utilisés par Eluard"
+    ],
+    "topics": [
+      "poésie",
+      "analyse de texte",
+      "liberté",
+      "justice",
+      "héroïsme"
+    ],
+    "difficulty": "medium",
+    "estimatedTimeMinutes": 120,
+    "prerequisites": [
+      "Compréhension des figures de style",
+      "Connaissance du contexte historique de Gabriel Péri",
+      "Capacité à rédiger un essai argumentatif"
+    ],
+    "keyInsights": [
+      "L'importance de la poésie comme moyen d'expression des luttes sociales",
+      "La symbolique de la mort de Péri dans le contexte de la résistance",
+      "L'impact des mots sur la vie et la mémoire collective"
+    ],
+    "forBacSection": [
+      "lettres"
+    ],
+    "detailedSummary": "Ce document éducatif, destiné aux élèves du Bac au Lycée Pilote de Monastir, présente une analyse du poème \"Gabriel Péri\" de Paul Éluard. À travers ce texte, les étudiants explorent la figure de Gabriel Péri, un journaliste martyr, et les thèmes de la lutte pour la justice, la liberté et l'humanité. Le devoir de contrôle comprend des questions d'analyse littéraire, de langue et un essai argumentatif, permettant aux élèves de développer leur compréhension du texte et de la langue française. En répondant aux questions, les étudiants apprennent à identifier les oppositions, les symboles et les procédés littéraires, tout en renforçant leur capacité à argumenter et à exprimer leur point de vue. Ce document est donc un outil précieux pour améliorer les compétences analytiques et rédactionnelles des élèves, essentielles pour réussir le Bac.",
+    "_cost_usd": 0.0009,
+    "_input_tokens": 3725,
+    "_output_tokens": 566
+  },
+  "anglais_13881": {
+    "title": "Test de langue anglaise - Fin du trimestre 3",
+    "summary": "Ce document est un test de langue anglaise pour les élèves de 4ème année au lycée Khaled Ibn El Walid. Il comprend des questions de compréhension et des exercices d'écriture sur des thèmes tels que l'émigration et la conduite écologique.",
+    "language": "fr",
+    "type": "exam",
+    "subtype": "controle",
+    "homeworkNumber": null,
+    "year": "2022-2023",
+    "trimester": 3,
+    "schoolName": "Khaled Ibn El Walid Secondary School",
+    "profNames": [
+      "Mrs Dziri"
+    ],
+    "keyPoints": [
+      "Compréhension de texte sur l'émigration et le 'brain drain'",
+      "Questions de compréhension et d'analyse critique",
+      "Exercices d'écriture sur la conduite écologique"
+    ],
+    "topics": [
+      "émigration",
+      "brain drain",
+      "conduite écologique",
+      "économie",
+      "jeux en ligne"
+    ],
+    "difficulty": "medium",
+    "estimatedTimeMinutes": 120,
+    "prerequisites": [
+      "Compréhension de l'anglais écrit",
+      "Capacité à rédiger des paragraphes cohérents"
+    ],
+    "keyInsights": [
+      "L'importance de la compréhension des enjeux économiques liés à l'émigration.",
+      "Développement de compétences d'écriture argumentatives et critiques."
+    ],
+    "forBacSection": [
+      "lettres"
+    ],
+    "detailedSummary": "Ce document éducatif est un test de langue anglaise destiné aux élèves de 4ème année dans un lycée tunisien. Il aborde le thème de l'émigration des jeunes Grecs, en particulier ceux qui, après avoir obtenu leur diplôme, cherchent des opportunités à l'étranger en raison de la crise économique en Grèce. Le texte met en lumière les défis auxquels ces jeunes font face, tels que le chômage élevé et les salaires bas, ainsi que le phénomène de la \"fuite des cerveaux\", où les travailleurs qualifiés quittent leur pays pour des emplois mieux rémunérés ailleurs. \n\nCe document peut aider les étudiants à améliorer leur compréhension de l'anglais à travers des questions de compréhension et des exercices d'écriture. En analysant les enjeux économiques et sociaux, les élèves peuvent également développer leur esprit critique et leur capacité à formuler des arguments, ce qui est essentiel pour leur réussite académique et professionnelle future.",
+    "_cost_usd": 0.00076,
+    "_input_tokens": 2980,
+    "_output_tokens": 520
+  },
+  "arabe_14594": {
+    "title": "تحليل رواية الشحّاذ لنجيب محفوظ",
+    "summary": "يتناول هذا الوثيقة تحليل رواية الشحّاذ لنجيب محفوظ، حيث يستعرض الكاتب الصراعات الداخلية للشخصية الرئيسية، عمر الحمزاوي، وتأثير الأحداث التاريخية على هويته. كما يناقش مفهوم البحث عن المعنى في الحياة وكيفية تجسيد هذه الأزمة في الرواية.",
+    "language": "ar",
+    "type": "course",
+    "subtype": "cours",
+    "homeworkNumber": null,
+    "year": "2014-2015",
+    "trimester": null,
+    "schoolName": null,
+    "profNames": [
+      "حمرز ثابت"
+    ],
+    "keyPoints": [
+      "تحليل الصراع الداخلي للشخصية الرئيسية",
+      "تأثير الأحداث التاريخية على الهوية",
+      "مفهوم البحث عن المعنى في الحياة"
+    ],
+    "topics": [
+      "رواية الشحّاذ",
+      "نجيب محفوظ",
+      "الأدب العربي",
+      "الهوية",
+      "الأزمة النفسية"
+    ],
+    "difficulty": "medium",
+    "estimatedTimeMinutes": 120,
+    "prerequisites": [],
+    "keyInsights": [
+      "تجسيد الصراعات النفسية في الأدب",
+      "أهمية السياق التاريخي في فهم الشخصيات",
+      "البحث عن المعنى كموضوع مركزي في الأدب"
+    ],
+    "forBacSection": [
+      "lettres"
+    ],
+    "detailedSummary": "يتناول هذا الوثيقة تحليل رواية \"الشحّاذ\" للكاتب المصري نجيب محفوظ، حيث يركز على مفهوم \"خسراف الهويّة\" الذي يعاني منه بطل الرواية، عمر الحمزاوي. يتعرض النص لتغيرات العالم بعد ثورة 1952 وكيف أثرت على الشخصيات، مما أدى إلى أزمة في الهوية والبحث عن المعنى. يُظهر التحليل كيف أن عمر الحمزاوي يواجه صراعات داخلية وخارجية، مما يجعله يفقد قدرته على تحديد ذاته وإرادته. كما يتناول الوثيقة العلاقة بين الفن والعلم والفلسفة، ويبرز أهمية التجارب الوجودية في استعادة الهوية الشخصية. \n\nيمكن أن يساعد هذا الوثيقة الطلاب في فهم العمق الفكري والأخلاقي للرواية، مما يعزز قدرتهم على تحليل النصوص الأدبية بشكل نقدي ويعمق وعيهم بالمفاهيم الفلسفية المتعلقة بالهوية والوجود.",
+    "_cost_usd": 0.00125,
+    "_input_tokens": 6188,
+    "_output_tokens": 531
+  },
+  "economie_14551": {
+    "title": "Devoir à la maison en Économie",
+    "summary": "Ce document présente un devoir à la maison pour la classe de 4ème Économie et Gestion, comprenant des questions sur le PIB, les investissements et l'effet multiplicateur. Les élèves doivent analyser des données économiques fictives et répondre à des questions basées sur des tableaux et des concepts économiques.",
+    "language": "mixed",
+    "type": "homework",
+    "subtype": "controle",
+    "homeworkNumber": 1,
+    "year": "2023-2024",
+    "trimester": null,
+    "schoolName": null,
+    "profNames": [
+      "Mme FERSI HANANE"
+    ],
+    "keyPoints": [
+      "Calcul du PIB nominal et réel",
+      "Analyse des taux de croissance économique",
+      "Effet multiplicateur des investissements"
+    ],
+    "topics": [
+      "PIB",
+      "investissements",
+      "croissance économique",
+      "effet multiplicateur"
+    ],
+    "difficulty": "medium",
+    "estimatedTimeMinutes": 120,
+    "prerequisites": [
+      "Compréhension des concepts de PIB",
+      "Notions d'investissement et de croissance économique"
+    ],
+    "keyInsights": [
+      "L'importance de l'analyse des données économiques pour comprendre les tendances.",
+      "Le lien entre investissement et croissance économique est crucial pour le développement."
+    ],
+    "forBacSection": [
+      "economie-gestion"
+    ],
+    "detailedSummary": "Ce document éducatif aborde des concepts clés de l'économie, notamment le PIB nominal et réel, ainsi que l'impact des investissements sur la croissance économique. À travers une série de questions à choix multiples (QCM) et d'exercices pratiques, les élèves sont amenés à analyser des données économiques fictives et réelles, à interpréter des tableaux et à comprendre les relations entre différents indicateurs économiques.\n\nLes exercices incluent des calculs de variations de PIB, des taux de croissance, et l'effet multiplicateur des investissements. Ce type d'évaluation permet aux étudiants de développer des compétences analytiques essentielles, de renforcer leur compréhension des dynamiques économiques et de préparer efficacement leur examen du BAC. En justifiant leurs réponses, les élèves apprennent également à articuler leurs idées de manière claire et structurée, ce qui est crucial pour leur réussite académique.",
+    "_cost_usd": 0.00066,
+    "_input_tokens": 2438,
+    "_output_tokens": 488
+  }
+}

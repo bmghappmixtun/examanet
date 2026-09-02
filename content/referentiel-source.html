@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Système Éducatif Tunisien — Référentiel Officiel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Reem+Kufi:wght@400;500;600;700&family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Roboto:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   PALETTE — Retro Modern — adapted for WHITE background
+   #145460  Oceanic Teal    – primary text, titles
+   #5D9E7E  Beauty Green   – accents, ministry logo
+   #F6EBCD  Pale Banana    – NOT USED on white (was bg)
+   #E8C492  Deep Peach     – warm secondary
+   #D15252  Muted Red      – "Tunisien" accent
+   ============================================================ */
+:root {
+  --teal:    #145460;
+  --teal-2:  #0e3f48;
+  --green:   #5D9E7E;
+  --green-2: #4a8268;
+  --peach:   #E8C492;
+  --peach-2: #d6ad75;
+  --peach-bg: #fdf3e3;       /* very light peach for cards on white */
+  --red:     #D15252;
+  --red-2:   #b73d3d;
+  --green-bg: #eaf5ee;        /* very light green for badges */
+  --red-bg: #fbe9e9;          /* very light red for hours */
+  --teal-bg: #e0eef2;         /* very light teal */
+
+  --bg:        #ffffff;
+  --bg-soft:   #fafaf9;
+  --surface:   #ffffff;
+  --surface-2: #f6f6f5;
+  --border:    #e5e3df;
+  --border-soft: #efece7;
+  --text:      #1c1c1c;
+  --text-soft: #4a4a4a;
+  --muted:     #9a9a9a;
+  --muted-2:   #c4c4c4;
+  --icon:      #9a9a9a;
+
+  --radius:    18px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:    0 4px 16px -4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 18px 50px -10px rgba(20,84,96,0.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-family: 'Inter', -apple-system, system-ui, sans-serif; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 56px 24px 80px;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+.container { max-width: 1100px; margin: 0 auto; position: relative; }
+
+/* ============================================================
+   HERO — restructured (no stars)
+   ============================================================ */
+.hero {
+  text-align: center;
+  margin-bottom: 64px;
+  padding: 16px 12px 4px;
+}
+
+/* ROW 1: Header strip */
+.hero-header-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  margin-bottom: 80px;
+  flex-wrap: wrap;
+}
+
+.flag-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flag-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(20,84,96,0.18), 0 0 0 1px rgba(20,84,96,0.08);
+  flex-shrink: 0;
+  background: white;
+}
+
+.flag-label-stack {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.flag-label-main {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.flag-label-sub {
+  font-size: 12px;
+  color: var(--text-soft);
+  direction: rtl;
+  font-weight: 500;
+}
+
+.hero-divider-vertical {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(180deg, transparent, var(--peach-2), transparent);
+  opacity: 0.5;
+}
+
+/* ROW 2: Eyebrow + main title */
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  margin-bottom: 32px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  flex-wrap: wrap;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: var(--peach-bg);
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(214,173,117,0.3);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-eyebrow-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--red);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(209,82,82,0.18);
+}
+
+.hero-title {
+  font-family: 'Roboto', 'Open Sans', 'Inter', sans-serif;
+  margin: 0;
+  line-height: 1;
+  text-align: center;
+  font-weight: 700;
+  font-size: clamp(46px, 6.8vw, 84px);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.hero-title-main {
+  font-family: 'Roboto', 'Open Sans', 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--teal);
+  margin-right: 0.3em;
+  font-style: normal;
+}
+
+.hero-title-accent {
+  font-family: 'Roboto', 'Open Sans', 'Inter', sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, var(--red) 0%, var(--red) 35%, var(--peach-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* OLD: hero-accent-row removed — Tunisien is now inline with main title */
+
+/* ROW 4: Arabic */
+.hero-arabic-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.hero-arabic {
+  font-family: 'Reem Kufi', 'Inter', sans-serif;
+  font-size: clamp(38px, 5.5vw, 64px);
+  font-weight: 600;
+  direction: rtl;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  background: linear-gradient(135deg, var(--green) 0%, var(--teal) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 8px 24px;
+}
+
+/* ROW 5: Explanatory intro */
+.hero-intro {
+  max-width: 760px;
+  margin: 32px auto 0;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.hero-intro-lead {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-soft);
+  margin-bottom: 22px;
+}
+
+.hero-intro-lead strong {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.hero-intro-features {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 580px;
+  margin: 0 auto;
+}
+
+.hero-feature {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 12px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--text-soft);
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.hero-feature:hover {
+  border-color: var(--teal);
+  transform: translateX(2px);
+  background: var(--surface-2);
+}
+
+.hero-feature svg {
+  width: 16px;
+  height: 16px;
+  color: var(--peach-2);
+  flex-shrink: 0;
+}
+
+.hero-feature strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Stats */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  max-width: 720px;
+  margin: 56px auto 0;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.hero-stat {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.hero-stat-num {
+  font-size: 26px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--green) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 6px;
+}
+
+@media (max-width: 720px) {
+  .hero-title-row { gap: 20px; }
+  .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  .hero-header-strip { gap: 16px; margin-bottom: 48px; }
+  .hero-divider-vertical { height: 28px; }
+  .flag-circle { width: 48px; height: 48px; }
+}
+
+/* ============================================================
+   TIMELINE (gradient stations — pop on white)
+   ============================================================ */
+.timeline {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+}
+
+.timeline-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 600px;
+  position: relative;
+  padding: 20px 0;
+}
+
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 4%;
+  right: 4%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--peach) 0%, var(--green) 35%, var(--teal) 70%, var(--red) 100%);
+  border-radius: 1px;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.station {
+  position: relative;
+  z-index: 2;
+  width: 80px;
+  height: 80px;
+  background: var(--surface);
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.station:hover { transform: scale(1.1) translateY(-3px); box-shadow: var(--shadow-lg); }
+.station.base       { background: linear-gradient(135deg, var(--peach), var(--peach-2)); }
+.station.secondaire { background: linear-gradient(135deg, var(--green), var(--green-2)); }
+.station.bac        { background: linear-gradient(135deg, var(--teal), var(--teal-2)); }
+.station.exam       { background: linear-gradient(135deg, var(--red), var(--red-2)); }
+.station.active { transform: scale(1.15); box-shadow: var(--shadow-lg); }
+
+.station-year { font-size: 18px; font-weight: 800; color: white; line-height: 1; text-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.station-arabic {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.95);
+  margin-top: 4px;
+  direction: rtl;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* ============================================================
+   TOOLBAR
+   ============================================================ */
+.toolbar {
+  position: sticky;
+  top: 16px;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow);
+}
+
+.search-wrap { flex: 1; min-width: 240px; position: relative; }
+.search-input {
+  width: 100%;
+  padding: 9px 14px 9px 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--teal); }
+.search-input::placeholder { color: var(--muted); }
+.search-icon {
+  position: absolute;
+  left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--teal);
+  pointer-events: none; display: flex;
+}
+.search-icon svg { width: 14px; height: 14px; }
+
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-chip {
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  font-weight: 500;
+}
+.filter-chip:hover { border-color: var(--teal); color: var(--text); }
+.filter-chip.active { background: var(--teal); border-color: var(--teal); color: white; }
+
+/* ============================================================
+   TREE
+   ============================================================ */
+.tree { display: flex; flex-direction: column; gap: 14px; }
+
+.cycle-block {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.cycle-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px; cursor: pointer; transition: background 0.15s;
+}
+.cycle-header:hover { background: var(--bg-soft); }
+
+.cycle-toggle {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal); transition: all 0.2s; flex-shrink: 0;
+}
+.cycle-block.expanded .cycle-toggle { background: var(--teal-bg); transform: rotate(90deg); }
+.cycle-toggle svg { width: 10px; height: 10px; }
+
+.cycle-icon { width: 20px; height: 20px; color: var(--teal); flex-shrink: 0; }
+.cycle-title {
+  flex: 1; font-family: 'Inter', sans-serif;
+  font-size: 21px; font-weight: 700;
+  letter-spacing: -0.025em; text-align: left;
+  color: var(--text);
+}
+.cycle-arabic { font-size: 14px; color: var(--text-soft); direction: rtl; font-weight: 500; }
+
+.cycle-children {
+  display: none;
+  padding: 4px 20px 20px;
+  border-top: 1px solid var(--border-soft);
+}
+.cycle-block.expanded .cycle-children { display: block; animation: fadeIn 0.25s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.class-node {
+  margin-top: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  overflow: hidden;
+}
+
+.class-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; cursor: pointer; transition: background 0.15s;
+}
+.class-header:hover { background: var(--surface-2); }
+.class-node.expanded .class-header { background: var(--surface-2); }
+
+.class-toggle {
+  font-size: 11px; color: var(--teal); width: 14px; text-align: center;
+  transition: transform 0.2s; flex-shrink: 0;
+}
+.class-node.expanded .class-toggle { transform: rotate(90deg); }
+
+.class-num {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 700; color: var(--teal);
+  min-width: 44px; flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  background: var(--surface);
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid var(--border-soft);
+}
+
+.class-name { flex: 1; font-weight: 600; font-size: 14px; color: var(--text); text-align: left; }
+.class-arabic { font-size: 13px; color: var(--text-soft); direction: rtl; flex-shrink: 0; font-weight: 500; }
+
+.class-body {
+  display: none;
+  padding: 14px 16px 16px 42px;
+  background: var(--surface);
+  border-top: 1px solid var(--border-soft);
+}
+.class-node.expanded .class-body { display: block; animation: fadeIn 0.25s ease; }
+
+.common-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.common-block-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+
+.common-block-title svg { width: 12px; height: 12px; }
+
+.subject-list { display: flex; flex-direction: column; gap: 6px; }
+
+.subject-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  font-size: 13px;
+  transition: all 0.15s;
+  cursor: default;
+}
+
+.subject-row:hover { border-color: var(--teal); }
+.subject-row.match { background: var(--teal); color: white; border-color: var(--teal); }
+
+.subject-row-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.subject-row-icon { width: 14px; height: 14px; color: var(--green); flex-shrink: 0; }
+.subject-row.match .subject-row-icon { color: white; }
+
+.subject-row-hours {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--red);
+  background: var(--red-bg);
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.subject-row.match .subject-row-hours { background: rgba(255,255,255,0.2); color: white; }
+
+.subject-row-ar {
+  font-size: 13px;
+  color: var(--muted);
+  direction: rtl;
+  flex-shrink: 0;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.subject-row.match .subject-row-ar { color: rgba(255,255,255,0.85); }
+
+mark {
+  background: var(--peach);
+  color: var(--teal-2);
+  padding: 1px 3px;
+  border-radius: 3px;
+}
+
+.sections-header {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+  margin: 14px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sections-header svg { width: 12px; height: 12px; }
+
+.section-block {
+  margin-bottom: 10px;
+  background: white;
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.section-block:last-child { margin-bottom: 0; }
+
+.section-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px; cursor: pointer; transition: background 0.15s;
+}
+.section-header:hover { background: var(--bg-soft); }
+.section-block.expanded .section-header { background: var(--bg-soft); }
+
+.section-toggle {
+  font-size: 10px; color: var(--teal); width: 12px; text-align: center;
+  transition: transform 0.2s; flex-shrink: 0;
+}
+.section-block.expanded .section-toggle { transform: rotate(90deg); }
+
+.section-color {
+  width: 4px; height: 20px; border-radius: 3px;
+  background: var(--section-color); flex-shrink: 0;
+}
+
+.section-name { flex: 1; font-weight: 600; font-size: 13.5px; text-align: left; }
+.section-arabic { font-size: 13px; color: var(--text-soft); direction: rtl; flex-shrink: 0; font-weight: 500; }
+.section-track {
+  font-size: 11px;
+  color: var(--text-soft);
+  padding: 8px 14px 10px 36px;
+  background: var(--bg-soft);
+  display: none;
+  font-style: italic;
+  border-top: 1px dashed var(--border-soft);
+}
+.section-block.expanded .section-track { display: block; }
+.section-children {
+  display: none;
+  padding: 4px 14px 14px;
+  background: var(--surface);
+}
+.section-block.expanded .section-children { display: block; animation: fadeIn 0.25s ease; }
+
+.source-row {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.source-label {
+  font-size: 10px;
+  color: var(--teal);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: 4px;
+}
+
+.source-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 10px;
+  color: var(--text-soft);
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.source-pill:hover { border-color: var(--teal); color: var(--teal); }
+.source-pill svg { width: 9px; height: 9px; color: var(--muted); }
+
+.class-type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+}
+.class-type-pill.commun { background: var(--peach-bg); color: var(--peach-2); }
+.class-type-pill.sectioned { background: var(--green-bg); color: var(--green-2); }
+.class-type-pill.exam { background: var(--red-bg); color: var(--red); }
+
+footer {
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-soft);
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 12px;
+  line-height: 1.8;
+}
+footer a { color: var(--teal); text-decoration: underline; font-weight: 500; }
+
+@media (max-width: 768px) {
+  body { padding: 24px 16px; }
+  .station { width: 64px; height: 64px; }
+  .station-year { font-size: 15px; }
+  .cycle-title { font-size: 18px; }
+  .class-body { padding-left: 24px; }
+  .subject-row { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header class="hero">
+
+    <!-- ROW 1: Header strip -->
+    <div class="hero-header-strip">
+      <div class="flag-block">
+        <img class="flag-circle" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI4MDAiIHZpZXdCb3g9Ii02MCAtNDAgMTIwIDgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9IiNlNzAwMTMiPjxwYXRoIGQ9Ik0tNjAtNDBINjB2ODBILTYweiIvPjxjaXJjbGUgZmlsbD0iI2ZmZiIgcj0iMjAiLz48Y2lyY2xlIHI9IjE1Ii8+PGNpcmNsZSBmaWxsPSIjZmZmIiBjeD0iNCIgcj0iMTIiLz48cGF0aCBkPSJNLTUgMGwxNi4yODEtNS4yOUwxLjIyIDguNTZWLTguNTZMMTEuMjggNS4yOXoiLz48L3N2Zz4=" alt="Drapeau de la Tunisie">
+        <span class="flag-label-stack">
+          <span class="flag-label-main">République Tunisienne</span>
+          <span class="flag-label-sub">الجمهورية التونسية</span>
+        </span>
+      </div>
+
+      <div class="hero-divider-vertical"></div>
+
+      <div class="flag-block">
+        <img class="flag-circle" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQIAJQAlAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCACgAKADASIAAhEBAxEB/8QAHAAAAgIDAQEAAAAAAAAAAAAAAgYABwEEBQMI/8QARxAAAQMDAgMFBAYECgsAAAAAAQIDBAAFEQYhEjFBBxNRYXEUIjKBFSMzQlKRobHB0RYXJDRiZHJzdKIlJzdDU3aCg5KT0v/EABsBAAEFAQEAAAAAAAAAAAAAAAIAAwQFBgEH/8QAOBEAAQMCAwQIBAUEAwAAAAAAAQACEQMEBSExBhJBYRMUUXGRobHRFSKBwSMycuHxJDNC8DRSov/aAAwDAQACEQMRAD8A+bRRoTxKCRjc43rAFdTSllkag1BDs0ZaEOSnOALVyT1Jq1e9rGlzjACz7Glzg0CZXtf9NzbIw29KkQXUuOFsCPJS4QQAckDkN64+Ks7tA03ZLJ2dQPod9M943Jxt+WGShSikEFO/QGl+56LdhSdOxBKC3byyhwq4DwtcasAeJqutMSp1KYc86k8I05KVcWT2PLWjQDjOv7pTAo0g4yBnxp/l9nCmTcA3Pz3F3btjXEg7lRGVny36UcPS8yDJ1nao09KYluiFUgqZBU/wnIAJ+Hfw6UfxS3Ilrv8AcvcIOoVgYcP9z9lX4FbNvgyp0xmHEYW6++sIbQkbqJ5VYcfsxio0+7LmXsi5It3t5hts5AQQeHKq6ml/pdf8Cp86a281OuQ4WUR0o7sNJCE5UBnOKYqYvS3SaRmJHEcJyyz0KOlhtQuAqZT9cpjNVzM05docObMfj8MeFJ9lec4tu8390ePKgsFlk3hx5uK9FaLSQpRfeDYIKgnbPPnVjavH+rzU3/M6v1VxOzbRsG6sNXq9T0R4CZqIzbXdlZfWT8JxyHnSp4merOq1DBBgQJ4DguOsB07abBMiTnHbxSXOiOQ5r8R1SFLZcKFFtXEkkHoeorzAp+m6VReu1O8WlhSYUZlbrnuo2CUD4UiuVA0kuZoeXqKNKS47FlBlyOOYQduI/MipVPEaJa0udru/+tPFRH2NXedujIT5apZSmvdEaQY5kJYdLIOC4EHhB8zVgXjs4iWvT1xmLvJfuNvZbXIjNs4Sgr5DiPPrTN2VWE26z9xdLulLN3hOSPo7ueIcAGO8J8R4VFr41QZRNWnnBiM8+OWXZmpFHCKzqop1MpEzl3dvbkqXArIFMurNKrtEmCbfK+kodxRxxXUNlKlb4wU9Dmgvujr1ZYSZcpppTYUEO904FllZ3CVgcjVhTvaDw0h35tFXPtK7C4Fv5dVwAK6cGy3KZb3J8eMtcdDqWeMfeWo7JHiabdOwLHqqzvWmNZxAvUWL3rL6HCRJKfiBB6mt/RTa2tAcC0qSoX+OCFDBG6ah3GJmmx26IcCBB7DxyUmhhoe4SZaQTI5cM0gXW3SbXcXoE1ARIZPC4nOcHGcVrgUz9qf+0K8/4g/qpaSKsbWqatFlQ6kAqtuWClWewaAkeaVwK6OnbvNsV3ZuluWhEpgktqUgKAJGORrQFEBXXNa9pa4SCrJri0y3UKxbV2sandnsNXO4tNQSv65TUJtSkjqQD1rZvvavf25DP0RdRJaDQKlSIDaFJXk5Ax05VWYGPGiAxVf8Hs9/e6Md0CFK+KXQbu7575Mp8/jc1sc5nReef5qjn48udeFy7TdW3K3yYMqXHUzKbLbwTGSkqSee4pMSKICjbhdm0yKTfBNHELpwg1D4q07b2syoGl1RUOuzLiWUtNFyM2hpgDboSV/PFchPaxrQBOJkX3d0/wAlRt+ikUDFZSOtAzB7JpJ6MGe0JPxS6IA3yIXZmalu0y2S7c++hUeXLMx5PAAS6euenpW/pnXOodO276Ptb7LbHeFzC2ErPEeuTS2kbVafYvp+0SLJftSXSKJ30XG71EYr4QtROBk9E9SfCjvWW1Kgd+mCJGUcdE1b1a76oLHkOjXkvO39pk5+0vm53l1qasOJCGYDZSRw+7lXPc864Fu1FBtGj5tptyZD024rQqQ84kJQ2EnOEjJzv1NdTtPthi3JyLIj2hDyYqZTbltJLYSSBwHJO+/j4UgpFNW2H2zmbzBAJBjKMtOHBHcX9w12650kAic+OupVpyO1ma1p8xorrkq5OlPHIfjNoQ2B0CRni9TTHY+021SLXHkz7r7LMaiLbejmJkOO9FBQ5DyqjEijFMVtnbKo2A2M5yjw7kdPH7ym6S6ck8NdqerEutlciKtCFA8PsyQCM8vKuhO7TEssSVafsyLfLnPB6W86oOhSsY90HYVXKRRpFSzg1k4z0YHdkD3jQqIMXvACN8n1HceCfo3aPqEWt6SbtGbmIcSltgQk++k5yri6Y8K5d017qS5MNsSpLKkIeS8AlhKffScg7UriiSKcp4VaU3Fwpie4Jqpid29u6ahjvW3drhKutyfuE1YXIfVxOKCcAn0rXTUAxRJFTmMDBut0Vc95cS52qVkjaiSKieWM0QFCrclQDFEBUAogKSBQCiAqAUSRXQgJUSKNCSSABknkBUSKNpSkLStBwpJyCOhpIVusQksjvrhxNoHJsfaL8gOg8zT72Ty5MOW89ZLkIQcSULYlt94hwHmn3Qcg9cp6UmN+xC6KXMylLyUuJURxBJUMnIpjuVkvTEFpMRDqIz6QS4hJUpwHljh+7g+QquuCKjdx518FKp/Id5o08Vt6nTHmyJLbbUZKUrPetW5pKA4QM/EenXlSvJtPfKLltQtWACuMogut/wD0PMfOmVGgLy641bkSWw20VFagFYJJyDjr4fKuTIs7lv1OhuUttRSVPFCV5UAkE+9jlnHKjovYBDHJuq1xzc3VLpQpClJUkpUDggjBFEgUbzrkiQ4+6riccUVqJ6knNQCrBuir3HPJQCiSKgFEBXUErAFGBUAogKSAlQCiAqAUaRiuoUq4okioBRAU0rdQCiAqAUQFdQEqJFGkVEiiA8q6glRI3r2jMqeeQ0nYqOM+FAkVt2r+fIA5qBSD5kECgeSGkhJsFwBTNZbfHnlx6Q43HjMNjdSUlXANsnI2phh62tdlDUeC5ImJbWEI4EJR7gH4inx6YpKZfVLiyX5KSQ02lIQhXDxnkSceA3r39mjSY0uQWO5fZLfAUq2VnGdvIb/Oqw2zXkmrmOxTjX3R+GPr2qwV9oUaVMkQ5cuVAQ0+UZ2VxoyQdwBj51ypdsgxozVyt8liZGf40EIKSSMEKGeEEKwdhVn9jmgrJcb9Jl3jT8WXFcgJdaecSpSVuqdXx+WcY9Nqr3XYsOnIf+gmi68q4O8DoBLSShxYUnnjIHBjAB8zUSnVpdL0VEGR4JypTeKXSVSIPiq1mxlRJjsdR4uA7H8Q5g/MYrzAroX9Sl3NXeHicS2hKz/SCRn9NaIFaCkSWAlUlTJxAUAogKiRRAUaZJUAogKgFGkV1BKiRiiAqAUQFJCSlUCiAqJFEBTYVuSsAetegTzqJFHwiuoCVhI8qNIqJFblngPXK4NQ2B7zh5+A6mgqPbTaXOOQXWMdUcGMzJyXh3TgbDhQrgJwFY2JrLRKVBScgg5Bq5olngN2lFtVHQ4whOMKGcnqfWla+6Ad95+zK7xPMsLPvfI9aztntNa16hp1Pl7OwrT3+yF5bUhVpfPlmBqD91xGU2v6PVMelutKc4yGUMcQUojBTnO3j866ak2VhchMy4SGJLfwx0xuJL3G2kD3s+7+VLTRcgPORJkdfAo4dZWOEg+I8CPGttyA/KdEuI4qa2SOLH2iMbe8nny6jarboR/2y7cvZZx1act3NXD2AallwbrqCNcr65DsEJTkl1pUfvEH38EcWPdz4Dc9K0e21vTMada2NOstx7Swybi+yEKTxOu44AeLfKgBt0FV3Ijz2JU/2iY9b4DslS1pKiC6Qo4wj7x8Dy8617jOuF/mtRmUypJyEtNlRcdcPLJPMn9QqP1EdZ6droHHs9NUbr49X6EjP9+C5by1vPrdcJK1qKlHxJO9ZQ04WlOBCihOylAbD51auk+x+cWkTtTLMVsjKYqD9Yf7R6enOma62S2NWly1sRG2oqk8PCkfp9ahXm09rbPFOkN7tjT91ZYdstdXjS+od3LLtJVCAUYTtW5eLc7bLk7EdHwH3VfiHQ1qpHWtHSqNqsD2GQdFl61N9F5pvEEZFRIwKICoBRYpxMkqYokioBRAUkEpWA2okiokV6AUCtyVgDFGBzrCRR4pIJWEgnlVn6Bsf0dAMuQnEl8A4I3QnoK4PZnps3a4KnyUZhxSCcjZa+gqxnPtVetYjabFgSbOkf1e3uvQNj8GP/Nqj9P3Psja5Vv277StBrlW/bvtKxDl6H/iutO0jZdTxe5uUcd7jCH0bOI+fX0NVfrvsr1HpJpd1iFc22NnPtLOymh/THMevKrv098SaYdetd92V6iRjP8AIHD+Qz+yrrBcYubaq2kDLSQIPPsWE2hwu3rtdViHDiPuvnbs17KNTa6Wi5PKVDti1e9NkEqU4OvAOavXlX0poTs701ouEU2uIHJRThyW8Ap1fz6DyFZ7DGe57JtPI/qgP5kmm5/4FelTccxSvXc6nMNB0CqMLw6jRY2pEuIGZSJqTmqkC8czT/qTmqkC8czWYAW3tNFX+uLUJ8QvNJ/lDIynH3h1FV0Ac4OxFXDK+I0gavtPskr2tlP1Lp3x91VbnZbFI/pKh/T7eyx22mCS3r1Efq9/dL+KIDnUAogK3C80lQCiArIrKRXUEpXSMUSRUSKICm1bkrIFEBUAo0ikgJTBoedfWbmiFZ3z9acqaXu3tzJHT1p7avBRI7i7RzCfJwFE5bV6K/fSFoy7TrTcsW+MzIdkYb4VpyTv0PSndy77ravFrfjg/ESnvGz8xWJ2gty65zpAgjUEbx5xy+vevQNl7sU7U/ikEHQglnLPh4hd9ogpyCCD1Fb9u+0+dK9vba4e8sc9so6sKVxI+XVNdu0XBAfS1LbMV4nAC/hV6K5H9dZGvbFpO7n5H6hbqldh7Pmy5jMHuPurC09zTTdqJrvuz6+tc+K3vD/IaUdPc009Pt97pS5tfjhup/NBqPbHdqtPMeqpMWEscOSz2TNdz2a6eR/UGj+ac0wP/Ar0rmaEa7jRVla/DBZH+QV03vgV6VYXx3nuPM+qp7cbtNo5BImpOaqQLztkk4FNmrrwyJDkWC0ufKScKQ18KP7SuSf11W+oWuLLl/uLTbfSM2vhR8zzVUelbFx+bLzP0CuaV2GN+UT5Ad5XFuF1St9TEBpUx0HBKfgT6qpL1HIua5io85eAncIR8OPEU2u3Rrh7q02955A2BSjgR+ZpQ1BOlTJfBKZQ0trKeEDcep61sNnrfcuP7YAjUkb3h+yzG1d4Kln/AHiSTo0EMPKePie5cwCiArIFZA8a3C8ylZAogKgHjWRShCSlgDblWUjyrKRRpFNq2JUSPKjA8KgFGBRAIJTJ2erlsXF6VEs6ri42jAIXw93nr602fTcvvFF+xTkb78ICqreLMmRkqTGkvspVuoNrKc/lXsLjcCcmdJz/AHprO3+Cdcrmo4Dh2z6wtLhe0Xw+gKTSef5Y8xPmn5yTZn1cci2y2HPxiOpKh801uQJkQfVt3lKmz/uprRUD89jVZruNyxtPlZ8nVfvrxN0uoO1xl4/vVfvqG7Zt+m/9/UKybtbTM/h590ehX0VpKcthaUsuMrb/AANvh1Hy+8n0wRVvWGQzOtjzKcpWtspKDz3BFfEEa73NJ3nyf/aa7MDU96j7s3ec2fFMhQ/bUV+yjid4PE9yaqbTNeI3DC+14j7Vts0RlzJW3HQgIA32SBS3frs5JQtL7rDLJH2bktMdsj+kfjV6AAV8oy9VXx0ZXebgo+clZ/bXNc1FfATwXecD5Pq/fT42adH5xPcobseaRAaVf18uUANlhzUrDLKeUe1RyB/5YJPrtSfIk2BhZXEtk6S5/wAVcZa1H/qVVWDUOoFnCr1cSP8AEL/fXu1drsse/cpivV5R/bRt2afEb+XLL0H3RDadlP8Aw8c/Up7k3eQs4Zs0wjpxAJpW1Op96S28/BMVShjPFnixXPM+cecyQf8AuGsOSH3U8LrzjgBzhSian4fgvU6wqNjzn1hQsV2l+IW5ouLvBsek+a8gKIDxFYAo60SyJKxRJFQCsgUkEpaSKMCoB0okjagAhW0qJAogKgGaMCkmyVEiiFQV6MtlxxLaBlSiEgeJpaIUASCKEtZp9vFlS1p+az3ln9rt7bXtKGWVh1BBxjiOxJzv6VwE2F4wrTK79vhuTymkJwcoIUE5P51CpX1Kq2SYzjyn0UutZ1aToAnKfOPVcBLZFeiQocjTI/ph9o3sGQ0foggOYB+syrG1dBlsG02R5cC3BuXJQ1xIaPeDu1AEk5weLi3rjr2nALM/4n0Sba1ZIfl/MeqTfePM1A0SasrtDtsdMBtuHEZQ65d3mk8CAkkbYHpWnfbO23YZaUO2kyIJaTJTHZWFpV8OOI7HJ5+lMUcVp1GMfEbx8M4nzTtbDqtJ72zO6PtP2SM20K9kDGwp6ulgTatIuRXRHdkC5NAPBPRTeceON6xctILXelJlz7fbi+/3MdtttXC4QADwgchk9aNmLW5zJgZxziOEc0zUwq50Ak5TymeP0SUBWQPKvaXHMaY9HUoKLThQSOuCRQCrRpDgCFUuEEgrCRtRAVBWQK6m5UAohUFZriFLqRRCoBRJFCrQlRIogKgFEBSQKAV6NKU24lxBwpJBB8DWEijApESIQzCa062dUiSX7Han3JaQJS1IWC9g5BOFY511/wCEFvTDt6EtaexHcQppvunvqCvdSuf3SBmq+Aokiq2phVu4y0R/EKezFrhoIJn+ZT9ap6Ilo1Hebi5AnGe6G2mlKOH1BeSeEHITjeucNZBMeMwNPWkNxllxhPCvCFE5JHveQpVA6VkCuswujJNTMn6RlAyHJC7Fa0AMyj6zmSdea7l01PcLiw228GwpuUqUlxIweNX6MbVvi/y72HbW3b7dHfuDiO/kJygrUDnJJOBSsBRAedPHD6G6AGgRpyOvrwUduIVw4lziZ15jT04p+1Dc13bUarDBdiLjGS06X1L4RxIQAfeO2NjXVYuwn6sfdWm2SLREmFxMl9YSpoYBJRvk5I22NVckUQHWoTsFplgaDoI04nU96mNxyoHl5GpnXgNBpoti5uokXOVIbOUOPLUk+RJNeAqAUQFXLGhjQ0cFRvdvuLjxWAKKoBWaJApWRUArIri4v//Z" alt="Logo Ministère de l'Éducation Tunisie">
+        <span class="flag-label-stack">
+          <span class="flag-label-main">Ministère de l'Éducation</span>
+          <span class="flag-label-sub">وزارة التربية</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- ROW 2: Eyebrow + main title (single line) -->
+    <div class="hero-title-row">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        Référentiel national · Édition juillet 2026 · JORT n° 2019-1085
+      </div>
+      <h1 class="hero-title">
+        <span class="hero-title-main">Système Éducatif</span>
+        <span class="hero-title-accent">Tunisien</span>
+      </h1>
+    </div>
+
+    <!-- ROW 4: Arabic -->
+    <div class="hero-arabic-wrap">
+      <div class="hero-arabic">المنظومة التربوية التونسية</div>
+    </div>
+
+    <!-- ROW 5: Explanatory intro -->
+    <div class="hero-intro">
+      <p class="hero-intro-lead">
+        Une carte officielle du parcours scolaire tunisien, de la <strong>7<sup>ème</sup> année de base</strong> au <strong>Baccalauréat</strong> — chaque classe, ses sections et ses matières, avec les horaires officiels du JORT.
+      </p>
+      <div class="hero-intro-features">
+        <div class="hero-feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h16"/></svg>
+          <span><strong>Toutes les classes</strong> · 7 niveaux du primaire au bac</span>
+        </div>
+        <div class="hero-feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+          <span><strong>Recherche instantanée</strong> · par classe, matière ou section</span>
+        </div>
+        <div class="hero-feature">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <span><strong>Horaires officiels</strong> · conformes au JORT 2019-1085</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">7</div>
+        <div class="hero-stat-label">Années</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">3</div>
+        <div class="hero-stat-label">Cycles</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">12</div>
+        <div class="hero-stat-label">Sections</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">100+</div>
+        <div class="hero-stat-label">Matières</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TIMELINE -->
+  <div class="timeline">
+    <div class="timeline-track">
+      <div class="station base" data-target="c7"><span class="station-year">7</span><span class="station-arabic">السابعة</span></div>
+      <div class="station base" data-target="c8"><span class="station-year">8</span><span class="station-arabic">الثامنة</span></div>
+      <div class="station base exam" data-target="c9"><span class="station-year">9</span><span class="station-arabic">التاسعة</span></div>
+      <div class="station secondaire" data-target="c1"><span class="station-year">1</span><span class="station-arabic">الأولى</span></div>
+      <div class="station secondaire" data-target="c2"><span class="station-year">2</span><span class="station-arabic">الثانية</span></div>
+      <div class="station bac" data-target="c3"><span class="station-year">3</span><span class="station-arabic">الثالثة</span></div>
+      <div class="station bac exam" data-target="c4"><span class="station-year">4</span><span class="station-arabic">الرابعة</span></div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+      </span>
+      <input type="text" class="search-input" id="search" placeholder="Rechercher une classe, matière, section...">
+    </div>
+    <div class="filter-chips">
+      <button class="filter-chip active" data-filter="all">Tous</button>
+      <button class="filter-chip" data-filter="base">Base</button>
+      <button class="filter-chip" data-filter="secondaire">Secondaire</button>
+      <button class="filter-chip" data-filter="bac">BAC</button>
+      <button class="filter-chip" data-filter="expand">Tout ouvrir</button>
+    </div>
+  </div>
+
+  <div class="tree" id="tree"></div>
+
+  <footer>
+    🇹🇳 Référentiel conforme au Ministère de l'Éducation Tunisien<br>
+    Sources : <a href="https://education.gov.tn" target="_blank">education.gov.tn</a> · <a href="http://www.edunet.tn" target="_blank">edunet.tn</a> · <a href="http://cnp.com.tn" target="_blank">CNP</a> · <a href="https://9anoun.tn/fr/kb/jorts/jort-2019-095-424da/" target="_blank">JORT 95-2019</a><br>
+    Pour usage national non-commercial · Juillet 2026
+  </footer>
+</div>
+
+<script>
+const SRC = {
+  'education.gov.tn': 'https://education.gov.tn/?p=500&lang=fr',
+  'edunet.tn': 'http://www.edunet.tn/ressources/pedagogie/programmes/',
+  'cnp.com.tn': 'http://cnp.com.tn/french/annee-actuelle/listeOff/2SE.htm',
+  'cnp-2as': 'http://cnp.com.tn/french/annee-actuelle/listeOff/2SE.htm',
+  'edunet-info-234as': 'http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/secondaire/info.pdf',
+  'edunet-math-234as': 'http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/secondaire/math.pdf',
+  'edunet-math-34as': 'http://edunet.tn/ressources/pedagogie/programmes/sciences/mathematique/math_3_4.pdf',
+  'edunet-phys-34as': 'http://www.edunet.tn/ressources/pedagogie/programmes/sciences/sciences_physiques/physique_3_4.doc',
+  'edunet-svt': 'http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/secondaire/svt.pdf',
+  'edunet-tech-34as': 'http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2022/secondaire/Curriculum_technologie3eme_4eme.pdf',
+  'edunet-eco': 'http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/secondaire/eco.pdf',
+  'edunet-gest': 'http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/secondaire/gest.pdf',
+  'edunet-francais-college': 'http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/preparatoire/langues/francais_college.pdf',
+  'edunet-physique-12': 'http://www.edunet.tn/ressources/pedagogie/programmes/nouveaux_programme2011/secondaire/physique1_2.pdf',
+  'edutice-reforme-info': 'https://edutice.hal.science/file/index/docid/877130/filename/D5_Benna_Chelly.docx',
+  'edunet-programmes': 'http://www.edunet.tn/index.php?id=1662&lan=2',
+  'jort-2019-1085': 'https://9anoun.tn/fr/kb/jorts/jort-2019-095-424da/'
+};
+
+const ICONS = {
+  math:     '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>',
+  physics:  '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>',
+  bio:      '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M5 9c0-2 2-4 7-4s7 2 7 4-2 4-7 4-7-2-7-4z"/></svg>',
+  tech:     '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+  lang:     '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M9 3v2M15 3v2M6 9h12M9 13h6"/></svg>',
+  history:  '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  religion: '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L4 6v6c0 5 4 9 8 10 4-1 8-5 8-10V6l-8-4z"/></svg>',
+  sport:    '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20M2 12h20"/></svg>',
+  art:      '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>',
+  music:    '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+  info:     '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>',
+  philo:    '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 4M12 17h.01"/></svg>',
+  eco:      '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>',
+  gest:     '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h18"/></svg>',
+  default:  '<svg class="subject-row-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/></svg>'
+};
+
+function iconFor(subject) {
+  const s = subject.toLowerCase();
+  if (s.includes('math')) return ICONS.math;
+  if (s.includes('physique') || s.includes('chimie')) return ICONS.physics;
+  if (s.includes('vie et') || s.includes('svt') || s.includes('biolog')) return ICONS.bio;
+  if (s.includes('techno') || s.includes('génie') || s.includes('apprentiss')) return ICONS.tech;
+  if (s.includes('arabe') || s.includes('français') || s.includes('francais') || s.includes('anglais') || s.includes('langue')) return ICONS.lang;
+  if (s.includes('hist') || s.includes('géog')) return ICONS.history;
+  if (s.includes('islam') || s.includes('relig')) return ICONS.religion;
+  if (s.includes('sport') || s.includes('physiq') || s.includes('éducation physique')) return ICONS.sport;
+  if (s.includes('artistique') || s.includes('dessin') || s.includes('art')) return ICONS.art;
+  if (s.includes('music') || s.includes('musical')) return ICONS.music;
+  if (s.includes('info') || s.includes('tic') || s.includes('algo') || s.includes('réseau') || s.includes('base de donnée') || s.includes('programmation')) return ICONS.info;
+  if (s.includes('philo')) return ICONS.philo;
+  if (s.includes('économ') || s.includes('econo')) return ICONS.eco;
+  if (s.includes('gestion') || s.includes('compta')) return ICONS.gest;
+  if (s.includes('civique') || s.includes('civile')) return ICONS.history;
+  return ICONS.default;
+}
+
+const DATA = [
+  { cat:'base', label:'Enseignement de base', arabic:'التعليم الأساسي', cls:[
+    { id:'c7', num:'7è', name:'Septième année', arabic:'السنة السابعة', type:'commun',
+      subjects:[
+        {name:'Arabe', hours:'6h', ar:'العربية'},
+        {name:'Français', hours:'6h', ar:'الفرنسية'},
+        {name:'Anglais', hours:'3h', ar:'الإنجليزية'},
+        {name:'Mathématiques', hours:'5h', ar:'الرياضيات'},
+        {name:'Sciences naturelles', hours:'2h', ar:'علوم الحياة والأرض'},
+        {name:'Histoire-Géographie', hours:'3h', ar:'التاريخ والجغرافيا'},
+        {name:'Éducation islamique', hours:'2h', ar:'التربية الإسلامية'},
+        {name:'Éducation civique', hours:'1h', ar:'التربية المدنية'},
+        {name:'Éducation artistique', hours:'2h', ar:'التربية الفنية'},
+        {name:'Éducation musicale', hours:'1h', ar:'التربية الموسيقية'},
+        {name:'Informatique', hours:'1h', ar:'الإعلامية'},
+        {name:'Éducation physique (Sport)', hours:'3h', ar:'التربية البدنية'}
+      ],
+      sources:['education.gov.tn','edunet-programmes','edunet-francais-college']},
+    { id:'c8', num:'8è', name:'Huitième année', arabic:'السنة الثامنة', type:'commun',
+      subjects:[
+        {name:'Arabe', hours:'2h', ar:'العربية'},
+        {name:'Français', hours:'3h', ar:'الفرنسية'},
+        {name:'Anglais', hours:'3h', ar:'الإنجليزية'},
+        {name:'Mathématiques', hours:'3h', ar:'الرياضيات'},
+        {name:'Sciences naturelles (SVT)', hours:'1h', ar:'علوم الحياة'},
+        {name:'Sciences physiques', hours:'2h', ar:'العلوم الفيزيائية'},
+        {name:'Histoire-Géographie', hours:'2h', ar:'التاريخ والجغرافيا'},
+        {name:'Éducation islamique', hours:'1h', ar:'التربية الإسلامية'},
+        {name:'Éducation civique', hours:'1h', ar:'التربية المدنية'},
+        {name:'Éducation artistique', hours:'1h', ar:'التربية الفنية'},
+        {name:'Éducation musicale', hours:'1h', ar:'التربية الموسيقية'},
+        {name:'Informatique', hours:'2h', ar:'الإعلامية'},
+        {name:'Technologie (Apprentissage technique)', hours:'4h', ar:'التكنولوجيا'},
+        {name:'Éducation physique (Sport)', hours:'2h', ar:'التربية البدنية'}
+      ],
+      sources:['education.gov.tn','edunet-programmes','jort-2019-1085']},
+    { id:'c9', num:'9è', name:'Neuvième année', arabic:'السنة التاسعة', type:'exam',
+      subjects:[
+        {name:'Arabe', hours:'2h', ar:'العربية'},
+        {name:'Français', hours:'2h', ar:'الفرنسية'},
+        {name:'Anglais', hours:'2h', ar:'الإنجليزية'},
+        {name:'Mathématiques', hours:'2h', ar:'الرياضيات'},
+        {name:'Sciences naturelles (SVT)', hours:'2h', ar:'علوم الحياة'},
+        {name:'Sciences physiques', hours:'1h', ar:'العلوم الفيزيائية'},
+        {name:'Histoire-Géographie', hours:'2h', ar:'التاريخ والجغرافيا'},
+        {name:'Éducation islamique', hours:'1h', ar:'التربية الإسلامية'},
+        {name:'Éducation civique', hours:'1h', ar:'التربية المدنية'},
+        {name:'Informatique', hours:'2h', ar:'الإعلامية'},
+        {name:'Technologie (Apprentissage technique)', hours:'6h', ar:'التكنولوجيا'},
+        {name:'Éducation physique (Sport)', hours:'2h', ar:'التربية البدنية'}
+      ],
+      sources:['education.gov.tn','edunet-programmes','jort-2019-1085']}
+  ]},
+  { cat:'secondaire', label:'Enseignement secondaire', arabic:'التعليم الثانوي', cls:[
+    { id:'c1', num:'1ère', name:'Première année', arabic:'الأولى ثانوي', type:'commun',
+      subjects:[
+        {name:'Arabe', hours:'4h', ar:'العربية'},
+        {name:'Français', hours:'3h', ar:'الفرنسية'},
+        {name:'Anglais', hours:'3h', ar:'الإنجليزية'},
+        {name:'Mathématiques', hours:'4h', ar:'الرياضيات'},
+        {name:'Sciences de la vie et de la terre', hours:'2h', ar:'علوم الحياة والأرض'},
+        {name:'Sciences physiques', hours:'2h', ar:'العلوم الفيزيائية'},
+        {name:'Histoire-Géographie', hours:'3h', ar:'التاريخ والجغرافيا'},
+        {name:'Éducation islamique', hours:'1h', ar:'التربية الإسلامية'},
+        {name:'Éducation civique', hours:'1h', ar:'التربية المدنية'},
+        {name:'Philosophie', hours:'2h', ar:'الفلسفة'},
+        {name:'Informatique', hours:'1h', ar:'الإعلامية'},
+        {name:'Technologie', hours:'1h', ar:'التكنولوجيا'},
+        {name:'Économie', hours:'1h', ar:'الاقتصاد'},
+        {name:'Éducation physique (Sport)', hours:'2h', ar:'التربية البدنية'}
+      ],
+      options:['3ème langue étrangère', 'Éducation musicale', 'Éducation artistique'],
+      sources:['cnp-2as','edunet-programmes','edutice-reforme-info']},
+    { id:'c2', num:'2ème', name:'Deuxième année', arabic:'الثانية ثانوي', type:'sectioned',
+      common:[
+        {name:'Arabe', hours:'4h', ar:'العربية'},
+        {name:'Français', hours:'3h', ar:'الفرنسية'},
+        {name:'Anglais', hours:'3h', ar:'الإنجليزية'},
+        {name:'Histoire-Géographie', hours:'3h', ar:'التاريخ والجغرافيا'},
+        {name:'Philosophie', hours:'2h', ar:'الفلسفة'},
+        {name:'Éducation islamique', hours:'1h', ar:'التربية الإسلامية'},
+        {name:'Éducation civique', hours:'1h', ar:'التربية المدنية'},
+        {name:'Éducation physique (Sport)', hours:'2h', ar:'التربية البدنية'}
+      ],
+      sections:[
+        {name:'Sciences', arabic:'علوم', color:'var(--teal)', track:'→ 3AS : Math · Sc exp · Technique',
+          subjects:[
+            {name:'Mathématiques', hours:'4h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'3h', ar:'العلوم الفيزيائية'},
+            {name:'Sciences de la vie et de la terre', hours:'1,5h', ar:'علوم الحياة'},
+            {name:'Technologie', hours:'1,5h', ar:'التكنولوجيا'}
+          ]},
+        {name:'TI (Tech. Info)', arabic:'تكنولوجيا الإعلامية', color:'var(--green)', track:'→ 3AS : Sciences de l\'Informatique',
+          subjects:[
+            {name:'Mathématiques', hours:'4h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'2h', ar:'العلوم الفيزيائية'},
+            {name:'Technologie', hours:'3h', ar:'التكنولوجيا'},
+            {name:'Informatique', hours:'5h', ar:'الإعلامية'}
+          ]},
+        {name:'Économie et services', arabic:'اقتصاد وخدمات', color:'var(--peach-2)', track:'→ 3AS : Économie et Gestion',
+          subjects:[
+            {name:'Mathématiques', hours:'3h', ar:'الرياضيات'},
+            {name:'Économie', hours:'3h', ar:'الاقتصاد'},
+            {name:'Gestion', hours:'3h', ar:'التصرف'}
+          ]},
+        {name:'Lettres', arabic:'آداب', color:'var(--muted-2)', track:'→ 3AS : Lettres',
+          subjects:[
+            {name:'Mathématiques', hours:'2h', ar:'الرياضيات'},
+            {name:'Sciences de la vie et de la terre', hours:'1h', ar:'علوم الحياة'}
+          ]},
+        {name:'Sport', arabic:'رياضة', color:'var(--red)', track:'→ 3AS : Sport',
+          subjects:[
+            {name:'Mathématiques', hours:'2h', ar:'الرياضيات'},
+            {name:'Sciences biologiques', hours:'2h', ar:'علوم بيولوجية'},
+            {name:'Sport (entraînement)', hours:'6h', ar:'الرياضة'}
+          ]}
+      ],
+      sources:['cnp-2as','edunet-info-234as','edunet-physique-12','jort-2019-1085']}
+  ]},
+  { cat:'bac', label:'Filière Baccalauréat', arabic:'شعبة البكالوريا', cls:[
+    { id:'c3', num:'3ème', name:'Troisième année (pré-BAC)', arabic:'الثالثة ثانوي', type:'sectioned',
+      common:[
+        {name:'Arabe', hours:'2h', ar:'العربية'},
+        {name:'Français', hours:'2h', ar:'الفرنسية'},
+        {name:'Anglais', hours:'2h', ar:'الإنجليزية'},
+        {name:'Histoire-Géographie', hours:'2h', ar:'التاريخ والجغرافيا'},
+        {name:'Philosophie', hours:'2h', ar:'الفلسفة'},
+        {name:'Éducation islamique', hours:'1h', ar:'التربية الإسلامية'},
+        {name:'Éducation civique', hours:'1h', ar:'التربية المدنية'},
+        {name:'Éducation physique (Sport)', hours:'2h', ar:'التربية البدنية'}
+      ],
+      sections:[
+        {name:'Mathématiques', arabic:'رياضيات', color:'var(--teal)', track:'Total : 31h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'5h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'4h', ar:'العلوم الفيزيائية'},
+            {name:'Sciences de la vie et de la terre', hours:'1,5h', ar:'علوم الحياة'},
+            {name:'Informatique', hours:'2h', ar:'الإعلامية'}
+          ]},
+        {name:'Sciences expérimentales', arabic:'علوم تجريبية', color:'var(--green)', track:'Total : 31,5h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'3h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'4h', ar:'العلوم الفيزيائية'},
+            {name:'Sciences de la vie et de la terre', hours:'4h', ar:'علوم الحياة'}
+          ]},
+        {name:'Sciences techniques', arabic:'علوم تقنية', color:'var(--peach-2)', track:'Total : 33,5h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'3h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'2,5h', ar:'العلوم الفيزيائية'},
+            {name:'Technologie', hours:'4h', ar:'التكنولوجيا'}
+          ]},
+        {name:'Sciences de l\'Informatique', arabic:'علوم الإعلامية', color:'var(--green-2)', track:'Total : 32h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'3h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'2h', ar:'العلوم الفيزيائية'},
+            {name:'Algorithmique & Programmation', hours:'2h', ar:'الخوارزميات'},
+            {name:'TIC', hours:'1,5h', ar:'تكنولوجيا الإعلام'},
+            {name:'Réseaux', hours:'1,5h', ar:'الشبكات'}
+          ]},
+        {name:'Économie et Gestion', arabic:'اقتصاد وتصرف', color:'var(--peach-2)', track:'Total : 31,5h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'2h', ar:'الرياضيات'},
+            {name:'Économie', hours:'3h', ar:'الاقتصاد'},
+            {name:'Gestion', hours:'3h', ar:'التصرف'},
+            {name:'Histoire-Géographie', hours:'3h', ar:'التاريخ والجغرافيا'}
+          ]},
+        {name:'Lettres', arabic:'آداب', color:'var(--muted-2)', track:'Total : 27,5h/sem',
+          subjects:[
+            {name:'Arabe', hours:'3h', ar:'العربية'},
+            {name:'Français', hours:'3h', ar:'الفرنسية'},
+            {name:'Anglais', hours:'3h', ar:'الإنجليزية'},
+            {name:'Philosophie', hours:'4h', ar:'الفلسفة'},
+            {name:'Histoire', hours:'3h', ar:'التاريخ'},
+            {name:'Mathématiques', hours:'1h', ar:'الرياضيات'},
+            {name:'Informatique', hours:'2h', ar:'الإعلامية'}
+          ]},
+        {name:'Sport', arabic:'رياضة', color:'var(--red)', track:'Total : 30h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'2h', ar:'الرياضيات'},
+            {name:'Sciences de la vie et de la terre', hours:'3h', ar:'علوم الحياة'},
+            {name:'Sciences physiques', hours:'2h', ar:'العلوم الفيزيائية'},
+            {name:'Sport (entraînement)', hours:'6h', ar:'الرياضة'}
+          ]}
+      ],
+      options:['3ème langue étrangère (2h)', 'Éducation musicale (2h)', 'Éducation artistique (2h)'],
+      sources:['edunet-math-34as','edunet-phys-34as','edunet-svt','edunet-tech-34as','jort-2019-1085']},
+    { id:'c4', num:'4ème', name:'Quatrième année (Baccalauréat)', arabic:'الرابعة ثانوي · البكالوريا', type:'exam',
+      common:[
+        {name:'Arabe', hours:'2h', ar:'العربية'},
+        {name:'Français', hours:'2h', ar:'الفرنسية'},
+        {name:'Anglais', hours:'2h', ar:'الإنجليزية'},
+        {name:'Histoire-Géographie', hours:'2h', ar:'التاريخ والجغرافيا'},
+        {name:'Philosophie', hours:'4h', ar:'الفلسفة'},
+        {name:'Éducation islamique', hours:'1h', ar:'التربية الإسلامية'},
+        {name:'Éducation civique', hours:'1h', ar:'التربية المدنية'},
+        {name:'Éducation physique (Sport)', hours:'2h', ar:'التربية البدنية'}
+      ],
+      sections:[
+        {name:'BAC Mathématiques', arabic:'رياضيات', color:'var(--teal)', track:'Total : 28h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'7h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'4h', ar:'العلوم الفيزيائية'},
+            {name:'Sciences de la vie et de la terre', hours:'1,5h', ar:'علوم الحياة'},
+            {name:'Informatique', hours:'2h', ar:'الخوارزميات'}
+          ]},
+        {name:'BAC Sciences expérimentales', arabic:'علوم تجريبية', color:'var(--green)', track:'Total : 29,5h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'3h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'5h', ar:'العلوم الفيزيائية'},
+            {name:'Sciences de la vie et de la terre', hours:'5h', ar:'علوم الحياة'}
+          ]},
+        {name:'BAC Sciences techniques', arabic:'علوم تقنية', color:'var(--peach-2)', track:'Total : 30,5h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'3h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'2,5h', ar:'العلوم الفيزيائية'},
+            {name:'Technologie', hours:'4h', ar:'التكنولوجيا'}
+          ]},
+        {name:'BAC Sciences de l\'Informatique', arabic:'علوم الإعلامية', color:'var(--green-2)', track:'Total : 31h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'3h', ar:'الرياضيات'},
+            {name:'Sciences physiques', hours:'2h', ar:'العلوم الفيزيائية'},
+            {name:'Algorithmique & Programmation', hours:'2h', ar:'الخوارزميات'},
+            {name:'TIC', hours:'1,5h', ar:'تكنولوجيا الإعلام'},
+            {name:'Bases de données', hours:'1,5h', ar:'قواعد البيانات'}
+          ]},
+        {name:'BAC Économie-Gestion', arabic:'اقتصاد وتصرف', color:'var(--peach-2)', track:'Total : 31,5h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'2h', ar:'الرياضيات'},
+            {name:'Économie', hours:'3h', ar:'الاقتصاد'},
+            {name:'Gestion', hours:'4h', ar:'التصرف'},
+            {name:'Histoire-Géographie', hours:'3h', ar:'التاريخ والجغرافيا'}
+          ]},
+        {name:'BAC Lettres', arabic:'آداب', color:'var(--muted-2)', track:'Total : 30,5h/sem',
+          subjects:[
+            {name:'Arabe', hours:'3h', ar:'العربية'},
+            {name:'Français', hours:'3h', ar:'الفرنسية'},
+            {name:'Anglais', hours:'3h', ar:'الإنجليزية'},
+            {name:'Philosophie', hours:'6h', ar:'الفلسفة'},
+            {name:'Histoire', hours:'4h', ar:'التاريخ'},
+            {name:'Mathématiques', hours:'1h', ar:'الرياضيات'}
+          ]},
+        {name:'BAC Sport', arabic:'رياضة', color:'var(--red)', track:'Total : 26h/sem',
+          subjects:[
+            {name:'Mathématiques', hours:'2h', ar:'الرياضيات'},
+            {name:'Sciences de la vie et de la terre', hours:'3h', ar:'علوم الحياة'},
+            {name:'Sciences physiques', hours:'2h', ar:'العلوم الفيزيائية'},
+            {name:'Sport (entraînement)', hours:'6h', ar:'الرياضة'}
+          ]}
+      ],
+      options:['3ème langue étrangère (2h)', 'Éducation musicale (2h)', 'Éducation artistique (2h)'],
+      sources:['edunet-math-34as','edunet-phys-34as','edunet-svt','edunet-tech-34as','edunet-eco','edunet-gest','jort-2019-1085']}
+  ]}
+];
+
+function srcHTML(arr) {
+  if (!arr || !arr.length) return '';
+  return `<div class="source-row">
+    <span class="source-label">Sources</span>
+    ${arr.map(s => `<a class="source-pill" href="${SRC[s] || '#'}" target="_blank" rel="noopener">${s}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17 17 7M17 7H8M17 7v9"/></svg></a>`).join('')}
+  </div>`;
+}
+
+function highlight(text, q) {
+  if (!q || !text) return text;
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return text;
+  return text.slice(0, idx) + `<mark>${text.slice(idx, idx+q.length)}</mark>` + text.slice(idx+q.length);
+}
+
+function subjectRow(s, q = '') {
+  const isMatch = q && (s.name.toLowerCase().includes(q.toLowerCase()) || (s.ar || '').includes(q));
+  const cls = isMatch ? 'subject-row match' : 'subject-row';
+  return `
+    <div class="${cls}">
+      <div class="subject-row-name">
+        ${iconFor(s.name)}
+        <span>${highlight(s.name, q)}</span>
+      </div>
+      <span class="subject-row-ar">${s.ar || ''}</span>
+      <span class="subject-row-hours">${s.hours || ''}</span>
+    </div>
+  `;
+}
+
+function renderCommonBlock(common, q) {
+  if (!common || !common.length) return '';
+  return `
+    <div class="common-block">
+      <div class="common-block-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20M2 12h20"/></svg>
+        Matières communes (toutes sections)
+      </div>
+      <div class="subject-list">${common.map(s => subjectRow(s, q)).join('')}</div>
+    </div>
+  `;
+}
+
+function renderSections(cls, q) {
+  if (!cls.sections) return '';
+  return `
+    <div class="sections-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Sections spécifiques
+    </div>
+    ${cls.sections.map(sec => `
+      <div class="section-block">
+        <div class="section-header">
+          <span class="section-toggle">▶</span>
+          <div class="section-color" style="--section-color: ${sec.color};"></div>
+          <div class="section-name">${highlight(sec.name, q)}</div>
+          <div class="section-arabic">${sec.arabic}</div>
+        </div>
+        ${sec.track ? `<div class="section-track">${sec.track}</div>` : ''}
+        <div class="section-children">
+          <div class="subject-list">${sec.subjects.map(s => subjectRow(s, q)).join('')}</div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+const typeLabel = (t) => ({
+  commun: '🌳 Tronc commun',
+  sectioned: '📚 Sections',
+  exam: '🎓 Examen'
+}[t] || t);
+
+function hasMatch(cls, q) {
+  if (!q) return false;
+  const ql = q.toLowerCase();
+  const checkSubjects = arr => (arr || []).some(s => s.name?.toLowerCase().includes(ql) || s.ar?.includes(q));
+  return cls.name?.toLowerCase().includes(ql)
+    || cls.arabic?.includes(q)
+    || checkSubjects(cls.subjects)
+    || checkSubjects(cls.common)
+    || (cls.sections || []).some(sec =>
+        sec.name.toLowerCase().includes(ql) || sec.arabic?.includes(q) || checkSubjects(sec.subjects));
+}
+
+function renderTree(filter = 'all', q = '', onlyClass = null) {
+  const tree = document.getElementById('tree');
+  let html = '';
+
+  for (const group of DATA) {
+    if (filter !== 'all' && filter !== 'expand' && filter !== group.cat) continue;
+    const showAll = q || filter === 'expand';
+
+    html += `
+      <div class="cycle-block ${showAll ? 'expanded' : ''}">
+        <div class="cycle-header">
+          <span class="cycle-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 6 6 6-6 6"/></svg>
+          </span>
+          <svg class="cycle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          <div class="cycle-title">${group.label}</div>
+          <span class="cycle-arabic">${group.arabic}</span>
+        </div>
+        <div class="cycle-children">
+    `;
+
+    for (const cls of group.cls) {
+      const match = hasMatch(cls, q);
+      const autoOpen = q && match;
+      const focusOpen = onlyClass === cls.id;
+
+      html += `
+        <div class="class-node ${autoOpen || focusOpen ? 'expanded' : ''}" data-id="${cls.id}">
+          <div class="class-header">
+            <span class="class-toggle">▶</span>
+            <span class="class-num">${cls.num}</span>
+            <span class="class-type-pill ${cls.type}">${typeLabel(cls.type)}</span>
+            <span class="class-name">${highlight(cls.name, q)}</span>
+            <span class="class-arabic">${cls.arabic}</span>
+          </div>
+          <div class="class-body">
+            ${cls.common ? renderCommonBlock(cls.common, q) : (cls.subjects ? `<div class="subject-list">${cls.subjects.map(s => subjectRow(s, q)).join('')}</div>` : '')}
+            ${cls.sections ? renderSections(cls, q) : ''}
+            ${cls.options && cls.options.length ? `
+              <div class="common-block" style="margin-top: 14px;">
+                <div class="common-block-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+                  Matières à options
+                </div>
+                <div class="subject-list">
+                  ${cls.options.map(o => `<div class="subject-row"><div class="subject-row-name">${iconFor(o)}<span>${o}</span></div></div>`).join('')}
+                </div>
+              </div>` : ''}
+            ${srcHTML(cls.sources)}
+          </div>
+        </div>
+      `;
+    }
+
+    html += `</div></div>`;
+  }
+  tree.innerHTML = html;
+
+  tree.querySelectorAll('.cycle-header').forEach(h => h.addEventListener('click', () => h.parentElement.classList.toggle('expanded')));
+  tree.querySelectorAll('.class-header').forEach(h => h.addEventListener('click', () => h.parentElement.classList.toggle('expanded')));
+  tree.querySelectorAll('.section-header').forEach(h => h.addEventListener('click', () => h.parentElement.classList.toggle('expanded')));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTree('all', '', null);
+
+  document.getElementById('search').addEventListener('input', (e) => {
+    const v = e.target.value.trim();
+    const f = document.querySelector('.filter-chip.active').dataset.filter;
+    renderTree(f, v, null);
+  });
+
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      const v = document.getElementById('search').value.trim();
+      if (c.dataset.filter === 'expand') {
+        renderTree('all', v, null);
+        document.querySelectorAll('.cycle-block, .class-node, .section-block').forEach(n => n.classList.add('expanded'));
+      } else {
+        renderTree(c.dataset.filter, v, null);
+      }
+    });
+  });
+
+  document.querySelectorAll('.station').forEach(s => {
+    s.addEventListener('click', () => {
+      const target = s.dataset.target;
+      const f = document.querySelector('.filter-chip.active').dataset.filter;
+      const v = document.getElementById('search').value.trim();
+      renderTree(f === 'expand' ? 'all' : f, v, target);
+      document.querySelectorAll('.station').forEach(x => x.classList.remove('active'));
+      s.classList.add('active');
+      document.querySelectorAll('.cycle-block, .class-node, .section-block').forEach(n => n.classList.add('expanded'));
+      setTimeout(() => {
+        const node = document.querySelector(`.class-node[data-id="${target}"]`);
+        if (node) node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
+    });
+  });
+});
+</script>
+
+</body>
+</html>

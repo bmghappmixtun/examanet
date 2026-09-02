@@ -1,0 +1,49 @@
+{
+  "model": "Arabic Title Model for College (7/8/9ème)",
+  "format": "[Type] - [Matière] - [Classe] - ([Année]) [- المدرسة الإعدادية النموذجية (si Collège pilote)] [- مع الاصلاح (si corrigé)]",
+  "type_translations": {
+    "Devoir de Synthèse": "فرض تأليفي",
+    "Devoir de Contrôle": "فرض مراقبة",
+    "Devoir Corrigé de Synthèse": "فرض تأليفي مع الاصلاح",
+    "Devoir Corrigé de Contrôle": "فرض مراقبة مع الاصلاح",
+    "Devoir de Révision": "فرض مراجعة",
+    "Devoir de maison": "واجب منزلي",
+    "Série d'exercices": "سلسلة تمارين",
+    "Cours": "درس",
+    "Résumé": "ملخص",
+    "N°X": "عدد X"
+  },
+  "correction_indicators": {
+    "Avec correction": "مع الاصلاح",
+    "(Corrigé)": "مع الاصلاح"
+  },
+  "subject_translations": {
+    "mathematiques": "الرياضيات",
+    "physique": "الفيزياء",
+    "svt": "علوم الحياة والأرض",
+    "arabe": "العربية",
+    "francais": "الفرنسية",
+    "anglais": "الإنجليزية",
+    "histoire": "التاريخ",
+    "geographie": "الجغرافيا",
+    "histoire-geographie": "التاريخ والجغرافيا",
+    "philosophie": "الفلسفة",
+    "informatique": "الإعلامية",
+    "technologie": "التكنولوجيا",
+    "musique": "الموسيقى",
+    "theatre": "المسرح",
+    "arts": "الفنون",
+    "education-islamique": "التربية الإسلامية",
+    "education-civique": "التربية المدنية",
+    "sport": "الرياضة"
+  },
+  "class_translations": {
+    "7eme": "السابعة أساسي",
+    "8eme": "الثامنة أساسي",
+    "9eme": "التاسعة أساسي"
+  },
+  "school_indicators": {
+    "Collège pilote": "المدرسة الإعدادية النموذجية"
+  },
+  "teacher_strategy": "Use User.firstNameAr/lastNameAr if Arabic, else omit"
+}

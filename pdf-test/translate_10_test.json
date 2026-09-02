@@ -1,0 +1,72 @@
+[
+  {
+    "nid": "2873",
+    "old": "Devoir de Synthèse N°1 - Technologie - 7ème (2023-2024) أضواء الشوارع Mr عبد الكريم بن خميس",
+    "new": "واجب تلخيصي عدد 1 - تكنولوجيا - السابعة أساسي (2023-2024) أضواء الشوارع الأستاذ عبد الكريم بن خميس",
+    "cls": "7eme",
+    "subj": "technologie"
+  },
+  {
+    "nid": "2141",
+    "old": "Devoir de Synthèse N°2 - Math - 9ème (2022-2023)",
+    "new": "واجب تلخيصي عدد 2 - رياضيات - التاسعة أساسي (2022-2023)",
+    "cls": "9eme",
+    "subj": "mathematiques"
+  },
+  {
+    "nid": "1577",
+    "old": "Devoir de Contrôle N°2 - Math - 9ème (2017-2018)",
+    "new": "اختبار تحكم عدد 2 - رياضيات - التاسعة أساسي (2017-2018)",
+    "cls": "9eme",
+    "subj": "mathematiques"
+  },
+  {
+    "nid": "2747",
+    "old": "Série d'exercices Collège pilote - Math الضرب و القسمة - 9ème (2011-2012) Mr Gharbi",
+    "new": "سلسلة تمارين collège pilote - الرياضيات الضرب والقسمة - 9 أساسي (2011-2012) الأستاذ غربي",
+    "cls": "9eme",
+    "subj": "mathematiques"
+  },
+  {
+    "nid": "1102",
+    "old": "Devoir de Contrôle N°5 - Math - 8ème (2018-2019)",
+    "new": "اختبار تحكم عدد 5 - رياضيات - الثامنة أساسي (2018-2019)",
+    "cls": "8eme",
+    "subj": "mathematiques"
+  },
+  {
+    "nid": "1552",
+    "old": "Devoir de Synthèse N°1 - Physique - 8ème (2019-2020)",
+    "new": "واجب تلخيصي عدد 1 - فيزياء - الثامنة أساسي (2019-2020)",
+    "cls": "8eme",
+    "subj": "physique"
+  },
+  {
+    "nid": "3586",
+    "old": "Devoir de Synthèse - فرض تاليفي عدد ١ - دراسة نص - الثامنة أساسي التلميذ الهادف",
+    "new": "فرض تأليفي عدد 1 - دراسة نص - الثامنة أساسي التلميذ الهادف",
+    "cls": "8eme",
+    "subj": "arabe"
+  },
+  {
+    "nid": "2075",
+    "old": "Devoir de Synthèse N°1 - Math - 7ème (2019-2020)",
+    "new": "واجب تلخيصي عدد 1 - رياضيات - السابعة أساسي (2019-2020)",
+    "cls": "7eme",
+    "subj": "mathematiques"
+  },
+  {
+    "nid": "2870",
+    "old": "Devoir de Synthèse N°1 - Technologie - 7ème (2018-2019) Mr Laghmi mahdi",
+    "new": "واجب تلخيصي عدد 1 - تكنولوجيا - السابعة أساسي (2018-2019) الأستاذ لاغمي مهدي",
+    "cls": "7eme",
+    "subj": "technologie"
+  },
+  {
+    "nid": "1660",
+    "old": "Devoir de Contrôle N°4 - Math - 8ème (2013-2014)",
+    "new": "اختبار تحكم عدد 4 - رياضيات - الثامنة أساسي (2013-2014)",
+    "cls": "8eme",
+    "subj": "mathematiques"
+  }
+]

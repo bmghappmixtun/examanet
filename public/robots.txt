@@ -1,0 +1,67 @@
+# Examanet CF POC (examanet-prod.examanet-poc.workers.dev) — DEV ONLY
+#
+# 2026-08-24: This is a Cloudflare Workers POC/dev environment, NOT production.
+# We explicitly block ALL crawlers to:
+# 1. Prevent Google/Bing from indexing duplicate content
+# 2. Prevent the CF URL from outranking the real examanet.com
+# 3. Avoid wasting crawler budget
+#
+# The real production site is examanet.com (served by Vercel).
+
+User-agent: *
+Disallow: /
+
+# Explicit blocks for the major crawlers
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: Slurp
+Disallow: /
+
+User-agent: DuckDuckBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# AI crawlers (don't train on the POC data)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+# Sitemap: none (this is a POC, not a real site)

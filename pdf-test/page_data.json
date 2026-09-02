@@ -1,0 +1,88 @@
+{
+  "math_11358": {
+    "metadata": {
+      "profNames": [
+        "Mr. FANASSI BECHIR"
+      ],
+      "schoolName": null,
+      "year": null,
+      "type": "série",
+      "subtype": "révision",
+      "subject": "Mathématiques",
+      "dossierTechnique": null,
+      "systemName": null,
+      "duration": null,
+      "level": null,
+      "keyPoints": [
+        "Le plan complexe est muni d'un repère orthonormé et les points A, B, C, D ont des affixes spécifiques.",
+        "Le triangle ABC est démontré comme étant rectangle et isocèle.",
+        "L'application f associe un point M à un point d'affixe z' et des ensembles E et F sont déterminés."
+      ],
+      "topics": [
+        "Géométrie complexe",
+        "Triangles",
+        "Applications complexes"
+      ],
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document présente des exercices de révision en mathématiques pour le baccalauréat, axés sur la géométrie dans le plan complexe. L'exercice n°3 demande de placer des points dans un repère orthonormé, de démontrer que le triangle formé est rectangle et isocèle, et d'explorer des applications de transformations complexes. Les solutions incluent des calculs algébriques et des démonstrations de propriétés géométriques.",
+      "prerequisites": [
+        "Connaissance des nombres complexes",
+        "Compréhension des transformations géométriques"
+      ],
+      "keyInsights": [
+        "Le triangle ABC est isocèle et rectangle en B",
+        "L'application f transforme les points selon des règles spécifiques",
+        "Les ensembles E et F représentent des médiatrices et des droites dans le plan complexe"
+      ]
+    },
+    "tokens_used": 4198,
+    "pages": 2,
+    "words": 980
+  },
+  "tech_12920": {
+    "metadata": {
+      "profNames": [
+        "HENI ABDELLATIF"
+      ],
+      "schoolName": "Lycée Sec.Mazzouna",
+      "year": "2013-2014",
+      "type": "devoir",
+      "subtype": "contrôle",
+      "subject": "Technologie",
+      "dossierTechnique": "Génie mécanique",
+      "systemName": "Pots de fleurs",
+      "duration": "2h",
+      "level": null,
+      "keyPoints": [
+        "Le devoir porte sur la fabrication de pots de fleurs en terre cuite.",
+        "Le système utilise des presses verticales automatiques ou semi-automatiques.",
+        "Le fonctionnement est basé sur un moteur réducteur et des couples d'engrenages."
+      ],
+      "topics": [
+        "Génie Mécanique",
+        "Fabrication",
+        "Moteurs électriques"
+      ],
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le devoir de contrôle en technologie pour la section 4ème sciences techniques porte sur la fabrication de pots de fleurs en terre cuite. Il décrit le fonctionnement d'un système de façonnage utilisant des presses verticales automatiques, ainsi que le principe de fonctionnement basé sur un moteur réducteur et des engrenages. Les étudiants doivent analyser un dossier technique et répondre à des questions sur le processus de fabrication et la nomenclature des pièces.",
+      "prerequisites": [
+        "Connaissance des systèmes mécaniques",
+        "Compréhension des principes de fonctionnement des moteurs électriques"
+      ],
+      "keyInsights": [
+        "Le façonnage des pots varie en taille de 5 cm à 60 cm",
+        "L'utilisation de moteurs réducteurs est essentielle pour la rotation des modèles",
+        "Aucune documentation n'est autorisée pendant l'épreuve, mais les calculatrices peuvent être utilisées"
+      ]
+    },
+    "tokens_used": 2775,
+    "pages": 2,
+    "words": 387
+  }
+}

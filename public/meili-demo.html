@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Meilisearch POC — Examanet</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #0f172a; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+  header { background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); color: white; padding: 30px 20px; border-radius: 12px; margin-bottom: 24px; }
+  header h1 { font-size: 28px; margin-bottom: 8px; }
+  header p { opacity: 0.9; font-size: 14px; }
+  .status-bar { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .status-bar .badge { background: rgba(255,255,255,0.2); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; }
+  .sidebar { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .results { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .search-box { width: 100%; padding: 14px 18px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 8px; margin-bottom: 16px; transition: border-color 0.2s; }
+  .search-box:focus { outline: none; border-color: #0ea5e9; }
+  .search-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding: 12px 16px; background: #f1f5f9; border-radius: 8px; }
+  .search-meta .count { font-size: 14px; color: #475569; }
+  .search-meta .time { font-size: 12px; color: #64748b; font-family: monospace; }
+  .facet-group { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
+  .facet-group:last-child { border-bottom: none; }
+  .facet-title { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #475569; margin-bottom: 8px; letter-spacing: 0.5px; }
+  .facet-list { display: flex; flex-direction: column; gap: 4px; }
+  .facet-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; font-size: 13px; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+  .facet-item:hover { background: #f1f5f9; }
+  .facet-item.active { background: #dbeafe; color: #1d4ed8; font-weight: 600; }
+  .facet-item .count { font-size: 11px; color: #94a3b8; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; min-width: 28px; text-align: center; }
+  .facet-item.active .count { background: #1d4ed8; color: white; }
+  .result { padding: 16px 0; border-bottom: 1px solid #f1f5f9; }
+  .result:last-child { border-bottom: none; }
+  .result-title { font-size: 15px; color: #0ea5e9; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
+  .result-title em { background: #fef3c7; font-style: normal; padding: 0 2px; }
+  .result-meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; color: #64748b; margin-top: 6px; }
+  .result-tag { background: #f1f5f9; padding: 3px 8px; border-radius: 4px; }
+  .result-tag.type { background: #ddd6fe; color: #6d28d9; }
+  .result-tag.subject { background: #d1fae5; color: #047857; }
+  .result-tag.class { background: #fed7aa; color: #c2410c; }
+  .perf-test { background: #fef3c7; border: 1px solid #fbbf24; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
+  .perf-test strong { color: #92400e; }
+  .test-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .test-btn { color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500; }
+  .test-btn:hover { opacity: 0.85; }
+  .test-btn.typo { background: #f59e0b; }
+  .test-btn.syno { background: #10b981; }
+  .test-btn.filter { background: #8b5cf6; }
+  .test-btn.ar { background: #ef4444; }
+  .test-btn.exact { background: #0ea5e9; }
+  .clear { background: #f1f5f9; color: #475569; padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; cursor: pointer; font-size: 12px; }
+  .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pill { background: #dbeafe; color: #1d4ed8; padding: 4px 10px; border-radius: 12px; font-size: 12px; display: flex; gap: 6px; align-items: center; }
+  .pill button { background: none; border: none; color: #1d4ed8; cursor: pointer; font-weight: 700; }
+  code { background: #1e293b; color: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🔍 Meilisearch POC — Examanet</h1>
+    <p>Démo live avec 1000 ressources indexées. <strong>100% local, zéro impact prod.</strong></p>
+    <div class="status-bar">
+      <span class="badge">✓ 1000 docs indexés en 1s</span>
+      <span class="badge">⚡ Latence: 3-58ms</span>
+      <span class="badge">🎯 Typo tolerance</span>
+      <span class="badge">🔄 Synonymes FR/AR</span>
+      <span class="badge">📊 Faceting</span>
+      <span class="badge">💡 Highlighting</span>
+    </div>
+  </header>
+
+  <div class="perf-test">
+    <strong>🎮 Teste les features :</strong> clique sur les boutons ci-dessous pour voir Meilisearch en action. Endpoint : <code>http://localhost:7700</code>
+  </div>
+
+  <div class="test-buttons">
+    <button class="test-btn exact" onclick="test('devoir')">✓ exact: "devoir"</button>
+    <button class="test-btn typo" onclick="test('mathematques')">✗ typo: "mathematques"</button>
+    <button class="test-btn typo" onclick="test('physic')">✗ typo: "physic"</button>
+    <button class="test-btn typo" onclick="test('sience')">✗ typo: "sience"</button>
+    <button class="test-btn syno" onclick="test('svt')">🔄 synonyme: "svt"</button>
+    <button class="test-btn syno" onclick="test('corrigés')">🔄 synonyme: "corrigés"</button>
+    <button class="test-btn ar" onclick="test('الفرنسية')">🌍 AR: "الفرنسية"</button>
+    <button class="test-btn ar" onclick="test('رياضيات')">🌍 AR: "رياضيات"</button>
+    <button class="test-btn filter" onclick="test('')">📊 Tous + facets</button>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h3 style="font-size: 14px; margin-bottom: 12px;">📊 Filtres (clique pour ajouter)</h3>
+      <div id="facets"></div>
+    </aside>
+    <main class="results">
+      <input type="text" id="searchInput" class="search-box" placeholder="🔍 Tapez votre recherche..." value="devoir" oninput="debounceSearch()">
+      <div id="filterPills" class="filter-pills"></div>
+      <div class="search-meta">
+        <span class="count" id="resultCount">0 résultats</span>
+        <span class="time" id="searchTime">0ms</span>
+      </div>
+      <div id="results"></div>
+    </main>
+  </div>
+</div>
+
+<script>
+let currentQuery = 'devoir';
+let currentFilters = [];
+
+async function search(q, filters = []) {
+  const t0 = performance.now();
+  const params = new URLSearchParams();
+  params.set('q', q);
+  params.set('limit', '15');
+  params.set('attributesToHighlight', 'title');
+  if (filters.length) params.set('filter', filters);
+  
+  const r = await fetch(`http://localhost:7700/indexes/resources/search?${params}`, {
+    headers: { 'Authorization': 'Bearer poc-test-key-12345' }
+  }).then(r => r.json());
+  
+  const t = Math.round(performance.now() - t0);
+  document.getElementById('searchTime').textContent = t + 'ms';
+  document.getElementById('resultCount').textContent = r.estimatedTotalHits + ' résultats';
+  
+  document.getElementById('results').innerHTML = (r.hits || []).map(h => `
+    <div class="result">
+      <div class="result-title">${h._formatted?.title || h.title}</div>
+      <div class="result-meta">
+        <span class="result-tag type">${h.type || '—'}</span>
+        <span class="result-tag subject">${h.subjectName || h.subject || '—'}</span>
+        <span class="result-tag class">${h.className || h.class || '—'}</span>
+        <span class="result-tag">${h.sectionName || ''}</span>
+        <span class="result-tag">${h.year || ''}</span>
+        <span class="result-tag">${h.language || ''}</span>
+        <span class="result-tag">👁 ${h.viewsCount}</span>
+        <span class="result-tag">⬇ ${h.downloadsCount}</span>
+      </div>
+    </div>
+  `).join('') || '<p style="color: #94a3b8; padding: 20px;">Aucun résultat</p>';
+  
+  renderFacets(r.facetDistribution, q);
+  renderPills();
+}
+
+function renderFacets(facets) {
+  if (!facets) return;
+  const html = Object.entries(facets).slice(0, 4).map(([name, values]) => {
+    const items = Object.entries(values).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    return `
+      <div class="facet-group">
+        <div class="facet-title">${name}</div>
+        <div class="facet-list">
+          ${items.map(([k, v]) => {
+            const filter = `${name} = "${k}"`;
+            const active = currentFilters.includes(filter);
+            return `<div class="facet-item ${active ? 'active' : ''}" onclick="toggleFilter('${name}', '${k}')">
+              <span>${k}</span>
+              <span class="count">${v}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('facets').innerHTML = html;
+}
+
+function renderPills() {
+  document.getElementById('filterPills').innerHTML = currentFilters.map(f => {
+    const [name, val] = f.split(' = ');
+    return `<div class="pill">${val} <button onclick="removeFilter('${f.replace(/'/g, "\\'")}')">×</button></div>`;
+  }).join('');
+}
+
+function toggleFilter(name, value) {
+  const filter = `${name} = "${value}"`;
+  const idx = currentFilters.indexOf(filter);
+  if (idx >= 0) currentFilters.splice(idx, 1);
+  else currentFilters.push(filter);
+  search(currentQuery, currentFilters.join(' AND '));
+}
+
+function removeFilter(f) {
+  currentFilters = currentFilters.filter(x => x !== f);
+  search(currentQuery, currentFilters.join(' AND '));
+}
+
+let timer;
+function debounceSearch() {
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    currentQuery = document.getElementById('searchInput').value;
+    search(currentQuery, currentFilters.join(' AND '));
+  }, 200);
+}
+
+function test(q) {
+  document.getElementById('searchInput').value = q;
+  currentQuery = q;
+  currentFilters = [];
+  search(q);
+}
+
+search('devoir');
+</script>
+</body>
+</html>

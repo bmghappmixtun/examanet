@@ -1,0 +1,2051 @@
+{
+  "payload": [
+    {
+      "resourceId": "cmr8gfkuu00kbwmh47ft3aifs",
+      "generalSubject": "l'engagement de l'écrivain",
+      "shortKeyPoints": [
+        "engagement littéraire",
+        "crise de la pensée",
+        "liberté d'écriture",
+        "misère intellectuelle"
+      ],
+      "description": "Le document aborde la question de l'engagement des écrivains dans la société contemporaine, en discutant des réflexions d'Annie Mignard sur le sujet.",
+      "summary": "Annie Mignard s'interroge sur la notion d'engagement des écrivains, soulignant un paradoxe où l'engagement est souvent perçu comme une posture défensive. Elle évoque la crise de la pensée et la perte de figures morales dans la littérature.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4108
+    },
+    {
+      "resourceId": "cmr8i994400ciu3qnzdb9iz2v",
+      "generalSubject": "conditions de vie des mineurs",
+      "shortKeyPoints": [
+        "exploitation minière",
+        "réflexion ouvrière",
+        "justice sociale",
+        "éducation des mineurs"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait de 'Germinal' d'Émile Zola, abordant les conditions de vie des mineurs et leur prise de conscience sociale. Les élèves doivent analyser le texte et répondre à des questions de compréhension et de langue.",
+      "summary": "Le document présente un devoir de contrôle en français pour les élèves de 4ème année secondaire, centré sur un extrait de 'Germinal' d'Émile Zola. Il explore les thèmes de l'exploitation des mineurs et leur éveil à la justice sociale, avec des questions sur la compréhension du texte et des exercices de langue.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3034
+    },
+    {
+      "resourceId": "cmr8izw5s018lu3qnfbfhzgwx",
+      "generalSubject": "les relations familiales",
+      "shortKeyPoints": [
+        "souvenirs d'enfance",
+        "violence éducative",
+        "rapport mère-enfant",
+        "rôle des adultes"
+      ],
+      "description": "Ce document présente un extrait d'un texte de Jules Vallès, où un enfant évoque ses souvenirs d'enfance marqués par la discipline sévère de sa mère et l'intervention d'une voisine. Il aborde les thèmes de la maternité et de l'éducation.",
+      "summary": "L'extrait décrit la relation compliquée entre un enfant et sa mère, qui utilise la violence comme méthode éducative. Le narrateur se souvient également de Mlle Balandreau, une voisine qui joue un rôle ambivalent dans son éducation.",
+      "homeworkSubtype": "CONTROLE",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4375
+    },
+    {
+      "resourceId": "cmr8tp29g00dyezxr9dg8b8om",
+      "generalSubject": "les premiers sentiments amoureux",
+      "shortKeyPoints": [
+        "rencontre amoureuse",
+        "trouble émotionnel",
+        "réaction du narrateur",
+        "champ lexical"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait littéraire où le narrateur exprime ses sentiments à la vue de Sophie, mettant en avant le trouble émotionnel et les débuts d'une histoire d'amour.",
+      "summary": "Le texte présente une scène de rencontre entre le narrateur et Sophie, illustrant ses émotions confuses et son émerveillement. Les questions portent sur la compréhension des sentiments et des réactions des personnages, ainsi que sur l'analyse linguistique.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3146
+    },
+    {
+      "resourceId": "cmr8w6l9100jsstsge9onma4v",
+      "generalSubject": "la découverte de l'autre",
+      "shortKeyPoints": [
+        "atmosphère inquiétante",
+        "sauvages cannibales",
+        "conflit moral",
+        "observation minutieuse"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait du roman 'Vendredi ou la vie sauvage' de Michel Tournier, où Robinson découvre des sauvages sur une île. Les questions portent sur la compréhension du texte et l'analyse linguistique.",
+      "summary": "Le document est un devoir de contrôle en français pour la 1ère année secondaire, centré sur un extrait de 'Vendredi ou la vie sauvage'. Il explore la découverte de l'autre et les dilemmes moraux de Robinson face à des sauvages. Les élèves doivent analyser l'atmosphère et la langue du texte.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4238
+    },
+    {
+      "resourceId": "cmr8w6mds00jwstsg7oslnxnu",
+      "generalSubject": "le transport moderne",
+      "shortKeyPoints": [
+        "TGV",
+        "avion",
+        "arguments pour",
+        "passé vs présent"
+      ],
+      "description": "Ce document est un devoir de contrôle en français pour les élèves de 3ème technique, portant sur un extrait d'article comparant le TGV et l'avion. Il inclut des questions de compréhension sur les arguments présentés par le journaliste.",
+      "summary": "L'extrait analyse les similitudes et différences entre le TGV et l'avion, en présentant les opinions des partisans du TGV et en opposant le passé au présent. Il soulève des questions sur l'évolution des transports et les perceptions des usagers.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2856
+    },
+    {
+      "resourceId": "cmr8w6nj100k1stsg70buf96m",
+      "generalSubject": "les relations amicales",
+      "shortKeyPoints": [
+        "Tom Sawyer",
+        "Becky Thatcher",
+        "école",
+        "interaction sociale"
+      ],
+      "description": "Ce document est un devoir de contrôle en français pour la 1ère année secondaire, centré sur un extrait des aventures de Tom Sawyer. Il évalue la compréhension et l'analyse de la relation entre Tom et Becky à l'école.",
+      "summary": "Le devoir présente une interaction entre Tom Sawyer et Becky Thatcher, soulignant leur curiosité et leur amitié naissante. Les questions portent sur la compréhension du texte et l'analyse des sentiments des personnages.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3160
+    },
+    {
+      "resourceId": "cmr8w6oq600k6stsge1azal5u",
+      "generalSubject": "la rencontre avec une baleine",
+      "shortKeyPoints": [
+        "émotions du narrateur",
+        "peur de Jack",
+        "comportement de la baleine",
+        "vocabulaire spécifique"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait d'Alain Bombard où le narrateur décrit une rencontre avec une baleine albinos. Les élèves doivent répondre à des questions de compréhension et de langue.",
+      "summary": "Le document est un devoir de contrôle en français pour la 1ère année secondaire, centré sur un extrait narratif d'Alain Bombard. Les élèves doivent analyser les émotions des personnages et le comportement de la baleine, tout en travaillant sur le vocabulaire et la grammaire.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3479
+    },
+    {
+      "resourceId": "cmr8w6pm800kbstsghdvn9g61",
+      "generalSubject": "la rencontre inattendue",
+      "shortKeyPoints": [
+        "rencontre enfant",
+        "pain et gâteau",
+        "sentiments du narrateur",
+        "conflit fraternel"
+      ],
+      "description": "Ce devoir de contrôle aborde un extrait d'un texte où un narrateur se souvient d'une rencontre avec un enfant affamé. Le texte explore les thèmes de la pauvreté et des relations humaines.",
+      "summary": "Le devoir de contrôle N°1 de français pour la 1ère année secondaire présente un extrait d'un texte sur la rencontre d'un narrateur avec un enfant déguenillé. À travers cette interaction, le texte soulève des questions sur la perception de la pauvreté et les émotions humaines.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3110
+    },
+    {
+      "resourceId": "cmr8w6qsi00kgstsgwldw7bhr",
+      "generalSubject": "l'amitié et la solitude",
+      "shortKeyPoints": [
+        "relation d'amitié",
+        "jeux d'enfance",
+        "souvenirs nostalgiques",
+        "maladie et perte"
+      ],
+      "description": "Ce devoir de contrôle aborde un extrait littéraire sur la relation entre un narrateur et un camarade d'enfance nommé Mouton, soulignant les thèmes de l'amitié et de la solitude. Il inclut des questions de compréhension et de langue.",
+      "summary": "Le texte évoque la rencontre d'un narrateur avec un camarade d'enfance, Mouton, et leur relation marquée par la solitude et la tristesse. La maladie de Mouton et la perte de cette amitié sont des éléments centraux du récit.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3105
+    },
+    {
+      "resourceId": "cmr8w6rqe00klstsgkrk3aqa5",
+      "generalSubject": "l'architecture et la modernité",
+      "shortKeyPoints": [
+        "tour Eiffel",
+        "architecture moderne",
+        "Exposition universelle",
+        "Paris",
+        "vie errante"
+      ],
+      "description": "Ce devoir de synthèse aborde un extrait de Guy de Maupassant sur ses réflexions concernant la tour Eiffel et l'architecture moderne à Paris.",
+      "summary": "Dans cet extrait, Maupassant exprime son ennui face à la tour Eiffel et critique la perception de l'architecture moderne. Il évoque l'Exposition universelle et la foule qui envahit Paris, tout en soulignant l'importance de l'architecture dans l'histoire.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3570
+    },
+    {
+      "resourceId": "cmr8w6srz00kpstsgua4z1y0n",
+      "generalSubject": "le pouvoir royal",
+      "shortKeyPoints": [
+        "monarchie absolue",
+        "petit prince",
+        "rencontre avec le roi",
+        "étiquette",
+        "pouvoir universel"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait du chapitre X de 'Le Petit Prince' d'Antoine de Saint-Exupéry, où le petit prince rencontre un roi sur une planète minuscule.",
+      "summary": "Dans cet extrait, le petit prince interroge un roi sur son pouvoir et son autorité. Le roi, bien que monarchique et absolu, se révèle aussi bon et raisonnable, illustrant les thèmes du pouvoir et de l'autorité.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3617
+    },
+    {
+      "resourceId": "cmr8w6toa00ktstsgvrpod7ni",
+      "generalSubject": "la solitude et le voyage",
+      "shortKeyPoints": [
+        "rencontre inattendue",
+        "émotions humaines",
+        "voyageuse solitaire",
+        "perte familiale"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait de Guy de Maupassant, où un narrateur rencontre une vieille femme voyageuse, évoquant ses peines et sa solitude. Les questions portent sur la compréhension et l'analyse du texte.",
+      "summary": "Dans cet extrait, le narrateur décrit sa rencontre avec une femme âgée, seule et triste, qui partage son histoire de pertes familiales. Ce texte illustre les thèmes de la solitude et des émotions liées aux voyages.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3156
+    },
+    {
+      "resourceId": "cmr8w6unt00kxstsg6v95a1xk",
+      "generalSubject": "les aspirations des jeunes",
+      "shortKeyPoints": [
+        "besoin d'évasion",
+        "culte de la vedette",
+        "solidarité entre jeunes",
+        "loisirs collectifs"
+      ],
+      "description": "Ce devoir de synthèse aborde les aspirations des jeunes, notamment leur besoin d'évasion, leur admiration pour les vedettes et leur désir de solidarité. Il inclut des questions de compréhension et des exercices de langue.",
+      "summary": "Le document traite des aspirations des jeunes, mettant en avant leur besoin d'évasion et leur attrait pour les vedettes. Il souligne également l'importance des relations sociales et de la solidarité entre jeunes.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2760
+    },
+    {
+      "resourceId": "cmr8w6vgv00l1stsgogycc5l3",
+      "generalSubject": "l'exploration en Amazonie",
+      "shortKeyPoints": [
+        "jungle amazonienne",
+        "réserve naturelle",
+        "guides indiens",
+        "aventure en groupe"
+      ],
+      "description": "Ce devoir de contrôle présente un extrait narratif sur l'exploration de la jungle amazonienne par un groupe de personnes cherchant à établir des réserves naturelles. L'auteur décrit les défis rencontrés lors de leur aventure.",
+      "summary": "Dans cet extrait, l'auteur raconte son expérience d'exploration en Amazonie avec des coéquipiers et des guides indiens. Ils font face à des difficultés, notamment la perte de repères et la nécessité de construire un radeau pour s'échapper.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3234
+    },
+    {
+      "resourceId": "cmr8w6waa00l5stsgibqy8gar",
+      "generalSubject": "l'utilisation de l'ordinateur",
+      "shortKeyPoints": [
+        "technologie",
+        "génération",
+        "apprentissage",
+        "relations familiales"
+      ],
+      "description": "Ce devoir de synthèse aborde le rapport d'une grand-mère avec la technologie, en particulier l'ordinateur, et les réticences de son mari face à son apprentissage.",
+      "summary": "Le texte raconte comment une grand-mère, peu moderne, découvre l'ordinateur avec l'aide de son mari. Malgré ses craintes et ses difficultés, elle tente d'apprendre à l'utiliser pour communiquer avec sa famille.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2807
+    },
+    {
+      "resourceId": "cmr8w6xis00lastsgn1w6myfl",
+      "generalSubject": "la ville moderne",
+      "shortKeyPoints": [
+        "description de Paris",
+        "réaction de Béa B",
+        "sensation de vertige",
+        "éléments architecturaux"
+      ],
+      "description": "Ce devoir de synthèse porte sur un extrait décrivant la ville de Paris à travers les yeux d'une jeune fille, Béa B., qui découvre ses aspects modernes et impressionnants.",
+      "summary": "Le texte présente une description subjective de Paris, mettant en avant ses bâtiments et infrastructures modernes. Béa B. ressent à la fois émerveillement et vertige face à cette ville qui semble démesurée et étrangère.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3417
+    },
+    {
+      "resourceId": "cmr8w6ysw00lestsgmv5n73sp",
+      "generalSubject": "problèmes écologiques",
+      "shortKeyPoints": [
+        "pollution marine",
+        "sensibilisation écologique",
+        "causes environnementales",
+        "solutions urgentes"
+      ],
+      "description": "Ce devoir de contrôle en français aborde les problèmes écologiques, notamment la pollution marine, à travers des questions de compréhension, de vocabulaire et de grammaire. Les élèves doivent également proposer des solutions dans un essai argumentatif.",
+      "summary": "Le document est un devoir de contrôle de français pour la 1ère année secondaire, centré sur les problèmes écologiques. Il inclut des questions sur la compréhension d'un texte, des exercices de vocabulaire et de grammaire, ainsi qu'un essai argumentatif sur les solutions à apporter.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3247
+    },
+    {
+      "resourceId": "cmr8w704n00listsgzn9j6yjf",
+      "generalSubject": "problèmes écologiques",
+      "shortKeyPoints": [
+        "pollution marine",
+        "sensibilisation écologique",
+        "causes environnementales",
+        "solutions urgentes"
+      ],
+      "description": "Ce devoir de contrôle aborde les problèmes écologiques liés à la pollution, en demandant aux élèves d'analyser un texte et de répondre à des questions sur ses causes et conséquences. Il inclut également des exercices de vocabulaire et de grammaire.",
+      "summary": "Le devoir de contrôle N°3 en français pour la 1ère année secondaire se concentre sur les problématiques écologiques, en particulier la pollution. Les élèves doivent comprendre le texte, identifier les causes de la pollution et proposer des solutions dans un essai argumentatif.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3002
+    },
+    {
+      "resourceId": "cmr8w71du00lmstsgywqmt6wb",
+      "generalSubject": "l'artisanat du bois",
+      "shortKeyPoints": [
+        "artisan du bois",
+        "émotion",
+        "atelier",
+        "mains de l'artisan",
+        "travail de luthier"
+      ],
+      "description": "Ce document est un devoir de synthèse pour la 2ème année de lettres, portant sur un extrait de texte de Bernard Clavel, décrivant l'atelier d'un artisan du bois nommé Vincendon et les émotions du narrateur. Il comprend des questions d'étude de texte.",
+      "summary": "Le texte présente Vincendon, un artisan du bois, et l'impact émotionnel de son atelier sur le narrateur. À travers la description de l'ordre et de la propreté de l'atelier, ainsi que des mains de l'artisan, le texte explore la passion et la joie de Vincendon dans son travail.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4124
+    },
+    {
+      "resourceId": "cmr8w72p000lqstsgshcjrcve",
+      "generalSubject": "la découverte de Paris",
+      "shortKeyPoints": [
+        "impression de Paris",
+        "déception",
+        "procédés d'écriture",
+        "sentiments de Rousseau"
+      ],
+      "description": "Ce document présente un devoir de contrôle de français pour la 3ème année secondaire, centré sur un extrait des 'Confessions' de Jean-Jacques Rousseau, où il décrit sa première impression de Paris. Il inclut des questions d'étude de texte, de langue et un essai.",
+      "summary": "Jean-Jacques Rousseau partage ses premières impressions de Paris, qui contrastent avec ses attentes idéalisées. Le devoir invite les élèves à analyser ses sentiments et les procédés littéraires utilisés pour exprimer sa déception.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3308
+    },
+    {
+      "resourceId": "cmr8w73up00lustsg8wfdcky6",
+      "generalSubject": "la déception face à Paris",
+      "shortKeyPoints": [
+        "impression initiale",
+        "déception",
+        "procédés d'écriture",
+        "sentiments de Rousseau"
+      ],
+      "description": "Ce devoir de contrôle analyse un extrait des 'Confessions' de Jean-Jacques Rousseau, où il exprime sa déception lors de sa première visite à Paris. Les élèves doivent étudier le texte et répondre à des questions sur les sentiments de Rousseau et les procédés littéraires utilisés.",
+      "summary": "Dans cet extrait, Rousseau décrit sa première impression de Paris, qui contraste avec ses attentes idéalisées. Il exprime un dégoût persistant pour la ville, malgré sa magnificence, et analyse les raisons de cette déception à travers des procédés d'écriture.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3396
+    },
+    {
+      "resourceId": "cmr8w74yv00lystsgaovvapw9",
+      "generalSubject": "la découverte de la mer",
+      "shortKeyPoints": [
+        "espace de découverte",
+        "complicité avec la mer",
+        "effet sur Daniel",
+        "procédés d'écriture"
+      ],
+      "description": "Ce document est un devoir de contrôle de français pour la 3ème année secondaire en économie-gestion, centré sur un extrait de J.M.G. Le Clézio. Il explore la relation entre Daniel et la mer à travers des questions d'analyse littéraire et des exercices de langue.",
+      "summary": "Le texte présente Daniel marchant au bord de la mer, découvrant un espace de liberté et de complicité. Les questions posées invitent à analyser cette relation ainsi que les procédés littéraires utilisés pour exprimer ses émotions.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 5111
+    },
+    {
+      "resourceId": "cmr8w76ba00m2stsg0jr4pbr4",
+      "generalSubject": "la lutte contre le racisme",
+      "shortKeyPoints": [
+        "préjugés",
+        "éducation",
+        "égalité",
+        "amitié",
+        "violence"
+      ],
+      "description": "Ce devoir de contrôle aborde la thématique du racisme à travers un extrait de Tahar Ben Jelloun, soulignant que l'enfant n'est pas raciste à la naissance mais peut le devenir par l'éducation. Il insiste sur l'importance de démolir les préjugés.",
+      "summary": "L'extrait de Tahar Ben Jelloun met en lumière la nature non raciste de l'enfant et comment les préjugés peuvent être inculqués. Il appelle à une éducation contre le racisme, soulignant que les différences physiques ne justifient pas les inégalités.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3065
+    },
+    {
+      "resourceId": "cmr8w77gv00m6stsghxfnqrut",
+      "generalSubject": "la vieillesse et l'isolement",
+      "shortKeyPoints": [
+        "perception des autres",
+        "regard intérieur",
+        "sentiments de tristesse",
+        "procédés d'écriture"
+      ],
+      "description": "Ce devoir de synthèse aborde l'analyse psychologique d'une vieille femme à travers son regard et celui de son entourage, ainsi que les sentiments liés à sa condition. Il comprend des questions d'étude de texte, de langue et un essai sur l'acceptation de la différence.",
+      "summary": "Le document explore la perception de la vieillesse à travers les yeux d'une mère et de son entourage, mettant en lumière les sentiments de tristesse et d'isolement qu'elle ressent. Il invite également à réfléchir sur l'acceptation des différences entre les individus.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2781
+    },
+    {
+      "resourceId": "cmr8w78lw00mastsgxa1fxusc",
+      "generalSubject": "l'influence des stars",
+      "shortKeyPoints": [
+        "communication",
+        "idolâtrie",
+        "industrie du show-biz",
+        "mythologie moderne"
+      ],
+      "description": "Ce document traite de l'impact des stars sur le public, en analysant leur représentation et l'idolâtrie qui les entoure. Il aborde les différents types de célébrités et leur influence sur les masses.",
+      "summary": "Le texte explore comment les stars sont perçues comme des figures idéalisées, presque divines, qui exercent une forte influence sur leurs admirateurs. Il met en lumière la fabrication de ces icônes et les rituels d'admiration qui les entourent.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3671
+    },
+    {
+      "resourceId": "cmr8w79s700mestsgpzp248tg",
+      "generalSubject": "la vie de Bombard",
+      "shortKeyPoints": [
+        "portrait de personnage",
+        "ambition de richesse",
+        "comique de situation",
+        "critique sociale"
+      ],
+      "description": "Ce devoir de contrôle analyse le personnage de Bombard, un homme paresseux et ambitieux, à travers un extrait de Maupassant. Il explore ses traits de caractère et ses aspirations, tout en utilisant des procédés d'écriture pour le ridiculiser.",
+      "summary": "Le texte présente Simon Bombard, un homme qui cherche à éviter l'effort tout en aspirant à la richesse. À travers son portrait, Maupassant critique les travers de la société et l'absurdité des ambitions de certains personnages.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3061
+    },
+    {
+      "resourceId": "cmr8w7avf00mjstsgqhg720a4",
+      "generalSubject": "le désir de la campagne",
+      "shortKeyPoints": [
+        "Parisiens",
+        "nature",
+        "évasion",
+        "fatigue urbaine",
+        "promenade"
+      ],
+      "description": "Ce devoir de synthèse porte sur un extrait d'Emile Zola décrivant le désir des Parisiens de fuir la ville pour la campagne. Les élèves doivent répondre à des questions de compréhension sur ce texte.",
+      "summary": "Le texte d'Emile Zola illustre le contraste entre la vie urbaine des Parisiens et leur désir d'évasion vers la campagne. Malgré la fatigue et la pollution, ils recherchent un moment de paix et de nature.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2985
+    },
+    {
+      "resourceId": "cmr8w7c7400mostsgd35qv79w",
+      "generalSubject": "la vie à Paris",
+      "shortKeyPoints": [
+        "découverte urbaine",
+        "isolement social",
+        "perte d'identité",
+        "impressions de voyage"
+      ],
+      "description": "Ce devoir de français aborde la première expérience de Lucien à Paris, mettant en avant son sentiment d'isolement et de perte d'identité face à la vie urbaine. Les questions portent sur la compréhension du texte et l'analyse linguistique.",
+      "summary": "Le document présente un extrait de 'Illusions perdues' de Balzac, où Lucien découvre Paris et ressent un profond isolement. Les questions du devoir examinent sa perception de la ville et les aspects linguistiques du texte.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3655
+    },
+    {
+      "resourceId": "cmr8w7de400msstsg3ih1y6e7",
+      "generalSubject": "impact de la télévision sur l'attention",
+      "shortKeyPoints": [
+        "influence médiatique",
+        "attention des enfants",
+        "lecture vs télévision",
+        "réflexion personnelle"
+      ],
+      "description": "Ce devoir de synthèse aborde l'impact de la télévision sur l'attention et la vie intérieure des enfants, en soulignant les dangers d'une consommation excessive des médias. Il inclut un texte d'André Maurois et des questions de compréhension et de langue.",
+      "summary": "Le texte d'André Maurois met en lumière la manière dont la télévision peut distraire et diminuer la capacité d'attention des enfants. Il appelle à une prise de conscience et à une régulation de la consommation médiatique pour favoriser la réflexion et la méditation.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3166
+    },
+    {
+      "resourceId": "cmr8w7fis00mxstsg27pxhrwd",
+      "generalSubject": "la vie à Paris",
+      "shortKeyPoints": [
+        "découverte urbaine",
+        "aliénation",
+        "imagination",
+        "sentiment d'isolement"
+      ],
+      "description": "Ce devoir de synthèse aborde le thème de la vie à Paris à travers les yeux de Lucien, un jeune poète. Il explore les contrastes entre son village et la grande ville, ainsi que les sentiments d'aliénation qu'il éprouve.",
+      "summary": "Le texte décrit la première expérience de Lucien à Paris, où il se sent étranger et isolé malgré le dynamisme de la ville. Il ressent une perte de valeur personnelle et une critique de la vie moderne, marquée par l'aliénation des citadins.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 21697
+    },
+    {
+      "resourceId": "cmr8w7ggi00n2stsg8bji3a9l",
+      "generalSubject": "la passion artistique",
+      "shortKeyPoints": [
+        "talent artistique",
+        "relations familiales",
+        "inquiétude maternelle",
+        "pression sociale"
+      ],
+      "description": "Ce devoir de contrôle aborde le thème de la passion artistique à travers le récit d'un enfant dont la mère s'inquiète de son talent pour la peinture. Il explore les sentiments de la mère et les conséquences sur l'enfant.",
+      "summary": "Le texte raconte l'histoire d'un jeune garçon passionné par la peinture, mais dont la mère, inquiète pour son avenir, tente de l'en dissuader. Cette situation met en lumière le conflit entre les aspirations personnelles et les attentes familiales.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3301
+    },
+    {
+      "resourceId": "cmr8w7id300nbstsg6xadcbwe",
+      "generalSubject": "la déception familiale",
+      "shortKeyPoints": [
+        "éducation",
+        "conflit familial",
+        "choix de vie",
+        "dialogue",
+        "réactions parentales"
+      ],
+      "description": "Ce devoir de contrôle aborde un extrait d'une œuvre littéraire où Joseph refuse de continuer ses études, provoquant la déception de ses parents. Les réactions de chacun sont explorées à travers un dialogue poignant.",
+      "summary": "Le texte met en lumière le conflit entre Joseph et ses parents concernant sa décision d'arrêter ses études. La déception du père et les inquiétudes de la mère révèlent des tensions familiales autour de l'éducation et des choix de vie.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4072
+    },
+    {
+      "resourceId": "cmr8w7jj400nfstsgkjsp31qy",
+      "generalSubject": "la chasse et ses conséquences",
+      "shortKeyPoints": [
+        "chasse",
+        "réaction du mari",
+        "champ lexical",
+        "cause et effet",
+        "communication en couple"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait de Maupassant où un mari propose à sa femme d'aller chasser un renard. Les questions portent sur la compréhension du texte, le vocabulaire et l'expression écrite.",
+      "summary": "Le document est un devoir de contrôle en français pour la 1ère année secondaire. Il analyse un extrait de Maupassant, explore les réactions des personnages et aborde des thèmes comme la communication et les émotions dans le couple.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3197
+    },
+    {
+      "resourceId": "cmr8w7lsr00nnstsg5tznpuy5",
+      "generalSubject": "l'impact des machines",
+      "shortKeyPoints": [
+        "esclavage moderne",
+        "dangers technologiques",
+        "isolement de la nature",
+        "curiosité humaine"
+      ],
+      "description": "Ce devoir de synthèse aborde les réflexions sur l'impact des machines sur la vie humaine, leur coût et les dangers qu'elles représentent. L'auteur remet en question les idées reçues sur l'esclavage technologique et l'isolement de l'homme par rapport à la nature.",
+      "summary": "Le texte examine la relation entre l'homme et les machines, soulignant les dangers perçus de l'esclavage technologique. L'auteur conteste les opinions communes sur l'isolement de l'homme par les machines, affirmant que ces dernières peuvent également rapprocher les gens de la nature.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4460
+    },
+    {
+      "resourceId": "cmr8w7n0y00nrstsg20ohdvfv",
+      "generalSubject": "la vie de Téréza",
+      "shortKeyPoints": [
+        "attraction amoureuse",
+        "rôle des livres",
+        "comparaison littéraire",
+        "émotions et conséquences"
+      ],
+      "description": "Ce devoir de contrôle évalue la compréhension d'un texte sur la vie de Téréza, ses émotions et son attirance pour Tomas, ainsi que l'importance des livres dans sa vie. Il comprend des questions d'analyse de texte, de grammaire et un essai.",
+      "summary": "Le devoir de contrôle porte sur l'analyse de la vie de Téréza et ses relations, en mettant l'accent sur son attirance pour Tomas et le rôle des livres. Les élèves doivent répondre à des questions d'analyse et rédiger un essai sur le thème du coup de foudre et de l'amour.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3182
+    },
+    {
+      "resourceId": "cmr8w7oc400nvstsg8n3nn6s5",
+      "generalSubject": "la misère et l'indifférence sociale",
+      "shortKeyPoints": [
+        "mendicité",
+        "condition physique",
+        "hostilité sociale",
+        "égoïsme"
+      ],
+      "description": "Ce devoir de synthèse aborde un extrait de Maupassant sur la vie d'un mendiant nommé Cloche, confronté à la misère et au mépris des paysans. Il illustre la lutte pour la survie dans un environnement hostile.",
+      "summary": "Le texte décrit la vie difficile de Cloche, un mendiant rejeté par la société. Les paysans lui témoignent indifférence et mépris, soulignant l'impact de sa condition physique sur son existence. Le devoir invite à réfléchir sur l'égoïsme et l'intolérance.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 15250
+    },
+    {
+      "resourceId": "cmr8w7pwp00nzstsgenq0g1p5",
+      "generalSubject": "l'immigration contemporaine",
+      "shortKeyPoints": [
+        "sentiments d'immigrés",
+        "obstacles rencontrés",
+        "sacrifices personnels",
+        "espoir d'une vie meilleure"
+      ],
+      "description": "Ce devoir de synthèse aborde les défis et les sentiments des immigrés dans un contexte moderne, en s'appuyant sur un extrait d'Amine Maalouf. Il comprend des questions de compréhension et des exercices de langue.",
+      "summary": "Le document explore les complexités de l'immigration, les sacrifices faits par les immigrés et les obstacles qu'ils rencontrent dans leur pays d'accueil. Il invite à réfléchir sur la situation des immigrés et leur quête d'intégration.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2814
+    },
+    {
+      "resourceId": "cmr8w7qmq00o3stsg05gylrr3",
+      "generalSubject": "les conditions de vie d'Amrita",
+      "shortKeyPoints": [
+        "éducation sévère",
+        "rôle de la femme",
+        "mariage arrangé",
+        "classe sociale",
+        "sacrifices familiaux"
+      ],
+      "description": "Ce document présente un devoir de contrôle en français sur la vie d'Amrita, une jeune fille indienne confrontée à des conditions de vie difficiles et à des attentes familiales strictes.",
+      "summary": "Le texte explore la vie d'Amrita, une fille de rickshaw, qui doit se conformer aux normes sociétales indiennes. Son éducation est axée sur son futur mariage, illustrant les sacrifices et les rôles traditionnels des femmes dans sa culture.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3727
+    },
+    {
+      "resourceId": "cmr8w7rnc00o7stsgtfwctp5c",
+      "generalSubject": "l'artisanat du bois",
+      "shortKeyPoints": [
+        "artisan du bois",
+        "atelier de Vincendon",
+        "émotion du narrateur",
+        "travail manuel",
+        "création artistique"
+      ],
+      "description": "Ce devoir de synthèse aborde un extrait sur Vincendon, un artisan du bois, et les émotions du narrateur lors de sa visite dans son atelier. Il met en avant la beauté du travail manuel et l'admiration pour l'artisanat.",
+      "summary": "Le texte présente Vincendon, un luthier et artisan du bois, à travers les yeux d'un narrateur ému par son atelier. Les détails de l'atelier et la dextérité de Vincendon illustrent la passion et la joie de l'artisan dans son travail.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3104
+    },
+    {
+      "resourceId": "cmr8w7sva00obstsgqigvnkix",
+      "generalSubject": "la crédulité et la rumeur",
+      "shortKeyPoints": [
+        "crédulité villageoise",
+        "rumeur",
+        "naïveté",
+        "conflit social"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait de la nouvelle 'La ficelle' de Guy de Maupassant, où le personnage principal, Maître Hauchecorne, fait face à l'incrédulité des villageois après avoir perdu un portefeuille.",
+      "summary": "Le texte explore la réaction des villageois face à l'histoire de Maître Hauchecorne, qui se sent incompris et moqué. À travers cette situation, Maupassant met en lumière la naïveté du personnage et la nature humaine face aux rumeurs.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3174
+    },
+    {
+      "resourceId": "cmr8w7u2700ofstsgc4vhavxd",
+      "generalSubject": "le refus des vacances",
+      "shortKeyPoints": [
+        "vacances",
+        "voyages",
+        "habitudes",
+        "solitude",
+        "narrateur"
+      ],
+      "description": "Le document présente un devoir de synthèse sur un texte où un père de famille exprime son aversion pour les vacances et les voyages, préférant la tranquillité de son chez-soi.",
+      "summary": "Dans ce texte, le narrateur explique son désintérêt pour les vacances, soulignant son attachement à ses habitudes et son besoin de solitude. Il décrit les désagréments des voyages et la pression familiale qui l'oblige à partir.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2933
+    },
+    {
+      "resourceId": "cmr8w7v1100ojstsgopafxuzb",
+      "generalSubject": "la communication et le voyage",
+      "shortKeyPoints": [
+        "voyageur vs voyagé",
+        "colonisation moderne",
+        "préjugés culturels",
+        "échanges humains"
+      ],
+      "description": "Ce devoir de contrôle aborde les thèmes de la communication et du voyage à travers un extrait de Jacques Lacarrière, mettant en lumière la différence entre le voyageur et le voyagé.",
+      "summary": "L'extrait souligne que malgré l'augmentation des échanges, la communication sociale se réduit. L'auteur critique le comportement des touristes qui, en cherchant le confort, ignorent les réalités locales, transformant le voyage en une forme de colonisation.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3262
+    },
+    {
+      "resourceId": "cmr8w7w5500onstsgwrn1u0ek",
+      "generalSubject": "l'impact des célébrités",
+      "shortKeyPoints": [
+        "communication moderne",
+        "idolâtrie",
+        "industrie du show-biz",
+        "modèles de société"
+      ],
+      "description": "Ce document analyse le phénomène des stars et leur influence sur le public, mettant en lumière les caractéristiques qui les différencient des autres et leur rôle en tant qu'idoles. Il aborde également les rituels et dévotions des fans envers ces figures publiques.",
+      "summary": "Le texte explore comment les célébrités sont perçues comme des surhommes par le public, créant un culte autour d'elles. Il souligne l'impact des stars sur les masses et la fabrication de ces figures dans l'industrie du divertissement.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 5894
+    },
+    {
+      "resourceId": "cmr8w7xaj00orstsggelb7w6u",
+      "generalSubject": "la solitude de l'immigré",
+      "shortKeyPoints": [
+        "isolement social",
+        "angoisse existentielle",
+        "comportement de l'immigré",
+        "rejet de l'autre"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait d'Albert Memmi, abordant la souffrance des travailleurs immigrés en France, leur isolement et les comportements à adopter pour éviter les problèmes. Il met en lumière la difficulté d'intégration et le rejet ressenti.",
+      "summary": "Le texte d'Albert Memmi décrit la solitude et l'angoisse des immigrés dans une ville étrangère. Il souligne les comportements à adopter pour éviter le rejet et la provocation, illustrant ainsi la complexité de leur intégration.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2996
+    },
+    {
+      "resourceId": "cmr8w7ybh00ovstsggzgn9clx",
+      "generalSubject": "influence de la publicité",
+      "shortKeyPoints": [
+        "jeunesse influencée",
+        "publicité ciblée",
+        "culture commerciale",
+        "impact des médias"
+      ],
+      "description": "Ce devoir de contrôle aborde l'influence des publicités sur la jeunesse et leur perception du monde. Il comprend des questions de compréhension et des exercices de langue.",
+      "summary": "Le document analyse comment les publicitaires ciblent les jeunes pour influencer leur mentalité. Il met en lumière l'impact des messages publicitaires sur les adolescents et leur rapport à la société.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3729
+    },
+    {
+      "resourceId": "cmr8w7zq100p0stsgaufm1y2x",
+      "generalSubject": "l'impact des machines",
+      "shortKeyPoints": [
+        "esclavage technologique",
+        "isolement de la nature",
+        "dangers des machines",
+        "curiosité humaine"
+      ],
+      "description": "Ce devoir de synthèse aborde les réflexions de Denis De Rougemont sur l'impact des machines sur la vie humaine et la nature. Il questionne l'idée que les machines asservissent l'homme et isolent de la nature.",
+      "summary": "Le texte explore la relation entre l'homme et les machines, mettant en lumière les dangers perçus de la technologie. L'auteur remet en question les idées reçues sur l'esclavage technologique et souligne les interactions positives entre l'homme et la nature.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3756
+    },
+    {
+      "resourceId": "cmr8w810u00p5stsgajrucc8u",
+      "generalSubject": "l'impact des machines",
+      "shortKeyPoints": [
+        "esclavage technologique",
+        "isolement de la nature",
+        "danger des machines",
+        "curiosité humaine"
+      ],
+      "description": "Ce devoir de synthèse aborde les réflexions de l'auteur sur l'impact des machines sur la vie humaine et la nature, en questionnant les idées reçues sur leur rôle. Il propose une analyse critique des dangers et des perceptions liées aux technologies modernes.",
+      "summary": "L'auteur remet en question l'idée que les machines asservissent l'homme et l'isolent de la nature. Il souligne que les machines, bien qu'elles aient des inconvénients, peuvent également rapprocher les gens de la nature et ne sont pas responsables de l'isolement.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4227
+    },
+    {
+      "resourceId": "cmr8w827d00p9stsg6rzmno4v",
+      "generalSubject": "la musique et l'émotion",
+      "shortKeyPoints": [
+        "musique",
+        "aveugle",
+        "émotion",
+        "découverte",
+        "piano"
+      ],
+      "description": "Ce devoir de synthèse aborde une scène où un vieil homme aveugle joue du piano, provoquant une forte émotion chez le narrateur et ses camarades. Ils découvrent ainsi le pouvoir de la musique.",
+      "summary": "Le texte met en avant la rencontre entre le narrateur, ses amis et un vieil homme aveugle passionné de musique. À travers son jeu au piano, l'aveugle leur fait vivre une expérience émotionnelle intense, révélant la beauté de la musique.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3429
+    },
+    {
+      "resourceId": "cmr8w83bn00pdstsgtrnkbsy4",
+      "generalSubject": "la rencontre amoureuse",
+      "shortKeyPoints": [
+        "coup de foudre",
+        "perception sensorielle",
+        "sentiments contradictoires",
+        "beauté féminine"
+      ],
+      "description": "Devoir de contrôle en français pour la 2ème année secondaire, portant sur un extrait littéraire décrivant une rencontre amoureuse. Compréhension et vocabulaire sont évalués.",
+      "summary": "Ce devoir de contrôle explore une rencontre entre un narrateur et une inconnue, mettant en avant les sensations et émotions ressenties. Les questions portent sur la compréhension du texte et l'analyse des sentiments du narrateur.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3020
+    },
+    {
+      "resourceId": "cmr8w8a9000pzstsg8gmfmmoe",
+      "generalSubject": "la pauvreté et la richesse",
+      "shortKeyPoints": [
+        "enfants riches",
+        "enfants pauvres",
+        "jouets",
+        "leçon de morale"
+      ],
+      "description": "Le texte présente la rencontre entre un enfant riche et un enfant pauvre, illustrant leurs différences et similitudes à travers leurs jouets respectifs. Il met en lumière les perceptions de la richesse et de la pauvreté.",
+      "summary": "Dans 'Le joujou du pauvre' de Charles Baudelaire, deux enfants de milieux opposés se rencontrent. L'enfant riche admire le jouet de l'enfant pauvre, un rat vivant, soulignant ainsi les contrastes et les points communs entre leurs vies.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2505
+    },
+    {
+      "resourceId": "cmr8w8fne00qnstsg4w2kwn1q",
+      "generalSubject": "la voix et l'attraction",
+      "shortKeyPoints": [
+        "rencontre mystérieuse",
+        "voix captivante",
+        "attraction inexplicable",
+        "description sensorielle"
+      ],
+      "description": "Ce devoir de contrôle de français pour la 3ème année technique comprend un extrait d'un texte narratif, des questions de compréhension, des exercices de vocabulaire et de grammaire, ainsi qu'un essai narratif à rédiger.",
+      "summary": "Le document présente un extrait d'un récit où le narrateur est captivé par la voix d'une jeune fille rencontrée dans un Opéra. Il inclut des questions de compréhension et des exercices sur le vocabulaire et la grammaire, ainsi qu'une tâche d'écriture personnelle.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2974
+    },
+    {
+      "resourceId": "cmr8w8glq00qrstsgeazw0cb1",
+      "generalSubject": "la rencontre amicale",
+      "shortKeyPoints": [
+        "amitié naissante",
+        "communication écrite",
+        "sentiments d'isolement",
+        "découverte de l'autre"
+      ],
+      "description": "Ce document présente un devoir de contrôle en français pour la 1ère année secondaire, centré sur une rencontre entre deux élèves. Il inclut des questions de compréhension, des exercices de vocabulaire et de grammaire, ainsi qu'un essai narratif.",
+      "summary": "Le texte raconte la rencontre entre le narrateur et un nouvel ami, Olivier, dans un collège. À travers des échanges écrits, le narrateur exprime sa joie de se faire un ami, tout en partageant des détails sur leur première interaction.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 5827
+    },
+    {
+      "resourceId": "cmr8w8hja00qwstsgqulvjhrr",
+      "generalSubject": "le voyage et la quête de liberté",
+      "shortKeyPoints": [
+        "monotonie de la vie",
+        "désir d'évasion",
+        "nostalgie du désert",
+        "réalité inexplorée"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait de Maupassant où l'auteur exprime son désir de fuir la monotonie de la vie quotidienne à travers le voyage. Il aborde les thèmes de l'évasion et de la découverte de nouveaux horizons.",
+      "summary": "Dans cet extrait, Maupassant évoque la lassitude face à la routine et le besoin d'évasion. Le voyage est présenté comme une porte vers une réalité nouvelle, attirant l'auteur vers l'Afrique, symbole de liberté et d'aventure.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3486
+    },
+    {
+      "resourceId": "cmr8w8ivu00r1stsgrwq2ij04",
+      "generalSubject": "l'influence américaine",
+      "shortKeyPoints": [
+        "culture américaine",
+        "identité française",
+        "consommation",
+        "vie intérieure"
+      ],
+      "description": "Ce document présente un devoir de synthèse en français pour la 3ème année secondaire, axé sur l'influence de la culture américaine sur la vie quotidienne des Français, à travers un extrait de François Mauriac.",
+      "summary": "Le texte analyse comment la culture américaine transforme la vie quotidienne en France, en mettant en avant des éléments tels que la musique, le cinéma et la technique. L'auteur critique cette influence et exprime son refus de visiter l'Amérique.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2911
+    },
+    {
+      "resourceId": "cmr8w8l0100r9stsgs34hkcbg",
+      "generalSubject": "la quête de soi",
+      "shortKeyPoints": [
+        "identité personnelle",
+        "monde rêvé",
+        "isolement social",
+        "réalité quotidienne"
+      ],
+      "description": "Ce devoir de contrôle aborde le personnage de Daniel, un élève qui se sent en décalage avec son environnement et aspire à un monde de rêves et d'aventures. Il est décrit comme isolé et médiocre, vivant entre la réalité et ses aspirations.",
+      "summary": "Le texte présente Daniel, un élève qui se distingue par son indifférence envers le monde qui l'entoure et son rêve d'évasion. À travers son histoire, il est question de l'isolement social et de la quête d'identité face à un milieu qui ne lui correspond pas.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3410
+    },
+    {
+      "resourceId": "cmr8w8mh000restsg8swi8kx2",
+      "generalSubject": "le suicide de Didon",
+      "shortKeyPoints": [
+        "tragédie grecque",
+        "mythologie",
+        "amour perdu",
+        "destin tragique"
+      ],
+      "description": "Ce devoir de contrôle aborde le passage du suicide de Didon dans l'Enéide de Virgile, mettant en lumière ses émotions et son désespoir face à la trahison. Il comprend des questions de compréhension sur le texte.",
+      "summary": "Le document présente un devoir de contrôle sur un extrait de l'Enéide de Virgile, centré sur le personnage de Didon. Les questions visent à explorer son état émotionnel et les raisons de son désespoir.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3350
+    },
+    {
+      "resourceId": "cmr8w8q4k00rqstsgiy2m1pzw",
+      "generalSubject": "la représentation télévisuelle",
+      "shortKeyPoints": [
+        "image télévisée",
+        "construction subjective",
+        "réalité et illusion",
+        "signification intentionnelle"
+      ],
+      "description": "Ce document aborde les caractéristiques de l'image télévisée, sa relation avec la réalité et la subjectivité des concepteurs. Il propose également des questions de compréhension et un sujet d'essai sur l'impact de l'image télévisée sur le spectateur.",
+      "summary": "Le texte analyse la dualité de l'image télévisée entre reproduction de la réalité et construction subjective. Il souligne que l'image n'est pas objective et que sa signification dépasse l'intention de l'auteur, offrant ainsi une pluralité d'interprétations.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 3,
+      "hasCorrection": true,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3055
+    },
+    {
+      "resourceId": "cmr8w8rp600rvstsgiunwad7k",
+      "generalSubject": "les souvenirs d'enfance",
+      "shortKeyPoints": [
+        "agression",
+        "opération chirurgicale",
+        "traumatismes",
+        "perception de la vie"
+      ],
+      "description": "Ce document est un devoir de contrôle en français pour les élèves de 4ème année secondaire, portant sur un extrait de Michel Leiris qui évoque un souvenir traumatisant d'enfance lié à une opération chirurgicale.",
+      "summary": "L'extrait raconte l'expérience d'un enfant lors d'une opération chirurgicale brutale, marquée par la douleur et la tromperie des adultes. L'auteur établit un lien entre cette expérience traumatique et sa vision pessimiste de la vie à l'âge adulte.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2938
+    },
+    {
+      "resourceId": "cmr8w8t8x00rzstsg1lqv53cv",
+      "generalSubject": "la lutte pour la liberté",
+      "shortKeyPoints": [
+        "liberté",
+        "ségrégation",
+        "discrimination",
+        "engagement bi-racial"
+      ],
+      "description": "Devoir de contrôle de français pour la classe de 4ème Tech.2, portant sur un extrait du discours de Martin Luther King sur la lutte pour la liberté et l'égalité des droits.",
+      "summary": "Le document présente un devoir de contrôle en français basé sur un extrait du discours de Martin Luther King. Il aborde la condition des Noirs un siècle après la Proclamation d'Emancipation et souligne l'importance de l'engagement collectif pour la liberté.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3963
+    },
+    {
+      "resourceId": "cmr8w8uta00s3stsgzf4lkh82",
+      "generalSubject": "les articulateurs logiques",
+      "shortKeyPoints": [
+        "marqueurs de progression",
+        "ajout et addition",
+        "explication",
+        "illustration et référence"
+      ],
+      "description": "Ce document présente une série d'exercices sur les articulateurs logiques en français, destinés aux élèves de 4ème année secondaire. Il inclut des exemples et des exercices pratiques.",
+      "summary": "Le document est une série d'exercices sur les articulateurs logiques, comprenant des marqueurs de progression, d'ajout, d'explication et d'illustration. Les élèves sont invités à compléter des phrases en utilisant les mots appropriés.",
+      "homeworkSubtype": "CONTROLE",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3419
+    },
+    {
+      "resourceId": "cmr8w8w4500s8stsg6xm7a504",
+      "generalSubject": "les souvenirs d'enfance",
+      "shortKeyPoints": [
+        "nostalgie",
+        "maison d'enfance",
+        "jardin",
+        "George Sand",
+        "imagination"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait de 'Histoire de ma vie' de George Sand, où elle évoque ses souvenirs d'enfance dans sa maison de Chaillot et son jardin. Les questions portent sur la compréhension du texte et l'analyse des sentiments de la narratrice.",
+      "summary": "Le document est un devoir de contrôle en français pour la 4ème année secondaire, basé sur un extrait de George Sand. Il explore les thèmes de la nostalgie et des souvenirs d'enfance à travers des questions de compréhension et d'analyse personnelle.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4319
+    },
+    {
+      "resourceId": "cmr8w8xiu00scstsgbzp52onm",
+      "generalSubject": "les relations familiales",
+      "shortKeyPoints": [
+        "relation père-fils",
+        "souvenirs d'enfance",
+        "perte d'un parent",
+        "émotions complexes"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait de texte traitant des relations entre un narrateur et son père, explorant des thèmes de mémoire, de perte et d'identité. Les élèves doivent analyser le texte et répondre à des questions de compréhension et de langue.",
+      "summary": "Le texte évoque la relation complexe entre un narrateur et son père, marquée par des souvenirs d'enfance et des émotions liées à la perte. Les élèves sont invités à analyser ces thèmes à travers des questions de compréhension et un essai.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3019
+    },
+    {
+      "resourceId": "cmr8w8ywe00sgstsgdnsvhtg9",
+      "generalSubject": "la guerre et ses conséquences",
+      "shortKeyPoints": [
+        "violence et guerre",
+        "critique de la guerre",
+        "répercussions humaines",
+        "engagement des artistes"
+      ],
+      "description": "Ce document présente un devoir de synthèse sur un extrait de Maupassant traitant de la guerre, de la violence et de ses conséquences sur l'humanité. Il inclut des questions de compréhension et d'analyse du texte.",
+      "summary": "Le texte de Maupassant dénonce la glorification de la guerre et ses effets dévastateurs sur la société et l'humanité. À travers des citations et une critique acerbe, l'auteur met en lumière l'absurdité et la cruauté des conflits armés.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3392
+    },
+    {
+      "resourceId": "cmr8w903w00slstsg9xc6hoco",
+      "generalSubject": "la nostalgie de l'enfance",
+      "shortKeyPoints": [
+        "quitter la famille",
+        "sentiments de malheur",
+        "nouvelle vie difficile",
+        "écriture comme refuge"
+      ],
+      "description": "Ce devoir de contrôle en français aborde un extrait de Christian Signol sur les souvenirs d'enfance et la douleur du départ de la famille. Les élèves doivent analyser le texte et rédiger un essai sur l'importance de l'attachement au passé.",
+      "summary": "Le texte évoque les sentiments de déchirement et de malheur du narrateur lors de son départ pour un lycée en ville. Il explore la nostalgie de l'enfance et l'impact de cette expérience sur sa vie future, notamment à travers l'écriture.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3552
+    },
+    {
+      "resourceId": "cmr8w92ot00svstsg2r4s5ajr",
+      "generalSubject": "la guerre et la paix",
+      "shortKeyPoints": [
+        "dépravation humaine",
+        "maladie politique",
+        "désordre social",
+        "conflits armés"
+      ],
+      "description": "Ce document est un devoir de synthèse pour les élèves de 4ème lettres, portant sur un extrait de Diderot sur la guerre et ses conséquences sur la société. Il inclut des questions de compréhension.",
+      "summary": "Le texte de Diderot analyse la guerre comme un mal qui dégrade la société et perturbe l'ordre naturel. Il souligne que la paix est essentielle au bonheur des peuples et critique les motivations des dirigeants qui engendrent des conflits.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4339
+    },
+    {
+      "resourceId": "cmr8w93n400t0stsg0gnb7h8w",
+      "generalSubject": "la recherche scientifique",
+      "shortKeyPoints": [
+        "science pure",
+        "applications pratiques",
+        "dangers de la science",
+        "responsabilité humaine"
+      ],
+      "description": "Ce devoir de contrôle aborde l'opposition entre la science pure et ses applications pratiques, ainsi que les dangers associés à l'augmentation du pouvoir humain sur la nature. Il inclut des questions de compréhension et de grammaire.",
+      "summary": "Le document présente une étude de texte sur la recherche scientifique, en mettant en lumière les deux aspects de celle-ci : la science pure et ses applications. Il soulève également des questions éthiques concernant les conséquences de cette recherche sur la nature.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2901
+    },
+    {
+      "resourceId": "cmr8w966v00t8stsgxbf9a8aw",
+      "generalSubject": "le confort moderne",
+      "shortKeyPoints": [
+        "société moderne",
+        "avantages du confort",
+        "dangers du confort",
+        "valeurs nouvelles"
+      ],
+      "description": "Ce devoir de contrôle aborde le thème du confort dans la société moderne à travers un texte de Louis Leprince-Ringuet. Il propose des questions de compréhension et de langue sur le texte.",
+      "summary": "Le texte examine l'impact du confort sur l'individu et la société, soulignant ses avantages tout en mettant en garde contre ses dangers. Les questions visent à évaluer la compréhension du texte et l'analyse linguistique.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2613
+    },
+    {
+      "resourceId": "cmr8w98l400tistsgaygst631",
+      "generalSubject": "la guerre et ses conséquences",
+      "shortKeyPoints": [
+        "émotions des soldats",
+        "procédés d'écriture",
+        "événements déclencheurs",
+        "déshumanisation en guerre"
+      ],
+      "description": "Ce devoir de contrôle en français aborde une étude de texte sur les sentiments des soldats pendant la guerre de 1870, ainsi que des exercices de langue et un essai argumentatif sur la déshumanisation. ",
+      "summary": "Le document propose une analyse d'un extrait littéraire sur la guerre de 1870, où les soldats expriment colère et désespoir. Il inclut des questions sur le texte, des exercices de langue et un essai sur la déshumanisation des soldats.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3361
+    },
+    {
+      "resourceId": "cmr8w9aoq00tsstsguo0q95dx",
+      "generalSubject": "les verbes passe-partout",
+      "shortKeyPoints": [
+        "amélioration linguistique",
+        "exercices de français",
+        "verbes courants",
+        "écriture correcte"
+      ],
+      "description": "Ce document propose une série d'exercices sur l'utilisation des verbes passe-partout en français, visant à améliorer le langage et l'écriture des élèves.",
+      "summary": "Les exercices se concentrent sur les verbes 'avoir', 'faire', 'faire cesser' et 'faire disparaître'. Les élèves doivent compléter des phrases en utilisant ces verbes de manière appropriée.",
+      "homeworkSubtype": "CONTROLE",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3037
+    },
+    {
+      "resourceId": "cmr8w9d7p00u0stsgwt36kavd",
+      "generalSubject": "la remédiation en français",
+      "shortKeyPoints": [
+        "réécriture de phrases",
+        "temps et modes verbaux",
+        "antonymes",
+        "phrases complexes"
+      ],
+      "description": "Ce document propose une série d'exercices de remédiation en français pour les élèves de 1ère année secondaire. Il couvre la réécriture de phrases, l'utilisation des temps verbaux, la formation d'antonymes et la construction de phrases complexes.",
+      "summary": "Le document contient des exercices variés visant à renforcer les compétences linguistiques des élèves en français. Les activités incluent la réécriture de phrases, la conjugaison de verbes, et la formation d'antonymes, favorisant ainsi une meilleure maîtrise de la langue.",
+      "homeworkSubtype": "CONTROLE",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 8895
+    },
+    {
+      "resourceId": "cmr8xg4o300addvb03bs0ep7h",
+      "generalSubject": "la vie nocturne à Paris",
+      "shortKeyPoints": [
+        "narrateur",
+        "sentiment",
+        "description subjective",
+        "mode de vie"
+      ],
+      "description": "Ce document est un devoir de contrôle en français pour la 1ère année secondaire, portant sur un extrait du texte 'Paris est une fête' d'Ernest Hemingway. Il comprend des questions de compréhension et de langue.",
+      "summary": "Le devoir analyse un extrait où le narrateur décrit une soirée à Paris, évoquant ses sentiments et ses observations sur la ville et ses habitants. Les questions portent sur la compréhension du texte et l'analyse linguistique.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 6190
+    },
+    {
+      "resourceId": "cmr8xg74d00ahdvb0n14f0054",
+      "generalSubject": "le voyage intérieur",
+      "shortKeyPoints": [
+        "voyage autour de ma chambre",
+        "sentiments agréables",
+        "partage d'expérience",
+        "réflexion personnelle"
+      ],
+      "description": "Ce document présente un devoir de contrôle en français pour la 1ère année secondaire, centré sur un extrait du texte 'Voyage autour de ma chambre' de Xavier de Maistre. Il inclut des questions de compréhension et des exercices de grammaire et vocabulaire.",
+      "summary": "Le devoir analyse un extrait de 'Voyage autour de ma chambre' de Xavier de Maistre, où l'auteur évoque un voyage intérieur. Les élèves doivent répondre à des questions de compréhension et réaliser des exercices de vocabulaire et de grammaire.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3927
+    },
+    {
+      "resourceId": "cmr8xg9bm00aldvb0vtzh2em6",
+      "generalSubject": "conditions de vie des ouvriers",
+      "shortKeyPoints": [
+        "ouvriers de Mulhouse",
+        "conditions de travail",
+        "situation des femmes",
+        "salaire insuffisant"
+      ],
+      "description": "Le document traite des conditions de vie difficiles des ouvriers à Mulhouse en 1835, mettant en lumière leur santé précaire, leurs vêtements usés et des revenus insuffisants. Il aborde également la situation des femmes ouvrières.",
+      "summary": "Ce devoir de contrôle analyse un extrait sur les conditions de vie des ouvriers à Mulhouse au 19ème siècle. Les questions portent sur leur santé, leurs vêtements, leurs revenus et la situation des femmes dans ce contexte difficile.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4059
+    },
+    {
+      "resourceId": "cmr934oft00i5x6quv2x1t4tl",
+      "generalSubject": "la construction de l'identité féminine",
+      "shortKeyPoints": [
+        "éducation",
+        "société",
+        "genre",
+        "identité",
+        "liberté"
+      ],
+      "description": "Ce document est un devoir de contrôle en français pour la 2ème année secondaire, portant sur un extrait de 'Le Deuxième sexe' de Simone de Beauvoir, qui traite de la construction sociale de l'identité féminine et des inégalités entre les sexes.",
+      "summary": "L'extrait analyse comment la société façonne l'identité des femmes et des hommes à travers l'éducation. Simone de Beauvoir soutient que l'inégalité entre les sexes est une construction sociale, non biologique.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3811
+    },
+    {
+      "resourceId": "cmr934uff00iex6qu244ii0x2",
+      "generalSubject": "la publicité et la consommation",
+      "shortKeyPoints": [
+        "impact des médias",
+        "stratégies publicitaires",
+        "consommation excessive",
+        "répercussions économiques"
+      ],
+      "description": "Ce devoir de contrôle en français aborde le thème de la publicité comme outil de la société de consommation, en analysant son omniprésence et ses effets sur le comportement des consommateurs.",
+      "summary": "Le document présente un devoir de contrôle sur un texte traitant de la publicité et de son influence sur la société de consommation. Les questions portent sur la compréhension du texte et l'analyse des mécanismes publicitaires.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3204
+    },
+    {
+      "resourceId": "cmr939ikj0028r2zi8vxu6enf",
+      "generalSubject": "la condition féminine",
+      "shortKeyPoints": [
+        "éducation",
+        "société",
+        "genre",
+        "identité",
+        "liberté"
+      ],
+      "description": "Ce document est un devoir de contrôle en français pour la 2ème année secondaire, portant sur un extrait de 'Le Deuxième sexe' de Simone de Beauvoir. Il aborde la construction sociale de la féminité et les inégalités de genre.",
+      "summary": "L'extrait de Simone de Beauvoir explore comment la société façonne l'identité féminine et masculine à travers l'éducation. Il souligne que la condition de la femme est le résultat d'un destin imposé par la société, et non d'une nature biologique.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3355
+    },
+    {
+      "resourceId": "cmr939uow002gr2zi3hg9q0c4",
+      "generalSubject": "la publicité et la consommation",
+      "shortKeyPoints": [
+        "impact des médias",
+        "stratégies publicitaires",
+        "consommation excessive",
+        "répercussions économiques"
+      ],
+      "description": "Ce devoir de contrôle aborde le thème de la publicité en tant que moteur de la consommation. Il propose des questions de compréhension et d'analyse sur le texte de Jérôme Dardy.",
+      "summary": "Le document présente un devoir de contrôle sur un texte traitant de la publicité et de son influence sur la société de consommation. Les élèves sont invités à analyser les effets de la publicité sur les comportements d'achat et son rôle dans les médias.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2847
+    },
+    {
+      "resourceId": "cmr94730t00cmzpvnjkq03b6b",
+      "generalSubject": "le bonheur et l'argent",
+      "shortKeyPoints": [
+        "sacrifices personnels",
+        "confort matériel",
+        "réflexion sur la vie",
+        "valeurs humaines"
+      ],
+      "description": "Ce devoir de contrôle aborde la thématique du bonheur face à la quête de confort matériel à travers un texte de Georges Douart. Les élèves doivent analyser les sacrifices faits par l'homme moderne et leur impact sur sa vie.",
+      "summary": "Le texte de Georges Douart met en lumière les sacrifices que l'homme moderne fait pour obtenir du confort matériel, tout en questionnant leur véritable contribution au bonheur. Les élèves sont invités à réfléchir sur ces thèmes à travers des questions de compréhension et une expression écrite.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3557
+    },
+    {
+      "resourceId": "cmr94sspg00mczpvnuxe451ut",
+      "generalSubject": "le transport ferroviaire",
+      "shortKeyPoints": [
+        "locomotive",
+        "voyageurs satisfaits",
+        "avantages du train",
+        "vocabulaire du texte"
+      ],
+      "description": "Ce document présente un devoir de contrôle en français pour la 1ère année secondaire, axé sur un extrait décrivant l'entrée d'un train en gare et des questions de compréhension, vocabulaire, grammaire et conjugaison.",
+      "summary": "Le devoir explore la description d'une locomotive et ses caractéristiques. Les élèves doivent répondre à des questions sur la compréhension du texte, le vocabulaire, la grammaire et la conjugaison des verbes.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2396
+    },
+    {
+      "resourceId": "cmr94trgb0024l6shwebrch1x",
+      "generalSubject": "dialogue des civilisations",
+      "shortKeyPoints": [
+        "sagesse orientale",
+        "échange culturel",
+        "humilité intellectuelle",
+        "partage de connaissances"
+      ],
+      "description": "Ce document est un devoir de contrôle en français pour la 4ème année secondaire, abordant le dialogue entre cultures et l'importance de l'échange de savoirs. Il inclut des questions de compréhension et d'analyse linguistique.",
+      "summary": "Le texte de Roger Garaudy souligne la nécessité d'un dialogue entre les cultures occidentales et non-occidentales, appelant à une reconnaissance mutuelle des savoirs. Les questions du devoir invitent à explorer ces thèmes à travers une analyse critique.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3908
+    },
+    {
+      "resourceId": "cmr94vzn4007fl6shwtniaf91",
+      "generalSubject": "la correspondance familiale",
+      "shortKeyPoints": [
+        "écriture de lettre",
+        "sentiments d'isolement",
+        "décision de quitter l'école",
+        "relation père-fille"
+      ],
+      "description": "Ce document présente un devoir de contrôle en français pour la 1ère année secondaire, centré sur une lettre écrite par Lullaby à son père, exprimant son mal-être à l'école.",
+      "summary": "Lullaby, une jeune fille, écrit une lettre à son père pour exprimer son désir de quitter l'école et son sentiment d'isolement. Elle décrit ses émotions et son environnement, montrant un profond besoin de connexion et de compréhension.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3203
+    },
+    {
+      "resourceId": "cmr95wdar005qy0gig4saeivs",
+      "generalSubject": "l'infidélité et ses justifications",
+      "shortKeyPoints": [
+        "lettre de Roxane",
+        "arguments d'infidélité",
+        "figures de style",
+        "récit argumentatif",
+        "rôle de la femme"
+      ],
+      "description": "Ce devoir de contrôle porte sur l'analyse d'une lettre de Roxane, où elle justifie son infidélité. Les élèves doivent répondre à des questions sur le texte et rédiger un essai argumentatif sur le rôle de la femme.",
+      "summary": "Le document est un devoir de contrôle en français pour la 2ème année secondaire, axé sur l'étude d'un texte littéraire. Les élèves doivent analyser des arguments, identifier des figures de style et rédiger un essai sur le rôle de la femme dans la société.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4213
+    },
+    {
+      "resourceId": "cmr95wizn005uy0gi39r7juwn",
+      "generalSubject": "l'infidélité féminine",
+      "shortKeyPoints": [
+        "lettre d'aveu",
+        "arguments de Roxane",
+        "figures de style",
+        "rôle de la femme",
+        "opposition sociale"
+      ],
+      "description": "Ce devoir de contrôle en français aborde l'analyse d'une lettre d'aveu d'infidélité, les arguments de Roxane, ainsi que des exercices de vocabulaire et de syntaxe.",
+      "summary": "Le document propose une étude de texte sur une lettre d'infidélité, des questions sur les arguments de Roxane et des exercices de langue. Il inclut également un essai sur le rôle de la femme dans la société.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3657
+    },
+    {
+      "resourceId": "cmr95wnhn005yy0gi9po423ym",
+      "generalSubject": "la rencontre amoureuse",
+      "shortKeyPoints": [
+        "apparition mystérieuse",
+        "curiosité amoureuse",
+        "description physique",
+        "émotions intenses"
+      ],
+      "description": "Le texte décrit une rencontre entre un jeune homme et une femme fascinante, mettant en avant ses traits physiques et l'émerveillement qu'elle suscite en lui.",
+      "summary": "Dans ce passage de 'L'éducation sentimentale' de Gustave Flaubert, un jeune homme observe une femme au charme captivant. Il est submergé par une curiosité intense et un désir de connaître sa vie et son passé.",
+      "homeworkSubtype": "CONTROLE",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2784
+    },
+    {
+      "resourceId": "cmr96bj8z008oxgtbmv75kapr",
+      "generalSubject": "rencontre inattendue",
+      "shortKeyPoints": [
+        "narrateur solitaire",
+        "conversation intrigante",
+        "sentiments ambivalents",
+        "pluie et solitude"
+      ],
+      "description": "Ce devoir de contrôle en français pour la 1ère année secondaire présente un extrait d'une rencontre entre un narrateur et un inconnu sous la pluie. Il inclut des questions de compréhension et d'analyse grammaticale.",
+      "summary": "Le texte raconte une rencontre entre un narrateur revenant du théâtre et un inconnu dans une rue déserte. À travers leur conversation, le narrateur éprouve des sentiments complexes envers cet homme, soulignant l'importance des impressions laissées par les rencontres.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3204
+    },
+    {
+      "resourceId": "cmr96d1kp009ixgtbjdb2gizg",
+      "generalSubject": "rencontre inattendue",
+      "shortKeyPoints": [
+        "narrateur solitaire",
+        "conversation intrigante",
+        "sentiments ambivalents",
+        "pluie nocturne"
+      ],
+      "description": "Ce devoir de contrôle en français pour la 1ère année secondaire aborde une rencontre entre un narrateur et un inconnu sous la pluie, explorant les sentiments et les réflexions du narrateur.",
+      "summary": "Le texte présente une rencontre entre un narrateur et un inconnu après un spectacle. À travers leur conversation, le narrateur éprouve des sentiments complexes, mêlant curiosité et nostalgie, tout en réfléchissant sur la solitude et la condition humaine.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2679
+    },
+    {
+      "resourceId": "cmr99fww202pc8djcktz9fnee",
+      "generalSubject": "la découverte de l'art",
+      "shortKeyPoints": [
+        "voix mystérieuse",
+        "rencontre inattendue",
+        "attraction émotionnelle",
+        "ambiance de l'Opéra"
+      ],
+      "description": "Ce devoir de contrôle en français aborde un extrait narratif où un narrateur découvre une voix captivante dans un Opéra presque vide. Les questions portent sur la compréhension du texte et l'analyse linguistique.",
+      "summary": "Le document présente un devoir de contrôle en français pour les élèves de 1ère année secondaire. Il inclut un extrait d'un texte narratif et des questions sur la compréhension, le vocabulaire et la grammaire, ainsi qu'un essai à rédiger.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3060
+    },
+    {
+      "resourceId": "cmr99fxsr02po8djcl9ny6pds",
+      "generalSubject": "la rencontre amicale",
+      "shortKeyPoints": [
+        "nouvelle amitié",
+        "école",
+        "sentiments",
+        "communication"
+      ],
+      "description": "Ce document présente un devoir de contrôle en français pour la 1ère année secondaire, centré sur la rencontre entre deux élèves et leurs échanges. Il inclut des questions de compréhension et des exercices de grammaire.",
+      "summary": "Le texte raconte la rencontre d'un élève avec un nouvel ami, Olivier, et les sentiments qui en découlent. Le devoir propose des questions de compréhension et des exercices de vocabulaire et de grammaire liés à ce récit.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2811
+    },
+    {
+      "resourceId": "cmr99fyxa02pw8djcw4wtjmpc",
+      "generalSubject": "la rencontre amoureuse",
+      "shortKeyPoints": [
+        "rencontre inattendue",
+        "sentiments confus",
+        "obstacles relationnels",
+        "description physique"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait d'un texte littéraire où un narrateur décrit sa rencontre avec une belle femme à l'aéroport. Les questions portent sur la compréhension du texte et l'analyse de la langue.",
+      "summary": "Le texte présente une rencontre fugace entre un narrateur et une belle femme à l'aéroport. Le narrateur est captivé par sa beauté, mais fait face à des obstacles pour établir un contact. Les questions du devoir visent à explorer ces thèmes.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2807
+    },
+    {
+      "resourceId": "cmr99g0gw02q88djctctqtqu5",
+      "generalSubject": "le voyage difficile",
+      "shortKeyPoints": [
+        "voyage en hiver",
+        "état de misère",
+        "silence et solitude",
+        "rencontre avec la nature"
+      ],
+      "description": "Ce devoir de synthèse porte sur un extrait du roman 'Sans famille' de H. Malot, décrivant un voyage difficile vers Paris en hiver. Les personnages affrontent le froid et la solitude sur leur chemin.",
+      "summary": "Le texte évoque un voyage éprouvant vers Paris, marqué par le froid et la misère. Les personnages, en route, réfléchissent à leur situation et à leur destination, tout en faisant face à la nature hostile.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2853
+    },
+    {
+      "resourceId": "cmr99g1xf02kxhdy9ziek8nk0",
+      "generalSubject": "les relations familiales",
+      "shortKeyPoints": [
+        "écriture de lettre",
+        "sentiments d'isolement",
+        "décision de ne plus aller à l'école",
+        "souvenirs d'enfance"
+      ],
+      "description": "Ce devoir de contrôle porte sur une lettre écrite par Lullaby à son père, exprimant ses sentiments de tristesse et de désespoir face à sa vie au lycée. Les élèves doivent analyser ses émotions et ses motivations.",
+      "summary": "Lullaby, une jeune fille, décide de ne plus aller à l'école et écrit une lettre à son père pour exprimer son mal-être. Elle évoque ses souvenirs d'enfance et ses sentiments d'isolement, soulignant l'importance de son père dans sa vie.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3427
+    },
+    {
+      "resourceId": "cmr99g32502qo8djc9ivshrcu",
+      "generalSubject": "la jalousie et ses conséquences",
+      "shortKeyPoints": [
+        "meurtre passionnel",
+        "réaction violente",
+        "amour tragique",
+        "infidélité révélée"
+      ],
+      "description": "Ce devoir de contrôle en français aborde un extrait d'une nouvelle de Maupassant, explorant des thèmes de jalousie, de violence et d'amour tragique. Les questions portent sur la compréhension du texte et l'analyse des émotions des personnages.",
+      "summary": "L'extrait présente une scène de tension où un mari, dans un accès de jalousie, tire sur un homme qu'il croit être l'amant de sa femme. La narratrice, témoin de la scène, réalise alors qu'elle est attirée par cet homme, révélant ses propres sentiments d'infidélité.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3604
+    },
+    {
+      "resourceId": "cmr99g4bx02r88djcvwzg5tkm",
+      "generalSubject": "les rêves et les relations familiales",
+      "shortKeyPoints": [
+        "rêve de mécanicienne",
+        "réaction maternelle",
+        "soutien paternel",
+        "superstitions",
+        "dialogue familial"
+      ],
+      "description": "Ce devoir de contrôle aborde les rêves d'une jeune fille de devenir mécanicienne, les réactions de ses parents face à ses aspirations et les superstitions de sa mère. Il comprend des questions de compréhension et d'analyse du texte.",
+      "summary": "Le texte présente le rêve d'une jeune fille de devenir mécanicienne, en contraste avec les superstitions de sa mère et le soutien de son père. Les questions du devoir visent à évaluer la compréhension et l'analyse des relations familiales et des aspirations personnelles.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3484
+    },
+    {
+      "resourceId": "cmr99g5dv05ky68vcj3w2eqjw",
+      "generalSubject": "la publicité et la consommation",
+      "shortKeyPoints": [
+        "impact des médias",
+        "stratégies publicitaires",
+        "consommation excessive",
+        "répercussions économiques"
+      ],
+      "description": "Ce devoir de contrôle aborde le rôle de la publicité dans la société de consommation à travers un texte de Jérôme Dardy. Il comprend des questions de compréhension et des exercices de langue.",
+      "summary": "Le document présente un devoir de contrôle sur la publicité comme outil de la société de consommation. Il invite les élèves à analyser un texte et à répondre à des questions sur la compréhension et la langue.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2523
+    },
+    {
+      "resourceId": "cmr99g6od02s48djcvckefb0g",
+      "generalSubject": "les aspirations des jeunes",
+      "shortKeyPoints": [
+        "évasion",
+        "culte de la vedette",
+        "solidarité",
+        "loisirs",
+        "voyages"
+      ],
+      "description": "Ce document aborde les aspirations des jeunes, notamment leur besoin d'évasion, leur admiration pour les vedettes et leur désir de rendre service. Il souligne l'importance des loisirs et des interactions sociales dans la vie des adolescents.",
+      "summary": "Le texte explore les différentes aspirations des jeunes, telles que le besoin d'évasion à travers les voyages et la lecture, ainsi que le culte de la vedette lié à la musique et aux sports. Il met également en avant la solidarité et l'importance des relations sociales.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3095
+    },
+    {
+      "resourceId": "cmr99g87502lphdy9sigvpr0w",
+      "generalSubject": "les grèves en Tunisie",
+      "shortKeyPoints": [
+        "revendications sociales",
+        "dialogue social",
+        "chômage des jeunes",
+        "conditions de travail"
+      ],
+      "description": "Ce document traite des grèves et sit-in en Tunisie, mettant en lumière les revendications des grévistes concernant l'amélioration des conditions de travail et l'augmentation des salaires.",
+      "summary": "Le texte aborde les grèves en Tunisie, soulignant les revendications légitimes des grévistes face à une situation économique difficile. Il met en évidence le décalage entre la formation des jeunes et les besoins du marché du travail.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4173
+    },
+    {
+      "resourceId": "cmr99g9h302sg8djcwhw5h2dc",
+      "generalSubject": "pollution des océans",
+      "shortKeyPoints": [
+        "pollution marine",
+        "conséquences écologiques",
+        "protection de la nature",
+        "sensibilisation à l'environnement"
+      ],
+      "description": "Ce devoir de synthèse aborde la pollution des océans à travers un texte décrivant les effets néfastes du mazout sur la vie marine. Il inclut des questions de compréhension et des exercices de grammaire.",
+      "summary": "Le document présente un texte sur la pollution des océans, mettant en lumière les dangers du mazout pour la faune marine. Il propose des questions de compréhension et des exercices de langue pour approfondir le sujet.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 19802
+    },
+    {
+      "resourceId": "cmr99gajn02ss8djcl7v13jze",
+      "generalSubject": "discrimination raciale",
+      "shortKeyPoints": [
+        "métis",
+        "discrimination",
+        "identité",
+        "acceptation",
+        "famille"
+      ],
+      "description": "Ce devoir de synthèse aborde un extrait d'un texte sur la discrimination vécue par une famille métisse en France en 1936. Il comprend des questions de compréhension et d'analyse linguistique.",
+      "summary": "Le document présente un extrait où une mère métisse subit le mépris d'une vendeuse en magasin. Les questions portent sur les émotions des personnages et l'analyse de la langue, soulignant les thèmes de l'identité et de l'acceptation.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3355
+    },
+    {
+      "resourceId": "cmr99gen702u08djc34nth6qi",
+      "generalSubject": "conditions de vie des ouvriers",
+      "shortKeyPoints": [
+        "ouvriers de Mulhouse",
+        "conditions de travail",
+        "situation des femmes",
+        "rétribution insuffisante"
+      ],
+      "description": "Le document présente un devoir de contrôle sur un texte décrivant les conditions de vie des ouvriers à Mulhouse au 19ème siècle, mettant en lumière leur santé, leurs vêtements et leurs revenus.",
+      "summary": "Ce devoir de contrôle analyse un extrait sur les conditions de vie difficiles des ouvriers à Mulhouse en 1835. Il aborde la santé, les vêtements et les revenus des travailleurs, en soulignant la précarité de la vie des femmes ouvrières.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3936
+    },
+    {
+      "resourceId": "cmr99gg9702ug8djcfwoa8dv6",
+      "generalSubject": "le voyage intérieur",
+      "shortKeyPoints": [
+        "voyage autour de ma chambre",
+        "expérience personnelle",
+        "partage de connaissances",
+        "sentiments agréables"
+      ],
+      "description": "Ce document est un devoir de synthèse en français pour la 2ème année secondaire, axé sur le texte 'Voyage autour de ma chambre' de Xavier de Maistre. Il comprend des questions de compréhension et des exercices de grammaire et vocabulaire.",
+      "summary": "Le texte de Xavier de Maistre explore l'idée d'un voyage intérieur réalisé dans sa propre chambre. L'auteur exprime des sentiments de satisfaction et de désir de partager cette expérience avec le public, soulignant que ce type de voyage est accessible à tous.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3732
+    },
+    {
+      "resourceId": "cmr99gl0w05mq68vcap5g7hd2",
+      "generalSubject": "immigration et identité",
+      "shortKeyPoints": [
+        "solidarité",
+        "culture",
+        "racisme",
+        "exclusion",
+        "droits"
+      ],
+      "description": "Ce devoir de contrôle aborde le thème de l'immigration maghrébine en France à travers un texte de J-E. Bencheikh, soulignant les défis et les injustices rencontrés par ces immigrés. Il comprend des questions de compréhension, de syntaxe et un essai sur les conflits liés à la différence.",
+      "summary": "Le document présente un devoir de contrôle sur un texte traitant de l'immigration maghrébine en France, mettant en lumière la solidarité et les luttes des immigrés. Les élèves doivent analyser le texte et réfléchir sur les enjeux de l'identité et de l'exclusion.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3005
+    },
+    {
+      "resourceId": "cmr99gmft02vo8djc5pni5grd",
+      "generalSubject": "l'immigration et l'identité",
+      "shortKeyPoints": [
+        "solitude",
+        "regard des autres",
+        "communication",
+        "préjugés"
+      ],
+      "description": "Le texte explore la solitude d'un immigré maghrébin en France, ses tentatives de communication et les réactions des passants face à sa présence. Il met en lumière les préjugés et l'isolement social.",
+      "summary": "Ce document présente un extrait d'une œuvre de T. Ben Jelloun, où un immigré maghrébin exprime sa solitude et son désir de contact humain dans un environnement hostile. Les attitudes des Français envers lui révèlent des préjugés et une incompréhension.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2956
+    },
+    {
+      "resourceId": "cmr99gnqd02wc8djcgel8takb",
+      "generalSubject": "portrait caricatural",
+      "shortKeyPoints": [
+        "Gnathon",
+        "arrogance",
+        "moraliste",
+        "critique sociale"
+      ],
+      "description": "Ce document présente un devoir de contrôle en français sur un extrait de Jean de la Bruyère, décrivant le personnage de Gnathon et ses traits de caractère. Il comprend des questions de compréhension et de syntaxe.",
+      "summary": "Le texte analyse le personnage de Gnathon, un homme égoïste et arrogant, à travers une description caricaturale. Les questions portent sur ses traits de caractère, l'intention de l'auteur et les procédés d'écriture utilisés.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3192
+    },
+    {
+      "resourceId": "cmr99gqfr02wo8djc0uc8jczo",
+      "generalSubject": "dialogue des civilisations",
+      "shortKeyPoints": [
+        "sagesse orientale",
+        "monologue occidental",
+        "partage de cultures",
+        "humilité intellectuelle"
+      ],
+      "description": "Ce devoir de contrôle aborde le thème du dialogue entre les civilisations, en mettant en avant l'importance de l'échange culturel et de l'humilité face aux autres cultures. L'auteur, Roger Garaudy, critique la vision occidentale dominante.",
+      "summary": "Le texte souligne la nécessité d'un véritable dialogue entre les cultures, où chaque partie peut apprendre de l'autre. Roger Garaudy appelle à une remise en question de la perspective occidentale et à une reconnaissance des contributions des autres civilisations.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3511
+    },
+    {
+      "resourceId": "cmr99grp802x88djczlewlp0r",
+      "generalSubject": "les relations familiales",
+      "shortKeyPoints": [
+        "souvenirs d'enfance",
+        "rapport père-fils",
+        "vénération",
+        "éducation parentale"
+      ],
+      "description": "Ce devoir de contrôle en français aborde un extrait d'André Gide sur la relation entre un narrateur et son père, mettant en lumière des souvenirs d'enfance et des discussions sur l'éducation. Les élèves doivent analyser le texte et répondre à des questions de compréhension et de langue.",
+      "summary": "Le document présente un extrait d'André Gide où le narrateur évoque ses souvenirs d'enfance liés à son père. À travers des questions d'analyse, les élèves explorent les sentiments et les dynamiques familiales, ainsi que l'impact de l'éducation sur l'enfant.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3922
+    },
+    {
+      "resourceId": "cmr99gspy02xk8djcum5daixy",
+      "generalSubject": "les relations amoureuses",
+      "shortKeyPoints": [
+        "passion destructrice",
+        "sacrifice amoureux",
+        "silence et douleur",
+        "lien tragique"
+      ],
+      "description": "Ce devoir de synthèse aborde une lettre d'Ellénore à Adolphe, révélant ses sentiments profonds et son désespoir face à leur relation. Il inclut des questions de compréhension sur les personnages et leur dynamique.",
+      "summary": "Le document présente une lettre d'Ellénore à Adolphe, exprimant son amour et sa souffrance. Il invite les élèves à analyser les attitudes des personnages et les procédés stylistiques utilisés dans le texte.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2694
+    },
+    {
+      "resourceId": "cmr99gvax02yg8djcsw9gb6py",
+      "generalSubject": "l'amour et ses conséquences",
+      "shortKeyPoints": [
+        "échec amoureux",
+        "sentiments conflictuels",
+        "perspective amicale",
+        "isolement émotionnel"
+      ],
+      "description": "Ce document présente un devoir de synthèse sur un extrait de 'La Confession d’un enfant du siècle' d'Alfred de Musset, abordant les thèmes de l'amour et de la désillusion à travers le personnage d'Octave.",
+      "summary": "Le texte explore les réflexions d'Octave sur l'amour et son échec, en opposition avec les conseils de son ami Desgenais. Il soulève des questions sur la nature de l'amour et ses effets sur l'individu.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3489
+    },
+    {
+      "resourceId": "cmr99gwky02ys8djczzfdojgp",
+      "generalSubject": "conditions de vie des mineurs",
+      "shortKeyPoints": [
+        "exploitation ouvrière",
+        "réflexion sociale",
+        "lutte des classes",
+        "éducation des mineurs"
+      ],
+      "description": "Ce devoir de synthèse aborde les conditions de vie des mineurs à travers un extrait de 'Germinal' d'Émile Zola, mettant en lumière leur exploitation et leur éveil à la réflexion sociale.",
+      "summary": "Le texte présente les conditions difficiles des mineurs et leur prise de conscience face à l'exploitation. Zola souligne l'importance de l'éducation et de la réflexion pour changer leur situation et revendiquer leurs droits.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2884
+    },
+    {
+      "resourceId": "cmr99gy7502z48djc8xkskac7",
+      "generalSubject": "les choix de vie",
+      "shortKeyPoints": [
+        "amour perdu",
+        "réussite professionnelle",
+        "solitude",
+        "réflexion personnelle"
+      ],
+      "description": "Ce devoir de synthèse aborde les thèmes des choix de vie et des regrets à travers un extrait d'un texte de Guillaume Musso, où Ethan confronte Céline sur leur passé amoureux et leurs choix respectifs.",
+      "summary": "Le document présente un devoir de synthèse en français pour les élèves de 4ème année secondaire, centré sur un extrait d'une œuvre de Guillaume Musso. Il explore les thèmes de l'amour, des choix de vie et de la solitude à travers un dialogue entre Ethan et Céline.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3320
+    },
+    {
+      "resourceId": "cmr99h0td03008djczdagi5b5",
+      "generalSubject": "les conséquences de la guerre",
+      "shortKeyPoints": [
+        "Hiroshima",
+        "bombe atomique",
+        "survivants",
+        "mémoire de la guerre"
+      ],
+      "description": "Ce devoir de contrôle porte sur les effets dévastateurs de la bombe atomique sur Hiroshima et les réactions des survivants. Il inclut des questions de compréhension et un essai sur la guerre.",
+      "summary": "Le document analyse les conséquences de l'explosion de la bombe atomique à Hiroshima à travers un extrait de Marguerite Duras. Il propose des questions de compréhension et un essai sur la perception de la guerre.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 2636
+    },
+    {
+      "resourceId": "cmr99h29h030k8djcln6o3q3i",
+      "generalSubject": "l'engagement de l'écrivain",
+      "shortKeyPoints": [
+        "engagement",
+        "pensée critique",
+        "liberté d'écriture",
+        "misère de la pensée"
+      ],
+      "description": "Le texte aborde la question de l'engagement de l'écrivain dans la société contemporaine, en discutant des réflexions d'Annie Mignard sur l'évolution de ce concept depuis Sartre et Camus.",
+      "summary": "Annie Mignard remet en question l'idée que l'écrivain doit s'engager, soulignant une évolution vers une posture défensive dans l'écriture. Elle évoque une misère de la pensée actuelle, où l'engagement est souvent perçu comme une opposition plutôt qu'une construction.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 3,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3602
+    },
+    {
+      "resourceId": "cmr99h3ok03148djcgkio5chv",
+      "generalSubject": "la peine de mort",
+      "shortKeyPoints": [
+        "condamnation",
+        "angoisse",
+        "réflexion",
+        "liberté perdue"
+      ],
+      "description": "Ce devoir de synthèse aborde un extrait du texte 'Le Dernier Jour d'un condamné' de Victor Hugo, où le narrateur, condamné à mort, exprime ses sentiments d'angoisse et de réflexion sur sa situation. Des questions de compréhension et de langue sont posées aux élèves.",
+      "summary": "Le document présente un devoir de synthèse sur un extrait de Victor Hugo, centré sur les pensées d'un condamné à mort. Les élèves doivent analyser les sentiments du narrateur et répondre à des questions de compréhension et de langue.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3261
+    },
+    {
+      "resourceId": "cmr99h52l031o8djcvpx9w2qx",
+      "generalSubject": "le zapping télévisuel",
+      "shortKeyPoints": [
+        "comportement des téléspectateurs",
+        "impact de la publicité",
+        "individualisme moderne",
+        "évolution des médias"
+      ],
+      "description": "Ce devoir de synthèse aborde le phénomène du zapping à la télévision, ses implications sur le comportement des téléspectateurs et l'impact de la publicité dans un contexte moderne.",
+      "summary": "Le texte analyse le phénomène du zapping, où les téléspectateurs changent fréquemment de chaîne, révélant une attitude individualiste face à la publicité. L'auteur souligne que cette tendance reflète une société en quête de nouveauté et d'éphémère.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3145
+    },
+    {
+      "resourceId": "c13jaht8VipoXEXGx",
+      "generalSubject": "l'amour et la correspondance",
+      "shortKeyPoints": [
+        "lettres d'amour",
+        "Victor Hugo",
+        "Juliette Drouet",
+        "émotions profondes"
+      ],
+      "description": "Ce devoir de contrôle porte sur une lettre de Victor Hugo à Juliette Drouet, exprimant ses sentiments après la destruction de ses lettres. Il aborde des thèmes d'amour, de douleur et de mémoire.",
+      "summary": "Le document analyse une lettre de Victor Hugo, où il exprime son amour pour Juliette Drouet malgré la destruction de ses lettres. Les questions portent sur la compréhension du texte, le vocabulaire et la grammaire, ainsi qu'un essai sur la pertinence des lettres d'amour aujourd'hui.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3434
+    },
+    {
+      "resourceId": "c3sjLEJp2yTnnSVNe",
+      "generalSubject": "l'amour et le désir",
+      "shortKeyPoints": [
+        "Benoist et La Martine",
+        "trouble psychologique",
+        "trouble physiologique",
+        "relation amoureuse",
+        "rencontre décisive"
+      ],
+      "description": "Ce devoir de contrôle porte sur un extrait de Maupassant, explorant la relation entre Benoist et La Martine, marquée par le désir et le trouble émotionnel. Les élèves doivent analyser des éléments de compréhension et de langue.",
+      "summary": "Le texte présente la relation amoureuse naissante entre Benoist et La Martine, mettant en avant les troubles émotionnels de Benoist face à son désir. Les élèves sont invités à répondre à des questions de compréhension et de grammaire.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 1,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3986
+    },
+    {
+      "resourceId": "cAJUaemgEtqI0kup",
+      "generalSubject": "la vie de chef de gare",
+      "shortKeyPoints": [
+        "retraite imminente",
+        "existence exemplaire",
+        "satisfaction du devoir",
+        "carrière professionnelle"
+      ],
+      "description": "Ce devoir de contrôle aborde la vie d'un chef de gare à l'approche de sa retraite, mettant en lumière ses sacrifices et son dévouement au travail. Il comprend des questions de compréhension et des exercices de langue.",
+      "summary": "Le document présente un devoir de contrôle sur un extrait décrivant la vie d'un chef de gare, soulignant son engagement et ses réflexions sur sa carrière. Les élèves doivent répondre à des questions de compréhension et rédiger un essai argumentatif.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3468
+    },
+    {
+      "resourceId": "cILyjic0PxbcC5XE",
+      "generalSubject": "la rédemption et la souffrance",
+      "shortKeyPoints": [
+        "Jean Valjean",
+        "galérien",
+        "moralité",
+        "hospitalité",
+        "Victor Hugo"
+      ],
+      "description": "Ce document présente un devoir de contrôle de français pour la 2ème année secondaire, centré sur un extrait des 'Misérables' de Victor Hugo, mettant en scène Jean Valjean. Les élèves doivent analyser le texte et répondre à des questions de compréhension et de langue.",
+      "summary": "Le devoir de contrôle porte sur un extrait des 'Misérables' où Jean Valjean, un ancien galérien, cherche refuge après sa libération. Les élèves doivent examiner sa transformation et les thèmes de la souffrance et de l'hospitalité dans le texte.",
+      "homeworkSubtype": "controle",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 3857
+    },
+    {
+      "resourceId": "cwjowlHg39kcOaOa",
+      "generalSubject": "l'évasion romantique",
+      "shortKeyPoints": [
+        "amour impossible",
+        "rêve d'évasion",
+        "vie idéale",
+        "réalité insatisfaisante"
+      ],
+      "description": "Ce devoir de synthèse aborde le thème de l'évasion d'Emma, personnage de 'Madame Bovary', qui rêve d'une vie meilleure avec Rodolphe. Les questions portent sur ses sentiments et ses aspirations.",
+      "summary": "Le texte présente Emma, qui aspire à une vie idéale loin de sa réalité insatisfaisante. À travers ses rêves d'évasion avec Rodolphe, elle cherche à fuir une existence morne. Les questions du devoir invitent à analyser ses sentiments et ses représentations.",
+      "homeworkSubtype": "synthese",
+      "homeworkNumber": 2,
+      "hasCorrection": false,
+      "modelUsed": "gpt-4o-mini-v2-fr",
+      "_elapsedMs": 4227
+    }
+  ],
+  "errors": [],
+  "count": 119
+}

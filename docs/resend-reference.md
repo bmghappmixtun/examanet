@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
 ### What's set up
 - ✅ Domain verified: `examanet.com` (since 2026-08-04)
 - ✅ Sending from: `Examanet <noreply@examanet.com>` (was `onboarding@resend.dev`)
-- ✅ API key: `re_[REDACTED]` (PRODUCTION)
+- ✅ API key: `re_[REDACTED_IN_HISTORY]` (PRODUCTION)
 - ✅ Using `react` (Node SDK), React Email components
 - ✅ Email types: verify OTP, password reset, resource approved/rejected, newsletter, contact form
 

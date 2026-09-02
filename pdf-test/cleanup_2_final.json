@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-07-27T13:09:54.494914",
+  "nids": [
+    4797,
+    9264
+  ],
+  "resources": [
+    {
+      "numericId": "4797",
+      "title": "Cours - Math\u00e9matiques - 2\u00e8me ann\u00e9e secondaire \u00c9conomie et services - Trim1 (2014-2015)",
+      "fileKey": "teacher-library/cmr8ixdfc012uu3qnw2a6yr46/imported/duty-bacca-1783300252582-325-UAbz187EwJ1ZS2kPnA2L3b4Vt3N7Q0.pdf",
+      "fileUrl": "https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com/teacher-library/cmr8ixdfc012uu3qnw2a6yr46/imported/duty-bacca-1783300252582-325-UAbz187EwJ1ZS2kPnA2L3b4Vt3N7Q0.pdf",
+      "fileSize": "1286",
+      "teacherId": "cmr8ixdfc012uu3qnw2a6yr46",
+      "teacherEmail": "baccarmansour@yahoo.fr",
+      "createdAt": "2026-07-06 01:10:52.933",
+      "downloads": "1",
+      "views": "10"
+    },
+    {
+      "numericId": "9264",
+      "title": "Devoir de Contr\u00f4le - \u00c9conomie - 1\u00e8re ann\u00e9e secondaire (2024-2025)",
+      "fileKey": "teacher-library/cmr93rly6000ozpvnah2njuow/imported/ilovepdf2-1783335471442-96-nYFxy5OeBHIW75J5BEf3LHNSD9X1I0.pdf",
+      "fileUrl": "https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com/teacher-library/cmr93rly6000ozpvnah2njuow/imported/ilovepdf2-1783335471442-96-nYFxy5OeBHIW75J5BEf3LHNSD9X1I0.pdf",
+      "fileSize": "140939",
+      "teacherId": "cmr93rly6000ozpvnah2njuow",
+      "teacherEmail": "rawdaabdesslem@yahoo.com",
+      "createdAt": "2026-07-06 10:57:52.499",
+      "downloads": "1",
+      "views": "12"
+    }
+  ]
+}

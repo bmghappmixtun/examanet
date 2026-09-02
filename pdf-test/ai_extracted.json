@@ -1,0 +1,361 @@
+{
+  "10963": {
+    "metadata": {
+      "profNames": [],
+      "schoolName": null,
+      "year": null,
+      "type": "devoir",
+      "subtype": null,
+      "subject": "Mathématiques",
+      "systemName": null,
+      "duration": null,
+      "level": null,
+      "keyPoints": null,
+      "topics": null,
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document présente une série d'exercices de mathématiques portant sur la divisibilité, les équations diophantiennes et l'arithmétique. Les exercices incluent la détermination des entiers relatifs divisant certaines expressions, la résolution d'équations linéaires et l'utilisation de l'algorithme d'Euclide pour démontrer que deux nombres sont premiers entre eux. Les concepts clés incluent la divisibilité, les solutions d'équations et les propriétés des entiers naturels.",
+      "prerequisites": [
+        "Connaissance des entiers relatifs",
+        "Compréhension des propriétés de divisibilité",
+        "Notions de base sur les équations diophantiennes"
+      ],
+      "keyInsights": [
+        "La divisibilité est un outil fondamental pour résoudre des équations",
+        "L'algorithme d'Euclide est efficace pour déterminer la primalité",
+        "Les solutions d'équations linéaires peuvent être trouvées en utilisant des méthodes arithmétiques"
+      ]
+    },
+    "tokens_used": 2166,
+    "duration": 5.4,
+    "pages": 2,
+    "words": 343
+  },
+  "13006": {
+    "metadata": {
+      "profNames": [
+        "Mme Jeridi HAYET"
+      ],
+      "schoolName": "Lycée pilote El Menzah 8",
+      "year": "2014-2015",
+      "type": "devoir",
+      "subtype": "synthèse",
+      "subject": "Chimie",
+      "systemName": null,
+      "duration": "1h",
+      "level": null,
+      "keyPoints": null,
+      "topics": null,
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": 60
+    },
+    "summary": {
+      "summary": "Le document scolaire présente un devoir de synthèse en physique pour des élèves de 1er S, comprenant des exercices sur la solubilité du chlorure de potassium, les réactions chimiques, la vitesse moyenne et les trajectoires. Les élèves doivent calculer la masse maximale de soluté pouvant être dissoute à différentes températures, définir des concepts de chimie, et analyser des mouvements relatifs. Les exercices mettent en avant des applications pratiques des concepts physiques et chimiques étudiés.",
+      "prerequisites": [
+        "Connaissance des concepts de solubilité et de concentration",
+        "Compréhension des mouvements uniformes et des vitesses"
+      ],
+      "keyInsights": [
+        "La solubilité d'un soluté varie avec la température",
+        "Les réactions chimiques impliquent des réactifs et des produits",
+        "La vitesse moyenne est calculée en fonction de la distance et du temps"
+      ]
+    },
+    "tokens_used": 3971,
+    "duration": 5.66,
+    "pages": 4,
+    "words": 1176
+  },
+  "13242": {
+    "metadata": {
+      "profNames": [],
+      "schoolName": null,
+      "year": null,
+      "type": "cours",
+      "subtype": null,
+      "subject": "Ions et composés ioniques",
+      "systemName": null,
+      "duration": null,
+      "level": null,
+      "keyPoints": [
+        "Ion monoatomique",
+        "Cations et anions",
+        "Composés ioniques"
+      ],
+      "topics": [
+        "Éléments chimiques",
+        "Masse molaire"
+      ],
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document traite des ions monoatomiques, de leur formation et de leur classification en cations et anions. Il explique également la composition des composés ioniques, la définition des éléments chimiques, ainsi que la conservation des éléments au cours des transformations chimiques. Les concepts de stabilité atomique, la règle de l'octet et la configuration électronique des atomes sont également abordés.",
+      "prerequisites": [
+        "Connaissance de la structure atomique",
+        "Compréhension des charges électriques"
+      ],
+      "keyInsights": [
+        "Les ions sont classés en cations et anions selon la perte ou le gain d'électrons.",
+        "Les composés ioniques sont électriquement neutres, équilibrant les charges positives et négatives.",
+        "La stabilité des atomes est liée à leur configuration électronique, suivant les règles du duet et de l'octet."
+      ]
+    },
+    "tokens_used": 3609,
+    "duration": 6.28,
+    "pages": 12,
+    "words": 4824
+  },
+  "13743": {
+    "metadata": {
+      "profNames": [
+        "Mr Jallouli.R"
+      ],
+      "schoolName": "Gremda",
+      "year": "2023-2024",
+      "type": "devoir",
+      "subtype": "synthèse",
+      "subject": "Sciences physiques",
+      "systemName": null,
+      "duration": "2h",
+      "level": null,
+      "keyPoints": null,
+      "topics": null,
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document scolaire présente un devoir de synthèse en sciences physiques pour des élèves de 2ème sciences. Il comprend des exercices sur les hydrocarbures, les solutions acides et basiques, ainsi que des concepts de mécanique et d'optique. Les élèves doivent démontrer des connaissances sur les masses molaires, le pH, les réactions acido-basiques, et les lois de la réflexion.",
+      "prerequisites": [
+        "Connaissance des masses molaires",
+        "Compréhension des concepts de pH et d'électrolytes",
+        "Notions de mécanique et d'optique"
+      ],
+      "keyInsights": [
+        "Les hydrocarbures peuvent être saturés ou insaturés, avec des formules spécifiques.",
+        "Le pH d'une solution dépend de sa concentration en ions H3O+.",
+        "La première loi de Descartes décrit la réflexion des rayons lumineux sur un miroir."
+      ]
+    },
+    "tokens_used": 3889,
+    "duration": 4.78,
+    "pages": 16,
+    "words": 2852
+  },
+  "14849": {
+    "metadata": {
+      "profNames": [],
+      "schoolName": "Maknassy",
+      "year": "2012-2013",
+      "type": "devoir",
+      "subtype": null,
+      "subject": "Sciences physiques",
+      "systemName": null,
+      "duration": null,
+      "level": null,
+      "keyPoints": [],
+      "topics": [],
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document présente des exercices sur l'étude des circuits RLC en régime alternatif, en utilisant un générateur basse fréquence. Les exercices incluent l'analyse des oscillogrammes pour déterminer des grandeurs physiques telles que la tension, le déphasage, et l'impédance. Les expériences se concentrent sur la résonance, les oscillations forcées, et les relations entre les différentes composantes du circuit.",
+      "prerequisites": [
+        "Connaissances de base en électricité et électronique",
+        "Compréhension des circuits RLC"
+      ],
+      "keyInsights": [
+        "L'oscilloscope est un outil essentiel pour visualiser les tensions dans les circuits RLC.",
+        "La résonance dans un circuit RLC influence l'intensité du courant.",
+        "Le déphasage entre la tension et le courant est crucial pour comprendre le comportement du circuit."
+      ]
+    },
+    "tokens_used": 3454,
+    "duration": 4.64,
+    "pages": 8,
+    "words": 2560
+  },
+  "6145": {
+    "metadata": {
+      "profNames": [],
+      "schoolName": null,
+      "year": null,
+      "type": "devoir",
+      "subtype": null,
+      "subject": "Mathématiques",
+      "systemName": null,
+      "duration": "4 heures",
+      "level": null,
+      "keyPoints": null,
+      "topics": null,
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": 240
+    },
+    "summary": {
+      "summary": "Le document scolaire présente un devoir de mathématiques pour les classes de 4 M 1,2, comprenant cinq exercices variés. Les exercices abordent des concepts tels que les fonctions, les suites, les statistiques, la géométrie dans l'espace, et les équations de droites d'ajustement. Les élèves doivent résoudre des problèmes pratiques, notamment en utilisant la méthode des moindres carrés et en étudiant des suites et des volumes géométriques.",
+      "prerequisites": [
+        "Connaissance des fonctions et de leur dérivée",
+        "Compréhension des statistiques et des méthodes d'ajustement",
+        "Notions de géométrie dans l'espace et de calcul de volumes"
+      ],
+      "keyInsights": [
+        "Utilisation de la méthode des moindres carrés pour l'ajustement de données",
+        "Application des concepts de géométrie pour résoudre des problèmes de volume et d'intersection",
+        "Analyse des suites et de leur comportement à travers des propriétés arithmétiques"
+      ]
+    },
+    "tokens_used": 4140,
+    "duration": 5.27,
+    "pages": 3,
+    "words": 1225
+  },
+  "6912": {
+    "metadata": {
+      "profNames": [
+        "manai"
+      ],
+      "schoolName": "Lycée Farhat Hached",
+      "year": "2022-2023",
+      "type": "devoir",
+      "subtype": "synthèse",
+      "subject": "Sciences physiques",
+      "systemName": null,
+      "duration": "2 heures",
+      "level": null,
+      "keyPoints": null,
+      "topics": null,
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": 120
+    },
+    "summary": {
+      "summary": "Le document scolaire présente un devoir de synthèse en sciences physiques pour la classe de 3ème sc-exp au lycée Farhat Hached. Il comprend des questions sur l'acidification de l'eau de pluie, les définitions d'acides et de bases selon Brönsted, ainsi que des exercices sur les réactions d'oxydoréduction et les champs magnétiques créés par des solénoïdes. Les élèves doivent démontrer leur compréhension des concepts de chimie et de physique à travers des calculs et des représentations graphiques.",
+      "prerequisites": [
+        "Connaissance des concepts d'acides et de bases",
+        "Compréhension des réactions d'oxydoréduction",
+        "Notions de champs magnétiques et solénoïdes"
+      ],
+      "keyInsights": [
+        "L'acidification de l'eau de pluie est liée à des réactions chimiques spécifiques.",
+        "Les couples acide/base et les réactions d'oxydoréduction sont fondamentaux en chimie.",
+        "Les champs magnétiques peuvent être calculés et visualisés à l'aide de vecteurs dans des configurations de solénoïdes."
+      ]
+    },
+    "tokens_used": 3233,
+    "duration": 7.09,
+    "pages": 3,
+    "words": 541
+  },
+  "7531": {
+    "metadata": {
+      "profNames": [
+        "Mme Ismail O."
+      ],
+      "schoolName": "Lycée Secondaire :K.ELMEDIOUNI",
+      "year": null,
+      "type": "devoir",
+      "subtype": "synthèse",
+      "subject": "Base de Données",
+      "systemName": null,
+      "duration": "2 h",
+      "level": null,
+      "keyPoints": null,
+      "topics": null,
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": 120
+    },
+    "summary": {
+      "summary": "Le document scolaire présente un devoir de synthèse sur les bases de données, comprenant plusieurs exercices pratiques. Les exercices portent sur des commandes SQL pour manipuler des tables, des requêtes pour extraire des données spécifiques, et la gestion d'une base de données pour un service après-vente. Les étudiants doivent démontrer leur compréhension des concepts de base de données relationnelles et des opérations SQL.",
+      "prerequisites": [
+        "Connaissance des commandes SQL",
+        "Compréhension des bases de données relationnelles"
+      ],
+      "keyInsights": [
+        "Utilisation des commandes SQL pour ajouter, supprimer et modifier des données",
+        "Importance de la structuration des données en tables",
+        "Capacité à écrire des requêtes pour extraire des informations spécifiques"
+      ]
+    },
+    "tokens_used": 3186,
+    "duration": 4.85,
+    "pages": 4,
+    "words": 770
+  },
+  "9170": {
+    "metadata": {
+      "profNames": [
+        "MOHAMED BENZINA"
+      ],
+      "schoolName": "LYCEE PILOTE MONASTIR",
+      "year": "2012-2013",
+      "type": "devoir",
+      "subtype": null,
+      "subject": "Mathématiques",
+      "systemName": null,
+      "duration": null,
+      "level": null,
+      "keyPoints": null,
+      "topics": null,
+      "difficulty": null,
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document présente des exercices de mathématiques sur la géométrie dans l'espace, notamment l'étude des sphères et des plans. Les exercices incluent la détermination des centres et rayons de sphères, l'analyse des positions relatives entre sphères et plans, ainsi que la vérification de tangentes et d'intersections. Les concepts de plans tangents et de volumes de tétraèdres sont également abordés.",
+      "prerequisites": [
+        "Connaissance des équations de sphères",
+        "Compréhension des plans dans l'espace"
+      ],
+      "keyInsights": [
+        "Les sphères peuvent être définies par des équations quadratiques",
+        "Les plans peuvent être tangents aux sphères sous certaines conditions",
+        "Les intersections entre sphères et plans peuvent former des cercles"
+      ]
+    },
+    "tokens_used": 2857,
+    "duration": 5.36,
+    "pages": 2,
+    "words": 503
+  },
+  "9619": {
+    "metadata": {
+      "profNames": [],
+      "schoolName": "Lycée El manara Gabès",
+      "year": "2010-2011",
+      "type": "série",
+      "subtype": null,
+      "subject": "Analyse des fonctions",
+      "systemName": null,
+      "duration": null,
+      "level": null,
+      "keyPoints": [
+        "Continuité des fonctions",
+        "Dérivabilité des fonctions",
+        "Tangentes aux courbes"
+      ],
+      "topics": [
+        "Fonctions",
+        "Géométrie",
+        "Analyse"
+      ],
+      "difficulty": "moyen",
+      "estimatedTimeMinutes": null
+    },
+    "summary": {
+      "summary": "Le document présente une série d'exercices de mathématiques pour des élèves de 3ème technique, abordant des concepts tels que la continuité et la dérivabilité des fonctions, ainsi que des propriétés géométriques des triangles et des carrés. Les exercices incluent des calculs de dérivées, l'étude de tangentes, et des propriétés des barycentres. Les élèves sont également amenés à résoudre des équations et à construire des ensembles de points dans le plan.",
+      "prerequisites": [
+        "Connaissance des fonctions et de leurs propriétés",
+        "Compréhension des vecteurs et de la géométrie dans le plan"
+      ],
+      "keyInsights": [
+        "La continuité et la dérivabilité sont essentielles pour analyser les fonctions",
+        "Les propriétés des triangles équilatéraux et des carrés sont utilisées pour résoudre des problèmes géométriques",
+        "L'utilisation des barycentres permet de simplifier certains calculs dans le plan"
+      ]
+    },
+    "tokens_used": 4162,
+    "duration": 5.52,
+    "pages": 1,
+    "words": 465
+  }
+}

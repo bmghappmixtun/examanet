@@ -1,0 +1,29 @@
+{
+  "schoolType_missing": [],
+  "schoolType_wrong": [
+    {
+      "id": "cmr8izw5s018lu3qnfbfhzgwx",
+      "numericId": 4842,
+      "title": "Série d'exercices - Français - 1ère AS (2012-2013) : les relations familiales",
+      "current": "PILOTE",
+      "detected": "LYCEE"
+    },
+    {
+      "id": "cmr8w98l400tistsgaygst631",
+      "numericId": 7958,
+      "title": "Devoir de Contrôle N°3 - Français - Bac - Section Sciences Expérimentales (2010-2011) : la guerre et ses conséquences",
+      "current": "PILOTE",
+      "detected": "LYCEE"
+    },
+    {
+      "id": "cmr99gy7502z48djc8xkskac7",
+      "numericId": 14018,
+      "title": "Devoir de Synthèse N°1 - Français - Bac - Section Sciences Expérimentales (2023-2024) : les choix de vie",
+      "current": "PILOTE",
+      "detected": "LYCEE"
+    }
+  ],
+  "hasCorrection_wrong": [],
+  "section_missing": [],
+  "section_wrong": []
+}

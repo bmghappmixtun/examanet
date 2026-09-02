@@ -1,0 +1,392 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 2000" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="arrow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feNode in="blur"/><feNode in="SourceGraphic"/></feMerge></filter>
+    <style>
+      .layer { fill: rgba(30,41,59,0.5); stroke: rgba(148,163,184,0.15); stroke-width: 1; }
+      .layer-title { fill: #cbd5e1; font-size: 14px; font-weight: 700; letter-spacing: 2px; }
+      .layer-dot { fill: #0ea5e9; }
+      .card { fill: rgba(15,23,42,0.6); stroke: rgba(148,163,184,0.2); stroke-width: 1; }
+      .card-title { fill: #f1f5f9; font-size: 13px; font-weight: 600; }
+      .card-sub { fill: #94a3b8; font-size: 10px; }
+      .card-ver { fill: #64748b; font-size: 9px; font-family: monospace; }
+      .arrow { fill: #475569; font-size: 18px; font-weight: 700; }
+      .section-title { fill: #f1f5f9; font-size: 18px; font-weight: 700; }
+      .step-circle { fill: url(#arrow); }
+      .step-circle-text { fill: white; font-size: 14px; font-weight: 700; }
+      .step-title { fill: #f1f5f9; font-size: 12px; font-weight: 600; }
+      .step-desc { fill: #94a3b8; font-size: 10px; }
+      .step-arrow { fill: #0ea5e9; font-size: 20px; font-weight: 700; }
+      .h1 { fill: url(#title); font-size: 44px; font-weight: 800; letter-spacing: -1px; }
+      .subtitle { fill: #94a3b8; font-size: 14px; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1400" height="2000" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="60" y="80" class="h1">Examanet — Architecture Fullstack</text>
+  <text x="60" y="110" class="subtitle">Plateforme pédagogique tunisienne #1 · Vercel + Neon PostgreSQL · 15k+ ressources</text>
+
+  <!-- ============================ LAYER 1: CLIENTS ============================ -->
+  <g transform="translate(40, 150)">
+    <rect class="layer" width="1320" height="100" rx="16"/>
+    <text x="20" y="30" class="layer-title"><circle class="layer-dot" cx="-10" cy="-3" r="4"/>👥 COUCHE 1 — Clients</text>
+    <g transform="translate(20, 50)">
+      <rect class="card" x="0" y="0" width="300" height="40" rx="8"/>
+      <text x="10" y="17" class="card-title">👤 Élèves & Profs</text>
+      <text x="10" y="32" class="card-sub">Chrome / Safari / Mobile</text>
+
+      <rect class="card" x="320" y="0" width="300" height="40" rx="8"/>
+      <text x="330" y="17" class="card-title">🕷️ Googlebot / Bingbot</text>
+      <text x="330" y="32" class="card-sub">15k URLs + hreflang</text>
+
+      <rect class="card" x="640" y="0" width="300" height="40" rx="8"/>
+      <text x="650" y="17" class="card-title">🤖 AI Crawlers</text>
+      <text x="650" y="32" class="card-sub">GPTBot, ClaudeBot, Perplexity</text>
+
+      <rect class="card" x="960" y="0" width="300" height="40" rx="8"/>
+      <text x="970" y="17" class="card-title">🛰️ Vercel Log Drain</text>
+      <text x="970" y="32" class="card-sub">POST runtime logs</text>
+    </g>
+  </g>
+
+  <text x="690" y="270" class="arrow" text-anchor="middle">▼</text>
+
+  <!-- ============================ LAYER 2: EDGE / CDN ============================ -->
+  <g transform="translate(40, 290)">
+    <rect class="layer" width="1320" height="100" rx="16"/>
+    <text x="20" y="30" class="layer-title"><circle class="layer-dot" cx="-10" cy="-3" r="4"/>🌐 COUCHE 2 — Edge & CDN (Vercel)</text>
+    <g transform="translate(20, 50)">
+      <rect class="card" x="0" y="0" width="300" height="40" rx="8"/>
+      <text x="10" y="17" class="card-title">⚡ Vercel Edge Network</text>
+      <text x="10" y="32" class="card-sub">17 régions, ISR, cache HTTP</text>
+
+      <rect class="card" x="320" y="0" width="300" height="40" rx="8"/>
+      <text x="330" y="17" class="card-title">📡 Vercel Image Opt.</text>
+      <text x="330" y="32" class="card-sub">WebP / AVIF, responsive</text>
+
+      <rect class="card" x="640" y="0" width="300" height="40" rx="8"/>
+      <text x="650" y="17" class="card-title">🔒 HTTPS + DDoS</text>
+      <text x="650" y="32" class="card-sub">TLS auto, edge firewall</text>
+
+      <rect class="card" x="960" y="0" width="300" height="40" rx="8"/>
+      <text x="970" y="17" class="card-title">⏰ Vercel Cron (5 jobs)</text>
+      <text x="970" y="32" class="card-sub">db-sync, agent-poll, nightly</text>
+    </g>
+  </g>
+
+  <text x="690" y="410" class="arrow" text-anchor="middle">▼</text>
+
+  <!-- ============================ LAYER 3: FRONTEND ============================ -->
+  <g transform="translate(40, 430)">
+    <rect class="layer" width="1320" height="140" rx="16"/>
+    <text x="20" y="30" class="layer-title"><circle class="layer-dot" cx="-10" cy="-3" r="4"/>⚛️ COUCHE 3 — Frontend (Next.js 14 App Router)</text>
+    <g transform="translate(20, 50)">
+      <!-- Row 1: 5 cards -->
+      <rect class="card" x="0" y="0" width="240" height="40" rx="8"/>
+      <text x="10" y="17" class="card-title">Next.js 14.2 (RSC + SSR)</text>
+      <text x="10" y="32" class="card-sub">App Router, streaming</text>
+
+      <rect class="card" x="260" y="0" width="240" height="40" rx="8"/>
+      <text x="270" y="17" class="card-title">TypeScript 5.5 (strict)</text>
+      <text x="270" y="32" class="card-sub">Type-safe partout</text>
+
+      <rect class="card" x="520" y="0" width="240" height="40" rx="8"/>
+      <text x="530" y="17" class="card-title">Tailwind CSS 3.4</text>
+      <text x="530" y="32" class="card-sub">JIT, self-host fonts</text>
+
+      <rect class="card" x="780" y="0" width="240" height="40" rx="8"/>
+      <text x="790" y="17" class="card-title">next-intl 4.13</text>
+      <text x="790" y="32" class="card-sub">i18n FR / AR, hreflang</text>
+
+      <rect class="card" x="1040" y="0" width="240" height="40" rx="8"/>
+      <text x="1050" y="17" class="card-title">react-pdf 9.x</text>
+      <text x="1050" y="32" class="card-sub">Rendu PDF page par page</text>
+
+      <!-- Row 2: 5 cards -->
+      <rect class="card" x="0" y="50" width="240" height="40" rx="8"/>
+      <text x="10" y="67" class="card-title">@tanstack/react-virtual</text>
+      <text x="10" y="82" class="card-sub">Listes virtualisées</text>
+
+      <rect class="card" x="260" y="50" width="240" height="40" rx="8"/>
+      <text x="270" y="67" class="card-title">@radix-ui</text>
+      <text x="270" y="82" class="card-sub">Popover, Switch, Toggle</text>
+
+      <rect class="card" x="520" y="50" width="240" height="40" rx="8"/>
+      <text x="530" y="67" class="card-title">nuqs (URL state)</text>
+      <text x="530" y="82" class="card-sub">Search params state</text>
+
+      <rect class="card" x="780" y="50" width="240" height="40" rx="8"/>
+      <text x="790" y="67" class="card-title">lucide-react</text>
+      <text x="790" y="82" class="card-sub">Icônes SVG</text>
+
+      <rect class="card" x="1040" y="50" width="240" height="40" rx="8"/>
+      <text x="1050" y="67" class="card-title">@statsig/*</text>
+      <text x="1050" y="82" class="card-sub">Web analytics + replay</text>
+    </g>
+  </g>
+
+  <text x="690" y="590" class="arrow" text-anchor="middle">▼</text>
+
+  <!-- ============================ LAYER 4: BACKEND ============================ -->
+  <g transform="translate(40, 610)">
+    <rect class="layer" width="1320" height="220" rx="16"/>
+    <text x="20" y="30" class="layer-title"><circle class="layer-dot" cx="-10" cy="-3" r="4"/>🔌 COUCHE 4 — Backend (Next.js API Routes, 30+ endpoints)</text>
+    <g transform="translate(20, 50)">
+      <!-- 6 cols x 4 items each -->
+      <g transform="translate(0, 0)">
+        <text x="0" y="14" class="step-title" style="fill:#cbd5e1">🔐 Auth & User</text>
+        <text x="0" y="36" class="step-desc">/api/auth/* (NextAuth)</text>
+        <text x="0" y="52" class="step-desc">/api/user/* (profil)</text>
+        <text x="0" y="68" class="step-desc">/api/invitation/[token]</text>
+        <text x="0" y="84" class="step-desc">/api/password/*</text>
+      </g>
+      <g transform="translate(220, 0)">
+        <text x="0" y="14" class="step-title" style="fill:#cbd5e1">📚 Resources</text>
+        <text x="0" y="36" class="step-desc">/api/resources/* (CRUD)</text>
+        <text x="0" y="52" class="step-desc">/api/ressources/[id]/[slug]</text>
+        <text x="0" y="68" class="step-desc">/api/upload (teachers)</text>
+        <text x="0" y="84" class="step-desc">/api/blob-teacher/*</text>
+      </g>
+      <g transform="translate(440, 0)">
+        <text x="0" y="14" class="step-title" style="fill:#cbd5e1">🤖 AI / Admin</text>
+        <text x="0" y="36" class="step-desc">/api/ai/* (proxy)</text>
+        <text x="0" y="52" class="step-desc">/api/admin/*</text>
+        <text x="0" y="68" class="step-desc">/api/og/* (image gen)</text>
+        <text x="0" y="84" class="step-desc">/api/concours-file</text>
+      </g>
+      <g transform="translate(660, 0)">
+        <text x="0" y="14" class="step-title" style="fill:#cbd5e1">⏰ Cron</text>
+        <text x="0" y="36" class="step-desc">/api/db-sync (self-heal)</text>
+        <text x="0" y="52" class="step-desc">/api/cron/nightly-cleanup</text>
+        <text x="0" y="68" class="step-desc">/api/cron/agent-poll</text>
+        <text x="0" y="84" class="step-desc">/api/cron/cleanup-views</text>
+      </g>
+      <g transform="translate(880, 0)">
+        <text x="0" y="14" class="step-title" style="fill:#cbd5e1">🛰️ Observability</text>
+        <text x="0" y="36" class="step-desc">/api/log-drain (Vercel logs)</text>
+        <text x="0" y="52" class="step-desc">/api/errors/log (client)</text>
+        <text x="0" y="68" class="step-desc">/api/health</text>
+        <text x="0" y="84" class="step-desc">/api/agent/nightly-report</text>
+      </g>
+      <g transform="translate(1100, 0)">
+        <text x="0" y="14" class="step-title" style="fill:#cbd5e1">📧 Comm</text>
+        <text x="0" y="36" class="step-desc">/api/contact</text>
+        <text x="0" y="52" class="step-desc">/api/newsletter</text>
+        <text x="0" y="68" class="step-desc">/api/conversations</text>
+        <text x="0" y="84" class="step-desc">/api/notifications</text>
+      </g>
+    </g>
+    <!-- Row 2: Data layer + details -->
+    <g transform="translate(20, 150)">
+      <text x="0" y="14" class="step-title" style="fill:#cbd5e1">🗄️ Prisma ORM 5.18</text>
+      <text x="0" y="30" class="step-desc">30 modèles : User, Resource, Subject, Class, School, Favorite, Comment, Rating, etc.</text>
+
+      <text x="500" y="14" class="step-title" style="fill:#cbd5e1">📦 pg 8.22</text>
+      <text x="500" y="30" class="step-desc">Raw queries pour analytics, bulk operations, EXPLAIN</text>
+
+      <text x="900" y="14" class="step-title" style="fill:#cbd5e1">🔐 bcryptjs 2.4</text>
+      <text x="900" y="30" class="step-desc">Hash passwords (10 rounds)</text>
+    </g>
+  </g>
+
+  <text x="690" y="850" class="arrow" text-anchor="middle">▼</text>
+
+  <!-- ============================ LAYER 5: DATABASES ============================ -->
+  <g transform="translate(40, 870)">
+    <rect class="layer" width="1320" height="100" rx="16"/>
+    <text x="20" y="30" class="layer-title"><circle class="layer-dot" cx="-10" cy="-3" r="4"/>💾 COUCHE 5 — Bases de données & Stockage</text>
+    <g transform="translate(20, 50)">
+      <rect class="card" x="0" y="0" width="300" height="40" rx="8"/>
+      <text x="10" y="17" class="card-title">🗄️ Neon PostgreSQL 17</text>
+      <text x="10" y="32" class="card-sub">519 MB · eu-central-1 · auto-scale 0.25-2 CU</text>
+
+      <rect class="card" x="320" y="0" width="300" height="40" rx="8"/>
+      <text x="330" y="17" class="card-title">📦 Vercel Blob</text>
+      <text x="330" y="32" class="card-sub">PDFs uploadés par les profs</text>
+
+      <rect class="card" x="640" y="0" width="300" height="40" rx="8"/>
+      <text x="650" y="17" class="card-title">📧 Resend</text>
+      <text x="650" y="32" class="card-sub">Emails transactionnels (invitations, reset)</text>
+
+      <rect class="card" x="960" y="0" width="300" height="40" rx="8"/>
+      <text x="970" y="17" class="card-title">🌐 Google APIs</text>
+      <text x="970" y="32" class="card-sub">Search Console, Webmasters (SEO)</text>
+    </g>
+  </g>
+
+  <text x="690" y="990" class="arrow" text-anchor="middle">▼</text>
+
+  <!-- ============================ LAYER 6: AI ============================ -->
+  <g transform="translate(40, 1010)">
+    <rect class="layer" width="1320" height="100" rx="16"/>
+    <text x="20" y="30" class="layer-title"><circle class="layer-dot" cx="-10" cy="-3" r="4"/>🧠 COUCHE 6 — Services AI & Externes</text>
+    <g transform="translate(20, 50)">
+      <rect class="card" x="0" y="0" width="240" height="40" rx="8"/>
+      <text x="10" y="17" class="card-title">OpenAI gpt-4o-mini</text>
+      <text x="10" y="32" class="card-sub">AI summaries, translitération</text>
+
+      <rect class="card" x="260" y="0" width="240" height="40" rx="8"/>
+      <text x="270" y="17" class="card-title">Mistral Small</text>
+      <text x="270" y="32" class="card-sub">Fallback LLM FR/AR</text>
+
+      <rect class="card" x="520" y="0" width="240" height="40" rx="8"/>
+      <text x="530" y="17" class="card-title">Gemini 2.5 Flash</text>
+      <text x="530" y="32" class="card-sub">OCR PDF + extraction</text>
+
+      <rect class="card" x="780" y="0" width="240" height="40" rx="8"/>
+      <text x="790" y="17" class="card-title">Groq (qwen3.6-27b)</text>
+      <text x="790" y="32" class="card-sub">Ultra-rapide (1000 req/jour)</text>
+
+      <rect class="card" x="1040" y="0" width="240" height="40" rx="8"/>
+      <text x="1050" y="17" class="card-title">Cerebras + iLovePDF + Playwright</text>
+      <text x="1050" y="32" class="card-sub">LLM haute perf + PDF convert + E2E tests</text>
+    </g>
+  </g>
+
+  <text x="690" y="1130" class="arrow" text-anchor="middle">▼</text>
+
+  <!-- ============================ LAYER 7: INFRA ============================ -->
+  <g transform="translate(40, 1150)">
+    <rect class="layer" width="1320" height="80" rx="16"/>
+    <text x="20" y="30" class="layer-title"><circle class="layer-dot" cx="-10" cy="-3" r="4"/>☁️ COUCHE 7 — Infrastructure (Vercel + Neon)</text>
+    <g transform="translate(20, 50)">
+      <rect class="card" x="0" y="0" width="240" height="20" rx="6"/>
+      <text x="10" y="14" class="card-sub">▲ Vercel Hosting (fra1)</text>
+
+      <rect class="card" x="260" y="0" width="240" height="20" rx="6"/>
+      <text x="270" y="14" class="card-sub">🗄️ Neon (PITR, branching)</text>
+
+      <rect class="card" x="520" y="0" width="240" height="20" rx="6"/>
+      <text x="530" y="14" class="card-sub">📊 Vercel Analytics</text>
+
+      <rect class="card" x="780" y="0" width="240" height="20" rx="6"/>
+      <text x="790" y="14" class="card-sub">🔑 GitHub (auto-deploy)</text>
+
+      <rect class="card" x="1040" y="0" width="240" height="20" rx="6"/>
+      <text x="1050" y="14" class="card-sub">📈 Statsig (A/B tests)</text>
+    </g>
+  </g>
+
+  <!-- ============================ DATA FLOW ============================ -->
+  <g transform="translate(40, 1280)">
+    <rect class="layer" width="1320" height="80" rx="16"/>
+    <text x="20" y="30" class="layer-title"><circle class="layer-dot" cx="-10" cy="-3" r="4"/>📊 Flux de données — Upload d'une ressource</text>
+    <g transform="translate(40, 55)">
+      <!-- 6 steps in a row -->
+      <circle class="step-circle" cx="15" cy="10" r="14"/>
+      <text class="step-circle-text" x="15" y="14" text-anchor="middle">1</text>
+      <text class="step-title" x="38" y="14">Prof upload PDF</text>
+
+      <text class="step-arrow" x="180" y="14">→</text>
+
+      <circle class="step-circle" cx="220" cy="10" r="14"/>
+      <text class="step-circle-text" x="220" y="14" text-anchor="middle">2</text>
+      <text class="step-title" x="243" y="14">Vercel Blob</text>
+
+      <text class="step-arrow" x="380" y="14">→</text>
+
+      <circle class="step-circle" cx="420" cy="10" r="14"/>
+      <text class="step-circle-text" x="420" y="14" text-anchor="middle">3</text>
+      <text class="step-title" x="443" y="14">Gemini OCR</text>
+
+      <text class="step-arrow" x="580" y="14">→</text>
+
+      <circle class="step-circle" cx="620" cy="10" r="14"/>
+      <text class="step-circle-text" x="620" y="14" text-anchor="middle">4</text>
+      <text class="step-title" x="643" y="14">OpenAI summary</text>
+
+      <text class="step-arrow" x="800" y="14">→</text>
+
+      <circle class="step-circle" cx="840" cy="10" r="14"/>
+      <text class="step-circle-text" x="840" y="14" text-anchor="middle">5</text>
+      <text class="step-title" x="863" y="14">Prisma → Neon</text>
+
+      <text class="step-arrow" x="1000" y="14">→</text>
+
+      <circle class="step-circle" cx="1040" cy="10" r="14"/>
+      <text class="step-circle-text" x="1040" y="14" text-anchor="middle">6</text>
+      <text class="step-title" x="1063" y="14">Élève voit la page</text>
+    </g>
+  </g>
+
+  <g transform="translate(40, 1380)">
+    <rect class="layer" width="1320" height="80" rx="16"/>
+    <text x="20" y="30" class="layer-title"><circle class="layer-dot" cx="-10" cy="-3" r="4"/>📊 Flux de données — Consultation par un élève</text>
+    <g transform="translate(40, 55)">
+      <circle class="step-circle" cx="15" cy="10" r="14"/>
+      <text class="step-circle-text" x="15" y="14" text-anchor="middle">1</text>
+      <text class="step-title" x="38" y="14">Élève ouvre /fr/ressources</text>
+
+      <text class="step-arrow" x="220" y="14">→</text>
+
+      <circle class="step-circle" cx="260" cy="10" r="14"/>
+      <text class="step-circle-text" x="260" y="14" text-anchor="middle">2</text>
+      <text class="step-title" x="283" y="14">Vercel CDN cache</text>
+
+      <text class="step-arrow" x="420" y="14">→</text>
+
+      <circle class="step-circle" cx="460" cy="10" r="14"/>
+      <text class="step-circle-text" x="460" y="14" text-anchor="middle">3</text>
+      <text class="step-title" x="483" y="14">RSC: first 24 items</text>
+
+      <text class="step-arrow" x="640" y="14">→</text>
+
+      <circle class="step-circle" cx="680" cy="10" r="14"/>
+      <text class="step-circle-text" x="680" y="14" text-anchor="middle">4</text>
+      <text class="step-title" x="703" y="14">Clique → /fr/ressources/[id]</text>
+
+      <text class="step-arrow" x="900" y="14">→</text>
+
+      <circle class="step-circle" cx="940" cy="10" r="14"/>
+      <text class="step-circle-text" x="940" y="14" text-anchor="middle">5</text>
+      <text class="step-title" x="963" y="14">react-pdf viewer</text>
+
+      <text class="step-arrow" x="1100" y="14">→</text>
+
+      <circle class="step-circle" cx="1140" cy="10" r="14"/>
+      <text class="step-circle-text" x="1140" y="14" text-anchor="middle">6</text>
+      <text class="step-title" x="1163" y="14">PDF via Blob CDN</text>
+    </g>
+  </g>
+
+  <!-- ============================ STATS ============================ -->
+  <g transform="translate(40, 1490)">
+    <rect x="0" y="0" width="1320" height="80" rx="16" fill="rgba(14,165,233,0.08)" stroke="rgba(14,165,233,0.2)"/>
+    <g transform="translate(20, 30)">
+      <text x="0" y="0" class="step-title" style="font-size:14px;fill:#0ea5e9;font-weight:800">15 673</text>
+      <text x="0" y="20" class="card-sub">URLs sitemap</text>
+
+      <text x="220" y="0" class="step-title" style="font-size:14px;fill:#0ea5e9;font-weight:800">30</text>
+      <text x="220" y="20" class="card-sub">Modèles Prisma</text>
+
+      <text x="440" y="0" class="step-title" style="font-size:14px;fill:#0ea5e9;font-weight:800">159</text>
+      <text x="440" y="20" class="card-sub">Pages statiques</text>
+
+      <text x="660" y="0" class="step-title" style="font-size:14px;fill:#0ea5e9;font-weight:800">2 450</text>
+      <text x="660" y="20" class="card-sub">Enseignants</text>
+
+      <text x="880" y="0" class="step-title" style="font-size:14px;fill:#0ea5e9;font-weight:800">30+</text>
+      <text x="880" y="20" class="card-sub">API routes</text>
+
+      <text x="1080" y="0" class="step-title" style="font-size:14px;fill:#0ea5e9;font-weight:800">5</text>
+      <text x="1080" y="20" class="card-sub">Cron jobs</text>
+    </g>
+  </g>
+
+  <!-- Footer -->
+  <text x="700" y="1610" text-anchor="middle" class="card-sub">Examanet v2026.08 · Vercel + Neon eu-central-1 · Stack production-ready</text>
+</svg>

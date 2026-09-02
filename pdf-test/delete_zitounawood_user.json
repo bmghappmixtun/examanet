@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-07-27T11:35:15.951811",
+  "user": {
+    "id": "cmrgcpg7z0000lrqz6gwqz7mq",
+    "numericId": "53",
+    "email": "contact@zitounawood.com",
+    "firstName": "Test enseignant",
+    "lastName": "mehdi test",
+    "role": "TEACHER",
+    "status": "ACTIVE",
+    "createdAt": "2026-07-11 12:38:54.815"
+  }
+}

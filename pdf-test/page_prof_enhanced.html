@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Ghorbel Mamdouh - Professeur de Technologie | Examanet</title>
+<style>
+  :root { --primary: #1e40af; --orange: #ea580c; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background: #f8fafc; color: #0f172a; }
+  .breadcrumb { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 12px 0; font-size: 14px; }
+  .breadcrumb-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; color: #64748b; }
+  .breadcrumb a { color: var(--primary); text-decoration: none; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  .header { background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%); color: white; border-radius: 16px; padding: 32px; margin-bottom: 24px; display: flex; gap: 24px; align-items: center; }
+  .header .avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f97316); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; flex-shrink: 0; }
+  .header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+  .header .role { opacity: 0.9; }
+  .header .stats { display: flex; gap: 24px; margin-top: 16px; }
+  .header .stat { background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 10px; }
+  .stat-value { font-weight: 800; font-size: 20px; }
+  .stat-label { font-size: 11px; opacity: 0.8; }
+  .section-title { font-size: 24px; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .resource-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; gap: 12px; transition: all 0.2s; cursor: pointer; }
+  .resource-card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+  .resource-icon { width: 48px; height: 56px; border-radius: 8px; background: linear-gradient(135deg, #f97316, #ea580c); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; flex-shrink: 0; }
+  .resource-info { flex: 1; min-width: 0; }
+  .resource-title { font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+  .resource-meta { display: flex; gap: 12px; font-size: 12px; color: #64748b; margin-top: 6px; flex-wrap: wrap; }
+  .resource-type { display: inline-block; padding: 2px 8px; background: #f1f5f9; border-radius: 6px; font-weight: 600; font-size: 11px; }
+  .system-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; border-radius: 6px; font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .sidebar { display: flex; flex-direction: column; gap: 16px; }
+  .card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+  .card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .ai-badge { background: linear-gradient(90deg, #dbeafe, #e0e7ff); color: #3730a3; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 700; text-transform: uppercase; margin-left: auto; }
+  .system-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 8px; transition: all 0.2s; cursor: pointer; text-decoration: none; color: inherit; }
+  .system-item:hover { background: #fff7ed; }
+  .system-item .name { font-size: 13px; font-weight: 500; color: #9a3412; }
+  .system-item .count { background: #fed7aa; color: #9a3412; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+  .system-section { background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%); border: 1px solid #fdba74; }
+  .topic-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+  .topic { display: inline-block; padding: 4px 10px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 14px; font-size: 12px; font-weight: 500; text-decoration: none; }
+  .topic:hover { background: #fde68a; }
+  .topic-count { background: #fbbf24; color: white; padding: 1px 6px; border-radius: 8px; font-size: 10px; font-weight: 700; margin-left: 4px; }
+</style>
+</head>
+<body>
+  <nav class="breadcrumb">
+    <div class="breadcrumb-inner">
+      <a href="/professeurs">Professeurs</a> ›
+      <span>Ghorbel Mamdouh</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div>
+      <!-- Header -->
+      <div class="header">
+        <div class="avatar">GM</div>
+        <div style="flex: 1;">
+          <h1>Ghorbel Mamdouh</h1>
+          <div class="role">👨‍🏫 Enseignant de Technologie · Génie mécanique · Sidi Bouzid</div>
+          <div class="stats">
+            <div class="stat"><div class="stat-value">8</div><div class="stat-label">Ressources</div></div>
+            <div class="stat"><div class="stat-value">1 247</div><div class="stat-label">Vues</div></div>
+            <div class="stat"><div class="stat-value">★ 4.8</div><div class="stat-label">Note</div></div>
+            <div class="stat"><div class="stat-value">189</div><div class="stat-label">Followers</div></div>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="section-title">📚 Ressources (8)</h2>
+
+      <!-- Resource cards with systemName badges -->
+      <div class="resource-card">
+        <div class="resource-icon">📄</div>
+        <div class="resource-info">
+          <div style="display: flex; gap: 8px; align-items: start; justify-content: space-between;">
+            <div class="resource-title">Devoir de Contrôle N°1 - DEPALETTISEUR</div>
+            <span class="resource-type">Devoir</span>
+          </div>
+          <div class="system-badge">⚙️ DEPALETTISEUR</div>
+          <div class="resource-meta">
+            <span>🏭 Technologie</span>
+            <span>🎓 4ème année (Bac)</span>
+            <span>👁 234 vues</span>
+            <span>⬇ 89 DL</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📄</div>
+        <div class="resource-info">
+          <div style="display: flex; gap: 8px; align-items: start; justify-content: space-between;">
+            <div class="resource-title">Devoir de Contrôle N°1 - MACHINE DE PRODUCTION DU CAFE</div>
+            <span class="resource-type">Devoir</span>
+          </div>
+          <div class="system-badge">⚙️ MACHINE DE PRODUCTION DU CAFE</div>
+          <div class="resource-meta">
+            <span>🏭 Technologie · ⚙️ Génie mécanique</span>
+            <span>👁 312 vues</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📄</div>
+        <div class="resource-info">
+          <div style="display: flex; gap: 8px; align-items: start; justify-content: space-between;">
+            <div class="resource-title">UNITE DE TROÇONNAGE AUTOMATIQUE - Devoir</div>
+            <span class="resource-type">Devoir</span>
+          </div>
+          <div class="system-badge">⚙️ UNITE DE TROÇONNAGE AUTOMATIQUE</div>
+          <div class="resource-meta">
+            <span>🏭 Technologie · ⚙️ Génie mécanique</span>
+            <span>👁 187 vues</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📄</div>
+        <div class="resource-info">
+          <div style="display: flex; gap: 8px; align-items: start; justify-content: space-between;">
+            <div class="resource-title">Distributeur automatique de boissons</div>
+            <span class="resource-type">Devoir</span>
+          </div>
+          <div class="system-badge">⚙️ Distributeur automatique de boissons</div>
+          <div class="resource-meta">
+            <span>🏭 Technologie · ⚙️ Génie mécanique</span>
+            <span>👁 145 vues</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; padding: 16px; color: #64748b;">
+        + 4 autres ressources (toutes avec système technique identifié)
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <!-- ⭐ AI: Systèmes techniques abordés -->
+      <div class="card system-section">
+        <h3>
+          <span style="font-size: 18px;">⚙️</span>
+          Systèmes techniques abordés
+          <span class="ai-badge">AI</span>
+        </h3>
+        <a href="#" class="system-item">
+          <span class="name">DEPALETTISEUR</span>
+          <span class="count">2</span>
+        </a>
+        <a href="#" class="system-item">
+          <span class="name">Poste automatique de tamponnage</span>
+          <span class="count">2</span>
+        </a>
+        <a href="#" class="system-item">
+          <span class="name">MACHINE DE PRODUCTION DU CAFE</span>
+          <span class="count">1</span>
+        </a>
+        <a href="#" class="system-item">
+          <span class="name">UNITE DE TROÇONNAGE AUTOMATIQUE</span>
+          <span class="count">1</span>
+        </a>
+        <a href="#" class="system-item">
+          <span class="name">Distributeur automatique de boissons</span>
+          <span class="count">1</span>
+        </a>
+        <a href="#" class="system-item">
+          <span class="name">Machine de transfert et fabrication</span>
+          <span class="count">1</span>
+        </a>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #fdba74; text-align: center;">
+          <a href="#" style="font-size: 12px; font-weight: 600; color: #9a3412; text-decoration: none;">
+            Voir tous ses cours techniques →
+          </a>
+        </div>
+      </div>
+
+      <!-- ⭐ AI: Sujets populaires -->
+      <div class="card">
+        <h3>
+          🏷️ Sujets populaires
+          <span class="ai-badge">AI</span>
+        </h3>
+        <div class="topic-cloud">
+          <a href="#" class="topic">Moteurs <span class="topic-count">4</span></a>
+          <a href="#" class="topic">Engrenages <span class="topic-count">3</span></a>
+          <a href="#" class="topic">Vérins <span class="topic-count">3</span></a>
+          <a href="#" class="topic">Automatisme <span class="topic-count">2</span></a>
+          <a href="#" class="topic">Hydraulique <span class="topic-count">2</span></a>
+          <a href="#" class="topic">Pneumatique <span class="topic-count">2</span></a>
+          <a href="#" class="topic">Capteurs <span class="topic-count">1</span></a>
+          <a href="#" class="topic">API <span class="topic-count">1</span></a>
+        </div>
+      </div>
+
+      <!-- Distribution par matière -->
+      <div class="card">
+        <h3>📚 Répartition par matière</h3>
+        <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0;">
+          <span>Technologie</span><span style="font-weight: 700;">8 (100%)</span>
+        </div>
+        <div style="height: 8px; background: #f1f5f9; border-radius: 4px; margin-top: 4px;">
+          <div style="height: 100%; width: 100%; background: linear-gradient(90deg, #1e40af, #3b82f6); border-radius: 4px;"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

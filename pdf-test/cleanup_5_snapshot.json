@@ -1,0 +1,77 @@
+{
+  "timestamp": "2026-07-27T11:25:44.462387",
+  "nids": [
+    92,
+    94,
+    15335,
+    15336,
+    15337
+  ],
+  "resources": [
+    {
+      "numericId": "92",
+      "title": "Devoir de Contr\u00f4le N\u00b02 - Math - 3\u00e8me Technique (2025-2026) Mr chaabane mounir",
+      "fileKey": "teacher-library/cmqme0ho00004si0lgal3c943/1782216540660-Devoir_de_Contr_le_N_2_-_Math_-_3_me_Technique__2025-2026__Mr_chaabane_mounir__3-stamped.pdf",
+      "fileUrl": "https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com/teacher-library/cmqme0ho00004si0lgal3c943/1782216540660-Devoir_de_Contr_le_N_2_-_Math_-_3_me_Technique__2025-2026__Mr_chaabane_mounir__3-stamped-TJ8FDksLALIuFpG7wXWEfQZRfwrzX1.pdf",
+      "fileSize": "903396",
+      "teacherId": "",
+      "teacherEmail": "",
+      "createdAt": "2026-06-23 12:10:16.963",
+      "downloads": "1",
+      "views": "34",
+      "favorites": "0"
+    },
+    {
+      "numericId": "94",
+      "title": "S\u00e9rie d'exercices N\u00b03 Avec correction - Math Vecteurs Colin\u00e9aires - 1\u00e8re AS (2025-2026) Mr Arayssi Mohame",
+      "fileKey": "teacher-library/cmqme0ho00004si0lgal3c943/1782222483066-S_rie_d_exercices_N_3_Avec_correction_-_Math_Vecteurs_Colin_aires_-_1_re_AS___2025-2026__Mr_Arayssi_Mohamed_Ali-stamped.pdf",
+      "fileUrl": "https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com/teacher-library/cmqme0ho00004si0lgal3c943/1782222483066-S_rie_d_exercices_N_3_Avec_correction_-_Math_Vecteurs_Colin_aires_-_1_re_AS___2025-2026__Mr_Arayssi_Mohamed_Ali-stamped-2fOwSo087nHhbHoYWDAQ68RPtNM8BP.pdf",
+      "fileSize": "39562",
+      "teacherId": "",
+      "teacherEmail": "",
+      "createdAt": "2026-06-23 13:48:31.106",
+      "downloads": "1",
+      "views": "34",
+      "favorites": "0"
+    },
+    {
+      "numericId": "15335",
+      "title": "Devoir de Synth\u00e8se N\u00b03 - Histoire-G\u00e9ographie - 9\u00e8me ann\u00e9e (Coll\u00e8ge) (2025-2026) - Test enseignant mehdi test",
+      "fileKey": "teacher-library/cmrgcpg7z0000lrqz6gwqz7mq/1784119348948-converted.pdf",
+      "fileUrl": "https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com/teacher-library/cmrgcpg7z0000lrqz6gwqz7mq/1784119348948-converted-2yEuOBPiu4vpUTPs1MdHoN5AsoxMFK.pdf",
+      "fileSize": "770548",
+      "teacherId": "cmrgcpg7z0000lrqz6gwqz7mq",
+      "teacherEmail": "contact@zitounawood.com",
+      "createdAt": "2026-07-15 12:42:45.977",
+      "downloads": "1",
+      "views": "33",
+      "favorites": "0"
+    },
+    {
+      "numericId": "15336",
+      "title": "S\u00e9rie d''exercices N\u00b016 - Suites - Physique - 7\u00e8me ann\u00e9e de base (2025-2026)",
+      "fileKey": "teacher-library/cmrgcpg7z0000lrqz6gwqz7mq/1784119859575-converted.pdf",
+      "fileUrl": "https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com/teacher-library/cmrgcpg7z0000lrqz6gwqz7mq/1784119859575-converted-EWdbgweVBkOzIY525GfY87Yc1uegxv.pdf",
+      "fileSize": "770548",
+      "teacherId": "cmrgcpg7z0000lrqz6gwqz7mq",
+      "teacherEmail": "contact@zitounawood.com",
+      "createdAt": "2026-07-15 12:51:22.985",
+      "downloads": "4",
+      "views": "40",
+      "favorites": "0"
+    },
+    {
+      "numericId": "15337",
+      "title": "Devoir de Contr\u00f4le N\u00b02 - Fran\u00e7ais - 7\u00e8me ann\u00e9e de base (2025-2026)",
+      "fileKey": "teacher-library/cmrgcpg7z0000lrqz6gwqz7mq/1784120292205-converted.pdf",
+      "fileUrl": "https://kmy1h6us8l7bg7bg.public.blob.vercel-storage.com/teacher-library/cmrgcpg7z0000lrqz6gwqz7mq/1784120292205-converted-1PJeAHdROL5WzdSZkoMNUo05gFqPbd.pdf",
+      "fileSize": "770548",
+      "teacherId": "cmrgcpg7z0000lrqz6gwqz7mq",
+      "teacherEmail": "contact@zitounawood.com",
+      "createdAt": "2026-07-15 12:58:20.591",
+      "downloads": "2",
+      "views": "31",
+      "favorites": "0"
+    }
+  ]
+}

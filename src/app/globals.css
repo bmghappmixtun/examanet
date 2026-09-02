@@ -1,0 +1,402 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================================
+   EXAMANET BRAND TOKENS
+   - Primary palette: cyan (devoirat.net inspired) + amber accent
+   - Brand kit overlay: navy/orange/teal from official wordmark (educational,
+     academic, trustworthy)
+   - Both palettes coexist; primary keeps the cyan identity, brand tokens are
+     used for marketing surfaces (home hero, OG image, footer, email signature).
+   ============================================================================ */
+@layer base {
+  :root {
+    /* Brand kit overlay (from /workspace/branding_v4/examanet-brand-kit.zip) */
+    --brand-navy: #06264E;       /* wordmark "exam", body text */
+    --brand-orange: #FA8C31;     /* wordmark "net", CTAs */
+    --brand-teal: #045068;       /* pencil shaft main */
+    --brand-grey: #898889;       /* tagline */
+    --brand-charcoal: #1a1f2e;   /* dark mode bg */
+    --brand-cream: #FDF8F2;      /* cream-on-dark wordmark */
+
+    /* Operational primary (cyan) + accent (amber) */
+    --color-primary: #0EA5E9;
+    --color-primary-dark: #0369A1;
+    --color-accent: #F59E0B;
+    --color-accent-dark: #D97706;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white text-slate-900 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  /* RTL: scope on <html dir="rtl"> (set server-side in layout.tsx),
+     NOT body.rtl (which is never applied). */
+  html[dir="rtl"] body {
+    font-family: 'Cairo', 'Inter', system-ui, sans-serif;
+  }
+  html[dir="rtl"] body {
+    text-align: right;
+  }
+  /* .ltr-only is now also scoped to html[dir="rtl"] for consistency. */
+  html[dir="rtl"] .ltr-only { display: none; }
+
+  /* ============================================================
+     ARABIC TYPOGRAPHY (2026-07-28)
+     - Fustat (Google Font, self-hosted via next/font/local) is used
+       for ARABIC TITLES (h1-h6) and AI SUMMARIES because of its
+       strong character and good legibility at large sizes.
+     - Cairo stays as the default AR body font (more rounded, easier
+       at small sizes / body text).
+     - Both fonts are scoped to RTL context only; Latin text keeps
+       Inter.
+     - Use the utility class `.font-arabic-title` or `.font-arabic-summary`
+       to force Fustat in LTR contexts (e.g. mixed-direction content).
+     ============================================================ */
+  /* Fustat applies to:
+     1. All h1-h6 when the whole page is RTL (html[dir="rtl"])
+     2. Individual h1-h6 with their own dir="rtl" (mixed-content pages
+        where a single title is in Arabic but the page is in FR mode) */
+  html[dir="rtl"] :is(h1, h2, h3, h4, h5, h6),
+  :is(h1, h2, h3, h4, h5, h6)[dir="rtl"] {
+    font-family: var(--font-fustat), 'Cairo', 'Inter', system-ui, sans-serif;
+    letter-spacing: 0;
+  }
+  /* CSS variable + two separate classes. Using a shared variable bypasses
+     the PostCSS/LightningCSS "merge rules" optimizer that was dropping
+     the duplicated font-family from one of the rules. */
+  /* Fustat for AR titles in LTR contexts (utility class).
+     Note: LightningCSS optimizes duplicate font-family declarations,
+     so .font-arabic-summary is inlined in the React component instead. */
+  /* build: 2026-07-28-v2 */
+  .font-arabic-title {
+    font-family: var(--font-fustat), 'Cairo', 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .gradient-text {
+    background: linear-gradient(135deg, #0EA5E9 0%, #0369A1 50%, #0C4A6E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary-500 to-primary-700 text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-0.5 transition-all duration-300 inline-flex items-center justify-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply bg-white border border-slate-200 text-slate-700 font-semibold px-5 py-2.5 rounded-xl hover:border-primary-300 hover:text-primary-600 transition-all duration-300 inline-flex items-center justify-center gap-2;
+  }
+
+  .btn-accent {
+    @apply bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-amber-500/20 hover:shadow-xl hover:shadow-amber-500/30 hover:-translate-y-0.5 transition-all duration-300 inline-flex items-center justify-center gap-2;
+  }
+
+  .card {
+    @apply bg-white border border-slate-100 rounded-2xl transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-1 hover:border-primary-200;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/30;
+  }
+
+  .input {
+    @apply w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:border-primary-400 focus:ring-4 focus:ring-primary-100 outline-none transition;
+  }
+
+  .label {
+    @apply block text-sm font-semibold text-slate-700 mb-1.5;
+  }
+}
+
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #F1F5F9; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+/* PDF.js text layer — make text selectable and look natural */
+.react-pdf__Page__textContent {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.react-pdf__Page__textContent span,
+.react-pdf__Page__textContent span[role="presentation"] {
+  color: transparent !important;
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+.react-pdf__Page__textContent ::selection {
+  background: rgba(14, 165, 233, 0.35) !important;
+  color: transparent !important;
+}
+
+.react-pdf__Page__textContent *::selection {
+  background: rgba(14, 165, 233, 0.35) !important;
+}
+
+/* Hide text layer during loading to prevent flash */
+.react-pdf__Page__textContent.loading {
+  opacity: 0;
+}
+
+/* Annotation layer (links, form fields) */
+.react-pdf__Page__annotations {
+  user-select: none;
+}
+
+.react-pdf__Page__annotations a {
+  color: transparent;
+  cursor: pointer;
+}
+
+.react-pdf__Page__annotations a:hover {
+  background: rgba(14, 165, 233, 0.1);
+}
+
+/* ============================================================================
+   MODERN UPLOADER ANIMATIONS - GPU accelerated, no JS libs needed
+   ============================================================================ */
+
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+.animate-blob {
+  animation: blob 7s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float 2.5s ease-in-out infinite;
+}
+
+@keyframes bounce-once {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.4); }
+  60% { transform: scale(0.9); }
+}
+.animate-bounce-once {
+  animation: bounce-once 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(500px) rotate(720deg);
+    opacity: 0;
+  }
+}
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  animation: confetti-fall 2.2s ease-in forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out;
+}
+
+/* ==========================================================================
+   PDF Viewer — mobile UX
+   ========================================================================== */
+/* Prevent double-tap zoom on iOS / Chrome mobile when tapping toolbar buttons */
+.pdf-viewer-container button,
+.pdf-viewer-toolbar button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* On mobile, ensure tap targets are at least 44x44px (Apple HIG / WCAG) */
+@media (max-width: 640px) {
+  .pdf-viewer-toolbar button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+/* Smooth scrolling on iOS for the PDF container */
+.pdf-viewer-container {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  /* Allow vertical pan (swipe up/down to scroll) + horizontal pan (swipe to next page) */
+  touch-action: pan-x pan-y;
+  /* Prevent text selection from blocking scroll */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Better mobile scroll */
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* But re-enable text selection on the PDF text layer (so user can still copy text) */
+.pdf-viewer-container .react-pdf__Page__textContent {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ============================================================================
+   iOS SAFE AREA UTILITIES
+   For iPhone X+ and other devices with notches/home indicators.
+   Use these instead of plain bottom-* for elements that should respect the
+   home bar (FloatingUploadButton, AnalyticsWithOptOut, sticky action bars).
+   ============================================================================ */
+@layer utilities {
+  .safe-bottom {
+    bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+  .safe-bottom-sm {
+    bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .safe-bottom-lg {
+    bottom: max(2rem, env(safe-area-inset-bottom));
+  }
+  .safe-top {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+  .safe-bottom-pad {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+  .safe-mobile-menu {
+    height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* =============================================================
+   PROGRAMME OFFICIEL — Multilingue (FR/AR)
+   ============================================================= */
+/* Arabic font applied to any RTL content */
+[dir="rtl"],
+[dir="rtl"] * {
+  font-family: var(--font-fustat), 'Noto Sans Arabic', 'Noto Sans', 'Segoe UI Arabic', 'Tahoma', sans-serif !important;
+}
+
+/* Force alignment of Arabic text to the right */
+[dir="rtl"] .ar-text,
+[dir="rtl"] p,
+[dir="rtl"] li,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] div,
+[dir="rtl"] span,
+[dir="rtl"] button {
+  text-align: right;
+}
+
+/* =============================================================
+   PROGRAMME OFFICIEL — Force RTL alignment on all card elements
+   ============================================================= */
+[dir="rtl"] .subject-card,
+[dir="rtl"] .subject-card * {
+  text-align: right !important;
+}
+
+[dir="rtl"] .trimestre-label,
+[dir="rtl"] .themes,
+[dir="rtl"] .theme-block,
+[dir="rtl"] .theme-title,
+[dir="rtl"] .theme-content,
+[dir="rtl"] .section-tag {
+  text-align: right !important;
+}
+
+[dir="rtl"] .trimestre-label {
+  letter-spacing: 0 !important;
+}
+
+/* Use Noto Sans Arabic for ALL text in RTL mode */
+[dir="rtl"] html,
+[dir="rtl"] body,
+[dir="rtl"] div,
+[dir="rtl"] span,
+[dir="rtl"] p,
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] button,
+[dir="rtl"] li,
+[dir="rtl"] ul,
+[dir="rtl"] a {
+  font-family: var(--font-fustat), 'Noto Sans Arabic', 'Segoe UI Arabic', 'Tahoma', sans-serif !important;
+}

@@ -1,0 +1,63 @@
+// Cloudflare Workers config for examanet-poc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "examanet-poc",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "examanet-poc"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  "triggers": {
+    "crons": [
+      "2 * * * *"
+    ]
+  },
+  "r2_buckets": [
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "examanet-poc-cache"
+    },
+    {
+      "binding": "PDFS_BUCKET",
+      "bucket_name": "examanet-pdf-prod"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "5e995bd9ed034fb4bdd507c8754b5844"
+    },
+    {
+      "binding": "NEXT_TAG_CACHE_KV",
+      "id": "f867cda55be745238e021349f594654d"
+    }
+  ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "910a9750df1749fa91983ef079df8b84"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "examanet-db",
+      "database_id": "***REMOVED***",
+      "migrations_dir": "drizzle-migrations"
+    }
+  ]
+}

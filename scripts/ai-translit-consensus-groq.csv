@@ -1,0 +1,50 @@
+numericId,firstName_FR,lastName_FR,firstNameAr,lastNameAr,consensus,openai_first,openai_last,groq_first,groq_last
+400,"Alaeddine","Chaari",,,false,علاء الدين,شعاري,علاء الدين,الشاري
+554,"Nedya","Jabri",,,false,نادية,جبري,نديّة,جابري
+731,"Ouled","Ahmed Mabrouk",,,false,ولد,أحمد مبروك,أولاد,أحمد مبروك
+736,"Arous","Noamen",,,false,عروس,نعمان,عروس,نوامن
+567,"Mouelhi","H",,,false,مويلحي,H,معللي,هـ
+417,"Saadaoui","Nesrya",,,false,سعداوي,نسرية,نسرية,السعداوي
+421,"Alia","Fessi",,,false,عالية,فسي,,
+463,"Park","Park",بارك,بارك,true,بارك,بارك,بارك,بارك
+461,"Marouen","ben taleb",مروان,بن طالب,true,مروان,بن طالب,مروان,بن طالب
+472,"Boukhobza","Ismahen",,,false,بخوبزة,إسماهن,,
+131,"Feiza","Ketteni",,,false,فيزا,كتيني,فيزة,كتيني
+132,"Nosra","Othmani",,,false,نصرة,عثماني,,
+504,"Sadri","boularesse",صدري,بولاريس,true,صدري,بولاريس,صدري,بولاريس
+5,"Hmaoui","Mghirbi Raja",,,false,حمواي,مغيربي رجا,,
+549,"Oumaima","Mzoughi",,,false,أميمة,مزوغي,,
+541,"Emna","Emna",,,false,إمنه,إمنه,,
+529,"Hmaoui","Hmaoui",,,false,حمّوي,حمّوي,,
+539,"Jackson","Jackson",,,false,جاكسون,جاكسون,,
+531,"Fedia","Ridene",,,false,فيديا,ريدين,,
+532,"farhani","nabila",,,false,فرحاني,نبيلة,,
+533,"Lamine","Mohamed Ali",,,false,لامين,محمد علي,,
+534,"Hâtem","nwira",,,false,حاتم,نويرا,,
+551,"Manel","Boualia",,,false,مانيل,بوالية,,
+537,"Mawheb","galby",,,false,موهَب,قلبي,موهب,غالب
+538,"Aicha","Jleli",,,false,عائشة,جللي,,
+160,"Ben Mustapha","English",,,false,بن مصطفي,,,
+164,"Aouania","Koussay",,,false,عوانية,قصي,,
+165,"Mejda","Elmejdi",,,false,مجدة,المجدي,,
+544,"Hubbard","Hubbard",,,false,هوبارد,هوبارد,,
+548,"kouki","islam",,,false,كوكي,إسلام,,
+542,"Bill","Bill",,,false,بيل,بيل,,
+168,"Maweheb","Galby",,,false,مواهب,غالب,,
+169,"Ladhari","Cokri",,,false,لذاري,كوكرى,لذاري,صكري
+618,"chedly","maamouri",,,false,شدلي,معموري,,
+229,"Lasaad","jawedi",,,false,لسعد,جويدي,,
+659,"abbedi","othmen",,,false,عبيدي,عثمان,العبيدي,عثمان
+646,"Aimen","Hammemi",,,false,أيمن,حميمي,,
+649,"Aimen","Hamemi",,,false,أيمن,حميمي,,
+699,"labben","khadouja",,,false,لبن,خدوجة,,
+728,"Elyes","ZGUEB",,,false,إلياس,زغيب,,
+729,"Badii","Bechikh",,,false,بديع,بشيخ,,
+269,"Chieaz","Maad",,,false,شياز,معاد,,
+270,"Mhamed","Kenz Eddine Zarrad",,,false,محمد,كنز الدين زرد,,
+271,"Mohammed","Hedi Annabi",,,false,محمد,هدى عنابي,,
+90,"Faten","Waldi",,,false,فاتن,والدي,,
+194,"Jileni","ben hamouda",,,false,جيليني,بن حمودة,,
+130,"mariem","azizi",,,false,مريم,عزيزي,,
+528,"Mark","Mark",,,false,مارك,مارك,,
+161,"Wahiba","Ben Mustapha",,,false,وهبة,بن مصطفى,,

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Série d'exercices N°1 - Mathématiques complexe - Bac Sciences exp (2023-2024) | Examanet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --primary: #1e40af;
+    --primary-light: #3b82f6;
+    --accent: #06b6d4;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .breadcrumb {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    font-size: 14px;
+  }
+  .breadcrumb-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    color: var(--text-muted);
+  }
+  .breadcrumb a { color: var(--primary); text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+  }
+  .main { min-width: 0; }
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+    transform: translate(50%, -50%);
+  }
+  .header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .header .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+    font-size: 14px;
+  }
+  .header .meta-row span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+  .actions-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #f1f5f9; }
+  .btn-icon {
+    width: 18px; height: 18px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .summary-card {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #bae6fd;
+  }
+  .summary-card h2 { color: var(--primary); }
+  .summary-text {
+    color: #334155;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  .key-points {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+  }
+  .key-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+  }
+  .key-points li::before {
+    content: "→";
+    color: var(--accent);
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .topic {
+    display: inline-block;
+    background: #ede9fe;
+    color: #6d28d9;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid #ddd6fe;
+  }
+  .topic:hover {
+    background: #6d28d9;
+    color: white;
+  }
+  .insight-card {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #fcd34d;
+  }
+  .insight-card h2 { color: #92400e; }
+  .prereq-list { list-style: none; display: grid; gap: 6px; }
+  .prereq-list li { display: flex; gap: 8px; align-items: center; }
+  .prereq-list li::before { content: "✓"; color: var(--success); font-weight: bold; }
+  .file-preview {
+    background: var(--card);
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    margin-top: 16px;
+  }
+  .file-preview-icon { font-size: 48px; margin-bottom: 12px; }
+  .file-preview-text { color: var(--text-muted); }
+  .sidebar { display: flex; flex-direction: column; gap: 16px; }
+  .info-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .info-card h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .label { color: var(--text-muted); font-size: 13px; }
+  .info-row .value { font-weight: 600; font-size: 14px; }
+  .prof-card {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .prof-card:hover { background: #f1f5f9; }
+  .prof-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .prof-name { font-weight: 600; font-size: 14px; }
+  .prof-meta { color: var(--text-muted); font-size: 12px; }
+  .related-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .related-card h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+  .related-item {
+    display: block;
+    padding: 10px 0;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .related-item:last-child { border-bottom: none; }
+  .related-item:hover .related-title { color: var(--primary); }
+  .related-title { font-size: 14px; font-weight: 500; }
+  .related-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .related-empty {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-style: italic;
+    text-align: center;
+    padding: 16px 0;
+  }
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+    .header h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+  <nav class="breadcrumb">
+    <div class="breadcrumb-inner">
+      <a href="/ressources">Ressources</a> ›
+      <a href="/ressources?subject=Math%C3%A9matiques">Mathématiques</a> ›
+      <a href="/ressources?class=4eme-annee-secondaire">4ème année secondaire</a> ›
+      <span>Série N°1 - Math complexe</span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="main">
+      <!-- Header -->
+      <div class="header">
+        <div class="badge">📘 SÉRIE D'EXERCICES N°1</div>
+        <h1>Série d'exercices N°1 - Mathématiques complexe - Bac Sciences exp (2023-2024)</h1>
+        <div class="meta-row">
+          <span>📐 Mathématiques</span>
+          <span>🎓 4ème année secondaire (Bac)</span>
+          <span>🔬 Bac Sciences Expérimentales</span>
+          <span>📅 2023-2024</span>
+          <span>✅ Avec correction</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-bar">
+        <button class="btn btn-primary">
+          <span class="btn-icon">⬇</span>
+          Télécharger le PDF
+        </button>
+        <button class="btn btn-secondary">
+          <span class="btn-icon">👁</span>
+          Aperçu
+        </button>
+        <button class="btn btn-secondary">
+          <span class="btn-icon">⭐</span>
+          Sauvegarder
+        </button>
+        <button class="btn btn-secondary">
+          <span class="btn-icon">🖨</span>
+          Imprimer
+        </button>
+        <button class="btn btn-secondary">
+          <span class="btn-icon">📤</span>
+          Partager
+        </button>
+      </div>
+
+      <!-- Summary -->
+      <div class="card summary-card">
+        <h2>📝 Résumé</h2>
+        <p class="summary-text">
+          Le document présente des exercices de révision en mathématiques pour le baccalauréat,
+          axés sur la géométrie dans le plan complexe. L'exercice n°3 demande de placer des
+          points dans un repère orthonormé, de démontrer qu'un triangle est rectangle et isocèle,
+          et d'étudier une application complexe ainsi que des ensembles d'images.
+        </p>
+      </div>
+
+      <!-- Key Points -->
+      <div class="card">
+        <h2>🎯 Points clés du sujet</h2>
+        <ul class="key-points">
+          <li>Le plan complexe est muni d'un repère orthonormé et les points A, B, C, D ont des affixes spécifiques.</li>
+          <li>Le triangle ABC est démontré comme étant rectangle et isocèle.</li>
+          <li>L'application f associe un point M à un point d'affixe z' et des ensembles E et F sont déterminés.</li>
+        </ul>
+      </div>
+
+      <!-- Topics -->
+      <div class="card">
+        <h2>🏷️ Sujets abordés</h2>
+        <div class="topics">
+          <a href="#" class="topic">Géométrie complexe</a>
+          <a href="#" class="topic">Triangles</a>
+          <a href="#" class="topic">Applications complexes</a>
+          <a href="#" class="topic">Repère orthonormé</a>
+          <a href="#" class="topic">Nombres complexes</a>
+        </div>
+      </div>
+
+      <!-- Prerequisites -->
+      <div class="card">
+        <h2>📚 Prérequis</h2>
+        <ul class="prereq-list">
+          <li>Connaissance des nombres complexes et de leurs propriétés</li>
+          <li>Maîtrise du repère orthonormé et des transformations géométriques</li>
+          <li>Compréhension des applications entre ensembles</li>
+        </ul>
+      </div>
+
+      <!-- File preview -->
+      <div class="card">
+        <h2>📄 Aperçu du document</h2>
+        <div class="file-preview">
+          <div class="file-preview-icon">📑</div>
+          <div class="file-preview-text">
+            <strong>2 pages</strong> · 158 Ko · PDF
+            <br>Aperçu disponible après connexion
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="info-card">
+        <h3>📋 Informations</h3>
+        <div class="info-row">
+          <span class="label">Type</span>
+          <span class="value">Série d'exercices</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Numéro</span>
+          <span class="value">N°1</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Pages</span>
+          <span class="value">2</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Difficulté</span>
+          <span class="value" style="color: var(--warning);">🟡 Moyen</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Avec correction</span>
+          <span class="value" style="color: var(--success);">✓ Oui</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>👨‍🏫 Enseignant</h3>
+        <a href="/profs/fanassi-bechir" class="prof-card">
+          <div class="prof-avatar">FB</div>
+          <div>
+            <div class="prof-name">Mr. FANASSI BECHIR</div>
+            <div class="prof-meta">Voir le profil →</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="info-card">
+        <h3>📊 Statistiques</h3>
+        <div class="info-row">
+          <span class="label">Vues</span>
+          <span class="value">2 847</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Téléchargements</span>
+          <span class="value">1 532</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Sauvegardes</span>
+          <span class="value">218</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Note</span>
+          <span class="value" style="color: var(--warning);">★ 4.7/5</span>
+        </div>
+      </div>
+
+      <div class="related-card">
+        <h3>📚 Ressources similaires</h3>
+        <a href="#" class="related-item">
+          <div class="related-title">Série N°2 - Math complexe</div>
+          <div class="related-meta">Mr. FANASSI BECHIR · 2023-2024</div>
+        </a>
+        <a href="#" class="related-item">
+          <div class="related-title">Devoir de contrôle N°1 - Math complexe</div>
+          <div class="related-meta">4ème Sc Exp · 2023-2024</div>
+        </a>
+        <a href="#" class="related-item">
+          <div class="related-title">Cours - Les nombres complexes</div>
+          <div class="related-meta">4ème année · Mr. FANASSI BECHIR</div>
+        </a>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

@@ -1,0 +1,1818 @@
+{
+  "common": {
+    "appName": "Examanet",
+    "appTagline": "Plateforme pédagogique",
+    "search": "Rechercher",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "view": "Voir",
+    "download": "Télécharger",
+    "share": "Partager",
+    "print": "Imprimer",
+    "favorite": "Favoris",
+    "report": "Signaler",
+    "all": "Tous",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "approve": "Approuver",
+    "reject": "Rejeter",
+    "published": "Publié",
+    "draft": "Brouillon",
+    "pending": "En attente",
+    "rejected": "Rejeté",
+    "active": "Actif",
+    "suspended": "Suspendu",
+    "banned": "Banni",
+    "yes": "Oui",
+    "no": "Non",
+    "or": "ou",
+    "and": "et",
+    "with": "avec",
+    "from": "de",
+    "to": "à",
+    "of": "de",
+    "more": "plus",
+    "less": "moins",
+    "seeMore": "Voir plus",
+    "seeLess": "Voir moins",
+    "showAll": "Tout afficher",
+    "filter": "Filtrer",
+    "sort": "Trier",
+    "newest": "Plus récent",
+    "oldest": "Plus ancien",
+    "popular": "Populaire",
+    "mostViewed": "Plus vus",
+    "mostDownloaded": "Plus téléchargés",
+    "bestRated": "Mieux notés",
+    "filterBy": "Filtrer par",
+    "clearFilters": "Effacer les filtres",
+    "results": "résultats",
+    "noData": "Aucune donnée",
+    "empty": "Vide",
+    "actions": "Actions",
+    "details": "Détails",
+    "moreInfo": "Plus d'informations",
+    "required": "requis",
+    "optional": "optionnel",
+    "name": "Nom",
+    "email": "Email",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "city": "Ville",
+    "country": "Pays",
+    "date": "Date",
+    "createdAt": "Créé le",
+    "updatedAt": "Modifié le",
+    "deletedAt": "Supprimé le",
+    "by": "par",
+    "for": "pour",
+    "page": "Page",
+    "ofPage": "sur",
+    "minutes": "minutes",
+    "hours": "heures",
+    "days": "jours",
+    "ago": "il y a",
+    "home": "Accueil"
+  },
+  "nav": {
+    "home": "Accueil",
+    "resources": "Explorer",
+    "levels": "Niveaux",
+    "subjects": "Matières",
+    "teachers": "Professeurs",
+    "search": "Recherche",
+    "login": "Connexion",
+    "signup": "Inscription",
+    "dashboard": "Tableau de bord",
+    "favorites": "Mes favoris",
+    "notifications": "Notifications",
+    "messages": "Messages",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "logout": "Se déconnecter",
+    "adminPanel": "Administration",
+    "teacherSpace": "Espace enseignant",
+    "menu": "Menu",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "language": "Langue",
+    "theme": "Thème",
+    "college": "Collège",
+    "concours": "Concours 9ème",
+    "myAccount": "Mon compte",
+    "about": "À propos",
+    "contact": "Contact",
+    "bac": "Bac"
+  },
+  "programmeOfficiel": {
+    "title": "Programme Officiel",
+    "common": {
+      "home": "Accueil",
+      "year": "Année"
+    },
+    "hero": {
+      "title": "Programme Éducatif Tunisien",
+      "subtitle": "Ministère de l'Éducation · 2025-2026 · Mise à jour officielle"
+    },
+    "tabs": {
+      "college": "Collège",
+      "lycee": "Lycée",
+      "sources": "Sources"
+    },
+    "badge": {
+      "official": "Programmes officiels",
+      "levels": "niveaux",
+      "subjects": "matières"
+    },
+    "sectionTabs": {
+      "all": "Toutes"
+    },
+    "sources": {
+      "title": "Sources officielles",
+      "subtitle": "Tous les liens pointent vers les sites officiels du Ministère de l'Éducation Tunisien."
+    },
+    "footerLink": "Programme Officiel"
+  },
+  "home": {
+    "heroTitle": "La plateforme pédagogique",
+    "heroHighlight": "#1 en Tunisie",
+    "heroSubtitle": "Cours, devoirs, séries, révisions, sujets bac et corrigés — {strong}100% gratuits{strongEnd} pour les élèves du Primaire, Collège et Lycée.",
+    "searchPlaceholder": "Rechercher un cours, un devoir, une matière...",
+    "exploreResources": "Explorer les ressources",
+    "becomeTeacher": "Devenir enseignant",
+    "stats": {
+      "resources": "Ressources PDF",
+      "teachers": "Enseignants",
+      "students": "Élèves inscrits",
+      "downloads": "Téléchargements"
+    },
+    "sections": {
+      "levelsTitle": "Choisissez votre",
+      "levelsHighlight": "niveau",
+      "levelsSubtitle": "Des ressources adaptées à chaque étape de votre parcours",
+      "subjectsTitle": "Toutes les",
+      "subjectsHighlight": "matières",
+      "subjectsSubtitle": "Plus de 20 matières couvertes par nos enseignants",
+      "popularTitle": "Ressources les plus",
+      "popularHighlight": "consultées",
+      "popularSubtitle": "Les fichiers plébiscités par la communauté",
+      "recentTitle": "Récemment",
+      "recentHighlight": "ajoutés",
+      "recentSubtitle": "Les dernières ressources publiées",
+      "howTitle": "Simple comme",
+      "howHighlight": "1, 2, 3",
+      "howSubtitle": "Trouvez vos ressources en quelques clics",
+      "step1Title": "Parcourez",
+      "step1Desc": "Explorez +10 000 ressources par niveau, matière ou enseignant.",
+      "step2Title": "Téléchargez",
+      "step2Desc": "PDF gratuits, accès direct, sans inscription obligatoire.",
+      "step3Title": "Progressez",
+      "step3Desc": "Évaluez, commentez et sauvegardez vos ressources préférées.",
+      "whyTitle": "Une plateforme",
+      "whyHighlight": "pensée pour vous",
+      "whyFreeTitle": "100% gratuit",
+      "whyFreeDesc": "Toutes les ressources sont accessibles sans aucun frais.",
+      "whyQualityTitle": "Qualité validée",
+      "whyQualityDesc": "Chaque PDF est vérifié par notre équipe avant publication.",
+      "whyMobileTitle": "Mobile-friendly",
+      "whyMobileDesc": "Téléchargements et lecture optimisés sur tous les appareils.",
+      "whyCommunityTitle": "Communauté active",
+      "whyCommunityDesc": "Évaluez, commentez et partagez avec la communauté.",
+      "ctaTeacherTitle": "Partagez votre savoir avec",
+      "ctaTeacherDesc": "Rejoignez +200 enseignants qui partagent déjà leurs ressources avec la communauté Examanet.",
+      "ctaTeacherBtn": "Devenir enseignant",
+      "newsletterTitle": "Restez",
+      "newsletterHighlight": "informé",
+      "newsletterSubtitle": "Recevez chaque semaine les meilleures ressources, nouveaux sujets de bac et corrigés.",
+      "newsletterPlaceholder": "votre.email@exemple.com",
+      "newsletterCta": "S'abonner",
+      "newsletterSuccess": "Merci ! Vous êtes maintenant inscrit."
+    }
+  },
+  "resource": {
+    "type": "Type",
+    "views": "Vues",
+    "downloads": "Téléchargements",
+    "rating": "Note",
+    "comments": "Commentaires",
+    "pages": "Pages",
+    "size": "Taille",
+    "language": "Langue",
+    "trimester": "Trimestre",
+    "year": "Année",
+    "publishedOn": "Publié",
+    "readOnline": "Lire en ligne",
+    "openFullscreen": "Ouvrir en plein écran",
+    "preview": "Aperçu du document",
+    "teacher": "Enseignant",
+    "school": "Établissement",
+    "information": "Informations",
+    "tags": "Tags",
+    "ratingDistribution": "Avis et notation",
+    "giveYourRating": "Donnez votre avis",
+    "submitRating": "Publier mon avis",
+    "similarResources": "Ressources similaires",
+    "commentsTitle": "Commentaires ({count})",
+    "commentPlaceholder": "Partagez votre avis, posez une question...",
+    "postComment": "Publier",
+    "noComments": "Aucun commentaire. Soyez le premier à commenter !",
+    "thanksForRating": "Merci pour votre avis !",
+    "thanksForFavorite": "Ajouté aux favoris",
+    "thanksForComment": "Commentaire publié",
+    "loginToFavorite": "Connectez-vous pour ajouter aux favoris",
+    "loginToRate": "Connectez-vous pour noter",
+    "loginToComment": "Connectez-vous pour commenter",
+    "shareTitle": "Partager cette ressource",
+    "copiedLink": "Lien copié !",
+    "downloadStarted": "Téléchargement lancé",
+    "all": "Toutes les ressources",
+    "noResults": "Aucune ressource trouvée",
+    "noResultsDesc": "Essayez d'élargir vos critères de recherche",
+    "title": "Titre",
+    "description": "Description",
+    "addedToFavorites": "Ajouté aux favoris",
+    "removedFromFavorites": "Retiré des favoris",
+    "free": "Gratuit",
+    "downloadNow": "Télécharger maintenant",
+    "reportResource": "Signaler cette ressource",
+    "reportReason": "Raison du signalement",
+    "reportSubmitted": "Signalement envoyé. Merci !",
+    "filters": "Filtres",
+    "allLevels": "Tous les niveaux",
+    "allSubjects": "Toutes les matières",
+    "allTypes": "Tous les types",
+    "sortBy": "Trier par",
+    "resultCount": "{count} ressource(s)",
+    "noPdf": "Aperçu non disponible"
+  },
+  "auth": {
+    "loginTitle": "Connexion",
+    "loginSubtitle": "Accédez à votre compte Examanet",
+    "signupTitle": "Inscription gratuite",
+    "signupSubtitle": "Rejoignez +30 000 élèves et enseignants",
+    "email": "Adresse email",
+    "password": "Mot de passe",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "forgotPassword": "Mot de passe oublié ?",
+    "forgotPasswordTitle": "Mot de passe oublié ?",
+    "forgotPasswordSubtitle": "Entrez votre email et nous vous enverrons un code pour réinitialiser votre mot de passe.",
+    "sendCode": "Envoyer le code",
+    "backToLogin": "Retour à la connexion",
+    "enterCode": "Entrez le code",
+    "codeSentTo": "Un code a été envoyé à",
+    "codeSent": "Code envoyé !",
+    "resendCode": "Renvoyer le code",
+    "changeEmail": "Changer l'email",
+    "code": "Code reçu",
+    "confirmPassword": "Confirmer le mot de passe",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "passwordReset": "Mot de passe réinitialisé !",
+    "redirectingToLogin": "Redirection vers la page de connexion...",
+    "loginButton": "Se connecter",
+    "signupButton": "Créer mon compte",
+    "noAccount": "Pas de compte ?",
+    "haveAccount": "Déjà inscrit ?",
+    "signupNow": "Inscrivez-vous gratuitement",
+    "loginNow": "Connectez-vous",
+    "youAre": "Vous êtes ?",
+    "student": "👨‍🎓 Élève",
+    "studentDesc": "Je cherche des ressources",
+    "teacher": "👨‍🏫 Enseignant",
+    "teacherDesc": "Je partage mes cours",
+    "acceptTerms": "En vous inscrivant, vous acceptez nos {cgu} et notre {privacy}.",
+    "cgu": "CGU",
+    "privacy": "politique de confidentialité",
+    "invalidCredentials": "Email ou mot de passe incorrect",
+    "accountPending": "Votre compte est en attente d'approbation",
+    "accountBanned": "Votre compte a été suspendu",
+    "orContinueWith": "ou continuer avec",
+    "orLoginWith": "ou connectez-vous avec",
+    "welcomeBack": "Bon retour !",
+    "verifyEmail": "Vérifiez votre email",
+    "verifyEmailSubtitle": "Entrez le code à 6 chiffres envoyé à votre adresse",
+    "verificationCode": "Code de vérification",
+    "youCanPaste": "Vous pouvez coller le code directement",
+    "verify": "Vérifier",
+    "didntReceiveCode": "Vous n'avez pas reçu le code ?",
+    "codeValidFor": "Code valide {minutes} minutes · Max {attempts} tentatives",
+    "pendingApprovalTitle": "En attente d'approbation",
+    "pendingApprovalSubtitle": "Votre email a été vérifié ✓",
+    "emailVerified": "Email vérifié",
+    "emailVerifiedDesc": "Votre adresse email est confirmée",
+    "approvalInProgress": "Approbation en cours",
+    "approvalInProgressDesc": "Notre équipe examine votre demande",
+    "notificationByEmail": "Notification par email",
+    "notificationByEmailDesc": "Vous serez informé dès l'approbation",
+    "usualDelay": "Délai habituel : 24-48h",
+    "usualDelayDesc": "Notre équipe vérifie chaque demande pour garantir la qualité de la communauté.",
+    "backHome": "Retour à l'accueil",
+    "changePassword": "Changer le mot de passe",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "saveChanges": "Enregistrer les modifications",
+    "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "emailChanged": "Email modifié avec succès",
+    "passwordChanged": "Mot de passe modifié avec succès"
+  },
+  "levels": {
+    "hero": {
+      "h1a": "Tous les ",
+      "h1b": "niveaux scolaires",
+      "h1c": "",
+      "subtitle": "Notre plateforme couvre les classes à partir de la 7ème année de base jusqu'au Baccalauréat. Retrouvez les ressources conformes au programme officiel du Ministère de l'Éducation tunisien : cours, devoirs, exercices, corrigés et sujets BAC — organisés par cycle et par classe.",
+      "cycles": "cycles",
+      "classes": "classes",
+      "ressources": "ressources",
+      "gratuit": "100% gratuit"
+    },
+    "richSnippet": "Explorez les ressources pédagogiques gratuites par niveau et classe (Enseignement de base et Enseignement Secondaire).",
+    "parcours": {
+      "title": "Votre parcours de la 7ème au Bac",
+      "subtitle": "Sept années d'apprentissage — chaque étape ouvre de nouvelles matières"
+    },
+    "cta": {
+      "title": "Préparez votre réussite scolaire",
+      "subtitle": "Toutes les ressources sont conformes au programme officiel tunisien et sélectionnées par nos professeurs partenaires.",
+      "cta1": "Toutes les ressources",
+      "cta2": "🇹🇳 Référentiel national"
+    },
+    "college": "Collège",
+    "collegeDesc": "7ème → 9ème année de base",
+    "lycee": "Lycée",
+    "lyceeDesc": "1ère → 3ème année secondaire",
+    "bac": "Bac",
+    "bacDesc": "4ème année (Terminale) — 7 sections",
+    "exploreLevel": "Explorer ce niveau"
+  },
+  "subjects": {
+    "title": "Toutes les matières",
+    "subtitle": "Explorez les ressources par matière",
+    "noResources": "Aucune matière disponible",
+    "resourcesCount": "{count} ressources",
+    "exploreSubject": "Explorer cette matière",
+    "allSubjects": "Toutes les matières",
+    "mathematiques": "Mathématiques",
+    "physique": "Physique",
+    "svt": "Sciences de la Vie et de la Terre",
+    "francais": "Français",
+    "arabe": "Arabe",
+    "anglais": "Anglais",
+    "histoire": "Histoire",
+    "geographie": "Géographie",
+    "philosophie": "Philosophie",
+    "informatique": "Informatique",
+    "islamique": "Éducation Islamique",
+    "economique": "Sciences Économiques",
+    "gestion": "Gestion",
+    "sport": "Éducation Physique",
+    "technique": "Sciences Techniques",
+    "lettres": "Lettres",
+    "math": "Mathématiques",
+    "sciences": "Sciences",
+    "page": {
+      "hero": {
+        "h1a": "Toutes les ",
+        "h1b": "matières",
+        "h1c": "",
+        "subtitle": "Explorez {count} matières du système éducatif tunisien — de la 7ème de base jusqu'au Baccalauréat. Cours, devoirs, séries, sujets BAC et corrigés gratuits, conformes au programme officiel.",
+        "matieres": "matières",
+        "ressources": "ressources",
+        "gratuit": "100% gratuit"
+      },
+      "richSnippet": "${count} matières disponibles : cours, devoirs, exercices et corrigés gratuits pour le système éducatif tunisien.",
+      "richSnippetItem": "${count} ressources en ${name}"
+    }
+  },
+  "teacher": {
+    "title": "Tous nos professeurs",
+    "subtitle": "{count} enseignants certifiés · Cliquez pour voir leurs ressources",
+    "files": "Fichiers",
+    "downloads": "Téléch.",
+    "rating": "Note",
+    "verified": "✓ Vérifié",
+    "follow": "Suivre",
+    "following": "Abonné",
+    "followers": "abonnés",
+    "sendMessage": "Envoyer un message",
+    "messageSent": "Message envoyé !",
+    "noTeachers": "Aucun enseignant pour le moment",
+    "searchPlaceholder": "Rechercher un enseignant...",
+    "allSubjects": "Toutes les matières",
+    "allGovernorates": "Tous les gouvernorats",
+    "dashboard": "Tableau de bord",
+    "myResources": "Mes ressources",
+    "addResource": "Ajouter une ressource",
+    "stats": "Statistiques",
+    "analytics": "Analytique",
+    "profile": "Profil",
+    "total": "Total",
+    "pendingApproval": "En attente d'approbation",
+    "fileUpload": "Fichier PDF",
+    "fileInfo": "PDF uniquement · Max 50 Mo",
+    "title2": "Titre *",
+    "description": "Description",
+    "subject": "Matière *",
+    "class": "Classe *",
+    "section": "Section",
+    "submitForApproval": "Soumettre pour approbation",
+    "pendingNotice": "Votre ressource sera examinée par l'administrateur avant publication.",
+    "typeCours": "Cours",
+    "typeDevoir": "Devoir",
+    "typeExercice": "Exercice",
+    "typeSerie": "Série",
+    "typeBac": "Sujet Bac",
+    "typeCorrige": "Corrigé",
+    "typeResume": "Résumé",
+    "typeFiche": "Fiche",
+    "draft": "Brouillon",
+    "published": "Publié",
+    "rejected": "Rejeté",
+    "views": "Vues",
+    "favorites": "Favoris",
+    "monthly": "Ce mois-ci",
+    "weekly": "Cette semaine",
+    "today": "Aujourd'hui",
+    "avgRating": "Note moyenne",
+    "noResources": "Vous n'avez pas encore de ressources",
+    "certifiedTeachers": "Enseignants certifiés",
+    "topContributors": "Top contributeurs",
+    "noTeacherFound": "Aucun professeur trouvé",
+    "noResultsFor": "Aucun résultat pour \"{q}\". Essayez d'élargir vos critères.",
+    "noResultsForFilters": "Aucun résultat pour ces filtres. Essayez d'enlever certains filtres.",
+    "resetFilters": "Réinitialiser les filtres",
+    "filteredResults": "Professeurs filtrés — Examanet",
+    "allResults": "Tous les enseignants — Examanet",
+    "richSnippet": "Découvrez {count} enseignants tunisiens sur Examanet",
+    "atSchool": "Enseignant à {school}",
+    "onExamanet": "Enseignant sur Examanet",
+    "hero": {
+      "h1A": "Nos",
+      "h1B": "professeurs",
+      "subtitle": "Découvrez {count} enseignants certifiés et accédez à des milliers de ressources pédagogiques gratuites pour tous les niveaux."
+    }
+  },
+  "admin": {
+    "dashboard": "🛡️ Dashboard Administrateur",
+    "users": "Utilisateurs",
+    "teachers": "Enseignants",
+    "resources": "Ressources",
+    "approvals": "Approbations",
+    "moderation": "Modération",
+    "catalog": "Catalogue",
+    "settings": "Paramètres",
+    "pendingTeachers": "{count} enseignant(s) en attente",
+    "pendingResources": "{count} ressource(s) à valider",
+    "searchUserPlaceholder": "Rechercher par nom, email...",
+    "allRoles": "Tous les rôles",
+    "approveConfirm": "Approuvé ! ✅",
+    "rejectConfirm": "Rejeté ❌",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "selected": "{count} sélectionné(s)",
+    "bulkApprove": "Approuver la sélection",
+    "bulkReject": "Rejeter la sélection",
+    "createUser": "Créer un utilisateur",
+    "editUser": "Modifier l'utilisateur",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "Email",
+    "role": "Rôle",
+    "student": "Élève",
+    "teacher": "Enseignant",
+    "admin": "Admin",
+    "status": "Statut",
+    "createdAt": "Inscrit le",
+    "lastLogin": "Dernière connexion",
+    "actions": "Actions",
+    "view": "Voir",
+    "suspend": "Suspendre",
+    "activate": "Activer",
+    "delete": "Supprimer",
+    "transferResources": "Transférer ses ressources",
+    "transferTo": "Transférer à",
+    "selectUser": "Sélectionner un utilisateur",
+    "deleteConfirm": "Confirmer la suppression",
+    "deleteWarning": "Cette action est irréversible.",
+    "keepFiles": "Transférer ses ressources à un autre utilisateur",
+    "hardDelete": "Supprimer définitivement (ressources comprises)",
+    "approveUser": "Approuver cet enseignant",
+    "rejectUser": "Rejeter cet enseignant",
+    "catalogSubjects": "Matières",
+    "catalogLevels": "Niveaux",
+    "catalogClasses": "Classes",
+    "catalogSections": "Sections",
+    "newSubject": "Nouvelle matière",
+    "newLevel": "Nouveau niveau",
+    "newClass": "Nouvelle classe",
+    "newSection": "Nouvelle section",
+    "icon": "Icône",
+    "color": "Couleur",
+    "order": "Ordre d'affichage",
+    "searchPlaceholder": "Filtrer par nom ou slug...",
+    "noResults": "Aucun élément",
+    "cannotDeleteInUse": "Impossible : {count} ressource(s) utilisent cet élément"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez votre compte, sécurité, notifications et préférences",
+    "profile": "Profil",
+    "security": "Sécurité",
+    "teaching": "Enseignement",
+    "notifications": "Notifications",
+    "preferences": "Préférences",
+    "account": "Compte",
+    "administration": "Administration",
+    "profileSection": "Profil",
+    "profileSectionDesc": "Informations visibles sur votre profil public",
+    "avatarUrl": "URL de l'avatar",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "bio": "Bio",
+    "bioMax": "Présentation visible par les élèves (max 1000)",
+    "school": "École",
+    "governorate": "Gouvernorat",
+    "diploma": "Diplôme",
+    "phone": "Téléphone",
+    "website": "Site web",
+    "saveChanges": "Enregistrer les modifications",
+    "securitySection": "Sécurité",
+    "securitySectionDesc": "Mot de passe et authentification",
+    "currentPassword": "Mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer",
+    "changePassword": "Changer le mot de passe",
+    "teachingSubjects": "Matières enseignées",
+    "teachingLevels": "Niveaux",
+    "selectedCount": "{count} sélectionné(s)",
+    "teachingSectionDesc": "Ces informations aideront les élèves à trouver vos ressources",
+    "emailNotifications": "Notifications par email",
+    "inAppNotifications": "Notifications dans l'app",
+    "criticalEmailsAlways": "Les emails critiques (sécurité) sont toujours envoyés.",
+    "language": "Langue",
+    "french": "Français",
+    "arabic": "العربية",
+    "theme": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "auto": "Auto",
+    "accountSection": "Compte",
+    "accountSectionDesc": "Informations sur votre compte",
+    "currentEmail": "Email actuel",
+    "verified": "Vérifié",
+    "memberSince": "Membre depuis",
+    "dangerZone": "Zone dangereuse",
+    "deleteAccount": "Supprimer mon compte",
+    "deleteAccountDesc": "Cette action est irréversible. Vos ressources seront supprimées.",
+    "deleteAccountConfirm": "Tapez SUPPRIMER pour confirmer",
+    "quickLinks": "Liens rapides",
+    "emailChanged": "Email changé",
+    "passwordChanged": "Mot de passe changé",
+    "accountDeleted": "Compte supprimé"
+  },
+  "footer": {
+    "navigation": "Navigation",
+    "resources": "Ressources",
+    "about": "À propos",
+    "type": "Type",
+    "homework": "Devoirs",
+    "bacSubjects": "Sujets Bac",
+    "corrections": "Corrigés",
+    "cgu": "CGU",
+    "aboutUs": "À propos",
+    "contact": "Contact",
+    "joinAsTeacher": "Devenir enseignant",
+    "referentiel": "Référentiel national",
+    "copyright": "© {year} Examanet. Tous droits réservés.",
+    "madeWith": "Conçu avec ❤️ en Tunisie 🇹🇳 pour les élèves tunisiens",
+    "sujetsBac": "Sujets Bac",
+    "corriges": "Corrigés",
+    "pillars": "Parcours",
+    "tools": "Ressources",
+    "concoursSubjects": "Sujets 9ème"
+  },
+  "errors": {
+    "notFound": "Page introuvable",
+    "notFoundDesc": "Cette page n'existe pas ou a été déplacée.",
+    "backHome": "Retour à l'accueil",
+    "noResults": "Aucun résultat",
+    "noResultsDesc": "Essayez d'élargir vos critères de recherche",
+    "serverError": "Erreur serveur",
+    "networkError": "Erreur réseau",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Accès interdit",
+    "tryAgain": "Réessayer"
+  },
+  "messages": {
+    "title": "Messages",
+    "inbox": "Boîte de réception",
+    "noMessages": "Aucun message",
+    "noConversations": "Aucune conversation",
+    "typeMessage": "Tapez votre message...",
+    "send": "Envoyer",
+    "sending": "Envoi...",
+    "messageSent": "Message envoyé",
+    "newMessage": "Nouveau message",
+    "startConversation": "Démarrer une conversation",
+    "with": "avec",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "typing": "écrit...",
+    "read": "Lu",
+    "delivered": "Délivré"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "Aucune notification",
+    "markAllRead": "Tout marquer comme lu",
+    "newFollower": "{name} vous suit désormais",
+    "newMessage": "{name} vous a envoyé un message",
+    "newComment": "{name} a commenté votre ressource",
+    "resourceApproved": "Votre ressource \"{title}\" a été approuvée",
+    "resourceRejected": "Votre ressource \"{title}\" a été rejetée",
+    "teacherApproved": "Votre compte enseignant a été approuvé !",
+    "teacherRejected": "Votre compte enseignant n'a pas été approuvé"
+  },
+  "favorites": {
+    "title": "Mes favoris",
+    "noFavorites": "Aucun favori pour le moment",
+    "noFavoritesDesc": "Explorez les ressources et cliquez sur ❤️ pour les ajouter ici.",
+    "exploreResources": "Explorer les ressources"
+  },
+  "search": {
+    "title": "Recherche",
+    "placeholder": "Rechercher...",
+    "filters": "Filtres",
+    "results": "{count} résultat(s) pour \"{query}\"",
+    "noResults": "Aucun résultat",
+    "noResultsDesc": "Aucun résultat pour \"{query}\". Essayez d'autres mots-clés.",
+    "searchInResources": "Ressources",
+    "searchInTeachers": "Professeurs",
+    "searchInSubjects": "Matières",
+    "recentSearches": "Recherches récentes",
+    "clear": "Effacer"
+  },
+  "concours": {
+    "meta": {
+      "title": "Concours 9ème Tunisie 2027 — {total} Sujets + Corrigés PDF depuis 2001",
+      "description": "🎓 Prépare le concours 9ème année en Tunisie : +{total} sujets et corrigés (math, arabe, français, SVT, physique, anglais) depuis 2001. Méthodologie, calendrier 2027, voies générale & technique. 100% gratuit."
+    },
+    "breadcrumb": {
+      "concours9eme": "Concours 9ème",
+      "sujetsPasses": "Sujets & corrigés"
+    },
+    "hero": {
+      "badge": "مناظرة ختم التعليم الأساسي — Session 2027",
+      "titleMain": "Concours {highlight}9ème année Tunisie",
+      "titleSub": "Sujets & corrigés depuis 2001",
+      "description": "Prépare le {strong}concours national de la 9ème année de base{strongEnd} avec {strongHighlight}+{total} PDF{strongHighlightEnd} collectés depuis 2001 : sujets officiels, corrigés, méthodologie par matière, calendrier 2027 et conseils d'orientation.",
+      "descriptionAr": "تحضير لمناظرة السنة التاسعة أساسي في تونس — مواضيع رسمية + إصلاحات + منهجية",
+      "ctaSujets": "Voir les sujets",
+      "ctaMethodo": "Méthodologie par matière",
+      "stats": {
+        "pdf": "PDF disponibles",
+        "years": "Années (2001-2026)",
+        "corriges": "Corrigés",
+        "matieres": "Matières",
+        "voies": "Voies (Générale/Technique)"
+      }
+    },
+    "about": {
+      "title": "Le concours qui détermine ton avenir scolaire",
+      "p1": "Le {strong}concours de la 9ème année de base{strongEnd} (أو {ar}مناظرة ختم التعليم الأساسي{arEnd}) est l'examen national qui marque la fin de l'{strong}enseignement de base{strongEnd} en Tunisie. Il se déroule chaque année en {strong}juin{strongEnd} et ouvre la porte vers le {strong}lycée{strongEnd}.",
+      "p2": "Depuis {strong}2001{strongEnd}, le Ministère de l'Éducation publie annuellement les sujets du concours. Examanet centralise {strong}25 ans d'archives{strongEnd} pour t'aider à réviser efficacement, avec un accent particulier sur les {strong}sujets et corrigés 2017-2026{strongEnd} (programme actuel).",
+      "p3": "Sur cette page, tu trouveras : {strong}tous les sujets depuis 2001{strongEnd}, les corrigés collectés auprès d'enseignants, une {strong}méthodologie par matière{strongEnd}, le{strong} calendrier 2027{strongEnd} et un comparateur {strong}générale vs technique{strongEnd}.",
+      "features": {
+        "f1t": "25 ans de sujets (2001-2026)",
+        "f1d": "Archives complètes du Ministère de l'Éducation tunisien",
+        "f2t": "{count} corrigés détaillés",
+        "f2d": "Vérifiés par des enseignants tunisiens",
+        "f3t": "Focus 2027 (programme actuel)",
+        "f3d": "Méthodologie alignée sur les épreuves récentes",
+        "f4t": "Bilingue FR + AR",
+        "f4d": "Supports adaptés aux deux langues d'enseignement",
+        "f5t": "Mise à jour continue",
+        "f5d": "Plus de corrigés 2020+ ajoutés régulièrement",
+        "f6t": "100% gratuit",
+        "f6d": "Accès libre, sans inscription, sans publicité"
+      }
+    },
+    "subjects": {
+      "title": "Toutes les matières du concours",
+      "subtitle": "6 matières évaluées chaque année — clique sur la tienne pour voir les sujets et corrigés."
+    },
+    "methodology": {
+      "title": "Méthodologie par matière",
+      "subtitle": "Les {strong}points clés{strongEnd} à maîtriser pour chaque matière.",
+      "subtitleAr": "المنهجية لكل مادة"
+    },
+    "pyramid": {
+      "title": "Pyramide de révision",
+      "subtitle": "Suis cette progression pour {strong}maximiser tes chances de réussite{strongEnd} au concours 9ème 2027.",
+      "levels": {
+        "l1": "1. Relire les cours + formules",
+        "l2": "2. Maîtriser les exercices d'application",
+        "l3": "3. Sujets d'années précédentes (2020-2023)",
+        "l4": "4. Sujets récents (2024-2026) en conditions réelles",
+        "l5": "5. Concours blanc final (mai 2027)"
+      },
+      "tipTitle": "💡 Conseil de pro",
+      "tipDesc": "Ne néglige {strong}aucune matière{strongEnd} : le classement final prend en compte la moyenne générale, pas seulement les notes individuelles. Une note faible en SVT peut être compensée par une note élevée en Math, et vice-versa."
+    },
+    "calendar": {
+      "title": "Les grandes étapes du concours 2027",
+      "subtitle": "Note ces dates dans ton agenda et prépare-toi {strong}3 mois à l'avance{strongEnd}.",
+      "events": {
+        "inscription": {
+          "date": "Mars 2027",
+          "event": "Inscriptions au concours 9ème"
+        },
+        "announcement": {
+          "date": "Avril 2027",
+          "event": "Publication des dates officielles"
+        },
+        "revision": {
+          "date": "Mai 2027",
+          "event": "Révisions intensives + Concours blancs"
+        },
+        "exam": {
+          "date": "Début juin 2027",
+          "event": "Épreuves écrites du concours"
+        },
+        "results": {
+          "date": "Mi-juin 2027",
+          "event": "Publication des résultats"
+        },
+        "orientation": {
+          "date": "Juillet 2027",
+          "event": "Orientation vers le lycée"
+        }
+      }
+    },
+    "comparison": {
+      "title": "Voie générale vs Voie technique",
+      "subtitle": "Comprendre la différence pour {strong}mieux choisir{strongEnd} selon ton projet d'orientation.",
+      "general": {
+        "title": "Voie Générale",
+        "subtitle": "الشعبة العامة",
+        "desc": "Orientée vers les {strong}lycées généraux{strongEnd} et les classes de 1ère année (sciences, lettres, économie). Idéale si tu envisages des études longues.",
+        "epreuvesTitle": "📚 Épreuves"
+      },
+      "technique": {
+        "title": "Voie Technique",
+        "subtitle": "الشعبة التقنية",
+        "desc": "Orientée vers les {strong}lycées techniques{strongEnd} et les formations professionnelles. Parfaite si tu aimes la technologie, l'électronique ou la mécanique.",
+        "epreuvesTitle": "📚 Épreuves"
+      }
+    },
+    "gold": {
+      "badge": "⭐ Corrigés Gold 2020+",
+      "title": "Corrigés des sessions récentes",
+      "subtitle": "Les corrigés des concours {strong}2020 et après{strongEnd} (les plus alignés sur le programme 2027).",
+      "subtitleAr": "إصلاحات الدورات الأخيرة",
+      "placeholderTitle": "Plus de corrigés à venir",
+      "placeholderDesc": "Nous collectons activement des corrigés auprès d'enseignants tunisiens. Voici les prochains que nous prévoyons d'ajouter :",
+      "placeholderSoon": "Bientôt disponible",
+      "corrigeLabel": "Corrigé {subject} {year}",
+      "download": "Télécharger le PDF"
+    },
+    "list": {
+      "title": "Aperçu : Les 10 dernières années",
+      "subtitle": "Pour accéder à {strong}tous les sujets depuis 2001{strongEnd}, rends-toi sur la page dédiée.",
+      "ctaAll": "Voir TOUS les sujets depuis 2001",
+      "yearFiles": "{count} fichier(s) disponible(s)"
+    },
+    "faq": {
+      "title": "Questions fréquentes — Concours 9ème",
+      "items": [
+        {
+          "q": "C'est quoi le concours 9ème année en Tunisie ?",
+          "a": "Le concours de la 9ème année (أو مناظرة ختم التعليم الأساسي) est l'examen national de fin d'enseignement de base. Il a lieu chaque année en juin et couvre 6 matières : Mathématiques, Arabe, Français, SVT, Physique (technique) et Anglais. Les élèves choisissent entre la voie générale et la voie technique."
+        },
+        {
+          "q": "Quand aura lieu le concours 9ème 2027 ?",
+          "a": "Le concours 9ème 2027 devrait se tenir début juin 2027 (les dates exactes sont publiées par le Ministère de l'Éducation en avril). Les inscriptions se font généralement en mars."
+        },
+        {
+          "q": "Quelle est la différence entre voie générale et voie technique ?",
+          "a": "La voie générale couvre l'arabe, le français, les mathématiques, les SVT, l'histoire-géo et l'anglais. La voie technique ajoute la physique technique et l'éducation technologique à la place de certaines matières. Le choix se fait en 9ème année en fonction du projet d'orientation."
+        },
+        {
+          "q": "Comment réviser efficacement le concours 9ème ?",
+          "a": "1) Fais les sujets des 5 dernières années (2022-2026) en conditions réelles (chrono 2h, sans aide). 2) Vérifie tes réponses avec les corrigés. 3) Identifie tes lacunes par matière et refais les exercices ratés. 4) Programme 1h de révision par jour pendant les 3 derniers mois."
+        },
+        {
+          "q": "Les corrigés sont-ils gratuits ?",
+          "a": "Oui, tous les corrigés disponibles sur Examanet sont 100% gratuits. Pour les concours 2020+, certains corrigés sont encore en cours de collecte auprès des enseignants et seront ajoutés progressivement à la page /sujets-passes."
+        },
+        {
+          "q": "D'où viennent les sujets et corrigés ?",
+          "a": "Les sujets sont collectés depuis le portail officiel du Ministère de l'Éducation (9web.edunet.tn) et le site éducatif 9raya.tn. Les corrigés proviennent de sources tunisiennes vérifiées (enseignants contributeurs, sites spécialisés)."
+        },
+        {
+          "q": "Y a-t-il des épreuves pour la voie technique ?",
+          "a": "Oui, depuis 2017 le concours propose la voie technique avec une épreuve de Physique technique. Sur Examanet, tu trouveras les sujets 2017-2026 pour les deux voies (générale et technique)."
+        },
+        {
+          "q": "Que se passe-t-il après le concours 9ème ?",
+          "a": "À l'issue du concours, les élèves sont orientés vers le lycée selon leur moyenne et leur voie. Les meilleurs résultats ouvrent l'accès aux lycées pilotes et aux classes de 1ère année secondaire (générale ou technique)."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Prêt à réussir le concours 9ème 2027 ?",
+      "subtitle": "Télécharge les sujets, suis la méthodologie, et atteins le lycée de tes rêves.",
+      "btn1": "Télécharger les sujets",
+      "btn2": "Toutes les ressources 9ème"
+    },
+    "passes": {
+      "title": "Sujets & Corrigés Concours 9ème Tunisie depuis 2001 ({total} fichiers)",
+      "backToPillar": "Retour au pillar",
+      "statSujets": "{count} sujets",
+      "statCorriges": "{count} corrigés",
+      "statGold": "⭐ {count} corrigés 2020+",
+      "filters": {
+        "search": "Rechercher (ex: math 2024, svt 2020, corrigé...)",
+        "allYears": "Toutes années",
+        "allMatieres": "Toutes matières",
+        "allVoies": "Toutes voies",
+        "allTypes": "Sujets + Corrigés",
+        "sujetsOnly": "Sujets seulement",
+        "corrigesOnly": "Corrigés seulement",
+        "voieGenerale": "🎓 Générale",
+        "voieTechnique": "🔧 Technique"
+      },
+      "actions": {
+        "reset": "Réinitialiser",
+        "expandAll": "Tout ouvrir",
+        "collapseAll": "Tout fermer",
+        "resultCount": "<bold>{count}</bold> résultat(s) sur {total} fichiers",
+        "totalCount": "<bold>{total}</bold> fichiers au total — {years} années couvertes"
+      },
+      "noResults": {
+        "title": "Aucun fichier trouvé",
+        "desc": "Aucun sujet ou corrigé ne correspond à tes critères. Essaie de modifier les filtres.",
+        "btn": "Réinitialiser les filtres"
+      },
+      "cards": {
+        "sujet": "Sujet",
+        "corrige": "Corrigé",
+        "sujetCorrige": "Sujet + Corrigé",
+        "voieGenerale": "Voie générale",
+        "voieTechnique": "Voie technique",
+        "yearHeader": "Concours 9ème {year}"
+      }
+    }
+  },
+  "contact": {
+    "badge": "Nous sommes à votre écoute",
+    "hero": {
+      "title": "Contactez-nous",
+      "subtitle": "Une question, une suggestion, un bug à signaler ? Notre équipe vous répond sous 24-48h."
+    },
+    "info": {
+      "title": "Nos coordonnées",
+      "email": "Email",
+      "phone": "Téléphone",
+      "address": "Adresse",
+      "responseTime": "Temps de réponse",
+      "emailResponse": "Réponse sous 24-48h",
+      "phoneHours": "Lun-Ven 9h-17h",
+      "addressHQ": "Siège social",
+      "workDays": "Jours ouvrés",
+      "responseValue": "24-48 heures",
+      "followUs": "Suivez-nous"
+    },
+    "form": {
+      "title": "Envoyez-nous un message",
+      "errorRequired": "Veuillez remplir tous les champs requis",
+      "errorSend": "Erreur lors de l'envoi",
+      "errorNetwork": "Erreur réseau",
+      "success": "Message envoyé ! Nous vous répondrons rapidement.",
+      "sentTitle": "Message envoyé !",
+      "sentDesc": "Nous vous répondrons sous 24-48h ouvrés.",
+      "name": "Nom complet",
+      "namePlaceholder": "Votre nom",
+      "email": "Email",
+      "emailPlaceholder": "vous@exemple.com",
+      "subject": "Sujet",
+      "chooseSubject": "-- Choisir un sujet --",
+      "subjects": {
+        "question": "Question générale",
+        "bug": "Signaler un bug",
+        "teacher": "Devenir enseignant",
+        "partnership": "Partenariat",
+        "copyright": "Droit d'auteur (DMCA)",
+        "security": "Problème de sécurité",
+        "compromised": "🚨 Compte compromis / activité suspecte",
+        "other": "Autre"
+      },
+      "message": "Message",
+      "messagePlaceholder": "Décrivez votre demande en détail...",
+      "rgpd": "RGPD",
+      "rgpdText": "Vos données ne sont utilisées que pour vous répondre. Voir nos",
+      "sending": "Envoi en cours...",
+      "send": "Envoyer le message"
+    },
+    "faq": {
+      "q1": "Comment signaler un contenu abusif ?",
+      "a1": "Utilisez le bouton \"Signaler\" sur chaque ressource ou le formulaire ci-dessus avec sujet \"bug\".",
+      "q2": "Puis-je devenir enseignant ?",
+      "a2": "Oui ! Créez un compte, sélectionnez \"Enseignant\" lors de l'inscription. Notre équipe examine votre demande sous 24-48h.",
+      "q3": "Vos données sont-elles protégées ?",
+      "a3": "Absolument. Conformément à la loi tunisienne 2004-63. Voir nos CGU pour les détails.",
+      "q4": "Comment supprimer mon compte ?",
+      "a4": "Allez dans Paramètres → Compte → Zone dangereuse → Supprimer mon compte."
+    }
+  },
+  "cgu": {
+    "badge": "Document juridique",
+    "hero": {
+      "title": "Conditions Générales d'Utilisation",
+      "lastUpdate": "Dernière mise à jour : ",
+      "lastUpdateDate": "18 juin 2026",
+      "intro": "Merci de lire attentivement ces conditions avant d'utiliser Examanet."
+    },
+    "sommaire": "Sommaire",
+    "acceptation": {
+      "title": "En utilisant Examanet, vous acceptez ces CGU",
+      "body": "Si vous avez des questions concernant ces conditions, contactez-nous à "
+    },
+    "sections": [
+      {
+        "id": "objet",
+        "title": "1. Objet",
+        "content": "Les présentes Conditions Générales d'Utilisation (ci-après « CGU ») ont pour objet de définir les modalités et conditions d'utilisation de la plateforme Examanet (ci-après « la Plateforme »), éditée par Examanet SARL, ainsi que les droits et obligations des utilisateurs.\n\nExamanet est une plateforme collaborative de partage de ressources pédagogiques destinée aux élèves, enseignants et parents d'élèves du système éducatif tunisien."
+      },
+      {
+        "id": "acceptation",
+        "title": "2. Acceptation des CGU",
+        "content": "L'utilisation de la Plateforme implique l'acceptation pleine et entière des présentes CGU. Tout utilisateur qui ne souhaite pas accepter les présentes CGU doit s'abstenir d'utiliser la Plateforme.\n\nExamanet se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés de toute modification par email et/ou par notification sur la Plateforme."
+      },
+      {
+        "id": "inscription",
+        "title": "3. Inscription et compte utilisateur",
+        "content": "L'accès à certaines fonctionnalités (publication, commentaires, favoris) nécessite la création d'un compte. L'utilisateur s'engage à fournir des informations exactes lors de son inscription et à les mettre à jour.\n\nLe compte est personnel et non transférable. L'utilisateur est responsable de la confidentialité de ses identifiants et de toutes les actions effectuées depuis son compte.\n\nTrois rôles sont disponibles :\n• Élève : accès aux ressources, favoris, commentaires\n• Enseignant : publication de ressources après approbation\n• Administrateur : modération de la plateforme"
+      },
+      {
+        "id": "contenu",
+        "title": "4. Contenu utilisateur",
+        "content": "L'utilisateur est seul responsable du contenu qu'il publie sur la Plateforme (PDF, descriptions, commentaires, images).\n\nEn publiant du contenu, l'utilisateur garantit qu'il en est l'auteur ou qu'il dispose des droits nécessaires, et qu'il ne porte pas atteinte aux droits de tiers (propriété intellectuelle, droit à l'image, etc.).\n\nL'utilisateur cède à Examanet une licence non exclusive, mondiale et gratuite d'utilisation, de reproduction, de modification et de distribution du contenu publié, dans le cadre du fonctionnement de la Plateforme."
+      },
+      {
+        "id": "propriete",
+        "title": "5. Propriété intellectuelle",
+        "content": "L'ensemble du contenu de la Plateforme (textes, images, logos, icônes, ainsi que le code source) est protégé par le droit d'auteur et appartient à Examanet ou à ses partenaires.\n\nLes ressources pédagogiques (PDF) restent la propriété de leurs auteurs. Toute reproduction sans autorisation est interdite, sauf usage personnel et pédagogique.\n\nLes marques, logos et signes distinctifs présents sur la Plateforme sont protégés."
+      },
+      {
+        "id": "utilisation",
+        "title": "6. Utilisation acceptable",
+        "content": "L'utilisateur s'engage à ne pas :\n• Publier de contenu illégal, diffamatoire, injurieux, discriminatoire ou portant atteinte aux bonnes mœurs\n• Usurper l'identité d'un tiers\n• Publier de contenu protégé par des droits d'auteur sans autorisation\n• Tenter de pirater, décompiler ou contourner les mesures de sécurité de la Plateforme\n• Utiliser la Plateforme à des fins commerciales sans autorisation\n• Spam, hameçonnage, ou toute activité malveillante\n• Perturber le fonctionnement normal de la Plateforme"
+      },
+      {
+        "id": "moderation",
+        "title": "7. Modération et sanctions",
+        "content": "Examanet se réserve le droit de modérer, modifier ou supprimer tout contenu ne respectant pas les présentes CGU, sans préavis.\n\nEn cas de violation grave ou répétée, Examanet peut suspendre ou supprimer le compte de l'utilisateur, et le cas échéant engager des poursuites judiciaires.\n\nLes enseignants sont soumis à une approbation préalable par l'équipe d'Examanet avant de pouvoir publier des ressources."
+      },
+      {
+        "id": "donnees",
+        "title": "8. Données personnelles",
+        "content": "Les données personnelles collectées par la Plateforme sont traitées conformément à la loi organique n° 2004-63 du 27 juillet 2004 relative à la protection des données à caractère personnel et à notre Politique de confidentialité.\n\nL'utilisateur dispose d'un droit d'accès, de rectification, d'opposition et de suppression de ses données. Pour exercer ces droits : contact@examanet.com"
+      },
+      {
+        "id": "responsabilite",
+        "title": "9. Limitation de responsabilité",
+        "content": "Examanet s'efforce d'assurer la disponibilité et la qualité de la Plateforme, mais ne peut garantir une accessibilité 100% du temps.\n\nExamanet ne peut être tenu responsable :\n• Des dommages indirects liés à l'utilisation de la Plateforme\n• Du contenu publié par les utilisateurs\n• De l'exactitude pédagogique des ressources (chaque ressource reste sous la responsabilité de son auteur)\n• De l'utilisation détournée des ressources par des tiers"
+      },
+      {
+        "id": "cookies",
+        "title": "10. Cookies",
+        "content": "La Plateforme utilise des cookies et technologies similaires pour :\n• Assurer le bon fonctionnement (session, préférences)\n• Mémoriser la langue de l'utilisateur\n• Analyser l'audience (anonymisé)\n\nL'utilisateur peut gérer ses préférences cookies via les paramètres de son navigateur."
+      },
+      {
+        "id": "modifications",
+        "title": "11. Modification des CGU",
+        "content": "Examanet se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés par email et/ou par notification au moins 30 jours avant l'entrée en vigueur des modifications.\n\nEn cas de refus des nouvelles CGU, l'utilisateur peut résilier son compte à tout moment."
+      },
+      {
+        "id": "droit",
+        "title": "12. Loi applicable et juridiction",
+        "content": "Les présentes CGU sont régies par le droit tunisien.\n\nEn cas de litige, les parties s'efforceront de trouver une solution amiable. À défaut, le litige sera porté devant les tribunaux compétents de Tunis."
+      }
+    ]
+  },
+  "about": {
+    "hero": {
+      "badge": "Fait avec ❤️ en Tunisie 🇹🇳",
+      "titleStart": "Notre mission : ",
+      "titleGradient": "démocratiser l'éducation",
+      "titleEnd": " en Tunisie",
+      "subtitle": "Examanet est née d'un constat simple : trop d'élèves tunisiens n'ont pas accès à des ressources pédagogiques de qualité. Nous avons décidé de changer ça."
+    },
+    "stats": {
+      "resources": {
+        "value": "+10 000",
+        "label": "Ressources"
+      },
+      "teachers": {
+        "value": "+200",
+        "label": "Enseignants"
+      },
+      "students": {
+        "value": "+30 000",
+        "label": "Élèves"
+      },
+      "free": {
+        "value": "100%",
+        "label": "Gratuit"
+      }
+    },
+    "story": {
+      "badge": "NOTRE HISTOIRE",
+      "title": "D'où venons-nous ?",
+      "p1": "Tout a commencé en 2024, lorsque notre fondateur, B.Mehdi, a cherché des ressources de mathématiques pour aider un cousin en 9ème année. Les sites existants (devoirat.net, tunisiecollege.net) étaient vieillissants, pleins de publicités intrusives, et l'expérience utilisateur laissait à désirer.",
+      "p2": "L'idée est née : « Et si on créait une plateforme moderne, gratuite, sans pub, et faite par et pour les Tunisiens ? »",
+      "p3": "En 2025, la première version voyait le jour. Aujourd'hui, Examanet héberge des milliers de ressources partagées par des enseignants passionnés, et est devenue la référence pour des dizaines de milliers d'élèves à travers le pays."
+    },
+    "values": {
+      "badge": "NOS VALEURS",
+      "title": "Ce qui nous anime",
+      "v1": {
+        "title": "Gratuit pour tous",
+        "desc": "Aucune ressource payante, aucun paywall. L'éducation est un droit, pas un privilège."
+      },
+      "v2": {
+        "title": "Qualité avant tout",
+        "desc": "Chaque PDF est vérifié par notre équipe avant publication pour garantir l'excellence."
+      },
+      "v3": {
+        "title": "Communauté",
+        "desc": "Une plateforme collaborative où enseignants et élèves grandissent ensemble."
+      },
+      "v4": {
+        "title": "Accessibilité",
+        "desc": "Mobile-first, performant même avec une connexion lente, disponible partout en Tunisie."
+      },
+      "v5": {
+        "title": "Transparence",
+        "desc": "Pas d'algorithmes cachés, pas de manipulation. Le meilleur contenu remonte naturellement."
+      },
+      "v6": {
+        "title": "Excellence tunisienne",
+        "desc": "Nous mettons en valeur le savoir-faire des enseignants tunisiens et le programme national."
+      }
+    },
+    "milestones": {
+      "badge": "JALONS",
+      "title": "Notre parcours",
+      "m1": {
+        "title": "Lancement du projet",
+        "desc": "Idée de créer une alternative moderne à devoirat.net"
+      },
+      "m2": {
+        "title": "Première version bêta",
+        "desc": "Plateforme lancée avec 16 matières et 50 ressources"
+      },
+      "m3": {
+        "title": "+10 000 ressources",
+        "desc": "Import depuis tunisiecollege.net, communauté grandissante"
+      }
+    },
+    "team": {
+      "badge": "L'ÉQUIPE",
+      "title": "Qui sommes-nous ?",
+      "subtitle": "Une petite équipe passionnée qui croit en l'éducation.",
+      "founder": "Fondateur & CEO",
+      "contactCta": "Nous contacter"
+    },
+    "cta": {
+      "title": "Rejoignez l'aventure",
+      "subtitle": "Vous êtes enseignant ? Partagez vos ressources avec la communauté.\nVous êtes élève ? Explorez des milliers de PDFs gratuits.",
+      "cta1": "Créer un compte gratuit",
+      "cta2": "Devenir enseignant"
+    }
+  },
+  "faq": {
+    "hero": {
+      "title": "Questions fréquentes",
+      "subtitle": "Toutes les réponses à vos questions sur Examanet"
+    },
+    "contact": {
+      "title": "Vous ne trouvez pas votre réponse ?",
+      "subtitle": "Notre équipe est là pour vous aider.",
+      "cta": "Nous contacter →"
+    },
+    "sections": [
+      {
+        "category": "Général",
+        "questions": [
+          {
+            "q": "Qu'est-ce qu'Examanet ?",
+            "a": "Examanet est la plateforme pédagogique gratuite #1 en Tunisie. Elle regroupe des cours, devoirs, séries d'exercices, sujets Bac et corrigés pour les élèves du collège (7ème, 8ème, 9ème année de base) et du lycée (1ère, 2ème, 3ème, 4ème année secondaire / Bac). Toutes les ressources sont 100% gratuites et accessibles sans inscription."
+          },
+          {
+            "q": "Examanet est-il vraiment gratuit ?",
+            "a": "Oui, 100% gratuit. Aucune inscription n'est requise pour consulter, télécharger ou imprimer les ressources. Le site est soutenu par la communauté enseignante tunisienne."
+          },
+          {
+            "q": "Quelles sont les matières disponibles ?",
+            "a": "Mathématiques, Physique, Sciences de la Vie et de la Terre (SVT), Français, Arabe, Anglais, Histoire-Géographie, Philosophie, Économie, Gestion, Informatique, Technologie, et plus encore."
+          },
+          {
+            "q": "Examanet couvre-t-il tout le programme officiel tunisien ?",
+            "a": "Oui, les ressources suivent le programme officiel du Ministère de l'Éducation tunisien pour chaque niveau et chaque matière."
+          }
+        ]
+      },
+      {
+        "category": "Navigation & Téléchargement",
+        "questions": [
+          {
+            "q": "Comment trouver une ressource précise ?",
+            "a": "Utilisez la barre de recherche en haut de la page, ou naviguez par niveau (Enseignement de base / Enseignement Secondaire), par classe (7ème, 8ème, 9ème, etc.) ou par matière. Vous pouvez aussi filtrer par type (Cours, Devoir, Série, Sujet Bac, Corrigé)."
+          },
+          {
+            "q": "Comment télécharger un PDF ?",
+            "a": "Sur la page d'une ressource, cliquez sur le bouton 'Télécharger' (icône en bas de page). Le PDF s'ouvre dans un nouvel onglet — vous pouvez ensuite l'enregistrer ou l'imprimer."
+          },
+          {
+            "q": "Puis-je imprimer les ressources ?",
+            "a": "Oui, toutes les ressources sont au format PDF et peuvent être imprimées librement pour un usage personnel ou scolaire."
+          }
+        ]
+      },
+      {
+        "category": "Niveaux & Classes",
+        "questions": [
+          {
+            "q": "Quelle est la différence entre 'Classe' et 'Niveau' ?",
+            "a": "La 'Classe' indique l'année précise (ex: 9ème année de base, 2ème année secondaire). Le 'Niveau' (ou cycle) indique le type d'enseignement : 'Enseignement de base' pour le collège (7-8-9ème) ou 'Enseignement Secondaire' pour le lycée (1-4ème année, Bac)."
+          },
+          {
+            "q": "Qu'est-ce que l'Enseignement de base ?",
+            "a": "L'Enseignement de base en Tunisie correspond au collège (7ème, 8ème, 9ème année). C'est le premier cycle du secondaire, après l'école primaire."
+          },
+          {
+            "q": "Qu'est-ce que l'Enseignement Secondaire ?",
+            "a": "L'Enseignement Secondaire en Tunisie correspond au lycée (1ère, 2ème, 3ème, 4ème année secondaire). La 4ème année est l'année du Baccalauréat."
+          }
+        ]
+      },
+      {
+        "category": "Enseignants",
+        "questions": [
+          {
+            "q": "Comment devenir contributeur sur Examanet ?",
+            "a": "Si vous êtes enseignant et souhaitez partager vos ressources, créez un compte enseignant gratuit sur examanet.com, puis ajoutez vos cours/devoirs depuis votre espace personnel."
+          },
+          {
+            "q": "Comment contacter un enseignant ?",
+            "a": "Sur la page profil d'un enseignant (cliquez sur son nom), vous pouvez le suivre ou lui envoyer un message privé via la plateforme."
+          }
+        ]
+      },
+      {
+        "category": "Technique",
+        "questions": [
+          {
+            "q": "Le site ne s'affiche pas correctement, que faire ?",
+            "a": "Essayez de vider le cache de votre navigateur (Ctrl+Shift+R ou Cmd+Shift+R). Si le problème persiste, contactez-nous via la page Contact."
+          },
+          {
+            "q": "Puis-je utiliser Examanet sur mobile ?",
+            "a": "Oui, le site est entièrement responsive et optimisé pour mobile et tablette. Vous pouvez aussi l'installer comme une application (PWA) depuis votre navigateur."
+          }
+        ]
+      }
+    ]
+  },
+  "college": {
+    "hero": {
+      "breadcrumb": "Collège (Enseignement de base)",
+      "badge": "Enseignement de base — Cycle 1",
+      "titleStart": "Toutes les ressources du ",
+      "titleGradient": "collège tunisien",
+      "titleEnd": "",
+      "subtitle": "+{count} ressources gratuites pour la 7ème, 8ème et 9ème année de base : cours, devoirs, séries d'exercices, sujets d'examen et corrigés, conformes au programme officiel tunisien.",
+      "cta1": "Voir par classe",
+      "cta2": "Voir par matière"
+    },
+    "stats": {
+      "ressources": "Ressources",
+      "classes": "Classes",
+      "matieres": "Matières",
+      "gratuit": "Gratuit"
+    },
+    "problem": {
+      "title": "Le problème qu'on résout",
+      "p1": "Trop d'élèves tunisiens accèdent à des ressources obsolètes, incomplètes ou payantes. Les photocopies des manuels scolaires, les fichiers PDF dispersés sur des forums, les vidéos YouTube non structurées : tout ça rend la révision inefficace.",
+      "p2": "Examanet centralise tout ce dont tu as besoin pour réussir ton année au collège : des cours bien structurés, des devoirs types, des séries d'exercices avec corrigés, et tout ça 100% gratuit.",
+      "p3": "Que tu sois en 7ème année de base (collège), en 8ème année ou en 9ème année (dernière année avant le lycée), tu trouveras des ressources alignées sur le programme officiel du Ministère de l'Éducation tunisien."
+    },
+    "features": {
+      "f1": {
+        "title": "Conforme au programme officiel",
+        "desc": "Toutes les ressources suivent le programme 2026-2027"
+      },
+      "f2": {
+        "title": "Mis à jour régulièrement",
+        "desc": "De nouvelles ressources ajoutées chaque semaine"
+      },
+      "f3": {
+        "title": "Vérifié par des enseignants",
+        "desc": "Tous les contenus sont validés par des profs tunisiens"
+      },
+      "f4": {
+        "title": "Couvre toutes les matières",
+        "desc": "Math, Physique, SVT, Français, Arabe, Anglais..."
+      },
+      "f5": {
+        "title": "Avec corrigés",
+        "desc": "Vérifie tes réponses avec les corrigés détaillés"
+      },
+      "f6": {
+        "title": "Accès 24/7",
+        "desc": "Révise quand tu veux, sans inscription"
+      }
+    },
+    "classes": {
+      "title": "Choisis ta classe",
+      "subtitle": "Chaque classe a son programme spécifique — clique sur la tienne pour accéder aux ressources.",
+      "desc7": "Première année du collège. Adaptation, nouvelles matières, méthodes de travail.",
+      "desc8": "Approfondissement. Préparation progressive aux évaluations nationales.",
+      "desc9": "Année charnière. Préparation intensive au passage vers le lycée.",
+      "ressources": "ressources",
+      "prepConcours": "🎯 Préparation concours",
+      "concoursTitle": "Concours 9ème 2027"
+    },
+    "subjects": {
+      "title": "Toutes les matières",
+      "subtitle": "Du tronc commun aux options, retrouve toutes les matières du collège."
+    },
+    "top": {
+      "title": "Top ressources du collège",
+      "subtitle": "Les ressources les plus consultées par les élèves et les enseignants tunisiens."
+    },
+    "cta": {
+      "title": "Prêt à réussir ton année ?",
+      "subtitle": "Rejoins les milliers d'élèves tunisiens qui utilisent Examanet pour réviser efficacement.",
+      "cta1": "Explorer les ressources",
+      "cta2": "Toutes les matières"
+    }
+  },
+  "bac": {
+    "hero": {
+      "badge": "🎓 Baccalauréat Tunisien 2025-2026",
+      "titleA": "Tout pour réussir votre",
+      "titleB": "Bac Tunisie",
+      "subtitle": "Sujets, corrigés, méthodologie et ressources gratuites pour les 7 sections du Baccalauréat tunisien. Préparation complète, de la 3ème année jusqu'à la session principale.",
+      "ctaPrimary": "Voir les sujets du Bac",
+      "ctaSecondary": "Calculer ma moyenne",
+      "ctaTertiary": "Méthodologie de révision",
+      "ctaArchives": "Voir les archives"
+    },
+    "stats": {
+      "subjects": "Sujets depuis 1994",
+      "corriges": "Corrigés officiels",
+      "sections": "7 Sections",
+      "matieres": "Matières couvertes",
+      "years": "Années d'archives (2010+)"
+    },
+    "sections": {
+      "title": "Les 7 sections du Baccalauréat",
+      "subtitle": "Choisissez votre section pour accéder aux sujets, corrigés, cours et méthodologie spécifiques à votre filière.",
+      "items": {
+        "math": {
+          "name": "Mathématiques",
+          "desc": "Algèbre, analyse, géométrie. Pour les écoles d'ingénieurs, médecine, classes prépa.",
+          "coef": "Coef 4",
+          "icon": "📐",
+          "color": "blue"
+        },
+        "scExp": {
+          "name": "Sciences Expérimentales",
+          "desc": "SVT, Physique, Chimie. Orientation médecine, pharmacie, biologie, sciences.",
+          "coef": "Coef 4",
+          "icon": "🧪",
+          "color": "emerald"
+        },
+        "scTech": {
+          "name": "Sciences Techniques",
+          "desc": "Technologie, Physique, Mathématiques appliquées. BTS, IUT, ingénierie.",
+          "coef": "Coef 3",
+          "icon": "⚙️",
+          "color": "slate"
+        },
+        "scInfo": {
+          "name": "Sciences Informatiques",
+          "desc": "Algorithmique, développement, systèmes. Écoles d'ingénieurs en informatique.",
+          "coef": "Coef 3",
+          "icon": "💻",
+          "color": "indigo"
+        },
+        "eco": {
+          "name": "Économie et Gestion",
+          "desc": "Économie, Gestion, Mathématiques. Commerce, finance, comptabilité, administration.",
+          "coef": "Coef 3",
+          "icon": "💼",
+          "color": "amber"
+        },
+        "lettres": {
+          "name": "Lettres",
+          "desc": "Philosophie, Arabe, Français, Histoire-Géographie. Droit, sciences humaines, journalisme.",
+          "coef": "Coef 2",
+          "icon": "📚",
+          "color": "purple"
+        },
+        "sport": {
+          "name": "Sport",
+          "desc": "EPS, Biologie, Anatomie. STAPS, métiers du sport, coaching, kinésithérapie.",
+          "coef": "Coef 2",
+          "icon": "⚽",
+          "color": "orange"
+        }
+      }
+    },
+    "matieres": {
+      "title": "Toutes les matières du Bac",
+      "subtitle": "Préparation complète par matière : cours, séries d'exercices, devoirs types et corrigés détaillés.",
+      "items": {
+        "arabe": "Arabe",
+        "francais": "Français",
+        "anglais": "Anglais",
+        "philosophie": "Philosophie",
+        "mathematiques": "Mathématiques",
+        "eps": "EPS",
+        "histoire-geo": "Histoire-Géographie",
+        "informatique": "Informatique",
+        "pensee-islamique": "Pensée Islamique",
+        "physique": "Sciences Physiques",
+        "svt": "Sciences de la Vie et de la Terre",
+        "technique": "Technologie",
+        "algorithme": "Algorithmique & Programmation",
+        "bases-donnees": "Bases de Données",
+        "economie": "Économie",
+        "gestion": "Gestion",
+        "allemand": "Allemand",
+        "espagnol": "Espagnol",
+        "italien": "Italien",
+        "chinois": "Chinois",
+        "russe": "Russe",
+        "portugais": "Portugais",
+        "turc": "Turc",
+        "art": "Art",
+        "musique": "Musique",
+        "theatre": "Théâtre"
+      },
+      "list": [
+        {
+          "slug": "arabe",
+          "cat": "common",
+          "icon": "BookOpen",
+          "coef": 2,
+          "fr": "Arabe",
+          "ar": "العربية"
+        },
+        {
+          "slug": "francais",
+          "cat": "common",
+          "icon": "BookText",
+          "coef": 2,
+          "fr": "Français",
+          "ar": "الفرنسية"
+        },
+        {
+          "slug": "anglais",
+          "cat": "common",
+          "icon": "Globe",
+          "coef": 2,
+          "fr": "Anglais",
+          "ar": "الإنجليزية"
+        },
+        {
+          "slug": "philosophie",
+          "cat": "common",
+          "icon": "Brain",
+          "coef": 2,
+          "fr": "Philosophie",
+          "ar": "الفلسفة"
+        },
+        {
+          "slug": "mathematiques",
+          "cat": "common",
+          "icon": "Calculator",
+          "coef": 1,
+          "fr": "Mathématiques",
+          "ar": "الرياضيات"
+        },
+        {
+          "slug": "eps",
+          "cat": "common",
+          "icon": "Dumbbell",
+          "coef": 1,
+          "fr": "EPS",
+          "ar": "التربية البدنية"
+        },
+        {
+          "slug": "histoire-geo",
+          "cat": "common",
+          "icon": "Landmark",
+          "coef": 1,
+          "fr": "Histoire-Géographie",
+          "ar": "التاريخ والجغرافيا"
+        },
+        {
+          "slug": "informatique",
+          "cat": "common",
+          "icon": "Monitor",
+          "coef": 1,
+          "fr": "Informatique",
+          "ar": "الإعلامية"
+        },
+        {
+          "slug": "pensee-islamique",
+          "cat": "common",
+          "icon": "BookHeart",
+          "coef": 1,
+          "fr": "Pensée Islamique",
+          "ar": "الفكر الإسلامي"
+        },
+        {
+          "slug": "physique",
+          "cat": "sciences",
+          "icon": "Atom",
+          "coef": 3,
+          "fr": "Sciences Physiques",
+          "ar": "العلوم الفيزيائية"
+        },
+        {
+          "slug": "svt",
+          "cat": "sciences",
+          "icon": "Leaf",
+          "coef": 2,
+          "fr": "Sciences de la Vie et de la Terre",
+          "ar": "علوم الحياة والأرض"
+        },
+        {
+          "slug": "technique",
+          "cat": "sciences",
+          "icon": "Cog",
+          "coef": 3,
+          "fr": "Technologie",
+          "ar": "التكنولوجيا"
+        },
+        {
+          "slug": "algorithme",
+          "cat": "sciences",
+          "icon": "Code2",
+          "coef": 3,
+          "fr": "Algorithmique & Programmation",
+          "ar": "الخوارزميات والبرمجة"
+        },
+        {
+          "slug": "bases-donnees",
+          "cat": "sciences",
+          "icon": "Database",
+          "coef": 2,
+          "fr": "Bases de Données",
+          "ar": "قواعد البيانات"
+        },
+        {
+          "slug": "economie",
+          "cat": "sciences",
+          "icon": "TrendingUp",
+          "coef": 3,
+          "fr": "Économie",
+          "ar": "الاقتصاد"
+        },
+        {
+          "slug": "gestion",
+          "cat": "sciences",
+          "icon": "Briefcase",
+          "coef": 3,
+          "fr": "Gestion",
+          "ar": "التصرف"
+        },
+        {
+          "slug": "allemand",
+          "cat": "langues",
+          "icon": "Languages",
+          "coef": 1,
+          "fr": "Allemand",
+          "ar": "الألمانية"
+        },
+        {
+          "slug": "espagnol",
+          "cat": "langues",
+          "icon": "Languages",
+          "coef": 1,
+          "fr": "Espagnol",
+          "ar": "الإسبانية"
+        },
+        {
+          "slug": "italien",
+          "cat": "langues",
+          "icon": "Languages",
+          "coef": 1,
+          "fr": "Italien",
+          "ar": "الإيطالية"
+        },
+        {
+          "slug": "chinois",
+          "cat": "langues",
+          "icon": "Languages",
+          "coef": 1,
+          "fr": "Chinois",
+          "ar": "الصينية"
+        },
+        {
+          "slug": "russe",
+          "cat": "langues",
+          "icon": "Languages",
+          "coef": 1,
+          "fr": "Russe",
+          "ar": "الروسية"
+        },
+        {
+          "slug": "portugais",
+          "cat": "langues",
+          "icon": "Languages",
+          "coef": 1,
+          "fr": "Portugais",
+          "ar": "البرتغالية"
+        },
+        {
+          "slug": "turc",
+          "cat": "langues",
+          "icon": "Languages",
+          "coef": 1,
+          "fr": "Turc",
+          "ar": "التركية"
+        },
+        {
+          "slug": "art",
+          "cat": "arts",
+          "icon": "Palette",
+          "coef": 1,
+          "fr": "Art",
+          "ar": "الفن"
+        },
+        {
+          "slug": "musique",
+          "cat": "arts",
+          "icon": "Music",
+          "coef": 1,
+          "fr": "Musique",
+          "ar": "الموسيقى"
+        },
+        {
+          "slug": "theatre",
+          "cat": "arts",
+          "icon": "Drama",
+          "coef": 1,
+          "fr": "Théâtre",
+          "ar": "المسرح"
+        }
+      ],
+      "categories": {
+        "common": {
+          "fr": "Matières communes",
+          "ar": "المواد المشتركة"
+        },
+        "sciences": {
+          "fr": "Sciences de spécialité",
+          "ar": "علوم الاختصاص"
+        },
+        "langues": {
+          "fr": "Langues vivantes 2",
+          "ar": "اللغات الحية الثانية"
+        },
+        "arts": {
+          "fr": "Options artistiques",
+          "ar": "الخيارات الفنية"
+        }
+      }
+    },
+    "methodo": {
+      "title": "Méthodologie de révision du Bac",
+      "subtitle": "Planning de révision en 4 phases pour maximiser vos chances de réussite.",
+      "step1": {
+        "phase": "Phase 1",
+        "period": "Septembre → Novembre",
+        "title": "Consolider les bases",
+        "desc": "Relire tous les cours + mémoriser les formules clés. Aucun exercice d'examen pour l'instant."
+      },
+      "step2": {
+        "phase": "Phase 2",
+        "period": "Décembre → Février",
+        "title": "Maîtriser les exercices",
+        "desc": "Séries d'exercices par chapitre. 3 à 5 séries par semaine, corrigés inclus."
+      },
+      "step3": {
+        "phase": "Phase 3",
+        "period": "Mars → Avril",
+        "title": "Sujets d'années précédentes",
+        "desc": "Sujets 2020-2025 en conditions réelles. Chronomètre, pas de triche, correction rigoureuse."
+      },
+      "step4": {
+        "phase": "Phase 4",
+        "period": "Mai → Juin",
+        "title": "Bac Blancs intensifs",
+        "desc": "3 à 5 bac blancs en conditions d'examen. Identifier les dernières lacunes, fixer les acquis."
+      }
+    },
+    "sessions": {
+      "title": "Les deux sessions du Bac",
+      "subtitle": "Le Bac tunisien se déroule en deux sessions. Préparez-vous pour les deux !",
+      "principale": {
+        "name": "Session principale",
+        "date": "Juin 2025",
+        "desc": "La première opportunité pour passer l'examen. Les meilleures moyennes sont enregistrées.",
+        "badge": "Principale"
+      },
+      "controle": {
+        "name": "Session de contrôle",
+        "date": "Juillet 2025",
+        "desc": "Pour les candidats ayant une moyenne entre 9 et 10. Une seconde chance pour décrocher le diplôme.",
+        "badge": "Rattrapage"
+      }
+    },
+    "mentions": {
+      "title": "Les mentions au Bac",
+      "subtitle": "Votre moyenne détermine votre mention. Voici les seuils officiels.",
+      "passable": "Passable",
+      "passableRange": "10 — 11.99",
+      "assezBien": "Assez Bien",
+      "assezBienRange": "12 — 13.99",
+      "bien": "Bien",
+      "bienRange": "14 — 15.99",
+      "tresBien": "Très Bien",
+      "tresBienRange": "16 — 17.99",
+      "excellent": "Excellent",
+      "excellentRange": "18 et plus"
+    },
+    "faq": {
+      "title": "Questions fréquentes sur le Bac",
+      "items": [
+        {
+          "q": "Quand a lieu le Bac tunisien 2025 ?",
+          "a": "La session principale du Bac tunisien 2025 se déroule en juin 2025. La session de contrôle (rattrapage) a lieu en juillet 2025 pour les candidats ayant obtenu une moyenne entre 9 et 10 à la session principale."
+        },
+        {
+          "q": "Comment calculer sa moyenne au Bac ?",
+          "a": "La moyenne du Bac se calcule comme suit : (Moyenne annuelle × 25%) + (Moyenne des épreuves × 75%), chaque épreuve étant pondérée par son coefficient. Pour la section Math, les coefficients sont par exemple : Math (4), Physique (4), SVT (1), Français (1), Arabe (1), Anglais (1), Philosophie (1), Sport (1), Informatique (1)."
+        },
+        {
+          "q": "Quelles sont les 7 sections du Bac en Tunisie ?",
+          "a": "Les 7 sections officielles du Bac tunisien sont : Mathématiques, Sciences Expérimentales, Sciences Techniques, Sciences Informatiques, Économie et Gestion, Lettres, et Sport. Chaque section a ses propres coefficients et matières."
+        },
+        {
+          "q": "Comment réussir son Bac en Tunisie ?",
+          "a": "Pour réussir votre Bac : 1) Commencez tôt (dès septembre), 2) Faites des séries d'exercices régulièrement, 3) Entraînez-vous sur les sujets des années précédentes, 4) Passez des Bac Blancs, 5) Visez 14+ pour intégrer une bonne école, 16+ pour médecine."
+        },
+        {
+          "q": "Quel est le taux de réussite au Bac tunisien ?",
+          "a": "Le taux de réussite national au Bac tunisien oscille entre 50% et 55% selon les années. Il varie selon les sections : Mathématiques et Sciences Expérimentales affichent 60-70% de réussite, Lettres et Économie-Gestion entre 45-55%."
+        },
+        {
+          "q": "Quelle est la différence entre la session principale et la session de contrôle ?",
+          "a": "La session principale (juin) est la première opportunité. Les candidats avec une moyenne ≥ 10 sont admis. Ceux entre 9 et 10 passent en session de contrôle (juillet) où ils repassent les matières où ils peuvent améliorer leur note. La meilleure moyenne entre les deux sessions est retenue."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Prêt à décrocher votre Bac ?",
+      "subtitle": "Rejoignez les milliers d'élèves tunisiens qui utilisent Examanet pour réussir leur Baccalauréat.",
+      "cta1": "Commencer la révision",
+      "cta2": "Toutes les ressources Bac"
+    },
+    "archives": {
+      "title": "Archives des sujets et corrigés",
+      "subtitle": "Plus de 15 ans de sujets et corrigés du Bac tunisien, des sessions principale et de contrôle, pour les 7 sections. Téléchargement direct en PDF.",
+      "cta": "Voir toutes les archives",
+      "noFiles": "Les archives seront bientôt disponibles. Nous collectons activement les sujets et corrigés officiels.",
+      "years": "Années",
+      "sections": "Sections",
+      "subjects": "Matières",
+      "files": "Fichiers",
+      "yearsLabel": "Années",
+      "sessionsLabel": "Sessions",
+      "types": "Types",
+      "yearsLabelArchive": "Années d'archive",
+      "principale": "Principale",
+      "controle": "Contrôle",
+      "sujets": "Sujets",
+      "corriges": "Corrigés",
+      "downloadAll": "Télécharger tout",
+      "filterYear": "Filtrer par année",
+      "filterSection": "Filtrer par section",
+      "filterSubject": "Filtrer par matière",
+      "filterSession": "Filtrer par session",
+      "filterType": "Filtrer par type",
+      "resetFilters": "Réinitialiser les filtres",
+      "showing": "Affichage de {count} fichier(s) sur {total}",
+      "noResults": "Aucun fichier ne correspond à vos filtres.",
+      "backToArchives": "Retour aux archives",
+      "sessionPrincipale": "Session principale",
+      "sessionControle": "Session de contrôle",
+      "size": "Taille",
+      "format": "Format",
+      "openPdf": "Ouvrir le PDF",
+      "downloadPdf": "Télécharger",
+      "copyLink": "Copier le lien",
+      "linkCopied": "Lien copié !",
+      "fileNotAvailable": "Fichier non disponible",
+      "filesAvailable": "{count} fichiers disponibles",
+      "section": "Section",
+      "subject": "Matière",
+      "year": "Année",
+      "session": "Session",
+      "type": "Type",
+      "heroTitle": "Archives du Baccalauréat {highlight} Tunisie",
+      "backToPillar": "Retour à la page Bac",
+      "allYears": "Toutes les années",
+      "allSections": "Toutes les sections",
+      "allSubjects": "Toutes les matières",
+      "allSessions": "Toutes les sessions",
+      "allTypes": "Tous les types",
+      "sujetsOnly": "Sujets seulement",
+      "corrigesOnly": "Corrigés seulement",
+      "searchPlaceholder": "Rechercher (matière, section, année...)",
+      "countMatches": "{count} fichiers trouvés",
+      "countTotal": "{total} fichiers sur {years} ans",
+      "reset": "Réinitialiser",
+      "expandAll": "Tout étendre",
+      "collapseAll": "Tout replier",
+      "noResultsTitle": "Aucun résultat",
+      "noResultsDesc": "Essayez de modifier les filtres pour trouver ce que vous cherchez.",
+      "noResultsBtn": "Réinitialiser les filtres",
+      "sujet": "Sujet",
+      "corrige": "Corrigé"
+    }
+  },
+  "landingTeachers": {
+    "breadcrumb": "Espace Enseignants",
+    "badge": "GRATUIT POUR LES ENSEIGNANTS",
+    "title1": "Vos fichiers vous attendent.",
+    "title2": "Des milliers d'élèves aussi.",
+    "subtitle": "Examanet est la plateforme éducative tunisienne qui rassemble vos devoirs, cours et exercices au même endroit — pour qu'ils touchent plus d'élèves, plus vite.",
+    "cta1": "J'ai déjà reçu une invitation",
+    "cta2": "Découvrir les avantages",
+    "ctaFinal": "Activer mon compte gratuit",
+    "stat1": "fichiers publiés",
+    "stat2": "enseignants",
+    "stat3": "élèves tunisiens",
+    "stat4": "gratuit",
+    "whyBadge": "POURQUOI REJOINDRE EXAMANET",
+    "whyTitle": "Six bonnes raisons de nous rejoindre",
+    "whySubtitle": "On a conçu Examanet avec et pour les enseignants tunisiens. Voici ce que votre compte gratuit vous débloque.",
+    "benefit1Title": "Visibilité décuplée",
+    "benefit1Desc": "Vos ressources sont indexées, recherchables et recommandées aux élèves. Chaque téléchargement vous ramène vers votre profil.",
+    "benefit2Title": "Statistiques détaillées",
+    "benefit2Desc": "Vues, téléchargements, notes, commentaires — suivez l'impact réel de votre travail, fichier par fichier.",
+    "benefit3Title": "Modifiez à tout moment",
+    "benefit3Desc": "Corrigez une erreur, mettez à jour une donnée, ajoutez une variante. Le flux d'édition est intégré.",
+    "benefit4Title": "Échanges directs",
+    "benefit4Desc": "Recevez des messages des élèves qui ont des questions sur vos devoirs. Aidez-les, gagnez en réputation.",
+    "benefit5Title": "Bilingue FR + AR",
+    "benefit5Desc": "Toutes vos ressources sont décrites en français ET en arabe. Touchez les élèves des deux systèmes.",
+    "benefit6Title": "Vous restez propriétaire",
+    "benefit6Desc": "Vous gardez tous vos droits. Modifiez ou supprimez vos fichiers à tout moment. Pas de verrou propriétaire.",
+    "howBadge": "COMMENT ÇA MARCHE",
+    "howTitle": "Trois étapes, et c'est parti",
+    "howSubtitle": "De la réception de l'email à vos fichiers en ligne : moins de 2 minutes.",
+    "step1Title": "Recevez votre invitation",
+    "step1Desc": "Si vous avez partagé des fichiers via JotForm ou devoirat.net, vous avez reçu un email avec votre code d'activation.",
+    "step2Title": "Choisissez votre mot de passe",
+    "step2Desc": "Cliquez sur le lien d'activation, définissez votre mot de passe personnel — et c'est tout.",
+    "step3Title": "Retrouvez vos fichiers",
+    "step3Desc": "Tous vos fichiers (PDF + Word d'origine) sont déjà là, prêts à être édités, partagés ou améliorés.",
+    "proofTitle": "Déjà plus de 2 000 enseignants ont fait le pas",
+    "proofSubtitle": "Rejoignez la communauté des enseignants tunisiens qui partagent leurs ressources sur Examanet — gratuitement, sans engagement, en gardant le contrôle.",
+    "noInvite": "Vous n'avez pas reçu d'invitation ?",
+    "contactUs": "Contactez-nous",
+    "faqBadge": "QUESTIONS FRÉQUENTES",
+    "faqTitle": "Questions fréquentes",
+    "faq1Q": "C'est vraiment gratuit ?",
+    "faq1A": "Oui, 100% gratuit pour les enseignants. Aucun frais caché, aucune commission sur vos ressources. Notre modèle économique est basé sur les fonctionnalités premium pour les élèves.",
+    "faq2Q": "Je n'ai pas reçu d'invitation, comment faire ?",
+    "faq2A": "Si vous avez partagé des fichiers via devoirat.net ou JotForm, votre invitation a été envoyée. Vérifiez vos spams. Sinon, contactez-nous via le formulaire de contact et nous vous enverrons une invitation manuelle.",
+    "faq3Q": "Combien de temps ai-je pour activer mon compte ?",
+    "faq3A": "Votre lien d'activation est valide 10 jours. Passé ce délai, vous pouvez demander une nouvelle invitation à l'administrateur.",
+    "faq4Q": "Puis-je supprimer mes fichiers si je change d'avis ?",
+    "faq4A": "Absolument. Vous restez propriétaire de vos contenus. Vous pouvez modifier, archiver ou supprimer n'importe lequel de vos fichiers à tout moment depuis votre tableau de bord.",
+    "faq5Q": "Mes fichiers Word d'origine sont-ils conservés ?",
+    "faq5A": "Oui ! Quand vous activez votre compte, vous retrouvez à la fois les PDF propres et les fichiers Word (.doc/.docx) d'origine que vous aviez partagés.",
+    "footerCtaTitle": "Prêt à récupérer vos fichiers ?",
+    "footerCtaSubtitle": "Activez votre compte en 2 minutes."
+  }
+}
