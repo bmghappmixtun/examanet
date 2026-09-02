@@ -49,6 +49,6 @@ export const config = {
     // - /api/*, /_next/*, /_vercel/* (internals)
     // - Files with extensions (favicon.ico, robots.txt, etc.)
     // - Admin/auth pages that are NOT localized
-    '/((?!api|_next|_vercel|admin|enseignant|connexion|inscription|en-attente|messages|verifier|invitation|mon-compte|.*\\..*).*)',
+    '/((?!api|_next|_vercel|admin|enseignant|connexion|inscription|en-attente|messages|verifier|invitation|mon-compte|mot-de-passe-oublie|.*\\..*).*)',
   ],
 };
