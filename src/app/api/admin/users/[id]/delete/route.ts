@@ -31,6 +31,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const r = await d1Run('DELETE FROM User WHERE id = ?', id);
   if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
   // PERF 2026-09-02: bust user-count-* caches (count changed)
-  await invalidateCache(['user-count-teacher-v1', 'user-count-student-v1', 'user-count-admin-v1']);
+  await invalidateCache('user-counts-v1');
   return NextResponse.json({ success: true });
 }

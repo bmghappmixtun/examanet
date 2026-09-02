@@ -51,27 +51,31 @@ export default async function AdminUsersPage(props: {
 
   const isStatsSort = ['files', 'views', 'downloads', 'favorites', 'comments', 'rating'].includes(sort);
 
-  // Counts (always) — PERF 2026-09-02: cache role counts (60s TTL)
-  // These change only when users are added/removed, so 60s is safe.
+  // Counts (always) — PERF 2026-09-02: batch the 3 role counts into 1 query (Step 9).
+  // Previously: 3 separate queries + 3 cache keys. Now: 1 query + 1 cache key.
   // filteredTotalR is NOT cached because it depends on search params.
-  const [teacherCount, studentCount, adminCount, filteredTotalR] = await Promise.all([
+  const [roleCounts, filteredTotalR] = await Promise.all([
     cachedD1Query({
-      key: 'user-count-teacher-v1',
+      key: 'user-counts-v1',
       ttl: 60,
-      query: () => db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER'").first().catch(() => ({ c: 0 })),
-    }),
-    cachedD1Query({
-      key: 'user-count-student-v1',
-      ttl: 60,
-      query: () => db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'STUDENT'").first().catch(() => ({ c: 0 })),
-    }),
-    cachedD1Query({
-      key: 'user-count-admin-v1',
-      ttl: 60,
-      query: () => db.prepare("SELECT COUNT(*) as c FROM User WHERE role = 'ADMIN'").first().catch(() => ({ c: 0 })),
+      query: () =>
+        db
+          .prepare(
+            [
+              'SELECT',
+              "  (SELECT COUNT(*) FROM User WHERE role = 'TEACHER') AS teacherCount,",
+              "  (SELECT COUNT(*) FROM User WHERE role = 'STUDENT') AS studentCount,",
+              "  (SELECT COUNT(*) FROM User WHERE role = 'ADMIN') AS adminCount",
+            ].join('\n'),
+          )
+          .first()
+          .catch(() => ({ teacherCount: 0, studentCount: 0, adminCount: 0 })),
     }),
     db.prepare(`SELECT COUNT(*) as c FROM User u WHERE ${whereSql}`).bind(...params).first().catch(() => ({ c: 0 })),
   ]);
+  const teacherCount = { c: roleCounts?.teacherCount || 0 };
+  const studentCount = { c: roleCounts?.studentCount || 0 };
+  const adminCount = { c: roleCounts?.adminCount || 0 };
 
   // Build user query
   let usersRaw: any[];

@@ -33,7 +33,7 @@ export async function POST(
     );
     if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
     // PERF 2026-09-02: bust the user-count-* caches (counts changed)
-    await invalidateCache(['user-count-teacher-v1', 'user-count-student-v1', 'user-count-admin-v1']);
+    await invalidateCache('user-counts-v1');
     // TODO: send approval email (worker can't, so client should hit /api/email/...)
     return NextResponse.json({ success: true, status: 'ACTIVE' });
   } else {
@@ -43,7 +43,7 @@ export async function POST(
       Date.now(), id,
     );
     if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
-    await invalidateCache(['user-count-teacher-v1', 'user-count-student-v1', 'user-count-admin-v1']);
+    await invalidateCache('user-counts-v1');
     return NextResponse.json({ success: true, status: 'REJECTED' });
   }
 }

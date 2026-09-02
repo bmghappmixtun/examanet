@@ -28,6 +28,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
   // PERF 2026-09-02: status counts are filtered separately, but still bust cache
   // to be safe (e.g. if admin uses ACTIVE filter and a user was just suspended)
-  await invalidateCache(['user-count-teacher-v1', 'user-count-student-v1', 'user-count-admin-v1']);
+  await invalidateCache('user-counts-v1');
   return NextResponse.json({ success: true, status: newStatus });
 }
