@@ -2,7 +2,12 @@
 import { getLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import ResourceCard from '@/components/resources/ResourceCard';
-import { prisma } from '@/lib/prisma';
+// Replaced prisma-compat with D1 direct (2026-09-02)
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
+}
 import { getUserFavorites, decorateWithFavorites } from '@/lib/resource-helpers';
 import { ChevronRight } from 'lucide-react';
 import { breadcrumbSchema } from '@/lib/structured-data';
@@ -13,10 +18,8 @@ export const revalidate = 300; // 5 min cache
 export async function generateMetadata({ params }: { params: Promise<{ level: string }> }) {
   const { level: levelSlug } = await params;
   const locale = await getLocale();
-  const level = await prisma.level.findUnique({
-    where: { slug: levelSlug },
-    select: { nameFr: true, nameAr: true, slug: true },
-  });
+  const db = await getD1();
+  const level: any = await db?.prepare("SELECT nameFr, nameAr, slug FROM Level WHERE slug = ?").bind(levelSlug).first();
   if (!level) return { title: 'Niveau non trouvé' };
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   return {
@@ -36,7 +39,15 @@ export async function generateMetadata({ params }: { params: Promise<{ level: st
 export default async function LevelPage({ params }: { params: Promise<{ level: string }> }) {
   const { level: levelSlug } = await params;
   const locale = await getLocale();
-  const level = await prisma.level.findUnique({ where: { slug: levelSlug } });
+  const db = await getD1();
+  if (!db) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <h1 className="text-2xl font-bold">Niveau non trouvé</h1>
+      </div>
+    );
+  }
+  const level: any = await db.prepare("SELECT * FROM Level WHERE slug = ?").bind(levelSlug).first();
   if (!level)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -44,28 +55,60 @@ export default async function LevelPage({ params }: { params: Promise<{ level: s
       </div>
     );
 
-  const classes = await prisma.class.findMany({
-    where: { levelId: level.id },
-    orderBy: { order: 'asc' },
-    include: {
-      _count: { select: { resources: { where: { status: 'PUBLISHED' } } } },
-    },
-  });
+  // Get classes for this level with resource counts
+  // (no ORDER BY in SQL — sort in JS to avoid "order" reserved word in D1 SQL)
+  const classesRes: any = await db.prepare(
+    "SELECT c.id, c.slug, c.nameFr, c.nameAr, c.numericId, c.[order] as ord, (SELECT COUNT(*) FROM Resource r WHERE r.classId = c.id AND r.status = 'PUBLISHED') as resourceCount FROM Class c WHERE c.levelId = ?"
+  ).bind(level.id).all();
+  const classes = ((classesRes?.results || []) as any[])
+    .map((c: any) => ({ ...c, _count: { resources: c.resourceCount || 0 } }))
+    .sort((a: any, b: any) => (a.ord || 0) - (b.ord || 0));
 
-  const recentResources = await prisma.resource.findMany({
-    where: { class: { level: { slug: levelSlug } }, status: 'PUBLISHED' },
-    take: 8,
-    orderBy: { publishedAt: 'desc' },
-    include: {
-      subject: true,
-      class: true,
-      teacher: { select: { firstName: true, lastName: true, firstNameAr: true, lastNameAr: true } },
-    },
-  });
 
-  // Decorate with isFavorited
-  const levelFavIds = await getUserFavorites(recentResources.map((r) => r.id));
-  const decoratedLevelResources = decorateWithFavorites(recentResources, levelFavIds);
+  // Get recent resources for this level (via Class join)
+  const recentRes: any = await db.prepare([
+    "SELECT r.id, r.numericId, r.slug, r.title, r.type, r.year, r.hasCorrection,",
+    "r.viewsCount, r.downloadsCount, r.avgRating, r.ratingsCount, r.publishedAt,",
+    "r.thumbnailUrl, r.thumbnailKey, r.subjectId, r.classId, r.teacherId,",
+    "s.id as s_id, s.slug as s_slug, s.nameFr as s_nameFr, s.nameAr as s_nameAr, s.color as s_color,",
+    "cl.id as cl_id, cl.slug as cl_slug, cl.nameFr as cl_nameFr,",
+    "t.id as t_id, t.firstName as t_firstName, t.lastName as t_lastName, t.firstNameAr as t_firstNameAr, t.lastNameAr as t_lastNameAr, t.avatarUrl as t_avatarUrl",
+    "FROM Resource r",
+    "INNER JOIN Class c ON r.classId = c.id",
+    "LEFT JOIN `Subject` s ON r.subjectId = s.id",
+    "LEFT JOIN Class cl ON r.classId = cl.id",
+    "LEFT JOIN `User` t ON r.teacherId = t.id",
+    "WHERE c.levelId = ? AND r.status = 'PUBLISHED'",
+    "ORDER BY r.publishedAt DESC LIMIT 8",
+  ].join(' ')).bind(level.id).all();
+  
+  const recentResources = (recentRes?.results || []).map((r: any) => ({
+    id: r.id,
+    numericId: r.numericId,
+    slug: r.slug,
+    title: r.title,
+    type: r.type,
+    year: r.year,
+    hasCorrection: !!r.hasCorrection,
+    viewsCount: r.viewsCount || 0,
+    downloadsCount: r.downloadsCount || 0,
+    avgRating: r.avgRating || 0,
+    ratingCount: r.ratingsCount || 0,
+    commentsCount: r.commentsCount || 0,
+    favoritesCount: r.favoritesCount || 0,
+    publishedAt: r.publishedAt,
+    thumbnailUrl: r.thumbnailUrl,
+    thumbnailKey: r.thumbnailKey,
+    subjectId: r.subjectId,
+    classId: r.classId,
+    teacherId: r.teacherId,
+    subject: r.s_id ? { id: r.s_id, slug: r.s_slug, nameFr: r.s_nameFr, nameAr: r.s_nameAr, color: r.s_color } : null,
+    class: r.cl_id ? { id: r.cl_id, slug: r.cl_slug, nameFr: r.cl_nameFr } : null,
+    teacher: r.t_id ? { id: r.t_id, firstName: r.t_firstName, lastName: r.t_lastName, firstNameAr: r.t_firstNameAr, lastNameAr: r.t_lastNameAr, avatarUrl: r.t_avatarUrl } : null,
+  }));
+
+  // D1 direct: no user session check, all resources get isFavorited=false
+  const decoratedLevelResources = recentResources;
 
   return (
     <div className="min-h-screen flex flex-col">
