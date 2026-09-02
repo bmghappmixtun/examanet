@@ -89,7 +89,7 @@ const getCachedHomeData = nextCache(
       subjects: (subjectsResult?.results || []),
     };
   },
-  ['home-data-d1-v3'],
+  ['home-data-d1-v4'],
   { revalidate: REVALIDATE_S, tags: ['home', 'resources', 'subjects'] },
 );
 
@@ -148,4 +148,5 @@ async function getHomeData() {
 
 export default async function HomePage() {
   const { popular, recent, subjects, stats } = await getHomeData();
-  retur
+  return <HomeClient popular={popular} recent={recent} subjects={subjects} stats={stats} />;
+}
