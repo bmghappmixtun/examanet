@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { d1First, d1Run } from '@/lib/db-d1';
 import { isValidOrigin } from '@/lib/security';
+import { invalidateCache } from '@/lib/kv-cache';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const me = await getCurrentUser();
@@ -25,5 +26,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const newStatus = target.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED';
   const r = await d1Run('UPDATE User SET status = ?, updatedAt = ? WHERE id = ?', newStatus, Date.now(), id);
   if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+  // PERF 2026-09-02: status counts are filtered separately, but still bust cache
+  // to be safe (e.g. if admin uses ACTIVE filter and a user was just suspended)
+  await invalidateCache(['user-count-teacher-v1', 'user-count-student-v1', 'user-count-admin-v1']);
   return NextResponse.json({ success: true, status: newStatus });
 }

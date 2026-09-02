@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { d1First, d1Run } from '@/lib/db-d1';
 import { isValidOrigin } from '@/lib/security';
+import { invalidateCache } from '@/lib/kv-cache';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const me = await getCurrentUser();
@@ -29,5 +30,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   await d1Run('DELETE FROM Resource WHERE teacherId = ?', id);
   const r = await d1Run('DELETE FROM User WHERE id = ?', id);
   if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+  // PERF 2026-09-02: bust user-count-* caches (count changed)
+  await invalidateCache(['user-count-teacher-v1', 'user-count-student-v1', 'user-count-admin-v1']);
   return NextResponse.json({ success: true });
 }

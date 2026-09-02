@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { d1All, d1First, d1Run } from '@/lib/db-d1';
 import { isValidOrigin } from '@/lib/security';
+import { invalidateCache } from '@/lib/kv-cache';
 
 /**
  * POST /api/admin/teachers/bulk-delete — D1 direct
@@ -86,6 +87,8 @@ export async function POST(req: NextRequest) {
         errors.push(`${t.email}: ${e.message}`);
       }
     }
+    // PERF 2026-09-02: bust user-count-* caches (count changed)
+    await invalidateCache(['user-count-teacher-v1', 'user-count-student-v1', 'user-count-admin-v1']);
     return NextResponse.json({ ok: true, deleted, transferred, deletedFiles, errors });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || 'Internal error' }, { status: 500 });
