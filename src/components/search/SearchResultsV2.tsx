@@ -22,7 +22,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
-import type { SearchResponse, SearchResult } from '@/lib/search-v2';
+import type { SearchResponse, SearchResult } from '@/lib/search-v2-d1';
 
 const TYPE_LABELS: Record<string, string> = {
   COURSE: 'Cours',
