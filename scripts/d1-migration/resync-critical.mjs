@@ -45,35 +45,50 @@ const COLUMNS_MAP = {
     'ipAddress': 'ipAddress',
     'userAgent': 'userAgent',
     'createdAt': 'createdAt',
+    // Note: Neon 'duration' has no D1 equivalent, skipped
   },
   'Download': {
     'id': 'id',
     'resourceId': 'resourceId',
     'userId': 'userId',
     'ipAddress': 'ipAddress',
-    'userAgent': 'userAgent',
+    'userAgent': 'userAgent',  // Neon has this
     'createdAt': 'createdAt',
+    // Note: D1 has 'original' (boolean) not in Neon, defaults to 0
   },
   'ResourceContent': {
     'resourceId': 'resourceId',
-    'text': 'text',  // might be 'text' or 'rawText' depending on schema
-    'textSource': 'textSource',
+    'text': 'fullText',  // Neon 'fullText' → D1 'text'
+    'pages': 'pageCount',  // Neon 'pageCount' → D1 'pages'
     'wordCount': 'wordCount',
-    'extractedAt': 'extractedAt',
+    'charCount': null,  // D1 only, no Neon source
+    'updatedAt': 'extractedAt',  // Neon 'extractedAt' → D1 'updatedAt'
+    // Note: Neon 'extractionMethod', 'extractionDurationMs', 'extractionError' have no D1 equivalent
   },
   'ResourceMetadata': {
     'resourceId': 'resourceId',
-    'headerData': 'headerData',
-    'metaDescription': 'metaDescription',
-    'language': 'language',
+    'systemName': 'systemName',
+    'subject': 'subject',
+    'profNames': 'profNames',  // Neon array → D1 TEXT (JSON)
+    'dossierTechnique': 'dossierTechnique',
+    'shortKeyPoints': 'shortKeyPoints',  // Neon array → D1 TEXT (JSON)
+    'keyPoints': 'keyPoints',  // Neon array → D1 TEXT (JSON)
+    'topics': 'topics',  // Neon array → D1 TEXT (JSON)
+    'level': 'level',
+    'estimatedTimeMinutes': 'estimatedTimeMinutes',
+    'prerequisites': 'prerequisites',  // Neon array → D1 TEXT (JSON)
+    'keyInsights': 'keyInsights',  // Neon array → D1 TEXT (JSON)
+    'exerciseInsights': 'exerciseInsights',  // Neon array → D1 TEXT (JSON)
+    'updatedAt': 'extractedAt',  // Neon 'extractedAt' → D1 'updatedAt'
+    // Note: Neon 'year', 'type', 'subtype', 'difficulty', 'schoolName', 'generalSubject', 'courseSubject' have no D1 equivalent
   },
   'ResourceSummary': {
     'resourceId': 'resourceId',
     'summary': 'summary',
-    'language': 'language',  // might not exist in Neon
-    'model': 'modelUsed',  // Neon uses 'modelUsed', D1 uses 'model'
-    'generatedAt': 'extractedAt',  // Neon uses 'extractedAt' as ISO string, D1 wants Unix ms
-    'updatedAt': 'updatedAt',  // might not exist in Neon
+    'language': 'language',
+    'model': 'modelUsed',
+    'generatedAt': 'extractedAt',
+    'updatedAt': 'updatedAt',
   },
 };
 
@@ -147,6 +162,11 @@ function transformValue(d1Col, neonVal) {
     if (typeof neonVal === 'number') {
       return neonVal > 1e12 ? Math.floor(neonVal / 1000) : neonVal;
     }
+  }
+  
+  // Array → JSON string (D1 stores arrays as TEXT/JSON)
+  if (Array.isArray(neonVal)) {
+    return JSON.stringify(neonVal);
   }
   
   return neonVal;
@@ -246,34 +266,37 @@ async function importTable(client, table) {
     return { table, exported: rows.length, inserted: 0, errors: 0, skipped: skippedFk };
   }
   
-  // Row by row INSERT OR IGNORE
+  // Row by row INSERT OR IGNORE with concurrency
+  const CONCURRENCY = 5;  // 5 parallel API calls
   const start = Date.now();
   let attempted = 0;
   let actualInserted = 0;
   let errors = 0;
   
-  for (let i = 0; i < filtered.length; i++) {
-    const row = filtered[i];
-    attempted++;
+  for (let i = 0; i < filtered.length; i += CONCURRENCY) {
+    const batch = filtered.slice(i, i + CONCURRENCY);
+    const promises = batch.map(async (row) => {
+      try {
+        const sql = buildRowInsertSQL(table, d1Cols, d1ColTypes, mapping, row);
+        if (!sql) return 0;
+        const data = await execD1(sql);
+        return data.result?.[0]?.meta?.changes || 0;
+      } catch (e) {
+        errors++;
+        if (errors <= 3) {
+          log(`  ❌ ${table}: ${e.message.slice(0, 200)}`);
+        }
+        return 0;
+      }
+    });
+    const results = await Promise.all(promises);
+    actualInserted += results.reduce((a, b) => a + b, 0);
+    attempted += batch.length;
     
-    try {
-      const sql = buildRowInsertSQL(table, d1Cols, d1ColTypes, mapping, row);
-      if (!sql) continue;
-      
-      const data = await execD1(sql);
-      const changes = data.result?.[0]?.meta?.changes || 0;
-      actualInserted += changes;
-      
-      if (i % 100 === 0 || i === filtered.length - 1) {
-        const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-        const rate = (attempted / elapsed).toFixed(0);
-        log(`  📊 ${table}: ${attempted.toLocaleString()}/${filtered.length.toLocaleString()} (${actualInserted.toLocaleString()} inserted, ${rate} rows/s)`);
-      }
-    } catch (e) {
-      errors++;
-      if (errors <= 3) {
-        log(`  ❌ ${table} row ${i}: ${e.message.slice(0, 200)}`);
-      }
+    if (i % 100 === 0 || i + CONCURRENCY >= filtered.length) {
+      const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+      const rate = (attempted / elapsed).toFixed(0);
+      log(`  📊 ${table}: ${attempted.toLocaleString()}/${filtered.length.toLocaleString()} (${actualInserted.toLocaleString()} inserted, ${rate} rows/s)`);
     }
   }
   
