@@ -2,7 +2,12 @@ import { Link } from '@/i18n/navigation';
 import NextLink from 'next/link';
 import Image from 'next/image';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+// 2026-09-03: Migrated to D1 direct
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
+}
 import UserMenu from './UserMenu';
 import MobileMenu from './MobileMenu';
 import SearchModalTrigger from '@/components/search/SearchModalTrigger';
@@ -16,10 +21,15 @@ export default async function Header() {
   let unreadNotifications = 0;
   if (user) {
     try {
-      unreadNotifications = await prisma.notification.count({ where: { userId: user.id, isRead: false } });
-    } catch {
-      // prisma-compat on CF Workers is unstable; ignore errors here.
-      // The header doesn't need an exact notification count to render.
+      const db = await getD1();
+      if (db) {
+        const r: any = await db.prepare(
+          "SELECT COUNT(*) as c FROM Notification WHERE userId = ? AND isRead = 0"
+        ).bind(user.id).first();
+        unreadNotifications = r?.c || 0;
+      }
+    } catch (e) {
+      // Notification count is optional; header renders fine without it.
     }
   }
 

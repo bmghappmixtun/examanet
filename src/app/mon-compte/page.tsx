@@ -1,6 +1,11 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+// 2026-09-03: Migrated from prisma-compat to D1 direct
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
+}
 import { getCurrentUser } from '@/lib/auth';
 import { isArabic } from '@/lib/text-utils';
 import { FileText, Heart, MessageCircle, Star } from 'lucide-react';
@@ -27,19 +32,51 @@ export default async function AccountDashboard() {
     redirect('/enseignant/profil');
   }
 
-  const [favoritesCount, commentsCount, ratingsCount, recentActivity] = await Promise.all([
-    prisma.favorite.count({ where: { userId: user.id } }),
-    prisma.comment.count({ where: { userId: user.id } }),
-    prisma.rating.count({ where: { userId: user.id } }),
-    prisma.view.count({ where: { userId: user.id } }),
+  const db = await getD1();
+  if (!db) {
+    return (
+      <div>
+        <h1 className="text-2xl font-extrabold mb-6">Bienvenue, {user.firstName} !</h1>
+        <p>Chargement...</p>
+      </div>
+    );
+  }
+  const [favCount, comCount, ratCount, viewCount] = await Promise.all([
+    db.prepare("SELECT COUNT(*) as c FROM Favorite WHERE userId = ?").bind(user.id).first(),
+    db.prepare("SELECT COUNT(*) as c FROM Comment WHERE userId = ?").bind(user.id).first(),
+    db.prepare("SELECT COUNT(*) as c FROM Rating WHERE userId = ?").bind(user.id).first(),
+    db.prepare("SELECT COUNT(*) as c FROM View WHERE userId = ?").bind(user.id).first(),
   ]);
+  const favoritesCount = (favCount as any)?.c || 0;
+  const commentsCount = (comCount as any)?.c || 0;
+  const ratingsCount = (ratCount as any)?.c || 0;
+  const recentActivity = (viewCount as any)?.c || 0;
 
-  const recentFavorites = await prisma.favorite.findMany({
-    where: { userId: user.id },
-    take: 4,
-    orderBy: { createdAt: 'desc' },
-    include: { resource: { include: { subject: true, class: true } } },
-  });
+  const recentFavsRes: any = await db.prepare([
+    "SELECT f.id, f.createdAt, r.id as r_id, r.numericId, r.slug, r.title, r.thumbnailUrl, r.thumbnailKey,",
+    "s.id as s_id, s.slug as s_slug, s.nameFr as s_nameFr, s.color as s_color,",
+    "c.id as c_id, c.slug as c_slug, c.nameFr as c_nameFr",
+    "FROM Favorite f",
+    "INNER JOIN Resource r ON r.id = f.resourceId",
+    "LEFT JOIN `Subject` s ON s.id = r.subjectId",
+    "LEFT JOIN Class c ON c.id = r.classId",
+    "WHERE f.userId = ?",
+    "ORDER BY f.createdAt DESC LIMIT 4",
+  ].join(' ')).bind(user.id).all();
+  const recentFavorites = ((recentFavsRes?.results || []) as any[]).map((f: any) => ({
+    id: f.id,
+    createdAt: f.createdAt,
+    resource: f.r_id ? {
+      id: f.r_id,
+      numericId: f.numericId,
+      slug: f.slug,
+      title: f.title,
+      thumbnailUrl: f.thumbnailUrl,
+      thumbnailKey: f.thumbnailKey,
+      subject: f.s_id ? { id: f.s_id, slug: f.s_slug, nameFr: f.s_nameFr, color: f.s_color } : null,
+      class: f.c_id ? { id: f.c_id, slug: f.c_slug, nameFr: f.c_nameFr } : null,
+    } : null,
+  }));
 
   return (
     <div>

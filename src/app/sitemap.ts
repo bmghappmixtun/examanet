@@ -2,7 +2,12 @@
 export const dynamic = 'force-dynamic';
 
 import type { MetadataRoute } from 'next';
-import { prisma } from '@/lib/prisma';
+// 2026-09-03: Migrated to D1 direct
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
+}
 
 export const revalidate = 3600; // Refresh every hour
 
@@ -59,46 +64,64 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     withAlternates('/referentiel-national', 0.5, 'monthly'),
   ];
 
+  const db = await getD1();
+  if (!db) return staticPages;
   // Subjects (matieres)
-  const subjects = await prisma.subject.findMany({
-    select: { slug: true },
-  });
+  let subjects: any[] = [];
+  try {
+    const subjectsRes: any = await db.prepare("SELECT slug FROM `Subject`").all();
+    subjects = (subjectsRes?.results || []) as any[];
+  } catch (e) {
+    console.error('[sitemap] Subject query error:', e);
+  }
   const subjectPages: MetadataRoute.Sitemap = subjects.map((s) =>
     withAlternates(`/matieres/${s.slug}`, 0.7, 'weekly')
   );
 
   // Classes (niveaux)
-  const classes = await prisma.class.findMany({
-    select: { slug: true },
-  });
+  let classes: any[] = [];
+  try {
+    const classesRes: any = await db.prepare("SELECT slug FROM `Class`").all();
+    classes = (classesRes?.results || []) as any[];
+  } catch (e) {
+    console.error('[sitemap] Class query error:', e);
+  }
   const classPages: MetadataRoute.Sitemap = classes.map((c) =>
     withAlternates(`/niveaux/${c.slug}`, 0.7, 'weekly')
   );
 
   // Teachers (top 200 by resource count)
-  const teachers = await prisma.user.findMany({
-    where: { uploadedFiles: { some: {} } },
-    select: { id: true, numericId: true, slug: true },
-    take: 200,
-  });
+  let teachers: any[] = [];
+  try {
+    const teachersRes2: any = await db.prepare([
+      "SELECT u.id, u.numericId, u.slug",
+      "FROM User u",
+      "WHERE u.role = 'TEACHER' AND u.status = 'ACTIVE'",
+      "AND EXISTS (SELECT 1 FROM Resource r WHERE r.teacherId = u.id AND r.status = 'PUBLISHED')",
+      "ORDER BY (SELECT COUNT(*) FROM Resource r WHERE r.teacherId = u.id) DESC LIMIT 200",
+    ].join(' ')).all();
+    teachers = (teachersRes2?.results || []) as any[];
+  } catch (e) {
+    console.error('[sitemap] Teacher query error:', e);
+  }
   const teacherPages: MetadataRoute.Sitemap = teachers.map((t) =>
     withAlternates(`/professeurs/${t.numericId}/${t.slug}`, 0.5, 'monthly')
   );
 
   // Resources - ALL published (Google accepts up to 50k per file)
-  // We currently have ~15k so 1 file is enough
-  const resources = await prisma.resource.findMany({
-    where: { status: 'PUBLISHED' },
-    select: {
-      slug: true,
-      numericId: true,
-      updatedAt: true,
-      type: true,
-      viewsCount: true,
-      downloadsCount: true,
-    },
-    orderBy: { updatedAt: 'desc' },
-  });
+  // 2026-09-03: Migrated to D1 direct
+  let resources: any[] = [];
+  try {
+    const resourcesRes2: any = await db.prepare([
+      "SELECT slug, numericId, updatedAt, type, viewsCount, downloadsCount",
+      "FROM Resource",
+      "WHERE status = 'PUBLISHED'",
+      "ORDER BY updatedAt DESC",
+    ].join(' ')).all();
+    resources = (resourcesRes2?.results || []) as any[];
+  } catch (e) {
+    console.error('[sitemap] Resource query error:', e);
+  }
   const resourcePages: MetadataRoute.Sitemap = resources.map((r) => {
     // Quality-based priority: popular resources get higher priority
     const popularity = (r.viewsCount || 0) + (r.downloadsCount || 0) * 3;

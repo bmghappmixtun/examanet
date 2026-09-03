@@ -1,27 +1,24 @@
 // @ts-nocheck
+/**
+ * NextAuth configuration.
+ *
+ * 2026-09-02: Migrated from Prisma+Hyperdrive to D1 direct.
+ * We use JWT sessions (no DB session), so no PrismaAdapter needed.
+ * OAuth providers (Google/Facebook/Apple) are configured but disabled
+ * because they require PrismaAdapter for account linking — for now, only
+ * CredentialsProvider (email/password) is active on D1.
+ */
 import { AuthOptions } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
-import FacebookProvider from 'next-auth/providers/facebook';
-import AppleProvider from 'next-auth/providers/apple';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import { prisma } from '@/lib/prisma';
+
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB;
+}
 
 export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-    }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID || '',
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
-    }),
-    AppleProvider({
-      clientId: process.env.APPLE_CLIENT_ID || '',
-      clientSecret: process.env.APPLE_CLIENT_SECRET || '',
-    }),
     CredentialsProvider({
       name: 'Email',
       credentials: {
@@ -30,7 +27,11 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
+        const db = await getD1();
+        if (!db) return null;
+        const user: any = await db.prepare(
+          "SELECT id, email, firstName, lastName, avatarUrl, passwordHash, status, role FROM User WHERE email = ?"
+        ).bind(credentials.email).first();
         if (!user || !user.passwordHash) return null;
         const bcrypt = await import('bcryptjs');
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
@@ -51,34 +52,17 @@ export const authOptions: AuthOptions = {
   },
   session: { strategy: 'jwt' },
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider && account.provider !== 'credentials') {
-        const existing = await prisma.user.findUnique({ where: { email: user.email! } });
-        if (!existing) {
-          await prisma.user.create({
-            data: {
-              email: user.email!,
-              firstName: user.name?.split(' ')[0] || null,
-              lastName: user.name?.split(' ').slice(1).join(' ') || null,
-              avatarUrl: user.image || null,
-              role: 'STUDENT',
-              status: 'ACTIVE',
-              emailVerifiedAt: new Date(),
-              oauthProvider: account.provider,
-              oauthId: account.providerAccountId,
-              slug: '', // auto-filled by Prisma middleware
-            },
-          });
-        }
-      }
-      return true;
-    },
     async jwt({ token, user }) {
-      if (user) {
-        const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.role = dbUser.role;
+      if (user?.email) {
+        const db = await getD1();
+        if (db) {
+          const dbUser: any = await db.prepare(
+            "SELECT id, role FROM User WHERE email = ?"
+          ).bind(user.email).first();
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role;
+          }
         }
       }
       return token;

@@ -1,7 +1,6 @@
 // @ts-nocheck
 import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
-import { prisma } from '@/lib/prisma';
 import { itemListSchema } from '@/lib/structured-data';
 import { getTranslations, getLocale } from 'next-intl/server';
 import {
