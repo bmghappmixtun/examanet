@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { getCurrentUser } from './auth';
-import { prisma } from './prisma';
+import { db } from './d1-admin';
 
 /**
  * Get the set of resource IDs that the current user has favorited.
@@ -9,7 +9,7 @@ import { prisma } from './prisma';
 export async function getUserFavorites(resourceIds: string[]): Promise<Set<string>> {
   const user = await getCurrentUser();
   if (!user || resourceIds.length === 0) return new Set();
-  const favs = await prisma.favorite.findMany({
+  const favs = await db.favorite.findMany({
     where: { userId: user.id, resourceId: { in: resourceIds } },
     select: { resourceId: true },
   });

@@ -9,7 +9,7 @@ unhandled errors that need attention.
  */
 
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -17,7 +17,7 @@ export const runtime = 'nodejs';
 export async function GET() {
   try {
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const recent = await prisma.errorLog.findMany({
+    const recent = await db.errorLog.findMany({
       where: { createdAt: { gte: cutoff } },
       orderBy: { createdAt: 'desc' },
       take: 20,
@@ -33,7 +33,7 @@ export async function GET() {
         severity: e.severity,
         source: e.source,
         msg: e.message.slice(0, 120),
-        time: e.createdAt.toISOString(),
+        time: typeof e.createdAt === 'number' ? new Date(e.createdAt).toISOString() : e.createdAt,
       })),
       nextSteps: recent.length > 0
         ? 'Check /admin/erreurs on Examanet for full details. View error.stack for debugging.'

@@ -15,7 +15,7 @@
  *   - Resource.description (short French summary, optional)
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -61,7 +61,7 @@ async function applyOne(item: SingleUpdate) {
   }
 
   // Check resource exists
-  const resource = await prisma.resource.findUnique({
+  const resource = await db.resource.findUnique({
     where: { id: resourceId },
     select: { id: true, language: true, title: true },
   });
@@ -79,7 +79,7 @@ async function applyOne(item: SingleUpdate) {
 
   if (hasGS || hasKP || hasSKP || hasTopics) {
     // Fetch current metadata to merge correctly
-    const current = await prisma.resourceMetadata.findUnique({
+    const current = await db.resourceMetadata.findUnique({
       where: { resourceId },
       select: { generalSubject: true, keyPoints: true, shortKeyPoints: true, topics: true, modelUsed: true },
     });
@@ -92,7 +92,7 @@ async function applyOne(item: SingleUpdate) {
       modelUsed: modelUsed || current?.modelUsed || 'mavis-manual',
     };
 
-    await prisma.resourceMetadata.upsert({
+    await db.resourceMetadata.upsert({
       where: { resourceId },
       create: { resourceId, ...merged },
       update: { ...merged, extractedAt: new Date() },
@@ -104,7 +104,7 @@ async function applyOne(item: SingleUpdate) {
   if ((summary && summary.trim().length > 0) || (summaryOriginal && summaryOriginal.trim().length > 0)) {
     const frSummary = (summary && summary.trim().length > 0) ? summary.trim().slice(0, 5000) : null;
     const origSummary = (summaryOriginal && summaryOriginal.trim().length > 0) ? summaryOriginal.trim().slice(0, 5000) : null;
-    await prisma.resourceSummary.upsert({
+    await db.resourceSummary.upsert({
       where: { resourceId },
       create: {
         resourceId,
@@ -136,7 +136,7 @@ async function applyOne(item: SingleUpdate) {
     tagsForUI = sanitizeArray(shortKeyPoints, 10);
   } else {
     // Read current shortKeyPoints from DB
-    const cur = await prisma.resourceMetadata.findUnique({
+    const cur = await db.resourceMetadata.findUnique({
       where: { resourceId },
       select: { shortKeyPoints: true, topics: true },
     });
@@ -148,7 +148,7 @@ async function applyOne(item: SingleUpdate) {
     updateData.tags = tagsForUI.join(',');
   }
   if (Object.keys(updateData).length > 0) {
-    await prisma.resource.update({
+    await db.resource.update({
       where: { id: resourceId },
       data: updateData,
     });
@@ -230,7 +230,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Param ids=id1,id2,... requis' }, { status: 400 });
   }
 
-  const metadata = await prisma.resourceMetadata.findMany({
+  const metadata = await db.resourceMetadata.findMany({
     where: { resourceId: { in: ids } },
     select: {
       resourceId: true,
@@ -243,7 +243,7 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const summaries = await prisma.resourceSummary.findMany({
+  const summaries = await db.resourceSummary.findMany({
     where: { resourceId: { in: ids } },
     select: { resourceId: true, summary: true, modelUsed: true, extractedAt: true },
   });

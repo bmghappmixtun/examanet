@@ -7,7 +7,7 @@
  * This is an INTERNAL endpoint, not for public consumption.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { readFile, unlink } from 'fs/promises';
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if extraction already done
-  const existing = await prisma.resourceContent.findUnique({ where: { resourceId } });
+  const existing = await db.resourceContent.findUnique({ where: { resourceId } });
   if (existing?.fullText && !body.force) {
     return NextResponse.json({ status: 'already_done', resourceId });
   }
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
 
     // 4. Update ResourceContent
     const wordCount = (text.match(/\b\w+\b/g) || []).length;
-    await prisma.resourceContent.upsert({
+    await db.resourceContent.upsert({
       where: { resourceId },
       create: {
         resourceId,
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
 
     // 5. Update Resource.pageCount
     if (pageCount && pageCount > 0) {
-      await prisma.resource.update({
+      await db.resource.update({
         where: { id: resourceId },
         data: { pageCount },
       });
@@ -208,7 +208,7 @@ TEXTE: ${text.slice(0, 3500)}`;
       typeof p === 'string' ? p : p.name_ar || p.name_fr || p.name || ''
     ).filter(Boolean);
 
-    await prisma.resourceMetadata.upsert({
+    await db.resourceMetadata.upsert({
       where: { resourceId },
       create: {
         resourceId,
@@ -232,7 +232,7 @@ TEXTE: ${text.slice(0, 3500)}`;
 
     // Update ResourceSummary
     if (attrs.summary) {
-      await prisma.resourceSummary.upsert({
+      await db.resourceSummary.upsert({
         where: { resourceId },
         create: {
           resourceId,

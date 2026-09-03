@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 import { Flag, AlertTriangle, CheckCircle, FileText, Clock } from 'lucide-react';
 import { timeAgo } from '@/lib/utils';
@@ -28,7 +28,7 @@ export default async function AdminModerationPage() {
   if (!user) redirect('/connexion');
 
   const [pendingReports, resolvedReports, totalReports] = await Promise.all([
-    prisma.report.findMany({
+    db.report.findMany({
       where: { status: 'PENDING' },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -36,7 +36,7 @@ export default async function AdminModerationPage() {
         user: { select: { firstName: true, lastName: true, email: true } },
       },
     }),
-    prisma.report.findMany({
+    db.report.findMany({
       where: { status: { not: 'PENDING' } },
       take: 10,
       orderBy: { resolvedAt: 'desc' },
@@ -45,7 +45,7 @@ export default async function AdminModerationPage() {
         user: { select: { firstName: true, lastName: true, email: true } },
       },
     }),
-    prisma.report.count(),
+    db.report.count(),
   ]);
 
   return (

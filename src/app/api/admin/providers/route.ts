@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { encryptSecret, decryptSecret, redactSecret } from '@/lib/provider-keys';
 
 export const runtime = 'nodejs';
@@ -29,7 +29,7 @@ export async function GET() {
   const auth = await requireAdmin();
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const providers = await prisma.apiProvider.findMany({
+  const providers = await db.apiProvider.findMany({
     orderBy: { provider: 'asc' },
   });
 
@@ -40,20 +40,20 @@ export async function GET() {
 
   const result = await Promise.all(
     providers.map(async (p) => {
-      const usageThisMonth = await prisma.apiProviderUsage.aggregate({
+      const usageThisMonth = await db.apiProviderUsage.aggregate({
         where: { providerId: p.id, year, month },
         _count: { _all: true },
         _sum: { fileSize: true },
       });
-      const successCount = await prisma.apiProviderUsage.count({
+      const successCount = await db.apiProviderUsage.count({
         where: { providerId: p.id, year, month, success: true },
       });
-      const failureCount = await prisma.apiProviderUsage.count({
+      const failureCount = await db.apiProviderUsage.count({
         where: { providerId: p.id, year, month, success: false },
       });
 
       // Last 30 days
-      const last30Days = await prisma.apiProviderUsage.count({
+      const last30Days = await db.apiProviderUsage.count({
         where: {
           providerId: p.id,
           createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
@@ -61,7 +61,7 @@ export async function GET() {
       });
 
       // Last use
-      const lastUse = await prisma.apiProviderUsage.findFirst({
+      const lastUse = await db.apiProviderUsage.findFirst({
         where: { providerId: p.id },
         orderBy: { createdAt: 'desc' },
         select: { createdAt: true, success: true, fileName: true },
@@ -158,15 +158,15 @@ export async function POST(req: NextRequest) {
   };
 
   // Upsert: if a provider with this name already exists, update it
-  const existing = await prisma.apiProvider.findUnique({ where: { provider } });
+  const existing = await db.apiProvider.findUnique({ where: { provider } });
   let saved;
   if (existing) {
-    saved = await prisma.apiProvider.update({
+    saved = await db.apiProvider.update({
       where: { id: existing.id },
       data,
     });
   } else {
-    saved = await prisma.apiProvider.create({ data });
+    saved = await db.apiProvider.create({ data });
   }
 
   return NextResponse.json({
@@ -192,10 +192,10 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'provider query param requis' }, { status: 400 });
   }
 
-  const existing = await prisma.apiProvider.findUnique({ where: { provider } });
+  const existing = await db.apiProvider.findUnique({ where: { provider } });
   if (!existing) {
     return NextResponse.json({ error: 'Provider non trouvé' }, { status: 404 });
   }
-  await prisma.apiProvider.delete({ where: { id: existing.id } });
+  await db.apiProvider.delete({ where: { id: existing.id } });
   return NextResponse.json({ success: true });
 }

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -30,24 +30,24 @@ export async function DELETE(req: NextRequest) {
 
     if (source === 'all' || source === 'vercel') {
       if (cutoff) {
-        const r = await prisma.$executeRaw`
+        const r = await db.$executeRaw`
           DELETE FROM "VercelLog" WHERE timestamp < ${cutoff}
         `;
         vercelDeleted = Number(r);
       } else {
-        const r = await prisma.$executeRaw`DELETE FROM "VercelLog"`;
+        const r = await db.$executeRaw`DELETE FROM "VercelLog"`;
         vercelDeleted = Number(r);
       }
     }
 
     if (source === 'all' || source === 'errorlog') {
       if (cutoff) {
-        const r = await prisma.errorLog.deleteMany({
+        const r = await db.errorLog.deleteMany({
           where: { createdAt: { lt: cutoff } },
         });
         errorLogDeleted = r.count;
       } else {
-        const r = await prisma.errorLog.deleteMany({});
+        const r = await db.errorLog.deleteMany({});
         errorLogDeleted = r.count;
       }
     }
@@ -83,16 +83,16 @@ export async function GET(req: NextRequest) {
 
   if (source === 'all' || source === 'vercel') {
     if (cutoff) {
-      vercelCount = await prisma.vercelLog.count({ where: { timestamp: { lt: cutoff } } });
+      vercelCount = await db.vercelLog.count({ where: { timestamp: { lt: cutoff } } });
     } else {
-      vercelCount = await prisma.vercelLog.count();
+      vercelCount = await db.vercelLog.count();
     }
   }
   if (source === 'all' || source === 'errorlog') {
     if (cutoff) {
-      errorLogCount = await prisma.errorLog.count({ where: { createdAt: { lt: cutoff } } });
+      errorLogCount = await db.errorLog.count({ where: { createdAt: { lt: cutoff } } });
     } else {
-      errorLogCount = await prisma.errorLog.count();
+      errorLogCount = await db.errorLog.count();
     }
   }
 

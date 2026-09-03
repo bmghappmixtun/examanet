@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   
   try {
     // Try VercelLog first
-    const vercel = await prisma.$queryRaw<any[]>`
+    const vercel = await db.$queryRaw<any[]>`
       UPDATE "VercelLog" 
       SET reviewed = true, "reviewedAt" = NOW(), "updatedAt" = NOW()
       WHERE id = ${id}
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
     
     // Try ErrorLog
-    const errorLog = await prisma.errorLog.update({
+    const errorLog = await db.errorLog.update({
       where: { id },
       data: {
         resolved: true,

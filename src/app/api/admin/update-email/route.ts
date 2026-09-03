@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const runtime = 'nodejs';
 
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Update all admin emails to the new one
-    const result = await prisma.user.updateMany({
+    const result = await db.user.updateMany({
       where: { role: 'ADMIN' },
       data: { email },
     });

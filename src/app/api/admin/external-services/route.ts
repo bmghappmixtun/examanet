@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { encryptSecret, decryptSecret, redactSecret } from '@/lib/provider-keys';
 import { checkVercelUsage } from '@/lib/external-services.vercel';
 import { checkConvertApiUsage, checkIlovepdfUsage, checkNeonUsage } from '@/lib/external-services';
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const provider = await prisma.apiProvider.findUnique({ where: { provider: type } });
+  const provider = await db.apiProvider.findUnique({ where: { provider: type } });
   if (!provider || !provider.secretKey) {
     return NextResponse.json({
       configured: false,
@@ -148,12 +148,12 @@ export async function POST(req: NextRequest) {
     notes: body.notes?.trim() || null,
   };
 
-  const existing = await prisma.apiProvider.findUnique({ where: { provider: type } });
+  const existing = await db.apiProvider.findUnique({ where: { provider: type } });
   let saved;
   if (existing) {
-    saved = await prisma.apiProvider.update({ where: { id: existing.id }, data });
+    saved = await db.apiProvider.update({ where: { id: existing.id }, data });
   } else {
-    saved = await prisma.apiProvider.create({ data });
+    saved = await db.apiProvider.create({ data });
   }
 
   return NextResponse.json({ success: true, provider: saved.provider });
@@ -174,8 +174,8 @@ export async function DELETE(req: NextRequest) {
     );
   }
 
-  const existing = await prisma.apiProvider.findUnique({ where: { provider: type } });
+  const existing = await db.apiProvider.findUnique({ where: { provider: type } });
   if (!existing) return NextResponse.json({ error: 'Non trouvé' }, { status: 404 });
-  await prisma.apiProvider.delete({ where: { id: existing.id } });
+  await db.apiProvider.delete({ where: { id: existing.id } });
   return NextResponse.json({ success: true });
 }

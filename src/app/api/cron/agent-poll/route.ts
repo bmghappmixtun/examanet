@@ -19,7 +19,7 @@ But it provides a digest endpoint that the next session can poll
  */
 
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
   try {
     // Find un-seen CRITICAL/ERROR errors from last 24h
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const unseenErrors = await prisma.errorLog.findMany({
+    const unseenErrors = await db.errorLog.findMany({
       where: {
         agentSeen: false,
         severity: { in: ['ERROR', 'CRITICAL'] },
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
     // Mark them as seen
     if (unseenErrors.length > 0) {
       const ids = unseenErrors.map((e) => e.id);
-      await prisma.errorLog.updateMany({
+      await db.errorLog.updateMany({
         where: { id: { in: ids } },
         data: { agentSeen: true, agentSeenAt: new Date() },
       });
@@ -72,7 +72,7 @@ export async function GET(req: Request) {
         source: e.source,
         message: e.message.slice(0, 200),
         url: e.url,
-        time: e.createdAt.toISOString(),
+        time: (typeof e.createdAt === 'number' ? new Date(e.createdAt).toISOString() : e.createdAt),
         userEmail: e.userEmail,
       })),
       timestamp: new Date().toISOString(),

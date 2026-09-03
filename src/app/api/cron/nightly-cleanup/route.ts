@@ -14,7 +14,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { ErrorSeverity } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
   // Look at last 7 days
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const errors = await prisma.errorLog.findMany({
+  const errors = await db.errorLog.findMany({
     where: {
       severity: { in: ['ERROR', 'CRITICAL'] },
       createdAt: { gte: since },
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
 
   // Mark all unseen as seen
   if (unSeen.length > 0) {
-    await prisma.errorLog.updateMany({
+    await db.errorLog.updateMany({
       where: { id: { in: unSeen.map((e) => e.id) } },
       data: { agentSeen: true, agentSeenAt: new Date() },
     });

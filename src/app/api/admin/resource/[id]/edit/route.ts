@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 import { sendEditApprovedEmail, sendEditRejectedEmail } from '@/lib/email';
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const action = body.action;
     const reason: string | undefined = body.reason;
 
-    const resource = await prisma.resource.findUnique({
+    const resource = await db.resource.findUnique({
       where: { id },
       include: { teacher: { select: { numericId: true, slug: true } } },
     });
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         if (!resource.publishedAt) updateData.publishedAt = new Date();
       }
 
-      await prisma.resource.update({ where: { id }, data: updateData });
+      await db.resource.update({ where: { id }, data: updateData });
       // Force revalidation of all relevant pages
       revalidatePath('/ressources');
       revalidatePath(`/ressources/${resource.numericId}/${resource.slug}`);
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
       // Notify teacher
       if (resource.editRequestedById) {
-        await prisma.notification.create({
+        await db.notification.create({
           data: {
             userId: resource.editRequestedById,
             type: 'edit_approved',
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         });
 
         // Send email to teacher
-        const teacher = await prisma.user.findUnique({ where: { id: resource.editRequestedById } });
+        const teacher = await db.user.findUnique({ where: { id: resource.editRequestedById } });
         if (teacher?.email && teacher.firstName) {
           await sendEditApprovedEmail(
             teacher.email,
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     if (action === 'reject') {
       const finalReason = reason?.trim() || "Modification refusée par l'administrateur.";
-      await prisma.resource.update({
+      await db.resource.update({
         where: { id },
         data: {
           pendingEdit: Prisma.JsonNull,
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
       // Notify teacher
       if (resource.editRequestedById) {
-        await prisma.notification.create({
+        await db.notification.create({
           data: {
             userId: resource.editRequestedById,
             type: 'edit_rejected',
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         });
 
         // Send email to teacher
-        const teacher = await prisma.user.findUnique({ where: { id: resource.editRequestedById } });
+        const teacher = await db.user.findUnique({ where: { id: resource.editRequestedById } });
         if (teacher?.email && teacher.firstName) {
           await sendEditRejectedEmail(
             teacher.email,

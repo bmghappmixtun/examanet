@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Bulk insert with duplicate handling
-    const result = await prisma.vercelLog.createMany({
+    const result = await db.vercelLog.createMany({
       data: rows,
       skipDuplicates: true,
     });

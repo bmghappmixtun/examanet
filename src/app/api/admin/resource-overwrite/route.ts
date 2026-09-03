@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
  * Auto-detects hasCorrection via size heuristic (no external deps).
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 import { put, del } from '@vercel/blob';
 
@@ -19,7 +19,7 @@ export const runtime = 'nodejs';
 async function checkAdmin(req: NextRequest) {
   const seedToken = req.headers.get('x-seed-token') || req.nextUrl.searchParams.get('token');
   if (seedToken && seedToken === process.env.SEED_TOKEN) {
-    const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+    const admin = await db.user.findFirst({ where: { role: 'ADMIN' } });
     if (admin) return admin;
   }
   const user = await getCurrentUser();
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'file + resourceId requis' }, { status: 400 });
     }
 
-    const resource = await prisma.resource.findUnique({ where: { id: resourceId } });
+    const resource = await db.resource.findUnique({ where: { id: resourceId } });
     if (!resource) {
       return NextResponse.json({ error: 'Resource non trouvée' }, { status: 404 });
     }
@@ -113,13 +113,13 @@ export async function POST(req: NextRequest) {
     );
 
     // Update resource with new key + auto-detected fields
-    await prisma.resource.update({
+    await db.resource.update({
       where: { id: resourceId },
       data: updateData,
     });
 
     // Also update TeacherFile
-    await prisma.teacherFile.updateMany({
+    await db.teacherFile.updateMany({
       where: { resourceId },
       data: {
         pdfUrl: blob.url,

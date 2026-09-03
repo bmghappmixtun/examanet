@@ -14,7 +14,7 @@
  * Returns: { thumbnailKey, thumbnailUrl }
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { put } from '@vercel/blob';
 
 const INTERNAL_TOKEN = process.env.INTERNAL_BULK_TOKEN || 'devmanet-bulk-2026';
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Update DB
-    await prisma.resource.update({
+    await db.resource.update({
       where: { id: rid },
       data: { thumbnailKey: blob.pathname, thumbnailUrl: blob.url },
     });
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Not found', { status: 404 });
   }
   // Count without thumbnailKey (null or empty string)
-  const allResources = await prisma.resource.findMany({
+  const allResources = await db.resource.findMany({
     where: { fileKey: { not: '' } },
     select: { id: true, thumbnailKey: true },
   });

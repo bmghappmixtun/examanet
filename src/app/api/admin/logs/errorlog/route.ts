@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -29,14 +29,14 @@ export async function GET(req: NextRequest) {
       where.severity = severity;
     }
     
-    const logs = await prisma.errorLog.findMany({
+    const logs = await db.errorLog.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
     
     // Get counts by severity
-    const counts = await prisma.errorLog.groupBy({
+    const counts = await db.errorLog.groupBy({
       by: ['severity'],
       where: { createdAt: { gte: since } },
       _count: { _all: true },
@@ -48,11 +48,11 @@ export async function GET(req: NextRequest) {
       counts: counts.map(c => ({ level: c.severity, count: c._count._all })),
       logs: logs.map(l => ({
         ...l,
-        createdAt: l.createdAt.toISOString(),
-        updatedAt: l.updatedAt.toISOString(),
-        resolvedAt: l.resolvedAt?.toISOString() || null,
-        agentNotifiedAt: l.agentNotifiedAt?.toISOString() || null,
-        agentSeenAt: l.agentSeenAt?.toISOString() || null,
+        createdAt: (typeof l.createdAt === 'number' ? new Date(l.createdAt).toISOString() : l.createdAt),
+        updatedAt: (typeof l.updatedAt === 'number' ? new Date(l.updatedAt).toISOString() : l.updatedAt),
+        resolvedAt: (l.resolvedAt ? (typeof l.resolvedAt === "number" ? new Date(l.resolvedAt).toISOString() : l.resolvedAt) : null) || null,
+        agentNotifiedAt: (l.agentNotifiedAt ? (typeof l.agentNotifiedAt === "number" ? new Date(l.agentNotifiedAt).toISOString() : l.agentNotifiedAt) : null) || null,
+        agentSeenAt: (l.agentSeenAt ? (typeof l.agentSeenAt === "number" ? new Date(l.agentSeenAt).toISOString() : l.agentSeenAt) : null) || null,
       })),
     });
   } catch (e) {

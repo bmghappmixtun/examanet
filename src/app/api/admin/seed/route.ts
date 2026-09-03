@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+// 2026-09-03: Migrated to D1 direct
 import bcrypt from 'bcryptjs';
 
-const prisma = new PrismaClient();
+import { db } from '@/lib/d1-admin';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -21,27 +21,27 @@ export async function POST(req: NextRequest) {
     console.log('🌱 Starting seed...');
 
     // Clean
-    await prisma.notification.deleteMany();
-    await prisma.report.deleteMany();
-    await prisma.share.deleteMany();
-    await prisma.download.deleteMany();
-    await prisma.view.deleteMany();
-    await prisma.favorite.deleteMany();
-    await prisma.rating.deleteMany();
-    await prisma.comment.deleteMany();
-    await prisma.resource.deleteMany();
-    await prisma.section.deleteMany();
-    await prisma.class.deleteMany();
-    await prisma.subject.deleteMany();
-    await prisma.level.deleteMany();
-    await prisma.session.deleteMany();
-    await prisma.otpCode.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.newsletter.deleteMany();
-    await prisma.setting.deleteMany();
+    await db.notification.deleteMany();
+    await db.report.deleteMany();
+    await db.share.deleteMany();
+    await db.download.deleteMany();
+    await db.view.deleteMany();
+    await db.favorite.deleteMany();
+    await db.rating.deleteMany();
+    await db.comment.deleteMany();
+    await db.resource.deleteMany();
+    await db.section.deleteMany();
+    await db.class.deleteMany();
+    await db.subject.deleteMany();
+    await db.level.deleteMany();
+    await db.session.deleteMany();
+    await db.otpCode.deleteMany();
+    await db.user.deleteMany();
+    await db.newsletter.deleteMany();
+    await db.setting.deleteMany();
 
     // Levels (Enseignement de base = Collège cycle, Enseignement Secondaire = Lycée)
-    const college = await prisma.level.create({
+    const college = await db.level.create({
       data: {
         slug: 'college',
         nameFr: 'Enseignement de base',
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         order: 2,
       },
     });
-    const lycee = await prisma.level.create({
+    const lycee = await db.level.create({
       data: {
         slug: 'lycee',
         nameFr: 'Enseignement Secondaire',
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
     // Classes
     const classes = await Promise.all([
-      prisma.class.create({
+      db.class.create({
         data: {
           levelId: college.id,
           slug: '7eme',
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
           order: 1,
         },
       }),
-      prisma.class.create({
+      db.class.create({
         data: {
           levelId: college.id,
           slug: '8eme',
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
           order: 2,
         },
       }),
-      prisma.class.create({
+      db.class.create({
         data: {
           levelId: college.id,
           slug: '9eme',
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
           order: 3,
         },
       }),
-      prisma.class.create({
+      db.class.create({
         data: {
           levelId: lycee.id,
           slug: '1ere-secondaire',
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
           order: 1,
         },
       }),
-      prisma.class.create({
+      db.class.create({
         data: {
           levelId: lycee.id,
           slug: '2eme-secondaire',
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
           order: 2,
         },
       }),
-      prisma.class.create({
+      db.class.create({
         data: {
           levelId: lycee.id,
           slug: '3eme-secondaire',
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
           order: 3,
         },
       }),
-      prisma.class.create({
+      db.class.create({
         data: {
           levelId: lycee.id,
           slug: '4eme-secondaire',
@@ -145,15 +145,15 @@ export async function POST(req: NextRequest) {
               nameAr: 'علوم تجريبية',
             }
           : { slug: 'sciences', nameFr: 'Sciences', nameAr: 'علوم' };
-      await prisma.section.create({ data: { classId: cls.id, ...sciencesSection } });
+      await db.section.create({ data: { classId: cls.id, ...sciencesSection } });
       // Maths (4AS has 'Bac Mathématiques' prefix per teacher-workflow-data.ts)
       const mathsSection = is4AS
         ? { slug: 'maths', nameFr: 'Bac Mathématiques', nameAr: 'باك رياضيات' }
         : is3AS
           ? { slug: 'maths', nameFr: 'Mathématiques', nameAr: 'رياضيات' }
           : { slug: 'maths', nameFr: 'Mathématiques', nameAr: 'رياضيات' };
-      await prisma.section.create({ data: { classId: cls.id, ...mathsSection } });
-      await prisma.section.create({
+      await db.section.create({ data: { classId: cls.id, ...mathsSection } });
+      await db.section.create({
         data: { classId: cls.id, slug: 'lettres', nameFr: 'Lettres', nameAr: 'آداب' },
       });
       // Eco-Gestion: 2AS = "Économie et services" (different), 3AS/4AS = "Économie-Gestion"
@@ -161,15 +161,15 @@ export async function POST(req: NextRequest) {
         cls.slug === '2eme-secondaire'
           ? { slug: 'eco-services', nameFr: 'Économie et services', nameAr: 'اقتصاد وتصرف' }
           : { slug: 'eco-gestion', nameFr: 'Économie-Gestion', nameAr: 'اقتصاد وتصرف' };
-      await prisma.section.create({ data: { classId: cls.id, ...ecoSection } });
+      await db.section.create({ data: { classId: cls.id, ...ecoSection } });
       // Technique: 4AS = "Bac Sciences Techniques" (3AS uses just "Technique")
       const techniqueSection = is4AS
         ? { slug: 'technique', nameFr: 'Bac Sciences Techniques', nameAr: 'باك تقني' }
         : is3AS
           ? { slug: 'technique', nameFr: 'Sciences Techniques', nameAr: 'تقني' }
           : { slug: 'technique', nameFr: 'Technique', nameAr: 'تقني' };
-      await prisma.section.create({ data: { classId: cls.id, ...techniqueSection } });
-      await prisma.section.create({
+      await db.section.create({ data: { classId: cls.id, ...techniqueSection } });
+      await db.section.create({
         data: { classId: cls.id, slug: 'info', nameFr: 'Informatique', nameAr: 'إعلامية' },
       });
     }
@@ -223,12 +223,12 @@ export async function POST(req: NextRequest) {
       { slug: 'arts', nameFr: 'Arts Plastiques', nameAr: 'الفنون', color: '#DB2777', order: 15 },
       { slug: 'musique', nameFr: 'Musique', nameAr: 'الموسيقى', color: '#9333EA', order: 16 },
     ];
-    const subjects = await Promise.all(subjectsData.map((s) => prisma.subject.create({ data: s })));
+    const subjects = await Promise.all(subjectsData.map((s) => db.subject.create({ data: s })));
 
     // Users
     const passwordHash = await bcrypt.hash('demo1234', 10);
 
-    const admin = await prisma.user.create({
+    const admin = await db.user.create({
       data: {
         email: 'admin@examanet.com',
         passwordHash,
@@ -303,7 +303,7 @@ export async function POST(req: NextRequest) {
     ];
     const teachers = await Promise.all(
       teachersData.map((t) =>
-        prisma.user.create({
+        db.user.create({
           data: {
             email: t.email,
             passwordHash,
@@ -369,7 +369,7 @@ export async function POST(req: NextRequest) {
     ];
     const students = await Promise.all(
       studentsData.map((s) =>
-        prisma.user.create({
+        db.user.create({
           data: {
             email: s.email,
             passwordHash,
@@ -659,7 +659,7 @@ export async function POST(req: NextRequest) {
       const subject = subjects.find((s) => s.slug === r.subject)!;
       const cls = classes.find((c) => c.slug === r.class)!;
       const section = r.section
-        ? await prisma.section.findFirst({ where: { classId: cls.id, slug: r.section } })
+        ? await db.section.findFirst({ where: { classId: cls.id, slug: r.section } })
         : null;
       const teacher = teachers[r.teacherIdx];
 
@@ -681,7 +681,7 @@ export async function POST(req: NextRequest) {
       const ratingCount = Math.floor(Math.random() * 100) + 5;
       const commentsCount = Math.floor(Math.random() * 30);
 
-      const resource = await prisma.resource.create({
+      const resource = await db.resource.create({
         data: {
           slug: slug + '-' + Math.random().toString(36).substring(2, 7),
           title: r.title,
@@ -716,7 +716,7 @@ export async function POST(req: NextRequest) {
       if (commentsCount > 0) {
         for (let i = 0; i < 3; i++) {
           const student = students[Math.floor(Math.random() * students.length)];
-          await prisma.comment.create({
+          await db.comment.create({
             data: {
               resourceId: resource.id,
               userId: student.id,
@@ -735,10 +735,10 @@ export async function POST(req: NextRequest) {
       success: true,
       message: 'Seed completed!',
       counts: {
-        users: await prisma.user.count(),
-        resources: await prisma.resource.count(),
-        subjects: await prisma.subject.count(),
-        comments: await prisma.comment.count(),
+        users: await db.user.count(),
+        resources: await db.resource.count(),
+        subjects: await db.subject.count(),
+        comments: await db.comment.count(),
       },
     });
   } catch (e: any) {
