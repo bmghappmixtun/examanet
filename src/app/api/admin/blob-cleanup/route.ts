@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { del } from '@vercel/blob';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 
 export const maxDuration = 120;
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     let isAdmin = user?.role === 'ADMIN';
     if (!isAdmin && seedToken === process.env.SEED_TOKEN) {
-      const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+      const admin = await db.user.findFirst({ where: { role: 'ADMIN' } });
       if (admin) isAdmin = true;
     }
 

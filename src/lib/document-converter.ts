@@ -22,7 +22,7 @@
 
 import { convertOfficeToPdfViaIloveapi, IloveapiError } from './iloveapi';
 import { convertOfficeToPdfViaConvertApi, ApiconvertError } from './apiconvert';
-import { prisma } from './prisma';
+import { db } from './d1-admin';
 import { decryptSecret } from './provider-keys';
 
 export type ConversionResult = {
@@ -39,7 +39,7 @@ async function getProviderConfig(providerName: string): Promise<{
 } | null> {
   // 1. Try DB first
   try {
-    const dbProvider = await prisma.apiProvider.findUnique({
+    const dbProvider = await db.apiProvider.findUnique({
       where: { provider: providerName },
     });
     if (dbProvider && dbProvider.enabled && dbProvider.secretKey) {
@@ -78,13 +78,13 @@ async function logUsage(
   failedStep?: string,
 ) {
   try {
-    const provider = await prisma.apiProvider.findUnique({
+    const provider = await db.apiProvider.findUnique({
       where: { provider: providerName },
     });
     // Only log if the provider is configured in the DB
     if (!provider) return;
     const now = new Date();
-    await prisma.apiProviderUsage.create({
+    await db.apiProviderUsage.create({
       data: {
         providerId: provider.id,
         success,

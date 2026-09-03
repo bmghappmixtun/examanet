@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 import { ChevronLeft, AlertCircle } from 'lucide-react';
 import EditResourceForm from '@/components/teacher/EditResourceForm';
@@ -15,13 +15,13 @@ export default async function EditResourcePage({ params }: { params: Promise<{ i
   if (user.role !== 'TEACHER' && user.role !== 'ADMIN') redirect('/');
 
   const [resource, subjects, classes, sections] = await Promise.all([
-    prisma.resource.findUnique({
+    db.resource.findUnique({
       where: { id },
       include: { subject: true, class: true, section: true },
     }),
-    prisma.subject.findMany({ orderBy: { order: 'asc' } }),
-    prisma.class.findMany({ orderBy: { order: 'asc' } }),
-    prisma.section.findMany(),
+    db.subject.findMany({ orderBy: { order: 'asc' } }),
+    db.class.findMany({ orderBy: { order: 'asc' } }),
+    db.section.findMany(),
   ]);
 
   if (!resource) notFound();

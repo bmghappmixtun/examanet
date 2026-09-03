@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const runtime = 'nodejs';
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     // Resolve from user
     let fromId = fromUserId;
     if (!fromId && fromUserEmail) {
-      const fromUser = await prisma.user.findUnique({ where: { email: fromUserEmail } });
+      const fromUser = await db.user.findUnique({ where: { email: fromUserEmail } });
       if (!fromUser)
         return NextResponse.json({ error: 'Utilisateur source non trouvé' }, { status: 404 });
       fromId = fromUser.id;
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify target exists and is a teacher
-    const toUser = await prisma.user.findUnique({ where: { id: toUserId } });
+    const toUser = await db.user.findUnique({ where: { id: toUserId } });
     if (!toUser)
       return NextResponse.json({ error: 'Utilisateur cible non trouvé' }, { status: 404 });
     if (toUser.role !== 'TEACHER' && toUser.role !== 'ADMIN') {
@@ -50,12 +50,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Get count before
-    const beforeCount = await prisma.resource.count({
+    const beforeCount = await db.resource.count({
       where: { teacherId: fromId },
     });
 
     // Transfer
-    const result = await prisma.resource.updateMany({
+    const result = await db.resource.updateMany({
       where: { teacherId: fromId },
       data: { teacherId: toUserId },
     });

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   const start = Date.now();
 
   // Count
-  const count = await prisma.$queryRaw<{ c: bigint }[]>`
+  const count = await db.$queryRaw<{ c: bigint }[]>`
     SELECT count(*) as c FROM "View" WHERE "createdAt" < NOW() - INTERVAL '90 days'
   `;
   const toDelete = Number(count[0]?.c ?? 0);
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Delete
-  const result = await prisma.$executeRaw`
+  const result = await db.$executeRaw`
     DELETE FROM "View" WHERE "createdAt" < NOW() - INTERVAL '90 days'
   `;
 

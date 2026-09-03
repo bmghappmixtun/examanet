@@ -10,7 +10,7 @@
  *   4. ts_headline for highlighting (uses original query)
  *   5. GROUP BY for facets (single query, parallel aggregation)
  */
-import { prisma } from './prisma';
+import { db } from './d1-admin';
 import { getAllSynonyms, resolveSubjectSlugs, resolveClassSlugs, resolveSectionSlugs } from './search-cache';
 import { sanitizeHighlightHtml } from './security';
 
@@ -376,16 +376,16 @@ export async function searchV2(options: SearchOptions): Promise<SearchResponse> 
   // 10. Execute all in parallel
   // Params: [variant1..N, trgm q, ...filters, highlight]
   const [rawResults, countResult, facetRows] = await Promise.all([
-    prisma.$queryRawUnsafe(searchSql, ...allParams) as Promise<any[]>,
-    prisma.$queryRawUnsafe(countSql, ...match.params, ...filterParams) as Promise<any[]>,
-    prisma.$queryRawUnsafe(facetsSql, ...match.params, ...filterParams) as Promise<any[]>,
+    db.$queryRawUnsafe(searchSql, ...allParams) as Promise<any[]>,
+    db.$queryRawUnsafe(countSql, ...match.params, ...filterParams) as Promise<any[]>,
+    db.$queryRawUnsafe(facetsSql, ...match.params, ...filterParams) as Promise<any[]>,
   ]);
 
   const total = countResult[0]?.total || 0;
 
   // 11. Hydrate
   const ids = rawResults.map((r) => r.id);
-  const full = await prisma.resource.findMany({
+  const full = await db.resource.findMany({
     where: { id: { in: ids } },
     select: {
       id: true,

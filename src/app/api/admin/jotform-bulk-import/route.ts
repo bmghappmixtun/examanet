@@ -39,7 +39,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { put } from '@vercel/blob';
 import { properSlugify } from '@/lib/slugify';
 import { convertDocxToPdf } from '@/lib/document-converter';
@@ -171,8 +171,8 @@ export async function POST(req: NextRequest) {
 
     // Pre-fetch all subjects and classes for ID lookups
     const [subjects, classes] = await Promise.all([
-      prisma.subject.findMany(),
-      prisma.class.findMany({ include: { level: true } }),
+      db.subject.findMany(),
+      db.class.findMany({ include: { level: true } }),
     ]);
     const subjectBySlug = new Map(subjects.map((s) => [s.slug, s]));
     const classBySlug = new Map(classes.map((c) => [c.slug, c]));
@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
     // Resolve admin user ID (could be null if using SEED_TOKEN)
     let adminId: string | null = user?.id || null;
     if (!adminId) {
-      const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+      const admin = await db.user.findFirst({ where: { role: 'ADMIN' } });
       adminId = admin?.id || null;
     }
     if (!adminId) {
@@ -307,7 +307,7 @@ async function processFile(
         : null;
 
     // STEP 4: Create TeacherFile + Resource
-    const teacherFile = await prisma.teacherFile.create({
+    const teacherFile = await db.teacherFile.create({
       data: {
         teacherId: teacher.id,
         fileName: fileName,
@@ -341,7 +341,7 @@ async function processFile(
       const cleanSlug = subjectSlug.replace(/[^a-z0-9-]/g, '').slice(0, 40) || 'imported';
       const safeName = subjectSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 60);
       try {
-        finalSubject = await prisma.subject.create({
+        finalSubject = await db.subject.create({
           data: {
             slug: cleanSlug,
             nameFr: safeName,
@@ -392,7 +392,7 @@ async function processFile(
     const slug = properSlugify(title).slice(0, 80) || `jotform-${submissionId}`;
 
     // Create the Resource
-    const resource = await prisma.resource.create({
+    const resource = await db.resource.create({
       data: {
         title,
         slug: `${slug}-${teacher.id.slice(-6)}`.slice(0, 90),
@@ -424,7 +424,7 @@ async function processFile(
     });
 
     // Link teacherFile.resourceId
-    await prisma.teacherFile.update({
+    await db.teacherFile.update({
       where: { id: teacherFile.id },
       data: { resourceId: resource.id },
     });

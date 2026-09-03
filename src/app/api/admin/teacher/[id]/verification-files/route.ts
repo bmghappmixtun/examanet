@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 /**
  * GET /api/admin/teacher/[id]/verification-files
@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
 
   const [teacher, files] = await Promise.all([
-    prisma.user.findUnique({
+    db.user.findUnique({
       where: { id },
       select: {
         id: true,
@@ -36,7 +36,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         verificationFilesNote: true,
       },
     }),
-    prisma.teacherVerificationFile.findMany({
+    db.teacherVerificationFile.findMany({
       where: { teacherId: id },
       orderBy: { uploadedAt: 'desc' },
     }),
@@ -84,12 +84,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'fileId requis' }, { status: 400 });
   }
 
-  const file = await prisma.teacherVerificationFile.findUnique({ where: { id: fileId } });
+  const file = await db.teacherVerificationFile.findUnique({ where: { id: fileId } });
   if (!file || file.teacherId !== teacherId) {
     return NextResponse.json({ error: 'Fichier non trouvé' }, { status: 404 });
   }
 
-  await prisma.teacherVerificationFile.update({
+  await db.teacherVerificationFile.update({
     where: { id: fileId },
     data: {
       reviewedByAdmin: !!reviewed,

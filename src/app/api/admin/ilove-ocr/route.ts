@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import ILovePDFApi from '@ilovepdf/ilovepdf-nodejs';
 // @ts-ignore
 import ILovePDFFile from '@ilovepdf/ilovepdf-nodejs/ILovePDFFile';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { decryptSecret } from '@/lib/provider-keys';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +14,7 @@ export const runtime = 'nodejs';
 async function checkAuth(req: NextRequest) {
   const seedToken = req.headers.get('x-seed-token');
   if (seedToken && seedToken === process.env.SEED_TOKEN) {
-    const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+    const admin = await db.user.findFirst({ where: { role: 'ADMIN' } });
     return admin;
   }
   const user = await getCurrentUser();
@@ -23,7 +23,7 @@ async function checkAuth(req: NextRequest) {
 }
 
 async function getIloveConfig() {
-  const dbProvider = await prisma.apiProvider.findUnique({ where: { provider: 'iloveapi' } });
+  const dbProvider = await db.apiProvider.findUnique({ where: { provider: 'iloveapi' } });
   if (dbProvider && dbProvider.enabled && dbProvider.secretKey) {
     return {
       publicKey: dbProvider.publicKey || '',
@@ -65,10 +65,10 @@ export async function POST(req: NextRequest) {
     
     // Log usage
     try {
-      const provider = await prisma.apiProvider.findUnique({ where: { provider: 'iloveapi' } });
+      const provider = await db.apiProvider.findUnique({ where: { provider: 'iloveapi' } });
       if (provider) {
         const now = new Date();
-        await prisma.apiProviderUsage.create({
+        await db.apiProviderUsage.create({
           data: {
             providerId: provider.id,
             year: now.getFullYear(),

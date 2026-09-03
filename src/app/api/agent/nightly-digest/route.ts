@@ -8,7 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   // Get the timestamp of the last batch of seen-together errors
-  const recent = await prisma.errorLog.findMany({
+  const recent = await db.errorLog.findMany({
     where: {
       agentSeen: true,
       agentSeenAt: { gte: since },

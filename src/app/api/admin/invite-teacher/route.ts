@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 import { createInvitation, sendInvitationEmail } from '@/lib/invitation';
 
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate: only teachers with real emails
-    const teachers = await prisma.user.findMany({
+    const teachers = await db.user.findMany({
       where: {
         id: { in: teacherIds },
         role: 'TEACHER',
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     for (const teacher of teachers) {
       try {
         // Skip if already has an active (non-expired) invitation
-        const existingActive = await prisma.teacherInvitation.findFirst({
+        const existingActive = await db.teacherInvitation.findFirst({
           where: {
             teacherId: teacher.id,
             status: { in: ['PENDING', 'SENT', 'CLICKED'] },

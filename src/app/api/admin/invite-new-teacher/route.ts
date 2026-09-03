@@ -19,7 +19,7 @@
  *   { ok: true, invitationId, userId, tempPassword, acceptUrl }
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 import {
   createInvitation,
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
   const normalizedEmail = email; // already lowercased + trimmed in validateBody
 
   // Check if user already exists
-  let user = await prisma.user.findUnique({
+  let user = await db.user.findUnique({
     where: { email: normalizedEmail },
     select: { id: true, role: true, status: true, firstName: true, lastName: true },
   });
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
       .substring(0, 80) || 'teacher';
-    user = await prisma.user.create({
+    user = await db.user.create({
       data: {
         email: normalizedEmail,
         firstName,
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if there's already a pending (non-expired) invitation
-  const existingInv = await prisma.teacherInvitation.findFirst({
+  const existingInv = await db.teacherInvitation.findFirst({
     where: {
       teacherId: user.id,
       status: { in: ['PENDING', 'SENT', 'CLICKED'] },
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
         console.error('📧 [JOTFORM INVITATION ERROR]', normalizedEmail, '→', result.error.message);
       } else {
         emailOk = true;
-        await prisma.teacherInvitation.update({
+        await db.teacherInvitation.update({
           where: { id: invitation.id },
           data: { status: 'SENT', emailSentAt: new Date() },
         });

@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
  * Returns: { success, resourceId, fileUrl, fileSize }
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 import { put } from '@vercel/blob';
 import { nanoid } from 'nanoid';
@@ -35,7 +35,7 @@ async function checkAdmin(req: NextRequest) {
   const seedToken = req.headers.get('x-seed-token') || req.nextUrl.searchParams.get('token');
   if (seedToken && seedToken === process.env.SEED_TOKEN) {
     // Find admin user for attribution
-    const admin = await prisma.user.findFirst({
+    const admin = await db.user.findFirst({
       where: { role: 'ADMIN' },
     });
     if (admin) return admin;
@@ -54,7 +54,7 @@ async function ensureTeacher(
   source: string = 'tunisiecollege.net',
 ) {
   if (teacherId) {
-    const existing = await prisma.user.findUnique({ where: { id: teacherId } });
+    const existing = await db.user.findUnique({ where: { id: teacherId } });
     if (existing) return existing;
   }
   // Normalize the name (uppercase, trimmed, no extra spaces)
@@ -68,7 +68,7 @@ async function ensureTeacher(
   const normalized = `${firstName} ${lastName}`.toLowerCase();
 
   // Try to find existing teacher by case-insensitive name match
-  const candidates = await prisma.user.findMany({
+  const candidates = await db.user.findMany({
     where: {
       email: { contains: 'examanet-import.local' },
       role: 'TEACHER',
@@ -82,7 +82,7 @@ async function ensureTeacher(
   // Create new teacher with clean email (no random suffix if name matches)
   const email = `import.${firstName.toLowerCase()}.${lastName.replace(/\s+/g, '')}@examanet-import.local`;
 
-  return await prisma.user.create({
+  return await db.user.create({
     data: {
       email,
       firstName,
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
     const originalFormat = metadata.originalFormat || null; // 'docx' or 'doc' if uploaded
 
     // Check if already imported
-    const existing = await prisma.resource.findFirst({
+    const existing = await db.resource.findFirst({
       where: { originalSubmissionId: String(fileId) },
       select: { id: true },
     });
@@ -166,10 +166,10 @@ export async function POST(req: NextRequest) {
 
     // Look up subject + class IDs
     const subjectId = parsed.subjectSlug
-      ? (await prisma.subject.findUnique({ where: { slug: parsed.subjectSlug } }))?.id
+      ? (await db.subject.findUnique({ where: { slug: parsed.subjectSlug } }))?.id
       : null;
     const classId = parsed.classSlug
-      ? (await prisma.class.findUnique({ where: { slug: parsed.classSlug } }))?.id
+      ? (await db.class.findUnique({ where: { slug: parsed.classSlug } }))?.id
       : null;
 
     if (!subjectId || !classId) {
@@ -206,7 +206,7 @@ export async function POST(req: NextRequest) {
 
     // Insert Resource
     const slug = slugify(parsed.title);
-    const resource = await prisma.resource.create({
+    const resource = await db.resource.create({
       data: {
         slug,
         title: parsed.title,
@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
     // Insert TeacherFile
     // fileName/fileKey/fileUrl: the original (Word or PDF)
     // pdfKey/pdfUrl/pdfSize: always the PDF version
-    await prisma.teacherFile.create({
+    await db.teacherFile.create({
       data: {
         fileName: originalFile?.name || parsed.title + '.pdf',
         fileKey: originalBlob?.pathname || blob.pathname,

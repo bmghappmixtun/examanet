@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { prisma } from './prisma';
+import { db } from './d1-admin';
 import { unstable_cache } from 'next/cache';
 
 /**
@@ -15,11 +15,11 @@ interface SectionLookup { id: string; slug: string }
 
 /**
  * Fetch all synonyms from DB. Cached for 5 min.
- * Replaces prisma.searchSynonym.findMany() per search.
+ * Replaces db.searchSynonym.findMany() per search.
  */
 export const getAllSynonyms = unstable_cache(
   async (): Promise<Synonym[]> => {
-    return prisma.searchSynonym.findMany({
+    return db.searchSynonym.findMany({
       select: { term: true, synonyms: true },
     });
   },
@@ -29,12 +29,12 @@ export const getAllSynonyms = unstable_cache(
 
 /**
  * Resolve subject slugs to IDs in one query.
- * Replaces prisma.subject.findMany() per search.
+ * Replaces db.subject.findMany() per search.
  */
 export const resolveSubjectSlugs = unstable_cache(
   async (slugs: string[]): Promise<SubjectLookup[]> => {
     if (!slugs.length) return [];
-    return prisma.subject.findMany({
+    return db.subject.findMany({
       where: { slug: { in: slugs } },
       select: { id: true, slug: true },
     });
@@ -49,7 +49,7 @@ export const resolveSubjectSlugs = unstable_cache(
 export const resolveClassSlugs = unstable_cache(
   async (slugs: string[]): Promise<ClassLookup[]> => {
     if (!slugs.length) return [];
-    return prisma.class.findMany({
+    return db.class.findMany({
       where: { slug: { in: slugs } },
       select: { id: true, slug: true },
     });
@@ -64,7 +64,7 @@ export const resolveClassSlugs = unstable_cache(
 export const resolveSectionSlugs = unstable_cache(
   async (slugs: string[]): Promise<SectionLookup[]> => {
     if (!slugs.length) return [];
-    return prisma.section.findMany({
+    return db.section.findMany({
       where: { slug: { in: slugs } },
       select: { id: true, slug: true },
     });

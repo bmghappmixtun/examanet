@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 import { syncInvitationDeliveryStatus } from '@/lib/invitation';
 
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
     // Otherwise sync all SENT invitations from the last 30 days
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const invitations = await prisma.teacherInvitation.findMany({
+    const invitations = await db.teacherInvitation.findMany({
       where: {
         resendMessageId: { not: null },
         OR: [

@@ -6,7 +6,7 @@
  * Auth: requires CRON_SECRET or AGENT_REPORT_TOKEN bearer token.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -107,7 +107,7 @@ TEXTE: ${text.slice(0, 3500)}`;
       typeof p === 'string' ? p : p.name_ar || p.name_fr || p.name || ''
     ).filter(Boolean);
 
-    await prisma.resourceMetadata.upsert({
+    await db.resourceMetadata.upsert({
       where: { resourceId },
       create: {
         resourceId,
@@ -131,7 +131,7 @@ TEXTE: ${text.slice(0, 3500)}`;
 
     // Update ResourceSummary
     if (attrs.summary) {
-      await prisma.resourceSummary.upsert({
+      await db.resourceSummary.upsert({
         where: { resourceId },
         create: {
           resourceId,

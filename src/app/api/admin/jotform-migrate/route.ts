@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { put } from '@vercel/blob';
 
 export const maxDuration = 60;
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Check teacher exists
-    const teacher = await prisma.user.findUnique({ where: { id: teacherId } });
+    const teacher = await db.user.findUnique({ where: { id: teacherId } });
     if (!teacher) return NextResponse.json({ error: 'Teacher introuvable' }, { status: 404 });
     if (teacher.role !== 'TEACHER' && teacher.role !== 'ADMIN') {
       return NextResponse.json({ error: "User n'est pas teacher" }, { status: 400 });
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Create TeacherFile
-    const teacherFile = await prisma.teacherFile.create({
+    const teacherFile = await db.teacherFile.create({
       data: {
         teacherId,
         fileName: filename,
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
     else if (/philosophie/i.test(fnameLower)) subjectSlug = 'philosophie';
     else if (/algo|programmation/i.test(fnameLower)) subjectSlug = 'algo-prog';
     else if (/informatique/i.test(fnameLower)) subjectSlug = 'informatique';
-    const subject = await prisma.subject.findUnique({ where: { slug: subjectSlug } });
+    const subject = await db.subject.findUnique({ where: { slug: subjectSlug } });
 
     // Detect type
     let resType = 'COURSE';
@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
     else if (/cours/i.test(fnameLower)) resType = 'COURSE';
 
     // Create Resource (auto-published, no subject attribution)
-    const resource = await prisma.resource.create({
+    const resource = await db.resource.create({
       data: {
         title: filename.replace(/\.[^.]+$/, ''),
         slug: `jotform-${submissionId}-${Date.now()}`.slice(0, 60),
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
         originalFileSize: buffer.length,
         libraryFileId: teacherFile.id,
         teacherId: teacherId,
-        subjectId: subject?.id || (await prisma.subject.findFirst())!.id,
+        subjectId: subject?.id || (await db.subject.findFirst())!.id,
         approvedById: user.id,
         approvedAt: new Date(),
         publishedAt: new Date(),
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Link teacherFile.resourceId
-    await prisma.teacherFile.update({
+    await db.teacherFile.update({
       where: { id: teacherFile.id },
       data: { resourceId: resource.id },
     });

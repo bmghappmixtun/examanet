@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/navigation';
 
 
-// import { prisma } from '@/lib/prisma'; (removed for client)
+// import { db } from '@/lib/d1-admin'; (removed for client)
 // import { getCurrentUser } from '@/lib/auth'; (removed for client)
 import { getTechMeta } from '@/lib/techologie-meta';
 import ResourceActions from '@/components/resources/ResourceActions';

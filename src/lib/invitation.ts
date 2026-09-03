@@ -1,7 +1,7 @@
 // @ts-nocheck
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { prisma } from './prisma';
+import { db } from './d1-admin';
 import { Resend } from 'resend';
 import { notifyAdminsInvitedTeacherActivated } from './admin-notify';
 
@@ -57,7 +57,7 @@ export async function createInvitation(
   invitedById?: string,
   customMessage?: string,
 ) {
-  const teacher = await prisma.user.findUnique({
+  const teacher = await db.user.findUnique({
     where: { id: teacherId },
     select: { id: true, email: true, firstName: true, lastName: true, status: true },
   });
@@ -69,7 +69,7 @@ export async function createInvitation(
   const tempPasswordHash = await bcrypt.hash(tempPassword, 12);
   const expiresAt = new Date(Date.now() + INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000);
 
-  const invitation = await prisma.teacherInvitation.create({
+  const invitation = await db.teacherInvitation.create({
     data: {
       teacherId,
       email: teacher.email,
@@ -83,7 +83,7 @@ export async function createInvitation(
   });
 
   // Update User: lock account with new temp password
-  await prisma.user.update({
+  await db.user.update({
     where: { id: teacherId },
     data: {
       passwordHash: tempPasswordHash,
@@ -104,7 +104,7 @@ export async function sendInvitationEmail(
   invitationId: string,
   tempPassword: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  const inv = await prisma.teacherInvitation.findUnique({
+  const inv = await db.teacherInvitation.findUnique({
     where: { id: invitationId },
     include: { teacher: { select: { firstName: true, lastName: true } } },
   });
@@ -116,7 +116,7 @@ export async function sendInvitationEmail(
   const landingUrl = `${SITE_URL}/enseignants/rejoindre`;
 
   // Count their files
-  const fileCount = await prisma.resource.count({
+  const fileCount = await db.resource.count({
     where: { teacherId: inv.teacherId, status: 'PUBLISHED' },
   });
 
@@ -168,7 +168,7 @@ export async function sendInvitationEmail(
     // Resend returns the message ID for later delivery tracking
     const resendMessageId = result.data?.id || null;
 
-    await prisma.teacherInvitation.update({
+    await db.teacherInvitation.update({
       where: { id: invitationId },
       data: {
         status: INV_STATUS.SENT,
@@ -179,7 +179,7 @@ export async function sendInvitationEmail(
       },
     });
 
-    await prisma.user.update({
+    await db.user.update({
       where: { id: inv.teacherId },
       data: {
         invitationStatus: USER_INV_STATUS.INVITED,
@@ -208,7 +208,7 @@ export async function syncInvitationDeliveryStatus(invitationId: string): Promis
     return { ok: false, error: 'Resend not configured' };
   }
 
-  const inv = await prisma.teacherInvitation.findUnique({ where: { id: invitationId } });
+  const inv = await db.teacherInvitation.findUnique({ where: { id: invitationId } });
   if (!inv) return { ok: false, error: 'Invitation not found' };
   if (!inv.resendMessageId) return { ok: false, error: 'No Resend message ID' };
 
@@ -229,7 +229,7 @@ export async function syncInvitationDeliveryStatus(invitationId: string): Promis
     const openedAt = isOpened && !inv.openedAt ? new Date() : inv.openedAt;
     const openCount = isOpened ? (inv.openCount || 0) + 1 : (inv.openCount || 0);
 
-    await prisma.teacherInvitation.update({
+    await db.teacherInvitation.update({
       where: { id: invitationId },
       data: {
         deliveryStatus: lastEvent,
@@ -250,7 +250,7 @@ export async function syncInvitationDeliveryStatus(invitationId: string): Promis
  * Record a link click
  */
 export async function recordInvitationClick(token: string, ipAddress?: string, userAgent?: string) {
-  const inv = await prisma.teacherInvitation.findUnique({ where: { token } });
+  const inv = await db.teacherInvitation.findUnique({ where: { token } });
   if (!inv) return null;
   if (
     inv.status === INV_STATUS.ACTIVATED ||
@@ -262,7 +262,7 @@ export async function recordInvitationClick(token: string, ipAddress?: string, u
 
   // Auto-expire if past expiresAt
   if (new Date() > inv.expiresAt) {
-    await prisma.teacherInvitation.update({
+    await db.teacherInvitation.update({
       where: { id: inv.id },
       data: { status: INV_STATUS.EXPIRED },
     });
@@ -279,7 +279,7 @@ export async function recordInvitationClick(token: string, ipAddress?: string, u
     updates.clickUserAgent = userAgent;
   }
 
-  return prisma.teacherInvitation.update({
+  return db.teacherInvitation.update({
     where: { id: inv.id },
     data: updates,
   });
@@ -294,7 +294,7 @@ export async function activateInvitation(
   ipAddress?: string,
   userAgent?: string,
 ) {
-  const inv = await prisma.teacherInvitation.findUnique({ where: { token } });
+  const inv = await db.teacherInvitation.findUnique({ where: { token } });
   if (!inv) return { ok: false, error: 'Invitation introuvable' };
   if (inv.status === INV_STATUS.ACTIVATED)
     return { ok: false, error: 'Cette invitation a déjà été activée' };
@@ -303,7 +303,7 @@ export async function activateInvitation(
   if (inv.status === INV_STATUS.EXPIRED)
     return { ok: false, error: 'Cette invitation a expiré (10 jours)' };
   if (new Date() > inv.expiresAt) {
-    await prisma.teacherInvitation.update({
+    await db.teacherInvitation.update({
       where: { id: inv.id },
       data: { status: INV_STATUS.EXPIRED },
     });
@@ -316,8 +316,8 @@ export async function activateInvitation(
 
   const newHash = await bcrypt.hash(newPassword, 12);
 
-  await prisma.$transaction([
-    prisma.user.update({
+  await db.$transaction([
+    db.user.update({
       where: { id: inv.teacherId },
       data: {
         passwordHash: newHash,
@@ -329,7 +329,7 @@ export async function activateInvitation(
         emailVerifiedAt: new Date(), // Email is verified by receiving the invitation
       },
     }),
-    prisma.teacherInvitation.update({
+    db.teacherInvitation.update({
       where: { id: inv.id },
       data: {
         status: INV_STATUS.ACTIVATED,
@@ -355,20 +355,20 @@ export async function activateInvitation(
  * Cancel an invitation (admin action)
  */
 export async function cancelInvitation(invitationId: string) {
-  const inv = await prisma.teacherInvitation.findUnique({ where: { id: invitationId } });
+  const inv = await db.teacherInvitation.findUnique({ where: { id: invitationId } });
   if (!inv) return { ok: false, error: 'Invitation introuvable' };
   if (inv.status === INV_STATUS.ACTIVATED)
     return { ok: false, error: "Impossible d'annuler une invitation activée" };
 
-  await prisma.$transaction([
-    prisma.teacherInvitation.update({
+  await db.$transaction([
+    db.teacherInvitation.update({
       where: { id: invitationId },
       data: {
         status: INV_STATUS.CANCELLED,
         cancelledAt: new Date(),
       },
     }),
-    prisma.user.update({
+    db.user.update({
       where: { id: inv.teacherId },
       data: {
         invitationStatus: USER_INV_STATUS.INVITATION_EXPIRED,
@@ -384,7 +384,7 @@ export async function cancelInvitation(invitationId: string) {
  */
 export async function expireStaleInvitations() {
   const now = new Date();
-  const stale = await prisma.teacherInvitation.findMany({
+  const stale = await db.teacherInvitation.findMany({
     where: {
       status: { in: [INV_STATUS.PENDING, INV_STATUS.SENT, INV_STATUS.CLICKED] },
       expiresAt: { lt: now },
@@ -394,12 +394,12 @@ export async function expireStaleInvitations() {
 
   if (stale.length === 0) return { expired: 0 };
 
-  await prisma.$transaction([
-    prisma.teacherInvitation.updateMany({
+  await db.$transaction([
+    db.teacherInvitation.updateMany({
       where: { id: { in: stale.map((s) => s.id) } },
       data: { status: INV_STATUS.EXPIRED },
     }),
-    prisma.user.updateMany({
+    db.user.updateMany({
       where: { id: { in: stale.map((s) => s.teacherId) } },
       data: { invitationStatus: USER_INV_STATUS.INVITATION_EXPIRED },
     }),

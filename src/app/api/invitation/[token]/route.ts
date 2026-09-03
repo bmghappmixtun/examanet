@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { recordInvitationClick, INV_STATUS } from '@/lib/invitation';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
@@ -17,12 +17,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
       return NextResponse.json({ valid: false, notFound: true }, { status: 404 });
     }
 
-    const teacher = await prisma.user.findUnique({
+    const teacher = await db.user.findUnique({
       where: { id: inv.teacherId },
       select: { firstName: true, lastName: true, email: true },
     });
 
-    const fileCount = await prisma.resource.count({
+    const fileCount = await db.resource.count({
       where: { teacherId: inv.teacherId, status: 'PUBLISHED' },
     });
 

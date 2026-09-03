@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { activateInvitation } from '@/lib/invitation';
 import { createSession, setSessionCookie } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   try {
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     }
 
     // Fetch the user to create a session
-    const inv = await prisma.teacherInvitation.findUnique({ where: { token } });
+    const inv = await db.teacherInvitation.findUnique({ where: { token } });
     if (!inv) {
       return NextResponse.json(
         { success: false, error: 'Erreur post-activation' },
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       );
     }
 
-    const user = await prisma.user.findUnique({ where: { id: inv.teacherId } });
+    const user = await db.user.findUnique({ where: { id: inv.teacherId } });
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Utilisateur introuvable' },
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     const { token: sessionToken, expiresAt } = await createSession(user.id, ua, ip);
     await setSessionCookie(sessionToken, expiresAt);
 
-    await prisma.user.update({
+    await db.user.update({
       where: { id: user.id },
       data: { lastLoginAt: new Date() },
     });

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
+import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 import InvitationsClient from '@/components/admin/InvitationsClient';
 import { expireStaleInvitations } from '@/lib/invitation';
@@ -17,7 +17,7 @@ export default async function AdminInvitationsPage() {
 
   // Fetch all invitations (limit 200 for initial view)
   const [invitations, stats, clickedCount, totalClicks] = await Promise.all([
-    prisma.teacherInvitation.findMany({
+    db.teacherInvitation.findMany({
       take: 200,
       orderBy: { createdAt: 'desc' },
       include: {
@@ -33,7 +33,7 @@ export default async function AdminInvitationsPage() {
         invitedBy: { select: { id: true, firstName: true, lastName: true, email: true } },
       },
     }),
-    prisma.teacherInvitation.groupBy({
+    db.teacherInvitation.groupBy({
       by: ['status'],
       _count: { status: true },
     }),
@@ -44,11 +44,11 @@ export default async function AdminInvitationsPage() {
     // clicked eventually activated and moved to ACTIVATED. The chip
     // "Lien cliqué" should show "unique teachers who clicked", not
     // "teachers stuck in CLICKED state".
-    prisma.teacherInvitation.count({
+    db.teacherInvitation.count({
       where: { clickCount: { gt: 0 } },
     }),
     // Total click events across all invitations (for the badge tooltip)
-    prisma.teacherInvitation.aggregate({
+    db.teacherInvitation.aggregate({
       _sum: { clickCount: true },
     }),
   ]);
