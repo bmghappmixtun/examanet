@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { prisma } from '@/lib/prisma';
+import { getConversationWithMessages } from '@/lib/d1-messages';
 import { getCurrentUser } from '@/lib/auth';
 import { ArrowLeft } from 'lucide-react';
 import ChatWindow from '@/components/social/ChatWindow';
@@ -16,46 +16,13 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
 
   const { id } = await params;
 
-  const conv = await prisma.conversation.findFirst({
-    where: {
-      id,
-      OR: [{ studentId: user.id }, { teacherId: user.id }],
-    },
-    include: {
-      student: {
-        select: {
-          id: true,
-          numericId: true,
-          slug: true,
-          firstName: true,
-          lastName: true,
-          avatarUrl: true,
-          schoolName: true,
-        },
-      },
-      teacher: {
-        select: {
-          id: true,
-          numericId: true,
-          slug: true,
-          firstName: true,
-          lastName: true,
-          avatarUrl: true,
-          schoolName: true,
-        },
-      },
-      messages: {
-        orderBy: { createdAt: 'asc' },
-        include: {
-          sender: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
-        },
-      },
-    },
-  });
-
-  if (!conv) notFound();
-
-  const other: any = user.id === conv.studentId ? conv.teacher : conv.student;
+  // 2026-09-03: Migrated to D1 direct.
+  // D1 schema: Conversation uses user1Id/user2Id (NOT studentId/teacherId).
+  const result = await getConversationWithMessages(id, user.id);
+  if (!result) notFound();
+  // Map to component expected format
+  const conv = { ...result.conversation, student: result.student, teacher: result.teacher, messages: result.messages };
+  const other: any = result.otherUser;
   const otherName = `${other.firstName || ''} ${other.lastName || ''}`.trim() || 'Utilisateur';
 
   return (

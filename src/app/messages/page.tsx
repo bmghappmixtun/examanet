@@ -4,7 +4,7 @@ import { getInitials } from '@/lib/text-utils';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { prisma } from '@/lib/prisma';
+import { getConversationsForUser } from '@/lib/d1-messages';
 import { getCurrentUser } from '@/lib/auth';
 import { MessageCircle, ArrowLeft } from 'lucide-react';
 import { timeAgo } from '@/lib/utils';
@@ -15,30 +15,16 @@ export default async function MessagesInboxPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
 
-  const conversations = await prisma.conversation.findMany({
-    where: { OR: [{ studentId: user.id }, { teacherId: user.id }] },
-    orderBy: { lastMessageAt: { sort: 'desc', nulls: 'last' } },
-    include: {
-      student: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
-      teacher: {
-        select: { id: true, firstName: true, lastName: true, avatarUrl: true, schoolName: true },
-      },
-      messages: {
-        take: 1,
-        orderBy: { createdAt: 'desc' },
-        select: { content: true, senderId: true, createdAt: true },
-      },
-    },
-  });
-
-  const convsWithUnread = await Promise.all(
-    conversations.map(async (c) => {
-      const unread = await prisma.message.count({
-        where: { conversationId: c.id, isRead: false, senderId: { not: user.id } },
-      });
-      return { ...c, unread };
-    }),
-  );
+  // 2026-09-03: Migrated to D1 direct via d1-messages helper.
+  // D1 schema: Conversation uses user1Id/user2Id (sorted), not studentId/teacherId.
+  const convsWithUnread = await getConversationsForUser(user.id, 50);
+  // Map D1 format to component expected format (student/teacher/messages)
+  const conversations = convsWithUnread.map((c) => ({
+    ...c,
+    student: c.otherUser,
+    teacher: c.otherUser,
+    messages: c.lastMessage ? [c.lastMessage] : [],
+  }));
 
   return (
     <div className="min-h-screen flex flex-col">
