@@ -110,8 +110,14 @@ export async function GET(req: NextRequest) {
     // Test 4: + basic resource columns
     const q4 = await d1All('SELECT f.id, f.teacherId, f.resourceId, r.id AS r_id, r.numericId AS r_numericId, r.slug AS r_slug, r.status AS r_status, r.title AS r_title FROM TeacherFile f LEFT JOIN Resource r ON f.resourceId = r.id WHERE f.teacherId = ? LIMIT 200', testUserId);
     
-    // Test 5: full SQL
-    const q5 = await d1All(sql, testUserId);
+    // Test 5: full SQL with error capture
+    let q5err: any = null;
+    let q5: any = null;
+    try {
+      q5 = await d1All(sql, testUserId);
+    } catch (e: any) {
+      q5err = e.message;
+    }
     
     const activeCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ? AND isActive = 1', testUserId);
     const allCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ?', testUserId);
@@ -127,6 +133,7 @@ export async function GET(req: NextRequest) {
         q3: q3?.length || 0,  // + JOIN, no Resource cols
         q4: q4?.length || 0,  // + basic Resource cols
         q5: q5?.length || 0,  // Full SQL
+        q5err: q5err,
         q5Cols: q5?.[0] ? Object.keys(q5[0]) : null,
         q5First: q5?.[0] || null,
         role: user.role,
