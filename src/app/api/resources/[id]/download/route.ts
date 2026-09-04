@@ -33,28 +33,63 @@ function buildFilename(
 }
 
 /**
- * Stream a file from a URL (Vercel Blob) to the client.
+ * Stream a file from R2 (or fallback to URL) to the client.
  * Sets Content-Disposition so the browser downloads with the right filename.
+ *
+ * 2026-09-04: Rewritten to stream directly from R2 using fileKey/r2Key
+ * (was: fetch the relative fileUrl which fails because fetch needs an absolute URL).
+ * Falls back to fetching fileUrl only if the R2 lookup fails.
  */
 async function streamFileToClient(
   sourceUrl: string,
   filename: string,
+  r2Key: string | null | undefined,
+  fileKey: string | null | undefined,
   contentType = 'application/pdf',
 ): Promise<NextResponse> {
   const safeName = sanitizeFilename(filename);
-  
+
+  // Primary path: stream from R2. Prefer r2Key, fall back to fileKey (which IS the R2 key
+  // for resources uploaded before the r2Key field was added in 2026-08-27).
+  const r2LookupKey = r2Key || fileKey;
+  if (r2LookupKey) {
+    try {
+      const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+      const ctx = await getCloudflareContext({ async: true });
+      const bucket = (ctx as any).env?.PDFS_BUCKET as R2Bucket | undefined;
+      if (bucket) {
+        const obj = await bucket.get(r2LookupKey);
+        if (obj) {
+          return new Response(obj.body, {
+            status: 200,
+            headers: {
+              'Content-Type': obj.httpMetadata?.contentType || contentType,
+              'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
+              'Cache-Control': 'public, max-age=3600, must-revalidate',
+              'X-Content-Type-Options': 'nosniff',
+              'X-Storage-Backend': 'r2',
+            },
+          });
+        }
+      }
+    } catch (e: any) {
+      console.warn('[download] R2 stream failed, falling back to URL:', e?.message);
+    }
+  }
+
+  // Fallback: fetch from sourceUrl (only works if it's an absolute URL)
   try {
     const upstream = await fetch(sourceUrl, {
       headers: { 'User-Agent': 'Examanet-Proxy/1.0' },
     });
-    
+
     if (!upstream.ok) {
       return new NextResponse(
         `Upstream fetch failed: ${upstream.status} for ${sourceUrl}`,
         { status: 502 }
       );
     }
-    
+
     return new NextResponse(upstream.body, {
       status: 200,
       headers: {
@@ -62,7 +97,7 @@ async function streamFileToClient(
         'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
         'Cache-Control': 'public, max-age=3600, must-revalidate',
         'X-Content-Type-Options': 'nosniff',
-        'X-Storage-Backend': 'vercel-blob',
+        'X-Storage-Backend': 'r2-fallback',
       },
     });
   } catch (e: any) {
@@ -132,11 +167,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     
     // Track the view/download
     await incrementViewsAndDownloads(db, resource.id);
-    
+
     return streamFileToClient(
       resource.fileUrl,
       buildFilename(resource, false),
-      'application/pdf'
+      resource.r2Key, // 2026-09-04: stream from R2 directly (fixes 502)
+      resource.fileKey, // fallback for legacy resources
+      'application/pdf',
     );
   } catch (e: any) {
     const elapsed = Date.now() - reqStart;
