@@ -14,6 +14,7 @@
 -- TeacherInvitation: tracking timestamps
 ALTER TABLE TeacherInvitation ADD COLUMN activatedAt INTEGER;
 ALTER TABLE TeacherInvitation ADD COLUMN linkClickedAt INTEGER;
+ALTER TABLE TeacherInvitation ADD COLUMN clickIpAddress TEXT;
 ALTER TABLE TeacherInvitation ADD COLUMN clickUserAgent TEXT;
 ALTER TABLE TeacherInvitation ADD COLUMN cancelledAt INTEGER;
 ALTER TABLE TeacherInvitation ADD COLUMN openedAt INTEGER;
