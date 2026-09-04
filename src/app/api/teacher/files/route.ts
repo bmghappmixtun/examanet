@@ -119,6 +119,13 @@ export async function GET(req: NextRequest) {
       q5err = e.message;
     }
     
+    // Test 6: full SQL minus ORDER BY/LIMIT
+    const sqlNoOrder = sql.replace(/ ORDER BY.*$/, '');
+    const q6 = await d1All(sqlNoOrder, testUserId);
+    
+    // Test 7: just the rejection columns
+    const q7 = await d1All('SELECT f.id, r.rejectionReason AS r_rejectionReason, r.rejectionAt AS r_rejectionAt FROM TeacherFile f LEFT JOIN Resource r ON f.resourceId = r.id WHERE f.teacherId = ?', testUserId);
+    
     const activeCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ? AND isActive = 1', testUserId);
     const allCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ?', testUserId);
     return NextResponse.json({
@@ -133,6 +140,10 @@ export async function GET(req: NextRequest) {
         q3: q3?.length || 0,  // + JOIN, no Resource cols
         q4: q4?.length || 0,  // + basic Resource cols
         q5: q5?.length || 0,  // Full SQL
+        sqlLength: sql.length,
+        q6: q6?.length || 0,  // No ORDER BY
+        q7: q7?.length || 0,  // Just rejection cols
+        sqlNoOrder: sqlNoOrder,
         q5err: q5err,
         q5Cols: q5?.[0] ? Object.keys(q5[0]) : null,
         q5First: q5?.[0] || null,
