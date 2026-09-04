@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
       sql += ' AND fileName LIKE ?';
       params.push(`%${search}%`);
     }
-    sql += ' ORDER BY createdAt DESC LIMIT 200';
+    sql += ' ORDER BY f.createdAt DESC LIMIT 200';
 
     const files = await d1All(sql, ...params);
     // Normalize: keep createdAt as ISO string (or null for missing timestamps)
@@ -94,66 +94,7 @@ export async function GET(req: NextRequest) {
         updatedAt: resolveCreatedAt(f),
       };
     });
-    // EXTRA DEBUG: also query with isActive=1 to see if there's a difference
-    // Hardcoded test: query with a known user ID
-    const testUserId = '42fda0d519ad4057807044164';
-    
-    // Test 1: just TeacherFile, no JOIN
-    const q1 = await d1All('SELECT id, fileName FROM TeacherFile WHERE teacherId = ? LIMIT 200', testUserId);
-    
-    // Test 2: TeacherFile only, all columns
-    const q2 = await d1All('SELECT f.id, f.teacherId, f.resourceId, f.fileName, f.fileKey, f.fileUrl, f.r2Key, f.r2PdfKey, f.fileSize, f.mimeType, f.isActive, f.createdAt, f.updatedAt FROM TeacherFile f WHERE f.teacherId = ? LIMIT 200', testUserId);
-    
-    // Test 3: + Resource join but no resource columns
-    const q3 = await d1All('SELECT f.id, f.teacherId, f.resourceId, r.id AS r_id FROM TeacherFile f LEFT JOIN Resource r ON f.resourceId = r.id WHERE f.teacherId = ? LIMIT 200', testUserId);
-    
-    // Test 4: + basic resource columns
-    const q4 = await d1All('SELECT f.id, f.teacherId, f.resourceId, r.id AS r_id, r.numericId AS r_numericId, r.slug AS r_slug, r.status AS r_status, r.title AS r_title FROM TeacherFile f LEFT JOIN Resource r ON f.resourceId = r.id WHERE f.teacherId = ? LIMIT 200', testUserId);
-    
-    // Test 5: full SQL with error capture
-    let q5err: any = null;
-    let q5: any = null;
-    try {
-      q5 = await d1All(sql, testUserId);
-    } catch (e: any) {
-      q5err = e.message;
-    }
-    
-    // Test 6: full SQL minus ORDER BY/LIMIT
-    const sqlNoOrder = sql.replace(/ ORDER BY.*$/, '');
-    const q6 = await d1All(sqlNoOrder, testUserId);
-    
-    // Test 7: just the rejection columns
-    const q7 = await d1All('SELECT f.id, r.rejectionReason AS r_rejectionReason, r.rejectionAt AS r_rejectionAt FROM TeacherFile f LEFT JOIN Resource r ON f.resourceId = r.id WHERE f.teacherId = ?', testUserId);
-    
-    const activeCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ? AND isActive = 1', testUserId);
-    const allCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ?', testUserId);
-    return NextResponse.json({
-      files: normalized,
-      debug: {
-        userId: user.id,
-        userIdType: typeof user.id,
-        userIdLen: user.id.length,
-        testUserId: testUserId,
-        q1: q1?.length || 0,  // No JOIN
-        q2: q2?.length || 0,  // TeacherFile only
-        q3: q3?.length || 0,  // + JOIN, no Resource cols
-        q4: q4?.length || 0,  // + basic Resource cols
-        q5: q5?.length || 0,  // Full SQL
-        sqlLength: sql.length,
-        q6: q6?.length || 0,  // No ORDER BY
-        q7: q7?.length || 0,  // Just rejection cols
-        sqlNoOrder: sqlNoOrder,
-        q5err: q5err,
-        q5Cols: q5?.[0] ? Object.keys(q5[0]) : null,
-        q5First: q5?.[0] || null,
-        role: user.role,
-        count: files.length,
-        allCount: allCount?.[0]?.c,
-        activeCount: activeCount?.[0]?.c,
-        sql: sql.slice(0, 100),
-      },
-    });
+    return NextResponse.json({ files: normalized });
   } catch (e: any) {
     console.error('[api/teacher/files] error:', e.message);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });
