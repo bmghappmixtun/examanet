@@ -54,7 +54,8 @@ export async function POST(
     const { id } = await params;
     const body = await req.json();
     const value = parseInt(body?.value);
-    
+    // 2026-09-04: review field is optional (legacy bug: undefined variable crashed the response)
+    const review = typeof body?.review === 'string' ? body.review.trim() || null : null;
 
     if (!value || value < 1 || value > 5) {
       return NextResponse.json({ error: 'Note invalide (1-5)' }, { status: 400 });

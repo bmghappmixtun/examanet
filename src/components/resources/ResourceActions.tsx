@@ -47,7 +47,35 @@ export default function ResourceActions({
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('INAPPROPRIATE');
+  const [reportDetails, setReportDetails] = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
   const printFrameRef = useRef<HTMLIFrameElement | null>(null);
+
+  async function handleReport() {
+    setReportSubmitting(true);
+    try {
+      const res = await fetch(`/api/resources/${resourceId}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reportReason, details: reportDetails }),
+      });
+      const data = await res.json();
+      if (res.ok && data?.success) {
+        toast.success(data.message || 'Signalement envoyé');
+        setReportOpen(false);
+        setReportDetails('');
+        setReportReason('INAPPROPRIATE');
+      } else {
+        toast.error(data?.error || 'Erreur lors du signalement');
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'Erreur réseau');
+    } finally {
+      setReportSubmitting(false);
+    }
+  }
 
   const url = typeof window !== 'undefined' ? window.location.href : '';
 
@@ -227,7 +255,7 @@ export default function ResourceActions({
           <Share2 className="w-4 h-4" /> Partager
         </button>
         <button
-          onClick={() => toast('Merci pour votre signalement')}
+          onClick={() => setReportOpen(true)}
           className="btn-secondary justify-center text-sm"
         >
           <Flag className="w-4 h-4" /> Signaler
@@ -292,6 +320,75 @@ export default function ResourceActions({
               )}
               <span className="text-[10px] font-semibold">{copied ? 'Copié' : 'Copier'}</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Report modal — 2026-09-04: actually creates a Report row (was a no-op toast) */}
+      {reportOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+          onClick={() => !reportSubmitting && setReportOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+                <Flag className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Signaler cette ressource</h3>
+                <p className="text-sm text-slate-500">Aidez-nous à garder Examanet de qualité</p>
+              </div>
+            </div>
+            <div className="space-y-3 mb-5">
+              <label className="block text-sm font-semibold text-slate-700">
+                Raison du signalement
+              </label>
+              <select
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                disabled={reportSubmitting}
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-red-400 focus:ring-4 focus:ring-red-100 outline-none text-sm"
+              >
+                <option value="INAPPROPRIATE">Contenu inapproprié</option>
+                <option value="COPYRIGHT">Violation de droits d'auteur</option>
+                <option value="SPAM">Spam ou contenu trompeur</option>
+                <option value="WRONG_CONTENT">Contenu erroné ou trompeur</option>
+                <option value="BROKEN_FILE">Fichier cassé ou inaccessible</option>
+                <option value="OTHER">Autre (précisez ci-dessous)</option>
+              </select>
+              <label className="block text-sm font-semibold text-slate-700 mt-3">
+                Détails (optionnel, max 1000 caractères)
+              </label>
+              <textarea
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value.slice(0, 1000))}
+                disabled={reportSubmitting}
+                rows={3}
+                placeholder="Décrivez le problème..."
+                className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-red-400 focus:ring-4 focus:ring-red-100 outline-none text-sm resize-none"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setReportOpen(false)}
+                disabled={reportSubmitting}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleReport}
+                disabled={reportSubmitting}
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50 flex items-center gap-2"
+              >
+                {reportSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Envoyer
+              </button>
+            </div>
           </div>
         </div>
       )}
