@@ -60,7 +60,7 @@ def gen_structured(t):
 النص الأصلي:
 {text}
 
-أعد الصياغة بالصيغة المهيكلة:"""
+مهم: أعد فقط كود HTML أعلاه، بدون أي علامات كود markdown (لا ```html ولا ``` حوله). يجب أن يبدأ الناتج مباشرة بـ <strong>المادة :</strong> وينتهي بـ </ul>. لا تضف "html" في البداية، ولا تكرر رأس "ملخص بيداغوجي"."""
     else:
         prompt = f"""Tu es un expert en résumé pédagogique tunisien pour le collège.
 Reformule ce résumé en format HTML structuré avec les champs suivants:
@@ -79,7 +79,7 @@ Matière: {t['subj']}
 Texte original:
 {text}
 
-Reformule en format structuré:"""
+IMPORTANT: Renvoie UNIQUEMENT le HTML ci-dessus, sans balises de code markdown (pas de ```html ni ``` autour). Le résultat doit commencer directement par <strong>Matière :</strong> et finir par </ul>. Pas de préfixe "html", pas de suffixe, pas de duplication du header "Résumé Pédagogique"."""
     
     try:
         resp = client.chat.completions.create(
@@ -103,6 +103,16 @@ def process(t):
     
     # Clean control chars
     desc = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', desc)
+
+    # 2026-09-04 fix: strip markdown code fences that GPT-4o-mini sometimes
+    # wraps the structured HTML in (e.g. "```html ... ```"). The leading
+    # "html" leaked into the rendered description as "html Résumé Pédagogique"
+    desc = re.sub(r'^\s*```(?:html|HTML)?\s*\n?', '', desc)
+    desc = re.sub(r'\n?\s*```\s*$', '', desc)
+
+    # 2026-09-04 fix: collapse duplicated "Résumé Pédagogique" header (some
+    # generations had it twice in a row before the structured fields)
+    desc = re.sub(r'^(?:Résumé Pédagogique\s*){2,}', 'Résumé Pédagogique\n', desc, flags=re.IGNORECASE)
     desc_sql = desc.replace("'", "''")
     
     try:

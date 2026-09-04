@@ -126,8 +126,16 @@ export default function ResourceScribdHeader({
   // collège files contain <strong>/<br>/<em> tags that shouldn't be
   // rendered as raw text). We strip them BEFORE truncation so the
   // character count is consistent.
+  // 2026-09-04 fix: also strip markdown code fences (```html ... ```) that
+  // GPT-4o-mini sometimes wraps the structured HTML in. Without this, the
+  // first line of the description renders as "html Résumé Pédagogique ...".
   const stripHtml = (s: string) =>
-    s.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    s
+      .replace(/^\s*```(?:html|HTML)?\s*\n?/, '') // opening fence
+      .replace(/\n?\s*```\s*$/, '')               // closing fence
+      .replace(/<[^>]+>/g, ' ')                  // HTML tags
+      .replace(/\s+/g, ' ')
+      .trim();
   const cleanDescription = description ? stripHtml(description) : description;
   const visibleDescription = hasLongDescription && !expanded
     ? cleanDescription!.slice(0, TRUNCATE_AT).trimEnd() + '…'
