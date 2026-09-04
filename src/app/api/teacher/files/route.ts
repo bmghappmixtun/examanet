@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
         updatedAt: resolveCreatedAt(f),
       };
     });
-    return NextResponse.json({ files: normalized });
+    return NextResponse.json({ files: normalized, debug: { userId: user.id, role: user.role, count: files.length, sql: sql.slice(0, 100) } });
   } catch (e: any) {
     console.error('[api/teacher/files] error:', e.message);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });
