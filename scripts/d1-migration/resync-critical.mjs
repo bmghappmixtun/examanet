@@ -30,7 +30,7 @@ if (!DATABASE_URL || !CF_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID) {
   process.exit(1);
 }
 
-const ALL_TABLES = ['View', 'Download', 'ResourceContent', 'ResourceMetadata', 'ResourceSummary'];
+const ALL_TABLES = ['View', 'Download', 'ResourceContent', 'ResourceMetadata', 'ResourceSummary', 'TeacherInvitation'];
 const TABLES = process.argv.length > 2 ? process.argv.slice(2) : ALL_TABLES;
 
 const REQUEST_TIMEOUT = 60000;
@@ -90,6 +90,27 @@ const COLUMNS_MAP = {
     'generatedAt': 'extractedAt',
     'updatedAt': 'updatedAt',
   },
+  'TeacherInvitation': {
+    'id': 'id',
+    'email': 'email',
+    'token': 'token',
+    'invitedById': 'invitedById',
+    'status': 'status',
+    'message': 'customMessage',  // Neon 'customMessage' → D1 'message' (different naming)
+    'expiresAt': 'expiresAt',
+    'acceptedAt': 'activatedAt',  // Neon 'activatedAt' → D1 'acceptedAt'
+    'invitationSentAt': 'emailSentAt',  // Neon 'emailSentAt' → D1 'invitationSentAt'
+    'invitationActivatedAt': 'activatedAt',  // Neon 'activatedAt' → D1 'invitationActivatedAt'
+    'createdAt': 'createdAt',
+    'clickCount': 'clickCount',
+    'customMessage': 'customMessage',  // both have this
+    'tempPassword': 'tempPassword',
+    'resendMessageId': 'resendMessageId',
+    'deliveryStatus': 'deliveryStatus',
+    'deliverySyncedAt': 'deliverySyncedAt',
+    'activateIpAddress': 'activateIpAddress',
+    'activateUserAgent': 'activateUserAgent',
+  },
 };
 
 const FK_RELATIONSHIPS = {
@@ -98,6 +119,7 @@ const FK_RELATIONSHIPS = {
   'ResourceContent': { 'resourceId': { table: 'Resource', column: 'id' } },
   'ResourceMetadata': { 'resourceId': { table: 'Resource', column: 'id' } },
   'ResourceSummary': { 'resourceId': { table: 'Resource', column: 'id' } },
+  'TeacherInvitation': { 'invitedById': { table: 'User', column: 'id' } },
 };
 
 function log(msg) {
