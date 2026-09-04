@@ -94,7 +94,20 @@ export async function GET(req: NextRequest) {
         updatedAt: resolveCreatedAt(f),
       };
     });
-    return NextResponse.json({ files: normalized, debug: { userId: user.id, role: user.role, count: files.length, sql: sql.slice(0, 100) } });
+    // EXTRA DEBUG: also query with isActive=1 to see if there's a difference
+    const activeCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ? AND isActive = 1', user.id);
+    const allCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ?', user.id);
+    return NextResponse.json({
+      files: normalized,
+      debug: {
+        userId: user.id,
+        role: user.role,
+        count: files.length,
+        allCount: allCount?.[0]?.c,
+        activeCount: activeCount?.[0]?.c,
+        sql: sql.slice(0, 100),
+      },
+    });
   } catch (e: any) {
     console.error('[api/teacher/files] error:', e.message);
     return NextResponse.json({ error: 'server_error' }, { status: 500 });
