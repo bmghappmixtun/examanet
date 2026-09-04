@@ -123,18 +123,29 @@ export async function POST(req: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
       .substring(0, 80) || 'teacher';
-    user = await db.user.create({
-      data: {
-        email: normalizedEmail,
-        firstName,
-        lastName,
-        slug: baseSlug,
-        role: 'TEACHER',
-        status: USER_INV_STATUS.PENDING_INVITATION,
-        // We don't set a password — the teacher will set it during activation
-      },
-      select: { id: true, role: true, status: true, firstName: true, lastName: true },
-    });
+    // Use raw SQL via d1Run + d1First to ensure id is returned properly
+    // (d1-admin's create() returns spread data when no explicit id, but user.id
+    // is needed immediately after to query the existing invitation check).
+    const { d1Run, d1First, genId } = await import('@/lib/db-d1');
+    const newUserId = genId();
+    const now = Date.now();
+    const insertRes = await d1Run(
+      `INSERT INTO "User" (id, email, firstName, lastName, slug, role, status, invitationStatus, createdAt, updatedAt, mustChangePassword)
+       VALUES (?, ?, ?, ?, ?, 'TEACHER', ?, ?, ?, ?, 1)`,
+      newUserId, normalizedEmail, firstName, lastName, baseSlug,
+      USER_INV_STATUS.PENDING_INVITATION, USER_INV_STATUS.PENDING_INVITATION,
+      now, now,
+    );
+    if (!insertRes.success) {
+      return NextResponse.json(
+        { error: `Création user échouée: ${insertRes.error}` },
+        { status: 500 },
+      );
+    }
+    user = await d1First(
+      'SELECT id, role, status, firstName, lastName FROM "User" WHERE id = ?',
+      newUserId,
+    );
   }
 
   // Check if there's already a pending (non-expired) invitation

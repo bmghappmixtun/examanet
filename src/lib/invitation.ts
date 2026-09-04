@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { db } from './d1-admin';
 import { Resend } from 'resend';
 import { notifyAdminsInvitedTeacherActivated } from './admin-notify';
+import { genId } from './db-d1';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM || 'Examanet <noreply@examanet.com>';
@@ -69,8 +70,12 @@ export async function createInvitation(
   const tempPasswordHash = await bcrypt.hash(tempPassword, 12);
   const expiresAt = new Date(Date.now() + INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000);
 
+  // d1-admin's create() needs an explicit id; otherwise it returns spread data
+  // (last_row_id is the SQLite rowid, not our TEXT id).
+  const newInvitationId = genId();
   const invitation = await db.teacherInvitation.create({
     data: {
+      id: newInvitationId,
       teacherId,
       email: teacher.email,
       token,
@@ -81,6 +86,12 @@ export async function createInvitation(
       customMessage,
     },
   });
+  // Refetch the canonical record (the create helper returns either the spread
+  // data or a full row from findFirst — be safe and re-fetch by id).
+  const invitationRow = (invitation && (invitation as any).id)
+    ? invitation
+    : await db.teacherInvitation.findFirst({ where: { id: newInvitationId } });
+  if (!invitationRow) throw new Error('Invitation created but could not be retrieved');
 
   // Update User: lock account with new temp password
   await db.user.update({
@@ -88,13 +99,13 @@ export async function createInvitation(
     data: {
       passwordHash: tempPasswordHash,
       invitationStatus: USER_INV_STATUS.PENDING_INVITATION,
-      lastInvitationId: invitation.id,
+      lastInvitationId: (invitationRow as any).id,
       mustChangePassword: true,
       status: 'PENDING_OTP', // Force activation flow
     },
   });
 
-  return { invitation, tempPassword, token };
+  return { invitation: invitationRow, tempPassword, token };
 }
 
 /**

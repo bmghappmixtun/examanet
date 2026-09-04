@@ -203,9 +203,15 @@ export async function create(
     const placeholders = cols.map(() => '?').join(', ');
     const values = cols.map(c => toDbValue(data[c]));
     const sql = `INSERT INTO ${q(table)} (${cols.map(c => q(c)).join(', ')}) VALUES (${placeholders})`;
-    const res: any = await db.prepare(sql).bind(...values).run();
-    const id = data.id || res?.meta?.last_row_id || null;
-    if (id) return await findFirst(table, { id });
+    await db.prepare(sql).bind(...values).run();
+    // Always return the inserted record. If we have an id, fetch the canonical
+    // row from the DB (with any defaults applied by SQLite). Otherwise spread
+    // the input data so callers always get a usable object (no last_row_id
+    // for tables with TEXT primary keys — it's the SQLite rowid, not the id).
+    if (data.id) {
+      const fetched = await findFirst(table, { id: data.id });
+      if (fetched) return fetched;
+    }
     return { ...data };
   } catch (e) {
     console.error(`[d1-admin] create ${table} error:`, e);
