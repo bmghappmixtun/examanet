@@ -81,6 +81,7 @@ export async function createInvitation(
       token,
       tempPassword: tempPasswordHash, // Stored hashed
       expiresAt,
+      createdAt: new Date(), // NOT NULL in D1
       status: INV_STATUS.PENDING,
       invitedById,
       customMessage,
@@ -261,7 +262,8 @@ export async function syncInvitationDeliveryStatus(invitationId: string): Promis
  * Record a link click
  */
 export async function recordInvitationClick(token: string, ipAddress?: string, userAgent?: string) {
-  const inv = await db.teacherInvitation.findUnique({ where: { token } });
+  const { d1First, d1Run } = await import('./db-d1');
+  const inv = await d1First('SELECT * FROM TeacherInvitation WHERE token = ?', token);
   if (!inv) return null;
   if (
     inv.status === INV_STATUS.ACTIVATED ||
@@ -273,27 +275,30 @@ export async function recordInvitationClick(token: string, ipAddress?: string, u
 
   // Auto-expire if past expiresAt
   if (new Date() > inv.expiresAt) {
-    await db.teacherInvitation.update({
-      where: { id: inv.id },
-      data: { status: INV_STATUS.EXPIRED },
-    });
+    await d1Run('UPDATE TeacherInvitation SET status = ?, updatedAt = ? WHERE id = ?', INV_STATUS.EXPIRED, Date.now(), inv.id);
     return { ...inv, status: INV_STATUS.EXPIRED };
   }
 
-  const updates: any = {
-    clickCount: { increment: 1 },
-  };
+  // d1-admin's update() doesn't support Prisma's { increment: 1 } syntax,
+  // so we have to use raw SQL with COALESCE for the clickCount increment.
+  const newClickCount = (inv.clickCount || 0) + 1;
+  const now = Date.now();
   if (!inv.linkClickedAt) {
-    updates.status = INV_STATUS.CLICKED;
-    updates.linkClickedAt = new Date();
-    updates.clickIpAddress = ipAddress;
-    updates.clickUserAgent = userAgent;
+    await d1Run(
+      `UPDATE TeacherInvitation
+       SET clickCount = ?, status = ?, linkClickedAt = ?, clickIpAddress = ?, clickUserAgent = ?, updatedAt = ?
+       WHERE id = ?`,
+      newClickCount, INV_STATUS.CLICKED, now, ipAddress || null, userAgent || null, now, inv.id,
+    );
+  } else {
+    await d1Run(
+      'UPDATE TeacherInvitation SET clickCount = ?, updatedAt = ? WHERE id = ?',
+      newClickCount, now, inv.id,
+    );
   }
 
-  return db.teacherInvitation.update({
-    where: { id: inv.id },
-    data: updates,
-  });
+  // Re-fetch and return the updated record
+  return await d1First('SELECT * FROM TeacherInvitation WHERE id = ?', inv.id);
 }
 
 /**
