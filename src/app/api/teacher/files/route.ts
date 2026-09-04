@@ -95,12 +95,20 @@ export async function GET(req: NextRequest) {
       };
     });
     // EXTRA DEBUG: also query with isActive=1 to see if there's a difference
-    const activeCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ? AND isActive = 1', user.id);
-    const allCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ?', user.id);
+    // Hardcoded test: query with a known user ID
+    const testUserId = '42fda0d519ad4057807044164';
+    const activeCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ? AND isActive = 1', testUserId);
+    const allCount = await d1All('SELECT COUNT(*) as c FROM TeacherFile WHERE teacherId = ?', testUserId);
+    // Test with same SQL but limit 200
+    const testQuery = await d1All(sql, testUserId);
     return NextResponse.json({
       files: normalized,
       debug: {
         userId: user.id,
+        userIdType: typeof user.id,
+        userIdLen: user.id.length,
+        testUserId: testUserId,
+        testQueryCount: testQuery?.length || 0,
         role: user.role,
         count: files.length,
         allCount: allCount?.[0]?.c,
