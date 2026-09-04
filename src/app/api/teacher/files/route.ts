@@ -127,6 +127,8 @@ export async function GET(req: NextRequest) {
         q3: q3?.length || 0,  // + JOIN, no Resource cols
         q4: q4?.length || 0,  // + basic Resource cols
         q5: q5?.length || 0,  // Full SQL
+        q5Cols: q5?.[0] ? Object.keys(q5[0]) : null,
+        q5First: q5?.[0] || null,
         role: user.role,
         count: files.length,
         allCount: allCount?.[0]?.c,
