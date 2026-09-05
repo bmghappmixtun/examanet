@@ -64,9 +64,30 @@ export async function GET(
       WHERE r.numericId = ?
       LIMIT 1
     `).bind(numericId).first();
-    
+
     if (!r) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    // 2026-09-05: Filter out non-published + hidden resources from the public API.
+    // Previously the detail endpoint returned the resource as long as the row
+    // existed in the DB, even when status=DRAFT or isHidden=1. That meant after
+    // a teacher unpublished a resource, the /fr/ressources/[id] page still
+    // served the full content (because the client fetched /api/ressources/.../detail).
+    //
+    // Owners (the teacher who published it) and admins can still see their own
+    // unpublished/draft/hidden resources for editing purposes.
+    if (r.status !== 'PUBLISHED' || r.isHidden === 1) {
+      // Check if the requester is the owner or an admin
+      const { getCurrentUser } = await import('@/lib/auth');
+      const requester = await getCurrentUser();
+      const isOwner = requester && r.teacherId === requester.id;
+      const isAdmin = requester && requester.role === 'ADMIN';
+      if (!isOwner && !isAdmin) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
+      // Mark the response so the client can show a "this is unpublished" notice
+      r._unpublishedForViewer = true;
     }
     
     // Ratings - simple query, no template literal

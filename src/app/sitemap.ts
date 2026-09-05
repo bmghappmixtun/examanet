@@ -115,7 +115,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const resourcesRes2: any = await db.prepare([
       "SELECT slug, numericId, updatedAt, type, viewsCount, downloadsCount",
       "FROM Resource",
-      "WHERE status = 'PUBLISHED'",
+      // 2026-09-05: also filter isHidden=0 so unpublished resources don't
+      // appear in the sitemap (the teacher isHidden flag is the same one
+      // the admin uses to hide a resource from the public site).
+      "WHERE status = 'PUBLISHED' AND isHidden = 0",
       "ORDER BY updatedAt DESC",
     ].join(' ')).all();
     resources = (resourcesRes2?.results || []) as any[];

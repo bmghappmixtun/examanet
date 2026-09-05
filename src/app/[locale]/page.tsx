@@ -38,7 +38,7 @@ const getCachedHomeData = nextCache(
       LEFT JOIN \`Class\` c ON r.classId = c.id
       LEFT JOIN \`Section\` sec ON r.sectionId = sec.id
       LEFT JOIN \`User\` t ON r.teacherId = t.id
-      WHERE r.status = 'PUBLISHED'
+      WHERE r.status = 'PUBLISHED' AND r.isHidden = 0
       ORDER BY r.viewsCount DESC, r.publishedAt DESC
       LIMIT 8
     `).all();
@@ -59,7 +59,7 @@ const getCachedHomeData = nextCache(
       LEFT JOIN \`Class\` c ON r.classId = c.id
       LEFT JOIN \`Section\` sec ON r.sectionId = sec.id
       LEFT JOIN \`User\` t ON r.teacherId = t.id
-      WHERE r.status = 'PUBLISHED'
+      WHERE r.status = 'PUBLISHED' AND r.isHidden = 0
       ORDER BY r.publishedAt DESC
       LIMIT 8
     `).all();
