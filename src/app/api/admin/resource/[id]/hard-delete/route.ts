@@ -75,7 +75,14 @@ export async function POST(
       id,
     );
     if (!resource) {
-      return NextResponse.json({ error: 'Ressource introuvable' }, { status: 404 });
+      // 2026-09-05: improved error message so the user knows it's a stale view
+      return NextResponse.json(
+        {
+          error: 'Cette ressource n\'existe plus (peut-être déjà supprimée). Rechargez la page.',
+          code: 'NOT_FOUND',
+        },
+        { status: 404 },
+      );
     }
 
     // Optional: require an explicit confirm text in the body

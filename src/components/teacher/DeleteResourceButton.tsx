@@ -26,6 +26,30 @@ export default function DeleteResourceButton({
       const res = await fetch(`/api/teacher/resources/${resourceId}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) {
+        // 2026-09-05: Resource already deleted (stale page view)
+        if (res.status === 404 && data?.code === 'NOT_FOUND') {
+          setOpen(false);
+          setConfirmText('');
+          toast.error(
+            (t) => (
+              <div className="max-w-xs">
+                <div className="font-semibold mb-1">⚠️ Ressource déjà supprimée</div>
+                <div className="text-xs opacity-90 mb-2">{data.error}</div>
+                <button
+                  onClick={() => {
+                    router.refresh();
+                    toast.dismiss(t.id);
+                  }}
+                  className="inline-block px-3 py-1.5 text-xs font-bold bg-sky-600 text-white rounded hover:bg-sky-700"
+                >
+                  ↻ Recharger la page
+                </button>
+              </div>
+            ),
+            { duration: 10000, style: { maxWidth: '420px' } },
+          );
+          return;
+        }
         // 2026-09-05: Resource is published — must unpublish first
         if (res.status === 409 && data?.code === 'RESOURCE_PUBLISHED') {
           setOpen(false);
