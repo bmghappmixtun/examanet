@@ -69,7 +69,7 @@ function formatDate(d: string | null | undefined): string {
   });
 }
 
-function getFormatBadge(format: string) {
+function getFormatBadge(format: string | null | undefined) {
   switch (format) {
     case 'pdf':
       return {
@@ -93,7 +93,10 @@ function getFormatBadge(format: string) {
       };
     default:
       return {
-        label: format.toUpperCase(),
+        // Safety: format may be undefined/null (e.g. legacy rows without
+        // originalFormat). Don't crash on format.toUpperCase() — fall back
+        // to 'OTHER' label.
+        label: (format || 'OTHER').toUpperCase(),
         className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
       };
   }
