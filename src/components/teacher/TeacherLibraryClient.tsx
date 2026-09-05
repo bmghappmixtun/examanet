@@ -200,7 +200,29 @@ export default function TeacherLibraryClient({
     try {
       const res = await fetch(`/api/teacher/files?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur suppression');
+      if (!res.ok) {
+        // 2026-09-05: Special handling for "file is linked to published resource"
+        if (res.status === 409 && data?.code === 'RESOURCE_PUBLISHED') {
+          toast.error(
+            (t) => (
+              <div className="max-w-xs">
+                <div className="font-semibold mb-1">⚠️ Fichier lié à une ressource publiée</div>
+                <div className="text-xs opacity-90 mb-2">{data.error}</div>
+                <a
+                  href={data.unpublishUrl || '/enseignant/ressources'}
+                  className="inline-block px-3 py-1.5 text-xs font-bold bg-amber-600 text-white rounded hover:bg-amber-700"
+                  onClick={() => toast.dismiss(t.id)}
+                >
+                  → Dépublier d'abord
+                </a>
+              </div>
+            ),
+            { duration: 8000, style: { maxWidth: '420px' } },
+          );
+          return;
+        }
+        throw new Error(data.error || 'Erreur suppression');
+      }
       toast.success('Fichier supprimé de la bibliothèque');
       loadFiles();
     } catch (e) {

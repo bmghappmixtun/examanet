@@ -25,7 +25,31 @@ export default function DeleteResourceButton({
     try {
       const res = await fetch(`/api/teacher/resources/${resourceId}`, { method: 'DELETE' });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur');
+      if (!res.ok) {
+        // 2026-09-05: Resource is published — must unpublish first
+        if (res.status === 409 && data?.code === 'RESOURCE_PUBLISHED') {
+          setOpen(false);
+          setConfirmText('');
+          toast.error(
+            (t) => (
+              <div className="max-w-xs">
+                <div className="font-semibold mb-1">⚠️ Ressource publiée</div>
+                <div className="text-xs opacity-90 mb-2">{data.error}</div>
+                <a
+                  href="/enseignant/ressources"
+                  className="inline-block px-3 py-1.5 text-xs font-bold bg-amber-600 text-white rounded hover:bg-amber-700"
+                  onClick={() => toast.dismiss(t.id)}
+                >
+                  → Aller à Mes ressources
+                </a>
+              </div>
+            ),
+            { duration: 8000, style: { maxWidth: '420px' } },
+          );
+          return;
+        }
+        throw new Error(data.error || 'Erreur');
+      }
       toast.success('Ressource supprimée');
       setOpen(false);
       router.refresh();

@@ -265,3 +265,77 @@ export async function notifyAdminsNewResource(resourceId: string, teacherName?: 
     console.error('Failed to notify admins of new resource:', e);
   }
 }
+
+/**
+ * Notify all admins that a teacher has unpublished their own resource.
+ * 2026-09-05: Added for the "teacher can unpublish" feature so admins
+ * know the resource is no longer live.
+ */
+export async function notifyAdminsResourceUnpublished(
+  resourceId: string,
+  teacherName: string,
+  resourceTitle: string,
+) {
+  const db = await getD1();
+
+  // Get admins
+  const adminsResult = await db
+    .prepare("SELECT id, email FROM User WHERE role = 'ADMIN'")
+    .all();
+  const admins = adminsResult.results || adminsResult;
+  if (admins.length === 0) return;
+
+  const adminEmails = getAdminEmailsFromConfig();
+  const now = Date.now();
+  const message = `${teacherName} a dépublié sa ressource « ${resourceTitle} ». Elle n'est plus visible sur la plateforme.`;
+
+  // In-app notifications
+  for (const admin of admins) {
+    await db
+      .prepare(
+        `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+         VALUES (?, ?, 'resource_unpublished_by_teacher', ?, ?, '/admin/ressources', 0, ?)`,
+      )
+      .bind(
+        genId(),
+        admin.id,
+        '📥 Ressource dépubliée par un prof',
+        message,
+        now,
+      )
+      .run();
+  }
+
+  // Email (best-effort)
+  if (!resend) {
+    console.log(`\n📧 [ADMIN EMAIL - DEV] Resource unpublished → ${adminEmails.join(', ')}\n`);
+    return;
+  }
+
+  try {
+    const html = `
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+        <h2 style="color:#0F172A;margin:0 0 16px;">📥 Ressource dépubliée</h2>
+        <p>Bonjour Admin,</p>
+        <p>${message}</p>
+        <p style="color:#64748B;font-size:13px;margin-top:24px;">
+          La resource est passée en <strong>status=DRAFT</strong> et <strong>isHidden=1</strong>.
+          Vous pouvez la consulter ou la remettre en ligne depuis le panneau d'administration.
+        </p>
+      </div>
+    `;
+    const recipients = new Set<string>(adminEmails);
+    for (const admin of admins) {
+      if (admin.email) recipients.add(admin.email);
+    }
+    if (recipients.size === 0) return;
+    await resend.emails.send({
+      from: FROM,
+      to: Array.from(recipients),
+      subject: `📥 Ressource dépubliée : ${resourceTitle}`,
+      html,
+    });
+  } catch (e) {
+    console.error('Failed to notify admins of resource unpublish:', e);
+  }
+}
