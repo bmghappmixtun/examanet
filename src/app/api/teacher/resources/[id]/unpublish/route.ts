@@ -33,6 +33,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { d1First, d1Run } from '@/lib/db-d1';
 import { isValidOrigin } from '@/lib/security';
 import { notifyAdminsResourceUnpublished } from '@/lib/admin-notify';
+import { invalidateCache } from '@/lib/kv-cache';
 
 export async function POST(
   _req: NextRequest,
@@ -84,6 +85,14 @@ export async function POST(
     await d1Run('UPDATE TeacherFile SET resourceId = NULL, updatedAt = ? WHERE resourceId = ?', now, id);
 
     // Invalidate KV cache + revalidate pages
+    // 2026-09-05: Also invalidate the resource-detail KV cache, otherwise
+    // the public page would still serve the cached PUBLISHED response for
+    // up to 60s after unpublish.
+    try {
+      await invalidateCache(`resource-detail-v1-${resource.numericId}`);
+    } catch (e) {
+      // Best effort
+    }
     try {
       revalidatePath(`/fr/ressources/${resource.numericId}/${resource.slug}`);
       revalidatePath(`/ressources/${resource.numericId}/${resource.slug}`);

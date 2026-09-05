@@ -110,7 +110,7 @@ async function streamFileToClient(
 
 async function getResourceByNumericId(db: any, numericId: number) {
   return await db.prepare(`
-    SELECT id, numericId, slug, title, type, status, fileKey, fileUrl, r2Key,
+    SELECT id, numericId, slug, title, type, status, isHidden, fileKey, fileUrl, r2Key,
            fileSize
     FROM Resource
     WHERE numericId = ?
@@ -142,8 +142,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!resource) {
       return NextResponse.json({ error: 'Non trouvé' }, { status: 404 });
     }
-    
-    if (resource.status !== 'PUBLISHED' && resource.status !== 'ARCHIVED') {
+
+    // 2026-09-05: Hide resources that are not PUBLISHED or that are admin/teacher-hidden.
+    // The teacher can "unpublish" their own resource from /enseignant/ressources
+    // (sets status=DRAFT + isHidden=1), but the download endpoint was still serving
+    // the file because the check only looked at status. Now we also require isHidden=0.
+    if (resource.status !== 'PUBLISHED' || (resource as any).isHidden === 1) {
       return NextResponse.json({ error: 'Non disponible' }, { status: 403 });
     }
     

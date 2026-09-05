@@ -34,7 +34,8 @@ async function searchResources(db: any, q: string, limit: number): Promise<Sugge
     FROM Resource r
     LEFT JOIN \`Subject\` s ON r.subjectId = s.id
     LEFT JOIN \`Class\` c ON r.classId = c.id
-    WHERE r.status = 'PUBLISHED' 
+    // 2026-09-05: also filter isHidden=0 to hide unpublished resources
+    WHERE r.status = 'PUBLISHED' AND r.isHidden = 0
       AND (r.title LIKE ? OR r.description LIKE ? OR r.summary LIKE ?)
     ORDER BY r.viewsCount DESC
     LIMIT ?

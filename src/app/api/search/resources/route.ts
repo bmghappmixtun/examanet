@@ -39,7 +39,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Build WHERE
-    const conditions: string[] = ["r.status = 'PUBLISHED'"];
+    // 2026-09-05: also filter isHidden=0 to hide unpublished resources
+    const conditions: string[] = ["r.status = 'PUBLISHED'", "r.isHidden = 0"];
     const binds: any[] = [];
 
     if (q) {
