@@ -182,7 +182,12 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params;
     const resource = await d1First('SELECT teacherId, status FROM Resource WHERE id = ?', id);
-    if (!resource) return NextResponse.json({ error: 'Ressource introuvable' }, { status: 404 });
+    if (!resource) {
+      return NextResponse.json(
+        { error: 'Cette ressource n\'existe plus (peut-être déjà supprimée). Rechargez la page.', code: 'NOT_FOUND' },
+        { status: 404 },
+      );
+    }
     if (user.role !== 'ADMIN' && resource.teacherId !== user.id) {
       return NextResponse.json({ error: 'Vous n\'êtes pas le propriétaire' }, { status: 403 });
     }

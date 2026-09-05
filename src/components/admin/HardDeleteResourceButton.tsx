@@ -46,7 +46,36 @@ export default function HardDeleteResourceButton({
         body: JSON.stringify({ confirm: resourceTitle }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur');
+      if (!res.ok) {
+        // 2026-09-05: Special handling for "resource not found" — usually means
+        // the admin had a stale page view and the resource was already deleted.
+        // Show a "Reload" button so they can refresh the list.
+        if (res.status === 404 && data?.code === 'NOT_FOUND') {
+          toast.error(
+            (t) => (
+              <div className="max-w-xs">
+                <div className="font-semibold mb-1">⚠️ Ressource déjà supprimée</div>
+                <div className="text-xs opacity-90 mb-2">{data.error}</div>
+                <button
+                  onClick={() => {
+                    router.refresh();
+                    toast.dismiss(t.id);
+                  }}
+                  className="inline-block px-3 py-1.5 text-xs font-bold bg-sky-600 text-white rounded hover:bg-sky-700"
+                >
+                  ↻ Recharger la page
+                </button>
+              </div>
+            ),
+            { duration: 10000, style: { maxWidth: '420px' } },
+          );
+          setOpen(false);
+          // Auto-refresh after a delay so the list updates
+          setTimeout(() => router.refresh(), 3000);
+          return;
+        }
+        throw new Error(data.error || 'Erreur');
+      }
       setResult({
         success: true,
         message: data.message,
