@@ -3,22 +3,28 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
+import { d1All, d1First, d1Run, getD1 } from '@/lib/db-d1';
 import { sendEditApprovedEmail, sendEditRejectedEmail } from '@/lib/email';
 
 export const runtime = 'nodejs';
 
 /**
  * POST /api/admin/resource/[id]/edit
- * Approve or reject a pending edit (same workflow as new resource approval).
+ * Approve or reject a pending edit on a PUBLISHED resource.
  * Body: { action: 'approve' | 'reject', reason?: string }
  *
- * - Approve: applies the pendingEdit JSON to the resource, clears the edit
- *   state, sends an approval email + in-app notification to the teacher.
- * - Reject: clears pendingEdit, marks as EDIT_REJECTED, saves the reason,
- *   sends a rejection email (with the reason) + in-app notification.
+ * 2026-09-05: Rewrote to use raw D1 SQL — d1-admin.update was failing silently
+ * on `Prisma.JsonNull`, `null` values for `editStatus`/`editRejectionReason`,
+ * and missing columns (editRejectionReason, approvedById, approvedAt).
+ *
+ * - Approve: applies the pendingEdit JSON to the resource, clears edit
+ *   state, sends approval email + in-app notification to the teacher.
+ *   If the original resource was REJECTED/DRAFT/PENDING_APPROVAL (rare for
+ *   a PUBLISHED resource, but possible if a teacher re-submits after
+ *   rejection), we ALSO flip the status to PUBLISHED.
+ * - Reject: clears pendingEdit, sets editStatus='EDIT_REJECTED', saves
+ *   reason, sends rejection email + in-app notification.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -32,93 +38,141 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const action = body.action;
     const reason: string | undefined = body.reason;
 
-    const resource = await db.resource.findUnique({
-      where: { id },
-      include: { teacher: { select: { numericId: true, slug: true } } },
-    });
-    if (!resource) return NextResponse.json({ error: 'Ressource introuvable' }, { status: 404 });
-
+    // 1. Fetch the resource (raw SQL — no Prisma needed)
+    const resource = await d1First(
+      `SELECT id, slug, numericId, title, status, editStatus, pendingEdit,
+              teacherId, publishedAt
+       FROM Resource WHERE id = ?`,
+      id,
+    );
+    if (!resource) {
+      return NextResponse.json({ error: 'Ressource introuvable' }, { status: 404 });
+    }
     if (resource.editStatus !== 'PENDING_EDIT_APPROVAL') {
-      return NextResponse.json({ error: 'Aucune modification en attente' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Aucune modification en attente' },
+        { status: 400 },
+      );
+    }
+
+    // Fetch teacher profile (for the email and the notifications)
+    let teacher: any = null;
+    if (resource.teacherId) {
+      teacher = await d1First(
+        'SELECT id, email, firstName, lastName FROM "User" WHERE id = ?',
+        resource.teacherId,
+      );
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
-    const newSlug = (pending: any) =>
-      pending.title && pending.title !== resource.title
-        ? `${pending.title
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '')}-${Date.now().toString(36)}`
-        : resource.slug;
-    const resourceUrl = `${siteUrl}/ressources/${resource.numericId}/${resource.slug}`;
+    const finalUrl = `${siteUrl}/fr/ressources/${resource.numericId}/${resource.slug}`;
+    const now = Date.now();
 
     if (action === 'approve') {
-      const pending = (resource.pendingEdit as any) || {};
+      // Parse pendingEdit (it's a TEXT column with JSON)
+      let pending: any = {};
+      try {
+        pending = resource.pendingEdit
+          ? typeof resource.pendingEdit === 'string'
+            ? JSON.parse(resource.pendingEdit)
+            : resource.pendingEdit
+          : {};
+      } catch {
+        pending = {};
+      }
 
-      // Apply the pending edit
-      // CRITICAL: When the original resource is REJECTED or DRAFT, the
-      // teacher was previously submitting a fresh new resource. They
-      // got rejected, then re-submitted a corrected version via the
-      // edit form (because the modifier page allows editing REJECTED
-      // resources). After admin approves this "edit", we must ALSO
-      // flip the status to PUBLISHED — otherwise the corrected file
-      // stays invisible on the platform.
+      // Decide if we need to publish (only if the original was never published)
       const mustPublish =
         resource.status === 'REJECTED' ||
         resource.status === 'DRAFT' ||
         resource.status === 'PENDING_APPROVAL';
 
-      const updateData: any = {
-        ...pending,
-        pendingEdit: Prisma.JsonNull,
-        editStatus: null,
-        editReviewedAt: new Date(),
-        editReviewedById: user.id,
-        editRejectionReason: null,
-        // If title changed, update the slug
-        slug: newSlug(pending),
-      };
+      // Build UPDATE: apply pending file/metadata + clear edit state
+      // pendingEdit typically contains { fileKey, fileUrl, fileSize }
+      // (and possibly other metadata fields if the teacher used the metadata edit form)
+      const setClauses: string[] = [];
+      const values: any[] = [];
+
+      // Apply each pending field
+      if (pending.fileKey) { setClauses.push('fileKey = ?'); values.push(pending.fileKey); }
+      if (pending.fileUrl) { setClauses.push('fileUrl = ?'); values.push(pending.fileUrl); }
+      if (pending.fileSize) { setClauses.push('fileSize = ?'); values.push(pending.fileSize); }
+      if (pending.pageCount) { setClauses.push('pageCount = ?'); values.push(pending.pageCount); }
+      // Future: other pendingEdit fields (title/description/etc.)
+      // For now the metadata edit flow uses /api/teacher/resources/[id] PATCH
+      // (which updates directly for REJECTED resources, no edit approval needed)
+
+      // Clear edit state
+      setClauses.push('pendingEdit = ?'); values.push(null);
+      setClauses.push('editStatus = ?'); values.push(null);
+      setClauses.push('editRejectionReason = ?'); values.push(null);
+      setClauses.push('editRequestedAt = ?'); values.push(null);
+      setClauses.push('editRequestedById = ?'); values.push(null);
+      setClauses.push('editReviewedAt = ?'); values.push(now);
+      setClauses.push('editReviewedById = ?'); values.push(user.id);
+
+      // If we need to publish (REJECTED → PUBLISHED transition)
       if (mustPublish) {
-        updateData.status = 'PUBLISHED';
-        updateData.approvedAt = new Date();
-        updateData.approvedById = user.id;
-        if (!resource.publishedAt) updateData.publishedAt = new Date();
+        setClauses.push('status = ?'); values.push('PUBLISHED');
+        setClauses.push('rejectionReason = ?'); values.push(null);
+        setClauses.push('rejectionAt = ?'); values.push(null);
+        setClauses.push('approvedAt = ?'); values.push(now);
+        setClauses.push('approvedById = ?'); values.push(user.id);
+        if (!resource.publishedAt) {
+          setClauses.push('publishedAt = ?'); values.push(now);
+        }
       }
 
-      await db.resource.update({ where: { id }, data: updateData });
-      // Force revalidation of all relevant pages
-      revalidatePath('/ressources');
-      revalidatePath(`/ressources/${resource.numericId}/${resource.slug}`);
+      // Always bump updatedAt
+      setClauses.push('updatedAt = ?'); values.push(now);
+
+      // Run the UPDATE
+      const updateRes = await d1Run(
+        `UPDATE Resource SET ${setClauses.join(', ')} WHERE id = ?`,
+        ...values, id,
+      );
+      if (!updateRes.success) {
+        return NextResponse.json({ error: updateRes.error }, { status: 500 });
+      }
+
+      // Revalidate relevant paths
+      revalidatePath('/fr/ressources');
+      revalidatePath(`/fr/ressources/${resource.numericId}/${resource.slug}`);
       revalidatePath('/');
-      revalidatePath('/enseignant/ressources');
+      revalidatePath('/enseignant/bibliotheque');
       revalidatePath('/admin/ressources/editions');
       revalidatePath('/admin/ressources');
-      if (resource.teacherId && resource.teacher)
-        revalidatePath(`/professeurs/${resource.teacher.numericId}/${resource.teacher.slug}`);
+      if (teacher) {
+        revalidatePath(`/fr/professeurs/${teacher.id}`);
+      }
 
-      const finalUrl = `${siteUrl}/ressources/${pending.numericId}/${newSlug(pending)}`;
+      // Send in-app notification to the teacher
+      if (teacher) {
+        const notifId = crypto.randomUUID().replace(/-/g, '').slice(0, 25);
+        await d1Run(
+          `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
+          notifId,
+          teacher.id,
+          'edit_approved',
+          'Modification approuvée ✅',
+          `Votre modification sur « ${resource.title} » a été approuvée et publiée.`,
+          `/fr/ressources/${resource.numericId}/${resource.slug}`,
+          now,
+        );
+      }
 
-      // Notify teacher
-      if (resource.editRequestedById) {
-        await db.notification.create({
-          data: {
-            userId: resource.editRequestedById,
-            type: 'edit_approved',
-            title: 'Modification approuvée ✅',
-            message: `Votre modification sur "${pending.title || resource.title}" a été approuvée et publiée.`,
-            link: `/ressources/${pending.numericId}/${newSlug(pending)}`,
-          },
-        });
-
-        // Send email to teacher
-        const teacher = await db.user.findUnique({ where: { id: resource.editRequestedById } });
-        if (teacher?.email && teacher.firstName) {
+      // Send approval email
+      if (teacher?.email && teacher?.firstName) {
+        try {
           await sendEditApprovedEmail(
             teacher.email,
             teacher.firstName,
-            pending.title || resource.title,
+            resource.title,
             finalUrl,
           );
+        } catch (e) {
+          console.error('[admin/resource edit approve] email failed:', e?.message);
         }
       }
 
@@ -130,43 +184,56 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     if (action === 'reject') {
       const finalReason = reason?.trim() || "Modification refusée par l'administrateur.";
-      await db.resource.update({
-        where: { id },
-        data: {
-          pendingEdit: Prisma.JsonNull,
-          editStatus: 'EDIT_REJECTED',
-          editReviewedAt: new Date(),
-          editReviewedById: user.id,
-          editRejectionReason: finalReason,
-        },
-      });
+
+      // Clear pendingEdit + set EDIT_REJECTED
+      const updateRes = await d1Run(
+        `UPDATE Resource
+         SET pendingEdit = ?, editStatus = ?, editRejectionReason = ?,
+             editRequestedAt = ?, editRequestedById = ?,
+             editReviewedAt = ?, editReviewedById = ?, updatedAt = ?
+         WHERE id = ?`,
+        null, 'EDIT_REJECTED', finalReason,
+        null, null,
+        now, user.id, now,
+        id,
+      );
+      if (!updateRes.success) {
+        return NextResponse.json({ error: updateRes.error }, { status: 500 });
+      }
+
+      // Revalidate
       revalidatePath('/admin/ressources/editions');
-      revalidatePath('/enseignant/ressources');
-      if (resource.teacherId && resource.teacher)
-        revalidatePath(`/professeurs/${resource.teacher.numericId}/${resource.teacher.slug}`);
+      revalidatePath('/enseignant/bibliotheque');
+      if (teacher) revalidatePath(`/fr/professeurs/${teacher.id}`);
 
-      // Notify teacher
-      if (resource.editRequestedById) {
-        await db.notification.create({
-          data: {
-            userId: resource.editRequestedById,
-            type: 'edit_rejected',
-            title: 'Modification refusée ❌',
-            message: `Votre modification sur "${resource.title}" a été refusée.${finalReason ? ` Motif : ${finalReason.slice(0, 100)}` : ''}`,
-            link: `/enseignant/ressources`,
-          },
-        });
+      // In-app notification
+      if (teacher) {
+        const notifId = crypto.randomUUID().replace(/-/g, '').slice(0, 25);
+        await d1Run(
+          `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
+          notifId,
+          teacher.id,
+          'edit_rejected',
+          'Modification refusée ❌',
+          `Votre modification sur « ${resource.title} » a été refusée. Motif : ${finalReason.slice(0, 100)}`,
+          '/enseignant/bibliotheque',
+          now,
+        );
+      }
 
-        // Send email to teacher
-        const teacher = await db.user.findUnique({ where: { id: resource.editRequestedById } });
-        if (teacher?.email && teacher.firstName) {
+      // Email
+      if (teacher?.email && teacher?.firstName) {
+        try {
           await sendEditRejectedEmail(
             teacher.email,
             teacher.firstName,
             resource.title,
             finalReason,
-            resourceUrl,
+            finalUrl,
           );
+        } catch (e) {
+          console.error('[admin/resource edit reject] email failed:', e?.message);
         }
       }
 

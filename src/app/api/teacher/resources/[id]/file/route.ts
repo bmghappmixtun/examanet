@@ -76,17 +76,51 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         "UPDATE Resource SET editStatus = 'PENDING_EDIT_APPROVAL', pendingEdit = ?, editRequestedAt = ?, editRequestedById = ?, updatedAt = ? WHERE id = ?"
       ).bind(JSON.stringify(newPending), Date.now(), user.id, Date.now(), id).run();
 
-      // Send email to admin
+      // 1) Notify all admins via in-app notification
+      try {
+        const admins = await db.prepare("SELECT id FROM User WHERE role = 'ADMIN'").all();
+        const adminRows = (admins as any).results || admins || [];
+        const editSummary = `Remplacement du fichier PDF (${file.size} octets)`;
+        const notifId = crypto.randomUUID().replace(/-/g, '').slice(0, 25);
+        const adminLink = `/admin/ressources/editions`;
+        for (const admin of adminRows) {
+          await db
+            .prepare(
+              `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+               VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
+            )
+            .bind(
+              notifId,
+              admin.id,
+              'new_edit_pending',
+              '📝 Nouvelle modification à approuver',
+              `${user.firstName} ${user.lastName} propose une modification sur « ${resource.title} ».`,
+              adminLink,
+              Date.now(),
+            )
+            .run();
+        }
+      } catch (e) {
+        console.error('[file] admin in-app notification failed:', e);
+      }
+
+      // 2) Send email to admin
       try {
         const admin: any = await db.prepare("SELECT email FROM User WHERE role = 'ADMIN' LIMIT 1").first();
         if (admin?.email) {
-          await sendNewEditPendingEmail({
-            to: admin.email,
-            teacherName: `${user.firstName} ${user.lastName}`,
-            resourceTitle: resource.title,
-            resourceId: id,
-            locale: 'fr',
-          });
+          // 2026-09-05: function signature is positional, not an object.
+          // Args: (teacherName, resourceTitle, editSummary, resourceUrl,
+          //        wasPreviouslyRejected, previousRejectionReason?)
+          const editSummary = `Remplacement du fichier PDF (${file.size} octets)`;
+          const resourceUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com'}/fr/ressources/${id}`;
+          await sendNewEditPendingEmail(
+            `${user.firstName} ${user.lastName}`,
+            resource.title,
+            editSummary,
+            resourceUrl,
+            resource.status === 'REJECTED',
+            undefined,
+          );
         }
       } catch (e) {
         console.error('[file] admin email failed:', e);
