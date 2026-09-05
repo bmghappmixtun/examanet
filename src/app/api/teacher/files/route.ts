@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
                       r.rejectionReason AS r_rejectionReason, r.rejectionAt AS r_rejectionAt
                FROM TeacherFile f
                LEFT JOIN Resource r ON f.resourceId = r.id
-               WHERE f.teacherId = ?`;
+               WHERE f.teacherId = ? AND f.isActive = 1`;
     const params: any[] = [user.id];
     if (search) {
       sql += ' AND fileName LIKE ?';
@@ -74,6 +74,8 @@ export async function GET(req: NextRequest) {
 
     const files = await d1All(sql, ...params);
     // Normalize: keep createdAt as ISO string (or null for missing timestamps)
+    // Also derive originalFormat from filename/mime (same logic as SSR page)
+    // so the client doesn't crash on `format.toUpperCase()` for undefined format.
     const normalized = (files || []).map((f: any) => {
       const resource = f.r_id
         ? {
@@ -86,9 +88,22 @@ export async function GET(req: NextRequest) {
             rejectionAt: f.r_rejectionAt ?? null,
           }
         : null;
+      // Derive originalFormat (page.tsx does the same)
+      let fmt = '';
+      if (f.fileName) {
+        const m = /\.([a-z0-9]+)$/i.exec(f.fileName);
+        if (m) fmt = m[1].toLowerCase();
+      }
+      if (!fmt && f.mimeType) {
+        const mt = String(f.mimeType).toLowerCase();
+        if (mt.includes('pdf')) fmt = 'pdf';
+        else if (mt.includes('word') || mt.includes('document')) fmt = 'docx';
+        else if (mt.includes('opendocument')) fmt = 'odt';
+      }
       return {
         ...f,
         isActive: Boolean(f.isActive),
+        originalFormat: fmt || 'other',
         resource,
         createdAt: resolveCreatedAt(f),
         updatedAt: resolveCreatedAt(f),
