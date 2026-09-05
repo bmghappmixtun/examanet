@@ -22,10 +22,17 @@ async function notifyAdmins(opts: {
   notificationTitle: string;
   notificationMessage: string;
   notificationLink: string;
-  emailSubject: string;
-  emailHtml: string;
+  emailSubject?: string;
+  emailHtml?: string;
+  /**
+   * Send email to admins. Default: true. Set to false for pre-approved flows
+   * (e.g. invited teachers — admin already pre-approved, just wants a quiet
+   * in-app notification when the prof joins).
+   */
+  sendEmail?: boolean;
 }) {
   const db = await getD1();
+  const sendEmail = opts.sendEmail !== false; // default true
 
   // Get teacher
   const teacher = await db
@@ -62,6 +69,8 @@ async function notifyAdmins(opts: {
   }
 
   // Email notifications
+  if (!sendEmail || !opts.emailSubject || !opts.emailHtml) return;
+
   const adminEmails = getAdminEmailsFromConfig();
   if (!resend) {
     console.log(
@@ -146,10 +155,31 @@ export async function notifyAdminsTeacherActivated(teacherId: string) {
 
 /**
  * Notify all admins that an invited teacher has activated their account.
+ *
+ * 2026-09-05: Invited teachers are pre-approved by the admin (the admin
+ * explicitly clicked "Invite new teacher" to onboard them). When the
+ * teacher activates, the user is set to status='ACTIVE' directly — no
+ * approval needed. So the admin gets an in-app notification only, NO
+ * email. This avoids the duplicate/contradictory "prêt à être approuvé"
+ * email that implied an action that wasn't required.
  */
 export async function notifyAdminsInvitedTeacherActivated(teacherId: string) {
-  // Same flow as notifyAdminsTeacherActivated for now
-  return notifyAdminsTeacherActivated(teacherId);
+  const db = await getD1();
+  const teacher = await db
+    .prepare('SELECT firstName, lastName, email FROM User WHERE id = ? LIMIT 1')
+    .bind(teacherId)
+    .first();
+  if (!teacher) return;
+
+  const fullName = `${teacher.firstName || ''} ${teacher.lastName || ''}`.trim() || 'L\'enseignant';
+  await notifyAdmins({
+    teacherId,
+    notificationType: 'invited_teacher_joined',
+    notificationTitle: '✅ Professeur invité a rejoint la plateforme',
+    notificationMessage: `${fullName} (${teacher.email}) a activé son compte. Vous pouvez consulter ses ressources.`,
+    notificationLink: `/admin/professeurs`,
+    sendEmail: false, // pre-approved flow → in-app only
+  });
 }
 
 /**
