@@ -9,6 +9,14 @@
     "nodejs_compat",
     "global_fetch_strictly_public"
   ],
+  // 2026-09-05: Force emails/links to point to the Worker URL while examanet.com
+  // is still on Vercel. Without this, NEXT_PUBLIC_SITE_URL falls back to
+  // "https://examanet.com" → emails redirect to Vercel → Vercel queries old
+  // Neon DB → invitation not found (data lives in D1 now).
+  // Switch back to "https://examanet.com" after DNS swap is done.
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://examanet-prod.examanet-poc.workers.dev"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
@@ -24,8 +32,9 @@
   },
   // PERF 2026-09-02 (Step 4): Cron trigger for performance monitoring
   // Calls /api/cron/monitor-alerts every 5 minutes
+  // 2026-09-05: Added 0 3 * * * for nightly cleanup (cleanup-views + nightly-cleanup)
   "triggers": {
-    "crons": ["*/5 * * * *"]
+    "crons": ["*/5 * * * *", "0 3 * * *"]
   },
   "r2_buckets": [
     {
