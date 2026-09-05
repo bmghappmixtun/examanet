@@ -181,10 +181,24 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     }
 
     const { id } = await params;
-    const resource = await d1First('SELECT teacherId FROM Resource WHERE id = ?', id);
+    const resource = await d1First('SELECT teacherId, status FROM Resource WHERE id = ?', id);
     if (!resource) return NextResponse.json({ error: 'Ressource introuvable' }, { status: 404 });
     if (user.role !== 'ADMIN' && resource.teacherId !== user.id) {
       return NextResponse.json({ error: 'Vous n\'êtes pas le propriétaire' }, { status: 403 });
+    }
+
+    // 2026-09-05: Block deletion of PUBLISHED resources. Teacher must
+    // unpublish first via /api/teacher/resources/[id]/unpublish. This
+    // prevents accidental deletion of live resources from the
+    // /enseignant/ressources page.
+    if (resource.status === 'PUBLISHED') {
+      return NextResponse.json(
+        {
+          error: 'Cette ressource est publiée. Dépubliez-la d\'abord (bouton "Dépublier") pour pouvoir la supprimer.',
+          code: 'RESOURCE_PUBLISHED',
+        },
+        { status: 409 },
+      );
     }
 
     // Unlink library file
