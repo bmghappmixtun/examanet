@@ -30,6 +30,14 @@ export default function UserMenu({ user, unreadCount }: { user: any; unreadCount
   const isTeacher = user.role === 'TEACHER';
   const isAdmin = user.role === 'ADMIN';
 
+  // 2026-09-06: Route favorites/notifications to the correct page based on role.
+  // Teachers/admins use /enseignant/{favoris,notifications} (re-exports that
+  // render the same data under the teacher nav). Students use /mon-compte/*.
+  const favorisHref = isTeacher || isAdmin ? '/enseignant/favoris' : '/mon-compte/favoris';
+  const notificationsHref = isTeacher || isAdmin
+    ? '/enseignant/notifications'
+    : '/mon-compte/notifications';
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -63,14 +71,14 @@ export default function UserMenu({ user, unreadCount }: { user: any; unreadCount
               <LayoutDashboard className="w-4 h-4" /> Mon tableau de bord
             </NextLink>
             <NextLink
-              href="/mon-compte/favoris"
+              href={favorisHref}
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 text-sm text-slate-700"
             >
               <Heart className="w-4 h-4" /> Mes favoris
             </NextLink>
             <NextLink
-              href="/mon-compte/notifications"
+              href={notificationsHref}
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 text-sm text-slate-700 justify-between"
             >

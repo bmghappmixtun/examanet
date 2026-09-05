@@ -13,6 +13,11 @@ export default function MobileMenu({ user }: { user: any }) {
   const isTeacher = user?.role === 'TEACHER';
   const isAdmin = user?.role === 'ADMIN';
 
+  // 2026-09-06: Route favorites based on role (teacher pages exist as re-exports
+  // from /mon-compte/favoris so the data is the same, but the URL is
+  // contextually correct).
+  const favorisHref = isTeacher || isAdmin ? '/enseignant/favoris' : '/mon-compte/favoris';
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -145,7 +150,7 @@ export default function MobileMenu({ user }: { user: any }) {
                 {t('nav.myAccount')}
               </NextLink>
               <NextLink
-                href="/mon-compte/favoris"
+                href={favorisHref}
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
               >
