@@ -250,3 +250,56 @@ export function renderNewEditPendingEmail(
     `,
   });
 }
+
+/**
+ * 2026-09-06: Email sent to admin when a teacher's Office→PDF conversion
+ * fails. This is important because teachers can't publish resources if the
+ * PDF wasn't generated, so admins need to know to:
+ *  - Check the iLoveAPI/APIConvert account for quota/credit issues
+ *  - Check that the keys in /admin/fournisseurs are still valid
+ *  - Maybe convert the file manually and upload it on behalf of the teacher
+ */
+export function renderConversionFailedEmail(
+  teacherFirstName: string,
+  teacherLastName: string,
+  teacherEmail: string,
+  fileName: string,
+  originalFormat: string,
+  errorMessage: string,
+  resourceId: string | null,
+): string {
+  const safeError = (errorMessage || 'erreur inconnue').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const resourceLink = resourceId
+    ? `${SITE_URL}/enseignant/ressources`
+    : `${SITE_URL}/admin/fournisseurs`;
+  return renderEmailShell({
+    accent: 'red',
+    icon: '⚠️',
+    title: 'Échec de conversion Office → PDF',
+    subtitle: `${teacherFirstName} ${teacherLastName} n'a pas pu uploader un fichier`,
+    preheader: `La conversion de ${fileName} a échoué`,
+    body: `
+      <p style="margin:0 0 16px;font-size:16px;color:#0F172A;font-family:${F};">Bonjour Admin,</p>
+      ${paragraph("Un professeur a tenté d'uploader un fichier Office sur Examanet, mais la conversion automatique vers PDF a échoué. Son upload a été bloqué en conséquence.")}
+      <div style="background:#FEE2E2;border-left:4px solid #DC2626;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#991B1B;font-weight:bold;">🚨 Détails de l'erreur</p>
+        <p style="margin:4px 0;color:#7F1D1D;font-size:14px;"><strong>Enseignant :</strong> ${teacherFirstName} ${teacherLastName} (<a href="mailto:${teacherEmail}" style="color:#0369A1;">${teacherEmail}</a>)</p>
+        <p style="margin:4px 0;color:#7F1D1D;font-size:14px;"><strong>Fichier :</strong> ${fileName}</p>
+        <p style="margin:4px 0;color:#7F1D1D;font-size:14px;"><strong>Format :</strong> ${originalFormat.toUpperCase()}</p>
+        <p style="margin:4px 0;color:#7F1D1D;font-size:14px;"><strong>Erreur :</strong> <code style="background:#FCA5A5;padding:2px 6px;border-radius:4px;font-size:12px;">${safeError}</code></p>
+      </div>
+      <div style="background:#FEF3C7;border-left:4px solid #F59E0B;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#92400E;font-weight:bold;">🔍 Que faire ?</p>
+        <ol style="margin:8px 0;color:#78350F;font-size:14px;padding-left:20px;">
+          <li>Vérifier le quota iLoveAPI dans <a href="${SITE_URL}/admin/fournisseurs" style="color:#0369A1;">Admin > Fournisseurs</a></li>
+          <li>Vérifier que les clés API sont toujours valides (le token a peut-être expiré)</li>
+          <li>Si l'enseignant est légitime : convertir son fichier manuellement et l'uploader en PDF à sa place</li>
+          <li>Si l'erreur est récurrente : envisager de passer à APIConvert comme fallback</li>
+        </ol>
+      </div>
+      ${muted("L'enseignant a vu un message d'erreur lui expliquant que la conversion a échoué et qu'il doit réessayer plus tard.")}
+      ${ctaButton(resourceLink, resourceId ? 'Voir la bibliothèque du prof' : 'Voir les fournisseurs', 'red')}
+    `,
+    footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système d'alerte admin</p>`,
+  });
+}

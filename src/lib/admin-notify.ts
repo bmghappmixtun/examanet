@@ -3,8 +3,72 @@ import { Resend } from 'resend';
 import { renderNewTeacherEmail, renderNewResourceEmail, renderTeacherActivatedEmail } from './email-templates';
 import { getAdminEmailsFromConfig } from './admin-config';
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const FROM = process.env.EMAIL_FROM || 'Examanet <onboarding@resend.dev>';
+// 2026-09-06: Lazy-init Resend. process.env.RESEND_API_KEY is UNDEFINED
+// inside CF Workers — secrets set via 'wrangler secret put' come through the
+// env binding from getCloudflareContext(). Use a memoized lazy getter.
+let _resend: Resend | null | undefined = undefined;
+let _from: string | undefined = undefined;
+
+async function getMailer(): Promise<{ resend: Resend | null; from: string }> {
+  if (_resend !== undefined) {
+    return { resend: _resend, from: _from || 'Examanet <onboarding@resend.dev>' };
+  }
+  let apiKey: string | undefined;
+  let fromAddr: string | undefined;
+  try {
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = await getCloudflareContext({ async: true });
+    apiKey = (ctx as any).env?.RESEND_API_KEY;
+    fromAddr = (ctx as any).env?.EMAIL_FROM;
+  } catch {
+    // no CF context (dev)
+  }
+  if (!apiKey && typeof process !== 'undefined' && process.env?.RESEND_API_KEY) {
+    apiKey = process.env.RESEND_API_KEY;
+  }
+  if (!fromAddr && typeof process !== 'undefined' && process.env?.EMAIL_FROM) {
+    fromAddr = process.env.EMAIL_FROM;
+  }
+  _resend = apiKey ? new Resend(apiKey) : null;
+  _from = fromAddr;
+  console.log('[admin-notify] Resend initialized:', _resend ? 'YES' : 'NO', 'from:', fromAddr || 'default');
+  return { resend: _resend, from: fromAddr || 'Examanet <onboarding@resend.dev>' };
+}
+
+/**
+ * 2026-09-06: helper that wraps the Resend send and gracefully handles the
+ * case where the API key isn't configured (logs and returns null instead of
+ * throwing). This is the only place that touches the Resend client.
+ */
+async function sendEmail(args: {
+  from?: string;
+  to: string[];
+  subject: string;
+  html: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  const { resend, from } = await getMailer();
+  if (!resend) {
+    console.warn('[admin-notify] RESEND_API_KEY not set — skipping email send:', args.subject);
+    return { ok: false, error: 'RESEND_API_KEY not configured' };
+  }
+  try {
+    const result: any = await resend.emails.send({
+      from: args.from || from,
+      to: args.to,
+      subject: args.subject,
+      html: args.html,
+    });
+    if (result?.error) {
+      console.error('[admin-notify] Resend error:', result.error);
+      return { ok: false, error: String(result.error.message || result.error) };
+    }
+    console.log('[admin-notify] Email sent:', args.subject, '→', args.to.join(', '));
+    return { ok: true };
+  } catch (e: any) {
+    console.error('[admin-notify] Resend exception:', e?.message || e);
+    return { ok: false, error: e?.message || 'unknown' };
+  }
+}
 
 function genId() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 25);
@@ -32,7 +96,7 @@ async function notifyAdmins(opts: {
   sendEmail?: boolean;
 }) {
   const db = await getD1();
-  const sendEmail = opts.sendEmail !== false; // default true
+  const shouldSendEmail = opts.sendEmail !== false; // default true
 
   // Get teacher
   const teacher = await db
@@ -69,15 +133,9 @@ async function notifyAdmins(opts: {
   }
 
   // Email notifications
-  if (!sendEmail || !opts.emailSubject || !opts.emailHtml) return;
+  if (!shouldSendEmail || !opts.emailSubject || !opts.emailHtml) return;
 
   const adminEmails = getAdminEmailsFromConfig();
-  if (!resend) {
-    console.log(
-      `\n📧 [ADMIN EMAIL - DEV] ${opts.emailSubject} → ${adminEmails.join(', ')}\n`,
-    );
-    return;
-  }
 
   try {
     const recipients = new Set<string>(adminEmails);
@@ -85,8 +143,7 @@ async function notifyAdmins(opts: {
       if (admin.email) recipients.add(admin.email);
     }
     if (recipients.size === 0) return;
-    await resend.emails.send({
-      from: FROM,
+    await sendEmail({
       to: Array.from(recipients),
       subject: opts.emailSubject,
       html: opts.emailHtml,
@@ -243,11 +300,6 @@ export async function notifyAdminsNewResource(resourceId: string, teacherName?: 
   }
 
   // Email
-  if (!resend) {
-    console.log(`\n📧 [ADMIN EMAIL - DEV] New resource → ${adminEmails.join(', ')}\n`);
-    return;
-  }
-
   try {
     const html = renderNewResourceEmail(resolvedTeacherName, resolvedResourceTitle, subjectName || '');
     const recipients = new Set<string>(adminEmails);
@@ -255,8 +307,7 @@ export async function notifyAdminsNewResource(resourceId: string, teacherName?: 
       if (admin.email) recipients.add(admin.email);
     }
     if (recipients.size === 0) return;
-    await resend.emails.send({
-      from: FROM,
+    await sendEmail({
       to: Array.from(recipients),
       subject: `📄 Nouvelle ressource à approuver`,
       html,
@@ -307,11 +358,6 @@ export async function notifyAdminsResourceUnpublished(
   }
 
   // Email (best-effort)
-  if (!resend) {
-    console.log(`\n📧 [ADMIN EMAIL - DEV] Resource unpublished → ${adminEmails.join(', ')}\n`);
-    return;
-  }
-
   try {
     const html = `
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
@@ -329,13 +375,102 @@ export async function notifyAdminsResourceUnpublished(
       if (admin.email) recipients.add(admin.email);
     }
     if (recipients.size === 0) return;
-    await resend.emails.send({
-      from: FROM,
+    await sendEmail({
       to: Array.from(recipients),
       subject: `📥 Ressource dépubliée : ${resourceTitle}`,
       html,
     });
   } catch (e) {
     console.error('Failed to notify admins of resource unpublish:', e);
+  }
+}
+
+/**
+ * 2026-09-06: Notify all admins that a teacher's Office→PDF conversion
+ * failed. This is critical because:
+ *  - The teacher CANNOT publish resources without a PDF
+ *  - The upload was rejected (not just a warning)
+ *  - Admins need to know to check iLoveAPI quota / key validity
+ *
+ * Sends an in-app notification + an email with the error details.
+ */
+export async function notifyAdminsConversionFailed(opts: {
+  teacherId: string;
+  fileName: string;
+  originalFormat: string;
+  errorMessage: string;
+  resourceId?: string | null;
+}) {
+  const db = await getD1();
+
+  // Get teacher
+  const teacher: any = await db
+    .prepare('SELECT firstName, lastName, email FROM User WHERE id = ? LIMIT 1')
+    .bind(opts.teacherId)
+    .first();
+  if (!teacher) {
+    console.warn('[notifyAdminsConversionFailed] teacher not found:', opts.teacherId);
+    return;
+  }
+
+  // Get admins
+  const adminsResult: any = await db
+    .prepare("SELECT id, email FROM User WHERE role = 'ADMIN'")
+    .all();
+  const admins = adminsResult.results || adminsResult;
+  if (admins.length === 0) {
+    console.warn('[notifyAdminsConversionFailed] no admins found');
+    return;
+  }
+
+  // In-app notification
+  const now = Date.now();
+  for (const admin of admins) {
+    try {
+      await db
+        .prepare(
+          `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
+        )
+        .bind(
+          genId(),
+          admin.id,
+          'conversion_failed',
+          '⚠️ Échec de conversion Office → PDF',
+          `Le fichier "${opts.fileName}" (${opts.originalFormat.toUpperCase()}) de ${teacher.firstName || ''} ${teacher.lastName || ''} n'a pas pu être converti en PDF. Erreur : ${opts.errorMessage}`,
+          opts.resourceId ? '/admin/ressources' : '/admin/fournisseurs',
+          now,
+        )
+        .run();
+    } catch (e) {
+      console.error('[notifyAdminsConversionFailed] notification insert failed:', e);
+    }
+  }
+
+  // Email
+  try {
+    const { renderConversionFailedEmail } = await import('./email-templates');
+    const html = renderConversionFailedEmail(
+      teacher.firstName || '',
+      teacher.lastName || '',
+      teacher.email,
+      opts.fileName,
+      opts.originalFormat,
+      opts.errorMessage,
+      opts.resourceId || null,
+    );
+    const adminEmails = await getAdminEmailsFromConfig();
+    const recipients = new Set<string>(adminEmails);
+    for (const admin of admins) {
+      if (admin.email) recipients.add(admin.email);
+    }
+    if (recipients.size === 0) return;
+    await sendEmail({
+      to: Array.from(recipients),
+      subject: `⚠️ Échec de conversion PDF : ${opts.fileName}`,
+      html,
+    });
+  } catch (e) {
+    console.error('[notifyAdminsConversionFailed] email send failed:', e);
   }
 }
