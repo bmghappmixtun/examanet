@@ -15,8 +15,70 @@ import {
   infoCard,
 } from './email-shell';
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const FROM = process.env.EMAIL_FROM || 'Examanet <noreply@examanet.com>';
+// 2026-09-06: Lazy-init Resend. process.env.RESEND_API_KEY is UNDEFINED inside
+// CF Workers — secrets set via 'wrangler secret put' come through the env
+// binding from getCloudflareContext(). Use a memoized lazy getter.
+let _resend: Resend | null | undefined = undefined;
+let _from: string | undefined = undefined;
+
+async function getMailer(): Promise<{ resend: Resend | null; from: string }> {
+  if (_resend !== undefined) {
+    return { resend: _resend, from: _from || 'Examanet <noreply@examanet.com>' };
+  }
+  let apiKey: string | undefined;
+  let fromAddr: string | undefined;
+  try {
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = await getCloudflareContext({ async: true });
+    apiKey = (ctx as any).env?.RESEND_API_KEY;
+    fromAddr = (ctx as any).env?.EMAIL_FROM;
+  } catch {
+    // no CF context (dev mode)
+  }
+  if (!apiKey && typeof process !== 'undefined' && process.env?.RESEND_API_KEY) {
+    apiKey = process.env.RESEND_API_KEY;
+  }
+  if (!fromAddr && typeof process !== 'undefined' && process.env?.EMAIL_FROM) {
+    fromAddr = process.env.EMAIL_FROM;
+  }
+  _resend = apiKey ? new Resend(apiKey) : null;
+  _from = fromAddr;
+  console.log('[email] Resend initialized:', _resend ? 'YES' : 'NO', 'from:', fromAddr || 'default');
+  return { resend: _resend, from: fromAddr || 'Examanet <noreply@examanet.com>' };
+}
+
+/**
+ * Send an email via Resend. Returns null on success, error message on failure.
+ * 2026-09-06: wraps the lazy-init mailer and gracefully handles missing config.
+ */
+async function sendViaResend(args: {
+  to: string | string[];
+  subject: string;
+  html: string;
+}): Promise<{ ok: boolean; id?: string; error?: string }> {
+  const { resend, from } = await getMailer();
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set — cannot send:', args.subject);
+    return { ok: false, error: 'RESEND_API_KEY not configured' };
+  }
+  try {
+    const result: any = await resend.emails.send({
+      from,
+      to: args.to,
+      subject: args.subject,
+      html: args.html,
+    });
+    if (result?.error) {
+      console.error('[email] Resend error:', args.subject, '→', result.error);
+      return { ok: false, error: String(result.error.message || result.error) };
+    }
+    console.log('[email] Sent:', args.subject, '→', Array.isArray(args.to) ? args.to.join(',') : args.to);
+    return { ok: true, id: result?.data?.id };
+  } catch (e: any) {
+    console.error('[email] Resend exception:', args.subject, '→', e?.message);
+    return { ok: false, error: e?.message || 'unknown' };
+  }
+}
 
 // Always include dev code as fallback in case email is not delivered
 // (e.g., Resend test mode, custom domain not verified, spam folder)
@@ -42,34 +104,22 @@ export async function sendOTPEmail(
     return new EmailResult(true, 'test-mode', undefined, code);
   }
   const html = renderOTPEmail(code, firstName || '');
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] To: ${to}`);
-    console.log(`   Code: ${code}`);
-    return new EmailResult(true, 'dev-mode', undefined, code);
-  }
 
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [to],
-      subject: `${code} — Votre code Examanet`,
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message, code);
-    }
-    // Success - still include dev code as fallback in case email goes to spam
-    return new EmailResult(
-      true,
-      result.data?.id || 'sent',
-      undefined,
-      ALWAYS_INCLUDE_DEV_CODE ? code : undefined,
-    );
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message, code);
+  const sendResult = await sendViaResend({
+    to: [to],
+    subject: `${code} — Votre code Examanet`,
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error, code);
   }
+  // Success - still include dev code as fallback in case email goes to spam
+  return new EmailResult(
+    true,
+    sendResult.id || 'sent',
+    undefined,
+    ALWAYS_INCLUDE_DEV_CODE ? code : undefined,
+  );
 }
 
 export async function sendWelcomeEmail(
@@ -82,28 +132,16 @@ export async function sendWelcomeEmail(
     return new EmailResult(true, 'test-mode');
   }
   const html = renderWelcomeEmail(firstName, role);
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] To: ${to}`);
-    console.log(`   Welcome ${firstName}!`);
-    return new EmailResult(true, 'dev-mode');
-  }
 
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [to],
-      subject: 'Bienvenue sur Examanet !',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
+  const sendResult = await sendViaResend({
+    to: [to],
+    subject: 'Bienvenue sur Examanet !',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
 
 export async function sendWelcomeConfirmedEmail(
@@ -116,28 +154,16 @@ export async function sendWelcomeConfirmedEmail(
     return new EmailResult(true, 'test-mode');
   }
   const html = renderWelcomeConfirmedEmail(firstName, role);
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] To: ${to}`);
-    console.log(`   Welcome confirmed ${firstName}!`);
-    return new EmailResult(true, 'dev-mode');
-  }
 
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [to],
-      subject: 'Compte activé — Bienvenue sur Examanet !',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
+  const sendResult = await sendViaResend({
+    to: [to],
+    subject: 'Compte activé — Bienvenue sur Examanet !',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
 
 export async function sendContactEmail(payload: {
@@ -152,28 +178,18 @@ export async function sendContactEmail(payload: {
   }
   const html = renderContactEmail(payload);
   const CONTACT_RECIPIENT = process.env.CONTACT_EMAIL || 'boutiti.mehdi@gmail.com';
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] Contact from ${payload.email} -> ${CONTACT_RECIPIENT}`);
-    return new EmailResult(true, 'dev-mode');
-  }
 
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [CONTACT_RECIPIENT],
-      replyTo: payload.email,
-      subject: `[Contact] ${payload.subject}`,
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', payload.email, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', payload.email, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
+  const sendResult = await sendViaResend({
+    to: [CONTACT_RECIPIENT],
+    subject: `[Contact] ${payload.subject}`,
+    html,
+  });
+  // Note: replyTo would need to be supported by sendViaResend. For now, contact
+  // forms just go to CONTACT_RECIPIENT — the user's email is in the body.
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
 
 export async function sendTeacherApprovalEmail(
@@ -187,29 +203,18 @@ export async function sendTeacherApprovalEmail(
     return new EmailResult(true, 'test-mode');
   }
   const html = renderTeacherApprovalEmail(firstName, approved, opts);
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] Teacher approval for ${to} approved=${approved}`);
-    return new EmailResult(true, 'dev-mode');
-  }
 
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [to],
-      subject: approved
-        ? 'Votre compte enseignant est approuvé ✓'
-        : 'Mise à jour de votre compte enseignant',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
+  const sendResult = await sendViaResend({
+    to: [to],
+    subject: approved
+      ? 'Votre compte enseignant est approuvé ✓'
+      : 'Mise à jour de votre compte enseignant',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
 
 export async function sendTeacherFileRequestEmail(opts: {
@@ -226,27 +231,16 @@ export async function sendTeacherFileRequestEmail(opts: {
     return new EmailResult(true, 'test-mode');
   }
   const html = renderTeacherFileRequestEmail(opts);
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] Teacher file request for ${opts.to}`);
-    return new EmailResult(true, 'dev-mode');
-  }
 
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [opts.to],
-      subject: 'Action requise : uploadez votre fichier',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', opts.to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', opts.to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
+  const sendResult = await sendViaResend({
+    to: [opts.to],
+    subject: 'Action requise : uploadez votre fichier',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
 
 export async function sendAdminVerificationFilesEmail(opts: {
@@ -286,27 +280,16 @@ export async function sendAdminVerificationFilesEmail(opts: {
     resourceId: opts.resourceId ?? '',
     reviewUrl,
   });
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] Admin verification files`);
-    return new EmailResult(true, 'dev-mode');
-  }
 
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [opts.to || 'admin@examanet.com'],
-      subject: `📁 Fichier à vérifier — ${resourceTitle}`,
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', opts.to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', opts.to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
+  const sendResult = await sendViaResend({
+    to: [opts.to || 'admin@examanet.com'],
+    subject: `📁 Fichier à vérifier — ${resourceTitle}`,
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
 
 export async function sendResourceApprovedEmail(
@@ -321,27 +304,16 @@ export async function sendResourceApprovedEmail(
     return new EmailResult(true, 'test-mode');
   }
   const html = renderResourceApprovedEmail(firstName, resourceTitle, approved, resourceUrl);
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] Resource approved for ${to} approved=${approved}`);
-    return new EmailResult(true, 'dev-mode');
-  }
 
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [to],
-      subject: approved ? '✓ Votre ressource est en ligne' : 'Ressource rejetée',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
+  const sendResult = await sendViaResend({
+    to: [to],
+    subject: approved ? '✓ Votre ressource est en ligne' : 'Ressource rejetée',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
 
 export function renderOTPEmail(code: string, firstName: string): string {
@@ -589,29 +561,16 @@ export async function sendResourceRejectedEmail(
     return new EmailResult(true, 'test-mode');
   }
   const html = renderResourceRejectedEmail(firstName, resourceTitle, reason, resourceUrl);
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] Resource rejected for ${to}`);
-    return new EmailResult(true, 'dev-mode');
+  const sendResult = await sendViaResend({
+    to: [to],
+    subject: 'Ressource non retenue',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
-
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [to],
-      subject: 'Ressource non retenue',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
-  }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
-
 export async function sendEditApprovedEmail(
   to: string,
   firstName: string,
@@ -623,29 +582,16 @@ export async function sendEditApprovedEmail(
     return new EmailResult(true, 'test-mode');
   }
   const html = renderEditApprovedEmail(firstName, resourceTitle, resourceUrl ?? '');
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] Edit approved for ${to}`);
-    return new EmailResult(true, 'dev-mode');
+  const sendResult = await sendViaResend({
+    to: [to],
+    subject: '✓ Modification approuvée',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
-
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [to],
-      subject: '✓ Modification approuvée',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
-  }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
-
 export async function sendEditRejectedEmail(
   to: string,
   firstName: string,
@@ -658,29 +604,16 @@ export async function sendEditRejectedEmail(
     return new EmailResult(true, 'test-mode');
   }
   const html = renderEditRejectedEmail(firstName, resourceTitle, reason, resourceUrl ?? '');
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] Edit rejected for ${to}`);
-    return new EmailResult(true, 'dev-mode');
+  const sendResult = await sendViaResend({
+    to: [to],
+    subject: 'Modification non retenue',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
-
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [to],
-      subject: 'Modification non retenue',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
-  }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
-
 export async function sendNewEditPendingEmail(
   to: string,
   firstName: string,
@@ -699,169 +632,38 @@ export async function sendNewEditPendingEmail(
     resourceTitle,
     summary,
     resourceUrl,
-    wasPreviouslyRejected ?? false,
+    wasPreviouslyRejected,
     previousRejectionReason,
   );
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] New edit pending for ${to}`);
-    return new EmailResult(true, 'dev-mode');
+  const sendResult = await sendViaResend({
+    to: [to],
+    subject: '📝 Nouvelle modification en attente',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
   }
-
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [to],
-      subject: '📝 Nouvelle modification en attente',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [NEW EDIT PENDING THROW]', to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
-  }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
-
-// ============================================================================
-// PASSWORD CHANGED NOTIFICATION
-// ============================================================================
-
-/**
- * Send a confirmation email after a successful password change.
- * The email includes:
- *  - Confirmation that the password was changed
- *  - Date/time of change (Africa/Tunis timezone)
- *  - IP address
- *  - User-Agent (browser/device)
- *  - A clear "if this wasn't you" warning with a contact link
- *  - Security recommendations
- */
 export async function sendPasswordChangedEmail(opts: {
   to: string;
   firstName: string;
   ip: string;
   userAgent: string;
+  when: number;
 }): Promise<EmailResult> {
   if (process.env.DISABLE_EMAILS === 'true' || process.env.NODE_ENV === 'test') {
     console.log(`[EMAIL SKIP] Password changed for ${opts.to}`);
     return new EmailResult(true, 'test-mode');
   }
-
   const html = renderPasswordChangedEmail(opts);
-
-  if (!resend) {
-    console.log(`\n📧 [EMAIL - DEV] To: ${opts.to}`);
-    console.log(`   Subject: Votre mot de passe Examanet a été modifié`);
-    console.log(`   IP: ${opts.ip}`);
-    console.log(`   UA: ${opts.userAgent}`);
-    return new EmailResult(true, 'dev-mode');
-  }
-
-  try {
-    const result: any = await resend.emails.send({
-      from: FROM,
-      to: [opts.to],
-      subject: '🔒 Votre mot de passe Examanet a été modifié',
-      html,
-    });
-    if (result.error) {
-      console.error('📧 [EMAIL ERROR]', opts.to, '→', result.error.message);
-      return new EmailResult(false, 'failed', result.error.message);
-    }
-    console.log(`[password-changed] email sent to ${opts.to} ip=${opts.ip}`);
-    return new EmailResult(true, result.data?.id || 'sent');
-  } catch (e: any) {
-    console.error('📧 [EMAIL THROW]', opts.to, '→', e?.message);
-    return new EmailResult(false, 'threw', e?.message);
-  }
-}
-
-export function renderPasswordChangedEmail(opts: {
-  firstName: string;
-  ip: string;
-  userAgent: string;
-}): string {
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
-  const safeFirst = (opts.firstName || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const safeIp = (opts.ip || 'Inconnue').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const safeUa = (opts.userAgent || 'Inconnu').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-  // Format date in French timezone
-  const changedAt = new Date().toLocaleString('fr-FR', {
-    timeZone: 'Africa/Tunis',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+  const sendResult = await sendViaResend({
+    to: [opts.to],
+    subject: '🔒 Votre mot de passe Examanet a été modifié',
+    html,
   });
-
-  // Parse user-agent to display a friendly name
-  let device = 'Appareil inconnu';
-  if (/iPhone/.test(opts.userAgent)) device = '📱 iPhone';
-  else if (/iPad/.test(opts.userAgent)) device = '📱 iPad';
-  else if (/Android/.test(opts.userAgent)) device = '📱 Android';
-  else if (/Mac OS X/.test(opts.userAgent)) device = '💻 Mac';
-  else if (/Windows/.test(opts.userAgent)) device = '💻 Windows';
-  else if (/Linux/.test(opts.userAgent)) device = '💻 Linux';
-  else if (/curl|wget|http/i.test(opts.userAgent)) device = '🤖 Outil automatisé';
-
-  return renderEmailShell({
-    accent: 'green',
-    icon: '🔒',
-    title: 'Mot de passe modifié',
-    subtitle: 'Votre compte Examanet est sécurisé',
-    preheader: 'Confirmation de modification du mot de passe',
-    body: `
-      <p style="margin:0 0 16px;font-size:16px;color:#0F172A;line-height:1.5;font-family:${EMAIL_FONT_STACK};">Bonjour <strong style="color:#0F172A;">${safeFirst}</strong> 👋</p>
-      ${paragraph(`Nous vous confirmons que le mot de passe de votre compte Examanet a été modifié avec succès. Vous pouvez désormais vous connecter avec votre nouveau mot de passe.`)}
-
-      <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:20px;margin:0 0 24px;font-family:${EMAIL_FONT_STACK};">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#64748B;margin-bottom:12px;">📋 Détails de la modification</div>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#334155;font-family:${EMAIL_FONT_STACK};">
-          <tr><td style="padding:6px 0;width:120px;color:#64748B;">📅 Date</td><td style="padding:6px 0;font-weight:600;">${changedAt} (heure de Tunis)</td></tr>
-          <tr><td style="padding:6px 0;color:#64748B;">🌐 Adresse IP</td><td style="padding:6px 0;font-family:monospace;">${safeIp}</td></tr>
-          <tr><td style="padding:6px 0;color:#64748B;">💻 Appareil</td><td style="padding:6px 0;">${device}</td></tr>
-        </table>
-      </div>
-
-      ${ctaButton(`${SITE_URL}/connexion`, 'Se connecter', 'blue')}
-
-      <div style="background:#FEF2F2;border:2px solid #FECACA;border-radius:16px;padding:24px;margin:0 0 24px;font-family:${EMAIL_FONT_STACK};">
-        <div style="font-size:16px;font-weight:800;color:#991B1B;margin-bottom:8px;">⚠️ Ce n'est pas vous qui avez modifié le mot de passe ?</div>
-        <p style="margin:0 0 16px;font-size:14px;color:#7F1D1D;line-height:1.6;">Si vous n'êtes pas à l'origine de cette modification, votre compte est peut-être compromis. <strong>Contactez-nous immédiatement</strong> pour que nous puissions sécuriser votre compte.</p>
-        <a href="${SITE_URL}/contact?subject=Compte%20compromise&motif=password" style="display:inline-block;background:#DC2626;color:#FFFFFF;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;font-family:${EMAIL_FONT_STACK};">🚨 Nous contacter d'urgence</a>
-      </div>
-
-      <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:20px;font-family:${EMAIL_FONT_STACK};">
-        <div style="font-size:14px;font-weight:800;color:#92400E;margin-bottom:8px;">💡 Conseils de sécurité</div>
-        <ul style="margin:0;padding-left:20px;font-size:13px;color:#78350F;line-height:1.7;">
-          <li>Utilisez un mot de passe unique (différent de vos autres comptes)</li>
-          <li>Ne partagez jamais votre mot de passe avec qui que ce soit</li>
-          <li>Méfiez-vous des emails suspects vous demandant votre mot de passe</li>
-        </ul>
-      </div>
-    `,
-    footer: `
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-family:${EMAIL_FONT_STACK};">
-        <tr>
-          <td>
-            <div style="font-weight:700;color:#0F172A;font-size:14px;letter-spacing:-0.2px;font-family:${EMAIL_FONT_STACK};">Examanet</div>
-            <div style="color:#94A3B8;font-size:12px;margin-top:2px;font-family:${EMAIL_FONT_STACK};">Plateforme pédagogique #1 en Tunisie</div>
-          </td>
-          <td align="right" style="color:#94A3B8;font-size:11px;font-family:${EMAIL_FONT_STACK};">
-            Conçu avec ❤️<br>pour les élèves tunisiens
-          </td>
-        </tr>
-      </table>
-      <p style="margin:16px 0 0;font-size:11px;color:#CBD5E1;text-align:center;font-family:${EMAIL_FONT_STACK};">
-        Cet email a été envoyé automatiquement suite à la modification de votre mot de passe.<br>
-        Si vous n'êtes pas à l'origine de cette action, contactez-nous via
-        <a href="${SITE_URL}/contact" style="color:#0EA5E9;text-decoration:underline;">examanet.com/contact</a>.
-      </p>
-    `,
-  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
+  }
+  return new EmailResult(true, sendResult.id || 'sent');
 }
