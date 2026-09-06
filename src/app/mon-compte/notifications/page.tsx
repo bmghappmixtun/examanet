@@ -19,6 +19,12 @@ export default async function NotificationsPage() {
     user.id,
   );
 
+  // 2026-09-06: pass the current path so the API knows where to redirect
+  // after marking all as read. The API also uses Referer + role as fallback.
+  // The component is re-used at /enseignant/notifications and /mon-compte/notifications
+  // so we can't hardcode the path here. We use Referer as a signal via the
+  // /api/notifications/read-all endpoint's Referer-based fallback (see route.ts).
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
