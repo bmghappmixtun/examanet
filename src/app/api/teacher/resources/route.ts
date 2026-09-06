@@ -89,9 +89,16 @@ export async function POST(req: NextRequest) {
     let finalFileKey = fileKey;
     let finalFileUrl = fileUrl;
     let finalFileSize: number = fileSize || 0;
+    // 2026-09-06: When publishing a library file that was converted to PDF,
+    // we MUST use the PDF key as the resource's fileKey — otherwise the public
+    // viewer will try to display a .docx file as if it were a PDF ("Invalid
+    // PDF structure"). The original docx is preserved as originalFileKey
+    // so the teacher can still download the source file.
+    let finalOriginalFileKey: string | null = null;
+    let finalOriginalFileName: string | null = null;
     if (libraryFileId) {
       const libFile = await d1First(
-        'SELECT id, teacherId, resourceId, fileName, fileKey, fileUrl, fileSize, r2Key, mimeType, isActive FROM TeacherFile WHERE id = ?',
+        'SELECT id, teacherId, resourceId, fileName, fileKey, fileUrl, fileSize, r2Key, r2PdfKey, mimeType, isActive FROM TeacherFile WHERE id = ?',
         libraryFileId,
       );
       if (!libFile || libFile.teacherId !== user.id) {
@@ -103,9 +110,31 @@ export async function POST(req: NextRequest) {
           { status: 409 },
         );
       }
-      finalFileKey = libFile.fileKey;
-      finalFileUrl = libFile.fileUrl;
-      finalFileSize = libFile.fileSize || 0;
+      // Prefer the PDF key (r2PdfKey) for the published resource so the public
+      // viewer can render it. Fall back to the original fileKey only if no PDF
+      // was generated (e.g. the file was already a PDF, or conversion was skipped).
+      if (libFile.r2PdfKey) {
+        finalOriginalFileKey = libFile.fileKey;
+        finalOriginalFileName = libFile.fileName;
+        finalFileKey = libFile.r2PdfKey;
+        finalFileUrl = `/api/files/${libFile.r2PdfKey}`;
+        // PDF size will be set below from R2 HEAD
+        try {
+          const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+          const ctx = await getCloudflareContext({ async: true });
+          const bucket = (ctx as any).env?.PDFS_BUCKET as R2Bucket | undefined;
+          if (bucket) {
+            const headObj = await bucket.head(libFile.r2PdfKey);
+            if (headObj) finalFileSize = headObj.size;
+          }
+        } catch (e) {
+          console.warn('[publish] Failed to get PDF size from R2:', (e as Error).message);
+        }
+      } else {
+        finalFileKey = libFile.fileKey;
+        finalFileUrl = libFile.fileUrl;
+        finalFileSize = libFile.fileSize || 0;
+      }
     }
 
     if (!finalFileKey || !finalFileUrl) {
@@ -173,6 +202,7 @@ export async function POST(req: NextRequest) {
           homeworkSubtype, homeworkNumber, schoolType, hasCorrection,
           isHidden, isFeatured,
           viewsCount, downloadsCount, avgRating, ratingsCount, commentsCount, favoritesCount,
+          originalFileKey, originalFileName,
           createdAt, updatedAt
         ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING_APPROVAL',
           ?, ?, ?, 10,
@@ -181,6 +211,7 @@ export async function POST(req: NextRequest) {
           ?, ?, ?, ?,
           0, 0,
           0, 0, 0, 0, 0, 0,
+          ?, ?,
           ?, ?)`,
       )
       .bind(
@@ -204,6 +235,8 @@ export async function POST(req: NextRequest) {
         finalHomeworkNumber,
         finalSchoolType,
         finalHasCorrection ? 1 : 0,
+        finalOriginalFileKey,
+        finalOriginalFileName,
         now,
         now,
       )
