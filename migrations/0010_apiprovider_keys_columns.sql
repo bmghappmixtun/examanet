@@ -7,3 +7,4 @@ ALTER TABLE ApiProvider ADD COLUMN secretKey TEXT;
 ALTER TABLE ApiProvider ADD COLUMN displayName TEXT;
 ALTER TABLE ApiProvider ADD COLUMN notes TEXT;
 ALTER TABLE ApiProvider ADD COLUMN monthlyQuota INTEGER;
+ALTER TABLE ApiProvider ADD COLUMN apiUrl TEXT;
