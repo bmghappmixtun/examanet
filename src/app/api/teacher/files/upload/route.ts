@@ -134,16 +134,58 @@ export async function POST(req: NextRequest) {
     // Build a public URL — for now use a placeholder (real CDN URL would be set in a custom domain binding)
     const fileUrl = `/api/files/${originalKey}`;
 
-    // 2. PDF conversion: not available on CF Workers. We mark SKIPPED in the
-    //    response and warn the client. For docx/doc/odt uploads, the user
-    //    must re-upload as PDF before publishing.
+    // 2. PDF conversion via iLovePDF (Office → PDF) if the file is convertible.
+    //    2026-09-06: wired up the @ilovepdf/ilovepdf-nodejs SDK which was
+    //    already installed but unused. The conversion runs server-side
+    //    (iLovePDF's external service), so no Puppeteer/Chromium needed on
+    //    CF Workers. If env vars are missing, we gracefully fall back to
+    //    SKIPPED + a warning (the original behavior).
     let conversionStatus: 'SUCCESS' | 'FAILED' | 'SKIPPED' = 'SKIPPED';
+    let r2PdfKey: string | null = null;
+    let pdfUrl: string | null = null;
     const warnings: string[] = [];
+
     if (format.isConvertible) {
-      conversionStatus = 'SKIPPED';
-      warnings.push(
-        "Conversion automatique non disponible sur Workers. Pour publier en PDF, ré-uploadez un PDF ou utilisez l'aperçu généré côté client.",
-      );
+      const iLovePublicKey = process.env.I_LOVE_API_PUBLIC_KEY;
+      const iLoveSecretKey = process.env.I_LOVE_API_SECRET_KEY;
+      if (!iLovePublicKey || !iLoveSecretKey) {
+        conversionStatus = 'SKIPPED';
+        warnings.push(
+          "Conversion Office→PDF non configurée (clés API iLovePDF manquantes). Pour publier en PDF, ré-uploadez un PDF.",
+        );
+        console.warn('[upload] I_LOVE_API_PUBLIC_KEY / I_LOVE_API_SECRET_KEY not set — skipping conversion');
+      } else {
+        try {
+          const { convertOfficeToPdfViaIloveapi } = await import('@/lib/iloveapi');
+          console.log(
+            `[upload] Converting ${file.name} (${format.format}) to PDF via iLoveAPI…`,
+          );
+          const result = await convertOfficeToPdfViaIloveapi(
+            Buffer.from(arrayBuffer),
+            file.name,
+            iLovePublicKey,
+            iLoveSecretKey,
+          );
+          // Upload the PDF to R2 next to the original
+          const pdfSafeName = safeName.replace(/\.[a-z0-9]+$/i, '') + '.pdf';
+          const pdfKey = `teacher-library/${teacherId}/${timestamp}-${pdfSafeName}`;
+          await bucket.put(pdfKey, result.pdfBuffer, {
+            httpMetadata: { contentType: 'application/pdf' },
+          });
+          r2PdfKey = pdfKey;
+          pdfUrl = `/api/files/${pdfKey}`;
+          conversionStatus = 'SUCCESS';
+          console.log(
+            `[upload] Conversion OK: ${file.size} → ${result.pdfSize} bytes`,
+          );
+        } catch (e: any) {
+          conversionStatus = 'FAILED';
+          warnings.push(
+            `Échec de la conversion Office→PDF: ${e?.message || 'erreur inconnue'}. L'original a été uploadé mais sans PDF.`,
+          );
+          console.error('[upload] iLoveAPI conversion failed:', e?.message || e);
+        }
+      }
     }
 
     // 3. Save TeacherFile record to D1
@@ -153,13 +195,14 @@ export async function POST(req: NextRequest) {
     await d1Run(
       `INSERT INTO TeacherFile (id, teacherId, resourceId, fileName, fileKey, fileUrl,
                                 r2Key, r2PdfKey, fileSize, mimeType, isActive, createdAt, updatedAt)
-       VALUES (?, ?, NULL, ?, ?, ?, ?, NULL, ?, ?, 1, ?, ?)`,
+       VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
       fileId,
       teacherId,
       file.name,
       originalKey,
       fileUrl,
       originalKey,
+      r2PdfKey, // null if no conversion, set if iLovePDF succeeded
       file.size,
       file.type || null,
       now,
@@ -171,8 +214,8 @@ export async function POST(req: NextRequest) {
       libraryFileId: fileId,
       fileKey: originalKey,
       fileUrl,
-      pdfKey: format.isPdf ? originalKey : null,
-      pdfUrl: format.isPdf ? fileUrl : null,
+      pdfKey: format.isPdf ? originalKey : r2PdfKey,
+      pdfUrl: format.isPdf ? fileUrl : pdfUrl,
       originalFormat: format.format,
       conversionStatus,
       warnings: warnings.length > 0 ? warnings : undefined,
