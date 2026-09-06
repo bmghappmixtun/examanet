@@ -151,7 +151,7 @@ export async function GET(req: NextRequest) {
 
     try {
       errorLogRows = await d1All(
-        `SELECT id, level, source, message, url, createdAt, userEmail
+        `SELECT id, level, source, message, url, createdAt, userId
          FROM ErrorLog
          WHERE (seenBySession IS NULL OR seenBySession = 0)
            AND createdAt >= ?
@@ -165,7 +165,7 @@ export async function GET(req: NextRequest) {
       console.warn('[session-start] ErrorLog seenBySession query failed:', (e as Error).message);
       try {
         errorLogRows = await d1All(
-          `SELECT id, level, source, message, url, createdAt, userEmail
+          `SELECT id, level, source, message, url, createdAt, userId
            FROM ErrorLog
            WHERE createdAt >= ?
              AND level IN ('ERROR', 'CRITICAL')
