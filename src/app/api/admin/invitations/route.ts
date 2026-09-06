@@ -175,10 +175,12 @@ export async function POST(req: NextRequest) {
     // 1. Create User (PENDING_INVITATION, no password yet)
     const userId = genId();
     const now = Date.now();
+    const { getNextUserNumericId } = await import('@/lib/db-d1');
+    const numericId = await getNextUserNumericId();
     const r1 = await d1Run(
-      `INSERT INTO "User" (id, email, role, status, invitationStatus, firstName, lastName, createdAt, updatedAt, mustChangePassword)
-       VALUES (?, ?, 'TEACHER', 'PENDING_INVITATION', 'PENDING_INVITATION', ?, ?, ?, ?, 1)`,
-      userId, normalizedEmail, firstName || null, lastName || null, now, now,
+      `INSERT INTO "User" (id, email, role, status, invitationStatus, firstName, lastName, numericId, createdAt, updatedAt, mustChangePassword)
+       VALUES (?, ?, 'TEACHER', 'PENDING_INVITATION', 'PENDING_INVITATION', ?, ?, ?, ?, ?, 1)`,
+      userId, normalizedEmail, firstName || null, lastName || null, numericId, now, now,
     );
     if (!r1.success) {
       return NextResponse.json({ error: `Création user échouée: ${r1.error}` }, { status: 500 });
