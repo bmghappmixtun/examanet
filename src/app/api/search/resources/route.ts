@@ -1,6 +1,9 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { rateLimitKv, rateLimitResponse } from '@/lib/rate-limit-kv';
+import { logSearchRequest } from '@/lib/search-logger';
+import { getClientIp } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,6 +17,19 @@ async function getD1() {
 }
 
 export async function GET(req: NextRequest) {
+  // 2026-09-07: Rate limit per IP — 30 req/min
+  const rl = await rateLimitKv(req, 'search-resources', 30, 60 * 1000);
+  if (!rl.allowed) {
+    logSearchRequest({
+      endpoint: 'search-resources',
+      request: req,
+      query: req.nextUrl.searchParams.get('q') || '',
+      status: 429,
+      durationMs: 0,
+    }).catch(() => {});
+    return rateLimitResponse(rl);
+  }
+
   const start = Date.now();
   const params = req.nextUrl.searchParams;
   const q = params.get('q') || '';

@@ -60,7 +60,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     withAlternates('/bac/archives', 0.6, 'monthly'),
     withAlternates('/professeurs', 0.5, 'monthly'),
     withAlternates('/faq', 0.5, 'monthly'),
-    withAlternates('/recherche', 0.5, 'monthly'),
+    // 2026-09-07: removed /recherche from sitemap — noindex in generateMetadata,
+    // included here caused 7,448 bot visitors in 7 days on this single page.
     withAlternates('/referentiel-national', 0.5, 'monthly'),
   ];
 

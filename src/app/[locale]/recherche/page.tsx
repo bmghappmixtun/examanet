@@ -28,7 +28,11 @@ export async function generateMetadata({ searchParams }: { searchParams: any }):
       : 'Recherchez parmi des milliers de ressources : cours, devoirs, exercices, sujets de bac et corrigés. Recherche tolérante aux fautes avec synonymes FR/AR.',
     // SEO 2026-08-22: locale-prefixed canonical. Was bare '/recherche' before.
     alternates: { canonical: isAr ? '/ar/recherche' : '/fr/recherche' },
-    robots: hasQuery ? { index: false, follow: true } : { index: true, follow: true },
+    // 2026-09-07: Base /recherche now NOINDEX too.
+    // Bot traffic (7,448 visitors/7d, 99.93% desktop) is hammering it.
+    // The page is a search form — no unique content for search engines.
+    // Real users can still navigate to it via the header search bar.
+    robots: { index: false, follow: true },
     openGraph: {
       title: isAr ? 'بحث في إكسامانت' : 'Recherche Examanet',
       description: isAr
