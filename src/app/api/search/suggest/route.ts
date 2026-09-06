@@ -1,6 +1,9 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { rateLimitKv, rateLimitResponse } from '@/lib/rate-limit-kv';
+import { logSearchRequest } from '@/lib/search-logger';
+import { getClientIp } from '@/lib/security';
 
 export const runtime = 'nodejs';
 export const revalidate = 60; // 5 min cache
@@ -99,6 +102,19 @@ async function searchSubjects(db: any, q: string, limit: number): Promise<Sugges
 }
 
 export async function GET(req: NextRequest) {
+  // 2026-09-07: Rate limit per IP — 60 req/min (suggest is autocomplete, higher threshold)
+  const rl = await rateLimitKv(req, 'search-suggest', 60, 60 * 1000);
+  if (!rl.allowed) {
+    logSearchRequest({
+      endpoint: 'search-suggest',
+      request: req,
+      query: req.nextUrl.searchParams.get('q') || '',
+      status: 429,
+      durationMs: 0,
+    }).catch(() => {});
+    return rateLimitResponse(rl);
+  }
+
   try {
     const q = (req.nextUrl.searchParams.get('q') || '').trim();
     if (!q || q.length < 2) {
@@ -121,6 +137,13 @@ export async function GET(req: NextRequest) {
     });
   } catch (e: any) {
     console.error('[search/suggest] error:', e?.message);
+    logSearchRequest({
+      endpoint: 'search-suggest',
+      request: req,
+      query: req.nextUrl.searchParams.get('q') || '',
+      status: 500,
+      durationMs: 0,
+    }).catch(() => {});
     return NextResponse.json({ results: [], error: e?.message }, { status: 500 });
   }
 }
