@@ -4,6 +4,7 @@ import { isValidOrigin, isProduction } from '@/lib/security';
 import { hashPassword, generateOTP } from '@/lib/auth';
 import { sendOTPEmail, sendWelcomeEmail } from '@/lib/email';
 import { notifyAdminsNewTeacher } from '@/lib/admin-notify';
+import { getNextUserNumericId } from '@/lib/db-d1';
 
 function genId() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 25);
@@ -90,13 +91,16 @@ export async function POST(req: NextRequest) {
     const otpCode = generateOTP();
     const userId = genId();
     const now = Date.now();
+    // 2026-09-06: auto-assign numericId on user creation (was previously NULL,
+    // which broke /professeurs/[numericId]/[slug] URLs for new users).
+    const numericId = await getNextUserNumericId();
 
     await db
       .prepare(
         `INSERT INTO User (
           id, email, passwordHash, firstName, lastName, role, status,
-          emailVerifiedAt, slug, createdAt, updatedAt
-        ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING_OTP', NULL, '', ?, ?)`,
+          emailVerifiedAt, slug, numericId, createdAt, updatedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING_OTP', NULL, '', ?, ?, ?)`,
       )
       .bind(
         userId,
@@ -105,6 +109,7 @@ export async function POST(req: NextRequest) {
         firstName,
         lastName || '',
         role,
+        numericId,
         now,
         now,
       )

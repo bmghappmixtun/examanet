@@ -104,7 +104,14 @@ export async function GET(request: NextRequest) {
     const totalResources = num(statsRow?.totalResources);
 
     // ----- Build teacher WHERE -----
-    const teacherConds: string[] = ["u.role = 'TEACHER'", "u.status = 'ACTIVE'"];
+    const teacherConds: string[] = [
+      "u.role = 'TEACHER'",
+      "u.status = 'ACTIVE'",
+      // 2026-09-06: only show teachers with a numericId (broken profile URLs otherwise)
+      "u.numericId IS NOT NULL",
+      "u.slug IS NOT NULL",
+      "u.slug != ''",
+    ];
     const teacherParams: any[] = [];
     if (verifiedOnly) teacherConds.push('u.isVerifiedTeacher = 1');
 
