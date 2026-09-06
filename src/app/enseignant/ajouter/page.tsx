@@ -615,15 +615,66 @@ export default function AddResourcePage() {
           }}
         />
         {uploadedFile && uploadedFile.conversionStatus !== 'FAILED' && (
-          <div className="mt-3 p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-start gap-2">
-            <Library className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-800">
-              <strong>Original sauvegardé.</strong> Vous retrouverez{' '}
-              <span className="font-mono text-xs">{uploadedFile.fileName}</span> dans votre{' '}
-              <a href="/enseignant/bibliotheque" className="font-bold underline">
-                bibliothèque
-              </a>
-              .
+          <div
+            className={`mt-3 p-3 rounded-lg border flex items-start gap-3 ${
+              uploadedFile.conversionStatus === 'SUCCESS' && uploadedFile.originalFormat !== 'pdf'
+                ? 'bg-emerald-50 border-emerald-200'
+                : 'bg-blue-50 border-blue-200'
+            }`}
+          >
+            {uploadedFile.conversionStatus === 'SUCCESS' && uploadedFile.originalFormat !== 'pdf' ? (
+              <div className="flex-shrink-0 w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              </div>
+            ) : (
+              <Library className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
+            )}
+            <div
+              className={`text-sm flex-1 ${
+                uploadedFile.conversionStatus === 'SUCCESS' && uploadedFile.originalFormat !== 'pdf'
+                  ? 'text-emerald-900'
+                  : 'text-blue-800'
+              }`}
+            >
+              {uploadedFile.conversionStatus === 'SUCCESS' && uploadedFile.originalFormat !== 'pdf' ? (
+                <>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <strong className="text-emerald-900">Conversion PDF réussie ✓</strong>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-medium">
+                      <FileCheck className="w-3 h-3" />
+                      {uploadedFile.originalFormat.toUpperCase()} → PDF
+                    </span>
+                  </div>
+                  <p className="mt-1.5 text-emerald-800">
+                    Le fichier{' '}
+                    <span className="font-mono text-xs">{uploadedFile.fileName}</span> a été
+                    converti en PDF automatiquement. L'original et le PDF sont disponibles
+                    dans votre{' '}
+                    <a href="/enseignant/bibliotheque" className="font-bold underline">
+                      bibliothèque
+                    </a>
+                    .
+                  </p>
+                </>
+              ) : uploadedFile.originalFormat === 'pdf' ? (
+                <>
+                  <strong>PDF uploadé.</strong> Vous retrouverez{' '}
+                  <span className="font-mono text-xs">{uploadedFile.fileName}</span> dans votre{' '}
+                  <a href="/enseignant/bibliotheque" className="font-bold underline">
+                    bibliothèque
+                  </a>
+                  .
+                </>
+              ) : (
+                <>
+                  <strong>Original sauvegardé.</strong> Vous retrouverez{' '}
+                  <span className="font-mono text-xs">{uploadedFile.fileName}</span> dans votre{' '}
+                  <a href="/enseignant/bibliotheque" className="font-bold underline">
+                    bibliothèque
+                  </a>
+                  .
+                </>
+              )}
             </div>
           </div>
         )}
