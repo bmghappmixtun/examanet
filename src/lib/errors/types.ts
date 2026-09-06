@@ -38,7 +38,7 @@ export interface ErrorReport {
   method?: string;
   // User agent
   userAgent?: string;
-  // Vercel request ID for correlation with VercelLog
+  // Vercel request ID for correlation with CloudflareLog
   requestId?: string;
   // Vercel region (e.g. 'fra1')
   region?: string;

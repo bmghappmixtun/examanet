@@ -8,23 +8,23 @@ export const runtime = 'nodejs';
 /**
  * POST /api/admin/logs/[id]/resolve
  * 
- * Mark a VercelLog as reviewed (we don't have a resolved field on VercelLog).
+ * Mark a CloudflareLog as reviewed (we don't have a resolved field on CloudflareLog).
  * For ErrorLog, we use the `resolved` field.
  */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
   try {
-    // Try VercelLog first
+    // Try CloudflareLog first
     const vercel = await db.$queryRaw<any[]>`
-      UPDATE "VercelLog" 
+      UPDATE "CloudflareLog" 
       SET reviewed = true, "reviewedAt" = NOW(), "updatedAt" = NOW()
       WHERE id = ${id}
       RETURNING id
     `;
     
     if (vercel.length > 0) {
-      return NextResponse.json({ ok: true, type: 'vercellog', id });
+      return NextResponse.json({ ok: true, type: 'cloudflarelog', id });
     }
     
     // Try ErrorLog
