@@ -294,7 +294,7 @@ export default async function TeacherResourcesPage(props: {
                     {r.status === 'PUBLISHED' && (
                       <UnpublishResourceButton resourceId={r.id} resourceTitle={r.title} />
                     )}
-                    <DeleteResourceButton id={r.id} title={r.title} />
+                    <DeleteResourceButton resourceId={r.id} resourceTitle={r.title} />
                   </div>
                 </div>
               </div>
