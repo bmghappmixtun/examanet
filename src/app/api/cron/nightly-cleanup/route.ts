@@ -14,8 +14,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/d1-admin';
-import { ErrorSeverity } from '@prisma/client';
+import { d1All, d1Run } from '@/lib/db-d1';
+import { requireCronSecret } from '@/lib/cf-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -36,32 +36,32 @@ function shortMsg(msg: string, max = 80): string {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = req.headers.get('authorization');
-  const expected = `Bearer ${process.env.CRON_SECRET}`;
-  if (!auth || auth !== expected) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+  // 2026-09-05: use cf-auth helper for cross-env secret
+  const authErr = await requireCronSecret(req);
+  if (authErr) return authErr;
 
   // Look at last 7 days
-  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const since = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
-  const errors = await db.errorLog.findMany({
-    where: {
-      severity: { in: ['ERROR', 'CRITICAL'] },
-      createdAt: { gte: since },
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 200,
-  });
+  // 2026-09-05: Replaced Prisma findMany/updateMany with raw D1 SQL
+  const allRows: any[] = await d1All(
+    `SELECT id, level as severity, source, message, url, createdAt, userEmail
+     FROM ErrorLog
+     WHERE level IN ('ERROR', 'CRITICAL')
+       AND createdAt >= ?
+     ORDER BY createdAt DESC
+     LIMIT 200`,
+    since,
+  );
 
-  const unSeen = errors.filter((e) => e.agentSeen === false);
+  const unSeen = allRows.filter((e) => e.agentSeen === 0 || e.agentSeen === false);
   const unSeenCritical = unSeen.filter((e) => e.severity === 'CRITICAL');
   const unSeenError = unSeen.filter((e) => e.severity === 'ERROR');
 
   // Group by message hash
-  const grouped = new Map<string, { count: number; sample: typeof errors[number]; severities: Set<string> }>();
+  const grouped = new Map<string, { count: number; sample: any; severities: Set<string> }>();
   for (const e of unSeen) {
-    const key = hashMessage(e.message);
+    const key = hashMessage(e.message || '');
     const existing = grouped.get(key);
     if (existing) {
       existing.count++;
@@ -77,10 +77,13 @@ export async function GET(req: NextRequest) {
 
   // Mark all unseen as seen
   if (unSeen.length > 0) {
-    await db.errorLog.updateMany({
-      where: { id: { in: unSeen.map((e) => e.id) } },
-      data: { agentSeen: true, agentSeenAt: new Date() },
-    });
+    const ids = unSeen.map((e) => e.id);
+    const placeholders = ids.map(() => '?').join(',');
+    await d1Run(
+      `UPDATE ErrorLog SET agentSeen = 1, updatedAt = ? WHERE id IN (${placeholders})`,
+      Date.now(),
+      ...ids,
+    );
   }
 
   // Post summary to Discord
@@ -125,6 +128,19 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // 2026-09-06: also clean up old notifications to keep the table small.
+  // Strategy: delete notifications older than 90 days OR read notifications
+  // older than 30 days. This prevents the table from growing unbounded.
+  const NINETY_DAYS_AGO = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const THIRTY_DAYS_AGO = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const oldNotifResult: any = await d1Run(
+    'DELETE FROM Notification WHERE createdAt < ? OR (isRead = 1 AND createdAt < ?)',
+    NINETY_DAYS_AGO,
+    THIRTY_DAYS_AGO,
+  );
+  const notifDeleted = oldNotifResult?.meta?.changes ?? 0;
+  console.log(`[nightly-cleanup] Deleted ${notifDeleted} old notifications`);
+
   // Build a digest that Mavis can read
   const digest = {
     generatedAt: new Date().toISOString(),
@@ -144,6 +160,7 @@ export async function GET(req: NextRequest) {
       stack: g.sample.stack?.split('\n').slice(0, 5).join('\n'),
       context: g.sample.context,
     })),
+    notificationsDeleted: notifDeleted,
     discordPosted,
   };
 
