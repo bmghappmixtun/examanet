@@ -36,6 +36,14 @@ export async function GET(
       parentId: c.parentId,
       likes: 0,
       createdAt: c.createdAt,
+      // 2026-09-07: Return BOTH 'user' (new canonical name) and 'author' (legacy)
+      // for backward compat with old clients.
+      user: c.userId ? {
+        id: c.userId,
+        firstName: c.firstName,
+        lastName: c.lastName,
+        avatarUrl: c.avatarUrl,
+      } : null,
       author: c.userId ? {
         id: c.userId,
         firstName: c.firstName,
