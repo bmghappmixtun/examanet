@@ -146,12 +146,28 @@ export async function POST(req: NextRequest) {
     const warnings: string[] = [];
 
     if (format.isConvertible) {
-      const iLovePublicKey = process.env.I_LOVE_API_PUBLIC_KEY;
-      const iLoveSecretKey = process.env.I_LOVE_API_SECRET_KEY;
+      // 2026-09-06: Read iLoveAPI config from the ApiProvider DB table first
+      // (the user can set this via /admin/fournisseurs), then fall back to env vars.
+      let iLovePublicKey = process.env.I_LOVE_API_PUBLIC_KEY || '';
+      let iLoveSecretKey = process.env.I_LOVE_API_SECRET_KEY || '';
+      try {
+        const { d1First } = await import('@/lib/db-d1');
+        const { decryptSecret } = await import('@/lib/provider-keys');
+        const dbProvider: any = await d1First(
+          "SELECT publicKey, secretKey, isActive FROM ApiProvider WHERE provider = 'iloveapi' OR type = 'iloveapi' LIMIT 1"
+        );
+        if (dbProvider && dbProvider.isActive && dbProvider.publicKey) {
+          iLovePublicKey = dbProvider.publicKey;
+          iLoveSecretKey = dbProvider.secretKey ? decryptSecret(dbProvider.secretKey) : '';
+          console.log('[upload] Using iLoveAPI config from ApiProvider DB');
+        }
+      } catch (e) {
+        console.warn('[upload] Failed to read iLoveAPI config from DB:', (e as Error).message);
+      }
       if (!iLovePublicKey || !iLoveSecretKey) {
         conversionStatus = 'SKIPPED';
         warnings.push(
-          "Conversion Office→PDF non configurée (clés API iLovePDF manquantes). Pour publier en PDF, ré-uploadez un PDF.",
+          "Conversion Office→PDF non configurée (clés API iLovePDF manquantes). Ajoutez-les dans Admin > Fournisseurs, ou ré-uploadez un PDF.",
         );
         console.warn('[upload] I_LOVE_API_PUBLIC_KEY / I_LOVE_API_SECRET_KEY not set — skipping conversion');
       } else {
