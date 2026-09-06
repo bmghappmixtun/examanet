@@ -70,6 +70,13 @@ export default function AddResourcePage() {
   const [resetKey, setResetKey] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // 2026-09-06: when the upload returns 422 (CONVERSION_FAILED or
+  // CONVERSION_NOT_CONFIGURED), we show a modal explaining the error
+  // and let the teacher try again or contact support.
+  const [conversionError, setConversionError] = useState<{
+    code: string;
+    message: string;
+  } | null>(null);
 
   // Teacher info (for title generation)
   const [teacherName, setTeacherName] = useState<string>('');
@@ -597,7 +604,14 @@ export default function AddResourcePage() {
             }
           }}
           onError={(err) => {
-            toast.error('Erreur upload: ' + (typeof err === 'string' ? err : 'inconnue'));
+            // 2026-09-06: handle conversion errors with a modal
+            if (err && typeof err === 'object' && (err.code === 'CONVERSION_FAILED' || err.code === 'CONVERSION_NOT_CONFIGURED')) {
+              setUploadedFile(null);
+              setConversionError({ code: err.code, message: err.message });
+            } else {
+              const msg = typeof err === 'string' ? err : (err?.message || 'Erreur inconnue');
+              toast.error('Erreur upload: ' + msg);
+            }
           }}
         />
         {uploadedFile && uploadedFile.conversionStatus !== 'FAILED' && (
@@ -992,6 +1006,103 @@ export default function AddResourcePage() {
           </div>
         </Section>
       </form>
+
+      {/* 2026-09-06: Conversion error modal — shown when the upload returns
+          CONVERSION_FAILED or CONVERSION_NOT_CONFIGURED. The teacher cannot
+          continue without resolving this (e.g. by uploading a PDF directly). */}
+      {conversionError && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => setConversionError(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setConversionError(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              aria-label="Fermer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="flex items-start gap-3 mb-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="flex-1 pt-1">
+                <h3 className="text-lg font-bold text-slate-900">
+                  {conversionError.code === 'CONVERSION_NOT_CONFIGURED'
+                    ? 'Conversion PDF non configurée'
+                    : 'Échec de la conversion en PDF'}
+                </h3>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  Votre fichier n'a pas été enregistré.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-red-800 leading-relaxed">
+                {conversionError.message}
+              </p>
+            </div>
+
+            {conversionError.code === 'CONVERSION_NOT_CONFIGURED' ? (
+              <div className="text-sm text-slate-600 space-y-2">
+                <p>
+                  Pour publier des fichiers Word sur Examanet, l'administrateur doit configurer
+                  les clés iLovePDF dans <strong>Admin &gt; Fournisseurs</strong>.
+                </p>
+                <p>
+                  <strong>En attendant</strong>, vous pouvez convertir votre fichier en PDF
+                  localement (via Word ou LibreOffice) et l'uploader directement.
+                </p>
+              </div>
+            ) : (
+              <div className="text-sm text-slate-600 space-y-2">
+                <p>
+                  Le service de conversion iLovePDF a rejeté votre fichier. Cela peut être dû
+                  à :
+                </p>
+                <ul className="list-disc list-inside space-y-1 pl-2 text-slate-600">
+                  <li>Un quota mensuel épuisé (250 conversions/mois en gratuit)</li>
+                  <li>Un fichier corrompu ou protégé par mot de passe</li>
+                  <li>Un problème technique temporaire côté iLovePDF</li>
+                </ul>
+                <p>
+                  <strong>Solutions</strong> : réessayez dans quelques minutes, ou convertissez
+                  votre fichier en PDF localement et uploadez-le directement.
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setConversionError(null)}
+                className="flex-1 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium"
+              >
+                Fermer
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConversionError(null);
+                  setResetKey((k) => k + 1);
+                }}
+                className="flex-1 px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 font-medium"
+              >
+                Réessayer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

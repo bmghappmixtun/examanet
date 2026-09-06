@@ -217,11 +217,13 @@ export default function ModernUploader({
             toast.success('📄 Fichier uploadé ! Remplissez les infos puis cliquez sur Publier.');
             onSuccess?.(data);
           } else {
+            // 2026-09-06: pass the full data object so the parent can
+            // distinguish CONVERSION_FAILED / CONVERSION_NOT_CONFIGURED
+            // from generic errors and show the right UI.
             const err = data?.error || `Erreur ${xhr.status}`;
             setStage('error');
-            setError(err);
-            toast.error(err);
-            onError?.(err);
+            setError(data?.message || err);
+            onError?.({ code: data?.error, message: data?.message || err, status: xhr.status, data });
           }
         } catch (e) {
           setStage('error');
