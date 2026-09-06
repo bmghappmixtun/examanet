@@ -112,7 +112,13 @@ export async function GET(
     
     // Comments - simple
     const comments = await db.prepare(
-      'SELECT c.id, c.content, c.createdAt FROM Comment c WHERE c.resourceId = ? AND c.isHidden = 0 ORDER BY c.createdAt DESC LIMIT 10'
+      `SELECT c.id, c.content, c.createdAt, c.userId,
+              u.firstName, u.lastName, u.avatarUrl
+       FROM Comment c
+       LEFT JOIN User u ON c.userId = u.id
+       WHERE c.resourceId = ? AND c.isHidden = 0
+       ORDER BY c.createdAt DESC
+       LIMIT 10`
     ).bind(r.id).all();
     
     // Increment views - fire and forget
@@ -155,7 +161,17 @@ export async function GET(
         summaryGeneratedAt: sum?.generatedAt || null,
       },
       ratings: ratings?.results || [],
-      comments: comments?.results || [],
+      comments: (comments?.results || []).map((c: any) => ({
+        id: c.id,
+        content: c.content,
+        createdAt: c.createdAt,
+        user: {
+          id: c.userId,
+          firstName: c.firstName,
+          lastName: c.lastName,
+          avatarUrl: c.avatarUrl,
+        },
+      })),
     };
 
     // PERF 2026-09-02: Store in KV cache (60s TTL)

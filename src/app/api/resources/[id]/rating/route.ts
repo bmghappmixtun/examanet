@@ -102,3 +102,57 @@ export async function POST(
     return NextResponse.json({ error: e?.message }, { status: 500 });
   }
 }
+
+/**
+ * DELETE /api/resources/[id]/rating
+ *
+ * Delete the current user's rating on this resource.
+ * 
+ * 2026-09-07: Added — students can now remove their own ratings from
+ * /mon-compte/commentaires page.
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+
+    const { id: resourceId } = await params;
+    const db = await getD1();
+    if (!db) return NextResponse.json({ error: 'DB not available' }, { status: 503 });
+
+    // Verify the rating exists and belongs to the user
+    const rating: any = await db.prepare(
+      'SELECT id FROM Rating WHERE resourceId = ? AND userId = ? LIMIT 1'
+    ).bind(resourceId, user.id).first();
+    if (!rating) {
+      return NextResponse.json({ error: 'Aucune note trouvée' }, { status: 404 });
+    }
+
+    // Hard-delete the rating
+    await db.prepare(
+      'DELETE FROM Rating WHERE id = ?'
+    ).bind(rating.id).run();
+
+    // Recompute avgRating + ratingsCount
+    const stats: any = await db.prepare(
+      'SELECT COALESCE(AVG(value), 0) as avgRating, COUNT(*) as ratingCount FROM Rating WHERE resourceId = ?'
+    ).bind(resourceId).first();
+
+    await db.prepare(
+      'UPDATE Resource SET avgRating = ?, ratingsCount = ? WHERE id = ?'
+    ).bind(stats?.avgRating || 0, stats?.ratingCount || 0, resourceId).run();
+
+    return NextResponse.json({
+      success: true,
+      deletedId: rating.id,
+      avgRating: stats?.avgRating || 0,
+      ratingCount: stats?.ratingCount || 0,
+    });
+  } catch (e: any) {
+    console.error('[rating DELETE] error:', e?.message);
+    return NextResponse.json({ error: e?.message || 'Erreur' }, { status: 500 });
+  }
+}

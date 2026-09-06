@@ -65,9 +65,8 @@ export default function CommentsSection({
       }
       if (res.ok) {
         const data = await res.json();
-        const createdAt = new Date().toISOString();
         setComments([
-          { ...data.comment, createdAt, createdAtLabel: timeAgo(createdAt) },
+          data.comment,
           ...comments,
         ]);
         setContent('');
