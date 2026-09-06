@@ -73,7 +73,7 @@ export function withErrorHandler<P = unknown>(
       const customContext = options.getContext?.(req, ctx) || {};
       console.error(`[${reference}] ${options.action}:`, err);
 
-      // Capture Vercel request ID for correlation with VercelLog
+      // Capture Vercel request ID for correlation with CloudflareLog
       // Vercel adds these headers to every request:
       //   x-vercel-id: unique request ID (e.g. "fra1::abc123")
       //   x-vercel-forwarded-for: client IP

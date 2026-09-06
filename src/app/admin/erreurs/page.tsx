@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 
 type Period = '1h' | '24h' | '7d' | '30d';
-type Source = 'all' | 'errorlog' | 'vercellog';
+type Source = 'all' | 'errorlog' | 'cloudflarelog';
 type Severity = 'all' | 'CRITICAL' | 'ERROR' | 'WARNING' | 'INFO' | 'DEBUG';
 
 interface ErrorLog {
@@ -29,7 +29,7 @@ interface ErrorLog {
   resolved?: boolean;
 }
 
-interface VercelLog {
+interface CloudflareLog {
   id: string;
   level: string;
   requestMethod?: string;
@@ -47,7 +47,7 @@ interface ApiResponse {
   ok: boolean;
   range: { since: string; until: string };
   counts: { level: string; count: number }[];
-  logs: (ErrorLog | VercelLog)[];
+  logs: (ErrorLog | CloudflareLog)[];
 }
 
 const PERIOD_MS: Record<Period, number> = {
@@ -72,9 +72,9 @@ export default function AdminErrorsPage() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(10); // seconds
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [data, setData] = useState<{ errorlog: ErrorLog[]; vercellog: VercelLog[]; counts: { level: string; count: number }[] }>({
+  const [data, setData] = useState<{ errorlog: ErrorLog[]; cloudflarelog: CloudflareLog[]; counts: { level: string; count: number }[] }>({
     errorlog: [],
-    vercellog: [],
+    cloudflarelog: [],
     counts: [],
   });
   const [loading, setLoading] = useState(false);
@@ -95,12 +95,12 @@ export default function AdminErrorsPage() {
     try {
       // Fetch both sources in parallel
       const [errorlogRes, vercRes] = await Promise.all([
-        source !== 'vercellog' ? fetchErrorlog(period, severity) : Promise.resolve({ logs: [], counts: [] }),
-        source !== 'errorlog' ? fetchVercelLog(period) : Promise.resolve({ logs: [], counts: [] }),
+        source !== 'cloudflarelog' ? fetchErrorlog(period, severity) : Promise.resolve({ logs: [], counts: [] }),
+        source !== 'errorlog' ? fetchCloudflareLog(period) : Promise.resolve({ logs: [], counts: [] }),
       ]);
       setData({
         errorlog: errorlogRes.logs as ErrorLog[],
-        vercellog: vercRes.logs as VercelLog[],
+        cloudflarelog: vercRes.logs as CloudflareLog[],
         counts: [...errorlogRes.counts, ...vercRes.counts],
       });
       setLastUpdated(new Date());
@@ -176,21 +176,21 @@ export default function AdminErrorsPage() {
     );
   }, [data.errorlog, search]);
 
-  const filteredVercelLog = useMemo(() => {
-    if (!search) return data.vercellog;
+  const filteredCloudflareLog = useMemo(() => {
+    if (!search) return data.cloudflarelog;
     const s = search.toLowerCase();
-    return data.vercellog.filter(e =>
+    return data.cloudflarelog.filter(e =>
       e.message?.toLowerCase().includes(s) ||
       e.requestPath?.toLowerCase().includes(s) ||
       e.requestId?.toLowerCase().includes(s) ||
       e.level?.toLowerCase().includes(s)
     );
-  }, [data.vercellog, search]);
+  }, [data.cloudflarelog, search]);
 
   // Combined count
-  const totalCount = filteredErrorlog.length + filteredVercelLog.length;
+  const totalCount = filteredErrorlog.length + filteredCloudflareLog.length;
   const errorCount = data.errorlog.filter(e => e.severity === 'ERROR' || e.severity === 'CRITICAL').length
-    + data.vercellog.filter(e => e.level === 'error').length;
+    + data.cloudflarelog.filter(e => e.level === 'error').length;
 
   // Mark as resolved
   const markResolved = async (id: string) => {
@@ -364,7 +364,7 @@ export default function AdminErrorsPage() {
             >
               <option value="all">Toutes sources</option>
               <option value="errorlog">ErrorLog (custom)</option>
-              <option value="vercellog">VercelLog (runtime)</option>
+              <option value="cloudflarelog">CloudflareLog (runtime)</option>
             </select>
 
             {/* Severity */}
@@ -438,7 +438,7 @@ export default function AdminErrorsPage() {
           ) : (
             <>
               {/* ErrorLog items */}
-              {source !== 'vercellog' && filteredErrorlog.map(log => (
+              {source !== 'cloudflarelog' && filteredErrorlog.map(log => (
                 <ErrorLogCard
                   key={log.id}
                   log={log}
@@ -447,9 +447,9 @@ export default function AdminErrorsPage() {
                   onResolve={() => markResolved(log.id)}
                 />
               ))}
-              {/* VercelLog items */}
-              {source !== 'errorlog' && filteredVercelLog.map(log => (
-                <VercelLogCard
+              {/* CloudflareLog items */}
+              {source !== 'errorlog' && filteredCloudflareLog.map(log => (
+                <CloudflareLogCard
                   key={log.id}
                   log={log}
                   expanded={expandedId === log.id}
@@ -534,7 +534,7 @@ function ErrorLogCard({ log, expanded, onToggle, onResolve }: { log: ErrorLog; e
   );
 }
 
-function VercelLogCard({ log, expanded, onToggle }: { log: VercelLog; expanded: boolean; onToggle: () => void }) {
+function CloudflareLogCard({ log, expanded, onToggle }: { log: CloudflareLog; expanded: boolean; onToggle: () => void }) {
   const sevColor = getLevelColor(log.level);
   const time = new Date(log.timestamp);
   
@@ -627,14 +627,14 @@ function getLevelColor(level: string) {
 async function fetchErrorlog(period: Period, severity: Severity): Promise<{ logs: ErrorLog[]; counts: { level: string; count: number }[] }> {
   const params = new URLSearchParams();
   params.set('limit', '100');
-  // The /api/admin/logs endpoint queries VercelLog, not ErrorLog
+  // The /api/admin/logs endpoint queries CloudflareLog, not ErrorLog
   // We need a separate endpoint for ErrorLog or use Prisma directly
   const res = await fetch(`/api/admin/logs/errorlog?sinceMs=${PERIOD_MS[period]}&severity=${severity}`);
   if (!res.ok) return { logs: [], counts: [] };
   return res.json();
 }
 
-async function fetchVercelLog(period: Period): Promise<{ logs: VercelLog[]; counts: { level: string; count: number }[] }> {
+async function fetchCloudflareLog(period: Period): Promise<{ logs: CloudflareLog[]; counts: { level: string; count: number }[] }> {
   const since = new Date(Date.now() - PERIOD_MS[period]).toISOString();
   const res = await fetch(`/api/admin/logs?since=${since}&limit=100`);
   if (!res.ok) return { logs: [], counts: [] };

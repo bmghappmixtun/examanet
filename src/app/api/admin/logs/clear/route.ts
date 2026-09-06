@@ -8,13 +8,13 @@ export const runtime = 'nodejs';
 /**
  * DELETE /api/admin/logs/clear
  *
- * Delete all VercelLog + ErrorLog entries.
+ * Delete all CloudflareLog + ErrorLog entries.
  * Optional body: { source: 'vercel' | 'errorlog' | 'all' (default), olderThanDays: N }
  *
  * Use cases:
  * - Reset monitoring after a deploy
  * - Clean up noise from a known issue
- * - Free up space in the VercelLog/ErrorLog tables
+ * - Free up space in the CloudflareLog/ErrorLog tables
  */
 export async function DELETE(req: NextRequest) {
   try {
@@ -31,11 +31,11 @@ export async function DELETE(req: NextRequest) {
     if (source === 'all' || source === 'vercel') {
       if (cutoff) {
         const r = await db.$executeRaw`
-          DELETE FROM "VercelLog" WHERE timestamp < ${cutoff}
+          DELETE FROM "CloudflareLog" WHERE timestamp < ${cutoff}
         `;
         vercelDeleted = Number(r);
       } else {
-        const r = await db.$executeRaw`DELETE FROM "VercelLog"`;
+        const r = await db.$executeRaw`DELETE FROM "CloudflareLog"`;
         vercelDeleted = Number(r);
       }
     }
