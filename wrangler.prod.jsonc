@@ -66,7 +66,7 @@
     {
       "binding": "DB",
       "database_name": "examanet-db",
-      "database_id": "***REMOVED***",
+      "database_id": "22ad2e7f-1692-486e-9131-d6c4062012e1",
       "migrations_dir": "drizzle-migrations"
     }
   ]
