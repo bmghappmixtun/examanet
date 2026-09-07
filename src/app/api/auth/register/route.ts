@@ -99,8 +99,8 @@ export async function POST(req: NextRequest) {
       .prepare(
         `INSERT INTO User (
           id, email, passwordHash, firstName, lastName, role, status,
-          emailVerifiedAt, slug, numericId, createdAt, updatedAt
-        ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING_OTP', NULL, '', ?, ?, ?)`,
+          emailVerifiedAt, slug, numericId, createdAt, updatedAt, passwordChangedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING_OTP', NULL, '', ?, ?, ?, ?)`,
       )
       .bind(
         userId,
@@ -110,6 +110,7 @@ export async function POST(req: NextRequest) {
         lastName || '',
         role,
         numericId,
+        now,
         now,
         now,
       )

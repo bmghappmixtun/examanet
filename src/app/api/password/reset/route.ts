@@ -108,13 +108,16 @@ export async function POST(req: NextRequest) {
     .run();
 
   // Update the password + clear any lockout
+  // Also set passwordChangedAt to NOW to invalidate all existing sessions
   const passwordHash = await hashPassword(newPassword);
+  const now = Date.now();
   await db
     .prepare(
-      `UPDATE User SET passwordHash = ?, failedLoginCount = 0, lockedUntil = NULL, updatedAt = ?
+      `UPDATE User SET passwordHash = ?, failedLoginCount = 0, lockedUntil = NULL,
+       passwordChangedAt = ?, updatedAt = ?
        WHERE id = ?`,
     )
-    .bind(passwordHash, Date.now(), user.id)
+    .bind(passwordHash, now, now, user.id)
     .run();
 
   // Send confirmation email
