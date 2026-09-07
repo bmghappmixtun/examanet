@@ -35,6 +35,7 @@ export async function GET(_req: NextRequest) {
       FROM User u
       INNER JOIN Session s ON s.userId = u.id
       WHERE s.token = ? AND s.expiresAt > ?
+        AND (u.passwordChangedAt IS NULL OR s.createdAt > u.passwordChangedAt)
       LIMIT 1
     `).bind(token, Date.now()).first();
 

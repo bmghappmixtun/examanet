@@ -64,14 +64,15 @@ export async function getSession() {
   const row = await db
     .prepare(
       `SELECT
-         s.id as sessionId, s.userId, s.expiresAt as sessionExpiresAt,
+         s.id as sessionId, s.userId, s.expiresAt as sessionExpiresAt, s.createdAt as sessionCreatedAt,
          u.id, u.email, u.role, u.status, u.firstName, u.lastName, u.firstNameAr, u.lastNameAr,
          u.avatarUrl, u.bio, u.phone, u.website, u.schoolLevel, u.classLevel, u.schoolName, u.schoolNameAr,
          u.governorate, u.diploma, u.isVerifiedTeacher, u.numericId, u.slug, u.uploadsCount, u.followersCount,
-         u.createdAt, u.updatedAt, u.approvedAt
+         u.createdAt, u.updatedAt, u.approvedAt, u.passwordChangedAt
        FROM Session s
        INNER JOIN User u ON s.userId = u.id
        WHERE s.token = ? AND s.expiresAt > ?
+         AND (u.passwordChangedAt IS NULL OR s.createdAt > u.passwordChangedAt)
        LIMIT 1`,
     )
     .bind(token, Date.now())
