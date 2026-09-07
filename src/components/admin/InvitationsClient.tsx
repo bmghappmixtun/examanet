@@ -50,12 +50,12 @@ type Invitation = {
   openedAt: string | null;
   openCount: number;
   teacher: {
-    id: string;
+    id: string | null;
     firstName: string | null;
     lastName: string | null;
     email: string;
     _count?: { uploadedFiles?: number };
-  };
+  } | null;
   invitedBy: {
     id: string;
     firstName: string | null;
@@ -203,10 +203,11 @@ export default function InvitationsClient({
       result = result.filter(
         (inv) =>
           inv.email.toLowerCase().includes(q) ||
-          `${inv.teacher.firstName || ''} ${inv.teacher.lastName || ''}`
-            .toLowerCase()
-            .includes(q) ||
-          inv.teacher.email.toLowerCase().includes(q),
+          (inv.teacher &&
+            `${inv.teacher.firstName || ''} ${inv.teacher.lastName || ''}`
+              .toLowerCase()
+              .includes(q)) ||
+          (inv.teacher && inv.teacher.email.toLowerCase().includes(q)),
       );
     }
     return result;
@@ -478,9 +479,11 @@ export default function InvitationsClient({
             <tbody>
               {filtered.map((inv, i) => {
                 const meta = STATUS_META[inv.status];
-                const fileCount = inv.teacher._count?.uploadedFiles || 0;
-                const expiresAt = new Date(inv.expiresAt);
+                const fileCount = inv.teacher?._count?.uploadedFiles || 0;
+                const expiresAt = inv.expiresAt ? new Date(inv.expiresAt) : null;
                 const isExpiringSoon =
+                  expiresAt &&
+                  expiresAt.getTime() > 0 &&
                   inv.status !== 'ACTIVATED' &&
                   inv.status !== 'EXPIRED' &&
                   inv.status !== 'CANCELLED' &&
@@ -493,13 +496,13 @@ export default function InvitationsClient({
                     <td className="px-3 py-2.5">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-400 to-cyan-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
-                          {(inv.teacher.firstName?.[0] || inv.teacher.email[0]).toUpperCase()}
+                          {(inv.teacher?.firstName?.[0] || inv.email[0] || '?').toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="font-semibold text-slate-900 truncate">
-                            {inv.teacher.firstName} {inv.teacher.lastName}
+                            {inv.teacher?.firstName || inv.email.split('@')[0]} {inv.teacher?.lastName || ''}
                           </div>
-                          <div className="text-xs text-slate-500 truncate">{inv.teacher.email}</div>
+                          <div className="text-xs text-slate-500 truncate">{inv.email}</div>
                         </div>
                       </div>
                     </td>

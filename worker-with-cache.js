@@ -128,15 +128,47 @@ export default {
     });
   },
   
-  // CF Cron trigger - run every 5 minutes
+  // CF Cron trigger
+  // - Every 5 min: monitor-alerts + cf-observability-sync
+  // - Daily 3 AM UTC: cleanup-views + nightly-cleanup
   async scheduled(event, env, ctx) {
-    // Call the monitor-alerts endpoint internally
+    const secret = env.CRON_SECRET || 'monitor-secret';
+    const base = 'https://examanet-prod.examanet-poc.workers.dev';
+    // CF Cron passes a `cron` field on the event for the expression that fired.
+    // 2026-09-05: dispatch based on cron expression.
+    const cron = event?.cron || '*/5 * * * *';
+
+    if (cron === '0 3 * * *') {
+      // Nightly cleanup at 3 AM UTC
+      for (const path of ['/api/cron/cleanup-views', '/api/cron/nightly-cleanup']) {
+        try {
+          const url = `${base}${path}?secret=${encodeURIComponent(secret)}`;
+          const res = await fetch(url, { method: 'GET' });
+          console.log(`[scheduled ${cron}] ${path}:`, res.status, (await res.text()).slice(0, 500));
+        } catch (e) {
+          console.error(`[scheduled ${cron}] ${path} failed:`, e.message);
+        }
+      }
+      return;
+    }
+
+    // Default: */5 * * * * (every 5 min)
+    // 1. monitor-alerts (perf monitoring)
     try {
-      const url = `https://examanet-prod.examanet-poc.workers.dev/api/cron/monitor-alerts?secret=${encodeURIComponent(env.CRON_SECRET || 'monitor-secret')}`;
+      const url = `${base}/api/cron/monitor-alerts?secret=${encodeURIComponent(secret)}`;
       const res = await fetch(url, { method: 'GET' });
-      console.log('[scheduled] monitor-alerts:', res.status, await res.text());
+      console.log('[scheduled] monitor-alerts:', res.status, (await res.text()).slice(0, 500));
     } catch (e) {
       console.error('[scheduled] monitor-alerts failed:', e.message);
+    }
+
+    // 2. cf-observability-sync (pull CF Worker logs → D1 VercelLog)
+    try {
+      const url = `${base}/api/cron/cf-observability-sync?secret=${encodeURIComponent(secret)}`;
+      const res = await fetch(url, { method: 'GET' });
+      console.log('[scheduled] cf-observability-sync:', res.status, (await res.text()).slice(0, 500));
+    } catch (e) {
+      console.error('[scheduled] cf-observability-sync failed:', e.message);
     }
   },
 };

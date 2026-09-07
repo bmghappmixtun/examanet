@@ -1,67 +1,46 @@
-# Examanet CF POC (examanet-prod.examanet-poc.workers.dev) — DEV ONLY
-#
-# 2026-08-24: This is a Cloudflare Workers POC/dev environment, NOT production.
-# We explicitly block ALL crawlers to:
-# 1. Prevent Google/Bing from indexing duplicate content
-# 2. Prevent the CF URL from outranking the real examanet.com
-# 3. Avoid wasting crawler budget
-#
-# The real production site is examanet.com (served by Vercel).
+# Examanet - https://examanet.com
+# 2026-09-07: Replaced "POC: block all" with proper allow-all + sitemap
+# Allow all well-behaved crawlers to index the public site.
+# Block admin/auth/internal areas that should never be indexed.
 
 User-agent: *
-Disallow: /
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /connexion
+Disallow: /inscription
+Disallow: /mot-de-passe-oublie
+Disallow: /verifier
+Disallow: /mon-compte/
+Disallow: /enseignant/
+Disallow: /_next/
+Disallow: /blob/
 
-# Explicit blocks for the major crawlers
-User-agent: Googlebot
-Disallow: /
-
-User-agent: Bingbot
-Disallow: /
-
-User-agent: Slurp
-Disallow: /
-
-User-agent: DuckDuckBot
-Disallow: /
-
-User-agent: Baiduspider
-Disallow: /
-
-User-agent: YandexBot
-Disallow: /
-
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
-User-agent: MJ12bot
-Disallow: /
-
-User-agent: DotBot
-Disallow: /
-
-# AI crawlers (don't train on the POC data)
+# AI crawlers — allow with reference (training is OK, just want to be cited)
 User-agent: GPTBot
-Disallow: /
+Allow: /
 
 User-agent: ChatGPT-User
-Disallow: /
+Allow: /
 
 User-agent: Claude-Web
-Disallow: /
+Allow: /
 
 User-agent: ClaudeBot
-Disallow: /
+Allow: /
 
 User-agent: anthropic-ai
-Disallow: /
+Allow: /
 
 User-agent: Google-Extended
-Disallow: /
+Allow: /
 
 User-agent: PerplexityBot
-Disallow: /
+Allow: /
 
-# Sitemap: none (this is a POC, not a real site)
+User-agent: Applebot-Extended
+Allow: /
+
+# Sitemaps
+Sitemap: https://examanet.com/sitemap.xml
+Sitemap: https://examanet.com/image-sitemap.xml

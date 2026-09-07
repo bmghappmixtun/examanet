@@ -19,6 +19,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/d1-admin';
+import { getSecret } from '@/lib/cf-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -26,16 +27,21 @@ export const runtime = 'nodejs';
 const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || '';
 
 export async function POST(req: NextRequest) {
+  // 2026-09-05: use cf-auth helper for cross-env secret (CF env → process.env)
+  // Accepts either CRON_SECRET or AGENT_REPORT_TOKEN (so Mavis can post from
+  // a local env that doesn't have CRON_SECRET)
   const auth = req.headers.get('authorization');
-  const expected = `Bearer ${process.env.CRON_SECRET}`;
-  // Mavis (the agent) can also authenticate with a dedicated token so it
-  // can post the nightly fix report from a local env that doesn't have
-  // CRON_SECRET. The token is set in Vercel as AGENT_REPORT_TOKEN and
-  // can be rotated independently from the cron secret.
-  const expectedAgent = process.env.AGENT_REPORT_TOKEN
-    ? `Bearer ${process.env.AGENT_REPORT_TOKEN}`
-    : null;
-  if (!auth || (auth !== expected && (!expectedAgent || auth !== expectedAgent))) {
+  const cronToken = await getSecret('CRON_SECRET');
+  const agentToken = await getSecret('AGENT_REPORT_TOKEN');
+  const expectedCron = cronToken ? `Bearer ${cronToken}` : null;
+  const expectedAgent = agentToken ? `Bearer ${agentToken}` : null;
+  if (
+    !auth ||
+    (expectedCron && auth === expectedCron) ||
+    (expectedAgent && auth === expectedAgent)
+  ) {
+    // OK
+  } else {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 

@@ -137,7 +137,19 @@ function formatResource(r: any) {
 }
 
 export const metadata: Metadata = {
+  // 2026-09-07: Added explicit title. Was relying on inherited root title
+  // (which now uses `template: '%s | Examanet'` since we removed noindex).
+  title: 'Examanet — La plateforme pédagogique #1 en Tunisie',
   description: 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés pour le Primaire, Collège et Lycée. Gratuit.',
+  alternates: {
+    canonical: '/fr',
+  },
+  openGraph: {
+    title: 'Examanet — La plateforme pédagogique #1 en Tunisie',
+    description: 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés. Gratuit.',
+    url: '/fr',
+    type: 'website',
+  },
 };
 
 export const revalidate = 300;

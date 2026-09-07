@@ -36,7 +36,10 @@ export async function generateMetadata({
   return {
     title,
     description,
-    robots: { index: false, follow: false },
+    // 2026-09-07: Allow indexing of the resource listing page.
+    // Was noindex (left over from CF Workers POC). This page has unique
+    // SEO value via filter combinations (?subject=, ?class=, ?year= etc.).
+    robots: { index: true, follow: true },
   };
 }
 

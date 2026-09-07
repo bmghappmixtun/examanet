@@ -180,24 +180,21 @@ export async function sendInvitationEmail(
     // Resend returns the message ID for later delivery tracking
     const resendMessageId = result.data?.id || null;
 
-    await db.teacherInvitation.update({
-      where: { id: invitationId },
-      data: {
-        status: INV_STATUS.SENT,
-        emailSentAt: new Date(),
-        resendMessageId,
-        deliveryStatus: 'sent',
-        deliverySyncedAt: new Date(),
-      },
-    });
-
-    await db.user.update({
-      where: { id: inv.teacherId },
-      data: {
-        invitationStatus: USER_INV_STATUS.INVITED,
-        invitationSentAt: new Date(),
-      },
-    });
+    // 2026-09-05: Use raw d1Run — d1-admin.update fails silently on missing
+    // columns. The D1 schema has `invitationSentAt` (not `emailSentAt`)
+    // and User has no `invitationSentAt` column.
+    const { d1Run } = await import('./db-d1');
+    const now = Date.now();
+    await d1Run(
+      `UPDATE TeacherInvitation
+       SET status = ?, invitationSentAt = ?, resendMessageId = ?, deliveryStatus = ?, deliverySyncedAt = ?, updatedAt = ?
+       WHERE id = ?`,
+      INV_STATUS.SENT, now, resendMessageId, 'sent', now, now, invitationId,
+    );
+    await d1Run(
+      `UPDATE "User" SET invitationStatus = ?, updatedAt = ? WHERE id = ?`,
+      USER_INV_STATUS.INVITED, now, inv.teacherId,
+    );
 
     return { ok: true };
   } catch (e: any) {
