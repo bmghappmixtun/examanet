@@ -16,7 +16,11 @@ export const metadata = {
   title: 'Ressource pédagogique — Examanet',
   description:
     'Cours, exercices, sujets de bac et corrigés gratuits sur Examanet, la plateforme pédagogique tunisienne.',
-  robots: { index: false, follow: false },
+  // 2026-09-07: Allow indexing of resource detail pages.
+  // Was noindex (left over from CF Workers POC). 15,000+ resources were
+  // completely invisible to Google. Now each one can rank for its topic
+  // and appear in Google Images via its thumbnail.
+  robots: { index: true, follow: true },
 };
 
 export default function Page({

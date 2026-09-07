@@ -23,11 +23,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { Resend } from 'resend';
+import { requireCronSecret } from '@/lib/cf-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-const CRON_SECRET = process.env.CRON_SECRET || 'monitor-secret';
 
 // Alert thresholds
 const ERROR_RATE_THRESHOLD = 0.10; // 10%
@@ -48,12 +47,9 @@ const ENDPOINTS_TO_MONITOR = [
 ];
 
 export async function GET(req: NextRequest) {
-  // Auth check
-  const authHeader = req.headers.get('authorization');
-  const providedSecret = authHeader?.replace('Bearer ', '') || new URL(req.url).searchParams.get('secret');
-  if (providedSecret !== CRON_SECRET) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+  // Auth check (2026-09-05: use cf-auth helper for CF env secret support)
+  const authErr = await requireCronSecret(req, { devDefault: 'monitor-secret' });
+  if (authErr) return authErr;
   
   try {
     const ctx = await getCloudflareContext({ async: true });

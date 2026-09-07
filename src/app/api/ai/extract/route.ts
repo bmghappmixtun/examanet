@@ -8,6 +8,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/d1-admin';
+import { getSecret } from '@/lib/cf-auth';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { readFile, unlink } from 'fs/promises';
@@ -33,11 +34,11 @@ interface ExtractionRequest {
 }
 
 export async function POST(req: NextRequest) {
-  // Auth check
+  // Auth check (2026-09-05: use cf-auth helper for cross-env secret)
   const auth = req.headers.get('authorization') || '';
   const token = auth.replace(/^Bearer\s+/i, '');
-  const cronSecret = process.env.CRON_SECRET;
-  const agentToken = process.env.AGENT_REPORT_TOKEN;
+  const cronSecret = await getSecret('CRON_SECRET');
+  const agentToken = await getSecret('AGENT_REPORT_TOKEN');
 
   if (token !== cronSecret && token !== agentToken && token !== INTERNAL_TOKEN) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
