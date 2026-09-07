@@ -164,3 +164,6 @@ scripts/d1-migration/sql/
 .worktrees/
 node_modules/
 node_modules/
+secrets/
+_screenshots/
+.d1-id
