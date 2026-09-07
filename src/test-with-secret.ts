@@ -1,0 +1,2 @@
+const PASSWORD = "npg_FAKE_TEST_SECRET_VALUE_1234567890";
+export default PASSWORD;
