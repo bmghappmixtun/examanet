@@ -31,18 +31,21 @@ async function searchResources(db: any, q: string, limit: number): Promise<Sugge
   if (!trimmed) return [];
 
   const like = `%${trimmed}%`;
-  const r = await db.prepare(`
-    SELECT r.id, r.numericId, r.title, r.slug, r.type,
-           s.nameFr as subjectName, c.nameFr as className
-    FROM Resource r
-    LEFT JOIN \`Subject\` s ON r.subjectId = s.id
-    LEFT JOIN \`Class\` c ON r.classId = c.id
-    // 2026-09-05: also filter isHidden=0 to hide unpublished resources
-    WHERE r.status = 'PUBLISHED' AND r.isHidden = 0
-      AND (r.title LIKE ? OR r.description LIKE ? OR r.summary LIKE ?)
-    ORDER BY r.viewsCount DESC
-    LIMIT ?
-  `).bind(like, like, like, limit).all();
+  // 2026-09-05: also filter isHidden=0 to hide unpublished resources
+  // (DO NOT put JS-style // comments inside the SQL template literal — SQLite doesn't understand them)
+  const r = await db.prepare(
+    [
+      'SELECT r.id, r.numericId, r.title, r.slug, r.type,',
+      '       s.nameFr as subjectName, c.nameFr as className',
+      'FROM Resource r',
+      'LEFT JOIN `Subject` s ON r.subjectId = s.id',
+      'LEFT JOIN `Class` c ON r.classId = c.id',
+      "WHERE r.status = 'PUBLISHED' AND r.isHidden = 0",
+      '  AND (r.title LIKE ? OR r.description LIKE ? OR r.summary LIKE ?)',
+      'ORDER BY r.viewsCount DESC',
+      'LIMIT ?',
+    ].join(' '),
+  ).bind(like, like, like, limit).all();
   
   return (r?.results || []).map((row: any) => ({
     type: 'resource' as SuggestType,
