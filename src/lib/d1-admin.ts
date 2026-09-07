@@ -358,8 +358,14 @@ function buildWhere(where: WhereInput): { whereSql: string; values: any[] } {
           parts.push(`${col} = ?`);
           values.push(toDbValue(opVal));
         } else if (op === 'not') {
-          parts.push(`${col} != ?`);
-          values.push(toDbValue(opVal));
+          // 2026-09-07 FIX: { not: null } must use IS NOT NULL, not != NULL
+          // (SQL's three-valued logic: `col != NULL` is always NULL, not TRUE)
+          if (opVal === null) {
+            parts.push(`${col} IS NOT NULL`);
+          } else {
+            parts.push(`${col} != ?`);
+            values.push(toDbValue(opVal));
+          }
         } else if (op === 'in') {
           const arr = Array.isArray(opVal) ? opVal : [opVal];
           if (arr.length > 0) {
