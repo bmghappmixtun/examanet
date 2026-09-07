@@ -170,5 +170,15 @@ export default {
     } catch (e) {
       console.error('[scheduled] cf-observability-sync failed:', e.message);
     }
+
+    // 3. agent-poll (was on Vercel cron 0 */6 * * *) — fire every 5 min, the
+    // route itself dedupes since it tracks lastRunAt.
+    try {
+      const url = `${base}/api/cron/agent-poll?secret=${encodeURIComponent(secret)}`;
+      const res = await fetch(url, { method: 'GET' });
+      console.log('[scheduled] agent-poll:', res.status, (await res.text()).slice(0, 500));
+    } catch (e) {
+      console.error('[scheduled] agent-poll failed:', e.message);
+    }
   },
 };

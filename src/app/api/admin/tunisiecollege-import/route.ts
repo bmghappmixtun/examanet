@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
-import { put } from '@vercel/blob';
+import { uploadFile } from '@/lib/storage';
 import { nanoid } from 'nanoid';
 
 export const maxDuration = 60;
@@ -184,12 +184,7 @@ export async function POST(req: NextRequest) {
     // Upload PDF to Vercel Blob (public, on examanet)
     const filePath = `teacher-library/${teacher.id}/imported/${fileId}.pdf`;
     const pdfBuffer = Buffer.from(await file.arrayBuffer());
-    const blob = await put(filePath, pdfBuffer, {
-      access: 'public',
-      addRandomSuffix: true,
-      // Don't pass token - let @vercel/blob SDK auto-detect from OIDC in production
-      // Falls back to process.env.BLOB_READ_WRITE_TOKEN in dev
-    });
+    const blob = await uploadFile(filePath, pdfBuffer, 'application/pdf');
 
     // Optional: upload original Word file (kept in teacher library, not public)
     let originalBlob = null;
@@ -198,10 +193,7 @@ export async function POST(req: NextRequest) {
       originalBuffer = Buffer.from(await originalFile.arrayBuffer());
       const ext = originalFormat;
       const originalPath = `teacher-library/${teacher.id}/originals/${fileId}.${ext}`;
-      originalBlob = await put(originalPath, originalBuffer, {
-        access: 'public',
-        addRandomSuffix: true,
-      });
+      originalBlob = await uploadFile(originalPath, originalBuffer, 'application/octet-stream');
     }
 
     // Insert Resource
@@ -212,12 +204,12 @@ export async function POST(req: NextRequest) {
         title: parsed.title,
         type: parsed.type,
         status: 'PUBLISHED',
-        fileKey: blob.pathname,
+        fileKey: blob.key,
         fileUrl: blob.url,
         fileSize: pdfBuffer.length,
         pageCount: 10,
         // Original Word file fields (if provided)
-        originalFileKey: originalBlob?.pathname || null,
+        originalFileKey: originalBlob?.key || null,
         originalFileName: originalFile?.name || null,
         originalFormat: originalFormat || null,
         originalFileSize: originalBuffer?.length || null,
@@ -247,14 +239,14 @@ export async function POST(req: NextRequest) {
     await db.teacherFile.create({
       data: {
         fileName: originalFile?.name || parsed.title + '.pdf',
-        fileKey: originalBlob?.pathname || blob.pathname,
+        fileKey: originalBlob?.key || blob.key,
         fileUrl: originalBlob?.url || blob.url,
         fileSize: originalBuffer?.length || pdfBuffer.length,
         originalFormat: originalFormat || 'pdf',
         subjectId,
         classId,
         teacherId: teacher.id,
-        pdfKey: blob.pathname,
+        pdfKey: blob.key,
         pdfUrl: blob.url,
         pdfSize: pdfBuffer.length,
         resourceId: resource.id,

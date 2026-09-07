@@ -4,7 +4,7 @@
  *
  * Used by the Python worker that renders PDFs with pymupdf.
  * The worker downloads PDFs, generates JPEGs locally, and POSTs the JPEG
- * bytes here for upload to Vercel Blob.
+ * bytes here for upload to R2.
  *
  * POST /api/admin/upload-thumbnail
  * Headers:
@@ -12,10 +12,12 @@
  * Body: { resourceId, jpegBase64, fileKey }
  *
  * Returns: { thumbnailKey, thumbnailUrl }
+ *
+ * 2026-09-07: Migrated from Vercel Blob to R2 (Phase 9).
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/d1-admin';
-import { put } from '@vercel/blob';
+import { uploadFile } from '@/lib/storage';
 
 const INTERNAL_TOKEN = process.env.INTERNAL_BULK_TOKEN || 'devmanet-bulk-2026';
 
@@ -47,22 +49,19 @@ export async function POST(req: NextRequest) {
     const safeName = fileKey.replace(/[^a-zA-Z0-9.-]/g, '_');
     const pathname = `thumbnails/${safeName}-${Date.now()}.jpg`;
 
-    // Upload to Vercel Blob (OIDC auto on Vercel)
-    const blob = await put(pathname, jpegBuffer, {
-      access: 'public',
-      contentType: 'image/jpeg',
-    });
+    // 2026-09-07: R2 migration — use uploadFile (was put() to Vercel Blob)
+    const result = await uploadFile(pathname, jpegBuffer, 'image/jpeg');
 
-    // Update DB
+    // Update DB (already d1-admin)
     await db.resource.update({
       where: { id: rid },
-      data: { thumbnailKey: blob.pathname, thumbnailUrl: blob.url },
+      data: { thumbnailKey: result.key, thumbnailUrl: result.url },
     });
 
     return NextResponse.json({
       status: 'ok',
-      thumbnailKey: blob.pathname,
-      thumbnailUrl: blob.url,
+      thumbnailKey: result.key,
+      thumbnailUrl: result.url,
       size: jpegBuffer.length,
     });
   } catch (e: any) {
@@ -81,7 +80,7 @@ export async function GET(req: NextRequest) {
     where: { fileKey: { not: '' } },
     select: { id: true, thumbnailKey: true },
   });
-  const total = allResources.filter(r => !r.thumbnailKey).length;
+  const total = allResources.filter((r: any) => !r.thumbnailKey).length;
   const withThumb = allResources.length - total;
   return NextResponse.json({
     without_thumbnail: total,
