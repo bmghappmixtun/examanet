@@ -1,5 +1,5 @@
 /**
- * External service usage checkers (ConvertAPI, iLovePDF, Neon)
+ * External service usage checkers (ConvertAPI, iLovePDF)
  *
  * Each function returns the current period usage (count, unit, limit where
  * available) so the admin panel can show real-time quota.
@@ -13,8 +13,7 @@
  *   - GET /v1/info → returns { remaining_credits: N }
  *   - Use 'merge' (cheapest tool) to check quota
  *
- * Neon: https://neon.tech/docs/manage/api-keys
- *   - GET /api/v2/projects → list all projects
+  *   - GET /api/v2/projects → list all projects
  *   - GET /api/v2/consumption_history/v2/projects?from&to&granularity&metrics&org_id
  *     Returns storage (root_branch_bytes_month, child_branch_bytes_month)
  *     and compute (compute_unit_seconds)
@@ -40,7 +39,6 @@ export type ProviderUsage = {
   bandwidth?: { used: number; unit: string };
   functions?: { used: number; unit: string };
   builds?: { used: number; unit: string };
-  // Neon-style consumption
   storage?: { usedMb: number; unit: string };
   compute?: { usedHours: number; unit: string };
   transfer?: { usedGb: number; unit: string };
@@ -239,170 +237,3 @@ export async function checkIlovepdfUsage(
     return { source: 'ilovepdf/info', error: `Network: ${e instanceof Error ? e.message : String(e) || 'erreur'}` };
   }
 }
-
-// ============================================================================
-// NEON
-// ============================================================================
-// Docs: https://neon.tech/docs/manage/api-keys
-//       https://neon.tech/docs/guides/partner-consumption-metrics
-// Auth: Authorization: Bearer <api_key>
-//
-// Endpoints used:
-//   - GET /api/v2/projects                          → list projects
-//   - GET /api/v2/projects/{id}/branches            → branches per project
-//   - GET /api/v2/orgs                              → list orgs (for org_id)
-//   - GET /api/v2/consumption_history/v2/projects?from&to&granularity&metrics&org_id
-//                                                  → consumption metrics
-
-const NEON_API = 'https://console.neon.tech/api/v2';
-
-export async function checkNeonUsage(apiKey: string, projectId?: string): Promise<ProviderUsage> {
-  if (!apiKey) {
-    return { source: 'neon/projects', error: 'No Neon API key configured' };
-  }
-
-  const now = new Date();
-  const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  // Neon expects RFC 3339 date-time
-  const from = periodStart.toISOString();
-  const to = periodEnd.toISOString();
-
-  // 1. List orgs (need org_id for the consumption query)
-  let orgId: string | undefined;
-  let email: string | undefined;
-  let plan: string | undefined;
-  try {
-    const orgsRes = await fetch(`${NEON_API}/orgs`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    if (orgsRes.ok) {
-      const orgsData = (await orgsRes.json()) as { orgs?: Array<{ id: string; name: string; plan?: string }> };
-      if (orgsData.orgs && orgsData.orgs.length > 0) {
-        orgId = orgsData.orgs[0].id;
-        plan = orgsData.orgs[0].plan;
-      }
-    }
-  } catch {
-    // ignore
-  }
-
-  // 2. Get user info
-  try {
-    const userRes = await fetch(`${NEON_API}/users/me`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    if (userRes.ok) {
-      const u = (await userRes.json()) as { role?: string; email?: string; user?: { email?: string } };
-      email = u.user?.email ?? u.email;
-    }
-  } catch {
-    // ignore
-  }
-
-  // 3. List projects
-  let projects: Array<{ id: string; name: string; region?: string }> = [] = [];
-  try {
-    const projectsRes = await fetch(`${NEON_API}/projects`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-    if (projectsRes.ok) {
-      const data = (await projectsRes.json()) as { projects?: Array<{ id: string; name: string; region?: string }> };
-      projects = data.projects || [];
-    }
-  } catch {
-    // ignore
-  }
-
-  // 4. List branches per project
-  let activeBranchCount = 0;
-  for (const proj of projects) {
-    try {
-      const branchesRes = await fetch(`${NEON_API}/projects/${proj.id}/branches`, {
-        headers: { Authorization: `Bearer ${apiKey}` },
-      });
-      if (branchesRes.ok) {
-        const data = (await branchesRes.json()) as { branches?: unknown[] };
-        activeBranchCount += (data.branches || []).length;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  // 5. Get consumption metrics (storage, compute, transfer)
-  let storageBytes = 0;
-  let computeSeconds = 0;
-  let transferBytes = 0;
-  if (orgId) {
-    try {
-      const metrics = [
-        'compute_unit_seconds',
-        'root_branch_bytes_month',
-        'child_branch_bytes_month',
-        'public_network_transfer_bytes',
-        'private_network_transfer_bytes',
-      ];
-      const url = `${NEON_API}/consumption_history/v2/projects?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&granularity=monthly&metrics=${metrics.join(',')}&org_id=${orgId}`;
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${apiKey}` },
-      });
-      if (res.ok) {
-        const data = (await res.json()) as NeonConsumptionResponse;
-        // Sum across all projects
-        if (Array.isArray(data.projects)) {
-          for (const proj of data.projects) {
-            for (const period of proj.periods || []) {
-              for (const consumption of period.consumption || []) {
-                for (const m of consumption.metrics || []) {
-                  if (m.metric_name === 'compute_unit_seconds') computeSeconds += m.value || 0;
-                  else if (m.metric_name === 'root_branch_bytes_month')
-                    storageBytes += m.value || 0;
-                  else if (m.metric_name === 'child_branch_bytes_month')
-                    storageBytes += m.value || 0;
-                  else if (m.metric_name === 'public_network_transfer_bytes')
-                    transferBytes += m.value || 0;
-                  else if (m.metric_name === 'private_network_transfer_bytes')
-                    transferBytes += m.value || 0;
-                }
-              }
-            }
-          }
-        }
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  return {
-    source: 'neon/projects+consumption',
-    email,
-    plan,
-    storage: {
-      usedMb: parseFloat((storageBytes / (1024 * 1024)).toFixed(1)),
-      unit: 'MB',
-    },
-    compute: {
-      usedHours: parseFloat((computeSeconds / 3600).toFixed(2)),
-      unit: 'hours',
-    },
-    transfer: {
-      usedGb: parseFloat((transferBytes / (1024 * 1024 * 1024)).toFixed(3)),
-      unit: 'GB',
-    },
-    projects: { active: projects.length },
-    branches: { active: activeBranchCount },
-    periodStart: periodStart.toISOString().slice(0, 10),
-    periodEnd: periodEnd.toISOString().slice(0, 10),
-  };
-}
-
-// ============================================================================
-// VERCEL (kept for compatibility)
-// ============================================================================
-// Uses /v1/billing/charges (FOCUS v1.3) and /v1/usage as fallback
-// See external-services.vercel.ts for the full implementation
-import { checkVercelUsage as _checkVercelUsage } from './external-services.vercel';
-export { _checkVercelUsage as checkVercelUsage };
-export type { VercelUsage } from './external-services.vercel';

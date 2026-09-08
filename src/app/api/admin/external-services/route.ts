@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 /**
  * Admin API: external service credentials + usage
  *
- * Stores API keys (Vercel, Neon, APIConvert, iLoveAPI) in the ApiProvider
+ * Stores API keys (APIConvert, iLoveAPI) in the ApiProvider
  * D1 table. The table has columns: id, name, type, apiKey, publicKey,
  * secretKey, baseUrl, model, isActive, displayName, notes, monthlyQuota,
  * priority, config, lastUsedAt, createdAt, updatedAt.
@@ -20,7 +20,7 @@ import { isValidOrigin, isProduction } from '@/lib/security';
 import { getCurrentUser } from '@/lib/auth';
 import { d1First, d1All, d1Run, genId } from '@/lib/db-d1';
 import { encryptSecret, decryptSecret, redactSecret } from '@/lib/provider-keys';
-import { checkConvertApiUsage, checkIlovepdfUsage, checkNeonUsage } from '@/lib/external-services';
+import { checkConvertApiUsage, checkIlovepdfUsage } from '@/lib/external-services';
 import {
   checkCFWorkersUsage,
   checkD1Usage,
@@ -37,7 +37,7 @@ async function requireAdmin() {
 }
 
 // Map our internal types to the DB column values
-const TYPE_VALUES = ['vercel', 'neon', 'cloudflare', 'd1', 'r2', 'apiconvert', 'iloveapi'] as const;
+const TYPE_VALUES = ['cloudflare', 'd1', 'r2', 'apiconvert', 'iloveapi'] as const;
 type ProviderType = (typeof TYPE_VALUES)[number];
 
 // CF-native types use the CF_API_TOKEN env secret, not a user-supplied token
@@ -46,7 +46,7 @@ const CF_NATIVE_TYPES: ProviderType[] = ['cloudflare', 'd1', 'r2'];
 /**
  * 2026-09-06: Read the stored provider record from D1 directly.
  * The table uses 'type' (not 'provider') as the column name, and stores:
- *  - apiKey: encrypted single-token (vercel, neon, apiconvert)
+ *  - apiKey: encrypted single-token (apiconvert)
  *  - secretKey: encrypted (iloveapi secret)
  *  - publicKey: plaintext (iloveapi public)
  *  - isActive: 1/0 (instead of 'enabled')
@@ -160,8 +160,6 @@ export async function GET(req: NextRequest) {
     } else if (type === 'iloveapi') {
       // iLoveAPI needs both keys
       usage = await checkIlovepdfUsage(publicKey, token);
-    } else if (type === 'neon') {
-      usage = await checkNeonUsage(token);
     } else if (CF_NATIVE_TYPES.includes(type)) {
       // CF-native: use CF_API_TOKEN env secret, not the user-supplied token
       const cfToken = process.env.CF_API_TOKEN || '';
@@ -195,15 +193,6 @@ export async function GET(req: NextRequest) {
 }
 
 function getEmptyUsage(type: ProviderType) {
-  if (type === 'vercel') {
-    return {
-      periodStart: '',
-      periodEnd: '',
-      bandwidth: { used: 0, unit: 'GB' },
-      functions: { used: 0, unit: 'hours' },
-      builds: { used: 0, unit: 'builds' },
-    };
-  }
   if (type === 'apiconvert' || type === 'iloveapi') {
     return {
       periodStart: '',
@@ -241,15 +230,6 @@ function getEmptyUsage(type: ProviderType) {
       classBOps: 0,
     };
   }
-  // neon (legacy)
-  return {
-    periodStart: '',
-    periodEnd: '',
-    storage: { usedMb: 0 },
-    compute: { usedHours: 0 },
-    transfer: { usedGb: 0 },
-    projects: { active: 0 },
-  };
 }
 
 export async function POST(req: NextRequest) {
