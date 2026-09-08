@@ -618,16 +618,16 @@ export async function notifyAdminsNewRating(opts: {
     try {
       await db
         .prepare(
-          \`INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
-           VALUES (?, ?, ?, ?, ?, ?, 0, ?)\`,
+          `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
         )
         .bind(
           genId(),
           admin.id,
           'new_rating',
-          \`⭐ Nouvelle note \${opts.value}/5\`,
-          \`\${fullName} a noté « \${resource.title} » : \${stars}\${opts.review ? ' — ' + opts.review.slice(0, 80) : ''}\`,
-          \`/admin/ressources\`,
+          `⭐ Nouvelle note ${opts.value}/5`,
+          `${fullName} a noté « ${resource.title} » : ${stars}${opts.review ? ' — ' + opts.review.slice(0, 80) : ''}`,
+          `/admin/ressources`,
           now,
         )
         .run();
@@ -654,7 +654,7 @@ export async function notifyAdminsNewRating(opts: {
     if (recipients.size === 0) return;
     await sendEmail({
       to: Array.from(recipients),
-      subject: \`⭐ \${fullName} a noté \${opts.value}/5 : \${resource.title}\`,
+      subject: `⭐ ${fullName} a noté ${opts.value}/5 : ${resource.title}`,
       html,
     });
   } catch (e) {
@@ -709,16 +709,16 @@ export async function notifyAdminsNewComment(opts: {
     try {
       await db
         .prepare(
-          \`INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
-           VALUES (?, ?, ?, ?, ?, ?, 0, ?)\`,
+          `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
         )
         .bind(
           genId(),
           admin.id,
           'new_comment',
           '💬 Nouveau commentaire',
-          \`\${fullName} a commenté « \${resource.title} » : "\${preview}\${opts.commentContent.length > 100 ? '...' : ''}"\`,
-          \`/admin/ressources\`,
+          `${fullName} a commenté « ${resource.title} » : "${preview}${opts.commentContent.length > 100 ? '...' : ''}"`,
+          `/admin/ressources`,
           now,
         )
         .run();
@@ -744,7 +744,7 @@ export async function notifyAdminsNewComment(opts: {
     if (recipients.size === 0) return;
     await sendEmail({
       to: Array.from(recipients),
-      subject: \`💬 \${fullName} a commenté : \${resource.title}\`,
+      subject: `💬 ${fullName} a commenté : ${resource.title}`,
       html,
     });
   } catch (e) {
@@ -783,15 +783,15 @@ export async function notifyAdminsStudentActivated(studentId: string) {
     try {
       await db
         .prepare(
-          \`INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
-           VALUES (?, ?, ?, ?, ?, ?, 0, ?)\`,
+          `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
         )
         .bind(
           genId(),
           admin.id,
           'student_activated',
           '✅ Élève a activé son compte',
-          \`\${fullName} (\${student.email}) — compte maintenant ACTIF\`,
+          `${fullName} (${student.email}) — compte maintenant ACTIF`,
           '/admin/utilisateurs?role=STUDENT',
           now,
         )
@@ -822,7 +822,7 @@ export async function notifyAdminsStudentActivated(studentId: string) {
     }
     const result = await sendEmail({
       to: Array.from(recipients),
-      subject: \`✅ \${fullName} a activé son compte\`,
+      subject: `✅ ${fullName} a activé son compte`,
       html,
     });
     if (!result.ok) {
