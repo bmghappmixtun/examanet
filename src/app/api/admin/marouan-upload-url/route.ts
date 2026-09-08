@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { uploadFile } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'url and pathname required' }, { status: 400 });
     }
 
-    // Download from URL with no body size limit
+    // Download from URL
     const response = await fetch(url);
     if (!response.ok) {
       return NextResponse.json({ error: `Download failed: ${response.status}` }, { status: 500 });
@@ -29,21 +29,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No response body' }, { status: 500 });
     }
 
-    // Get content type and size
+    // Get content type
     const contentType = response.headers.get('content-type') || 'application/pdf';
-    const contentLength = response.headers.get('content-length');
     
-    // Upload to Vercel Blob using a stream (no body size limit on download)
-    const blob = await put(pathname, response.body, {
-      access: 'public',
-      contentType,
-    });
+    // 2026-09-07: R2 migration — use uploadFile (was put() to Vercel Blob)
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const result = await uploadFile(pathname, buffer, contentType);
 
     return NextResponse.json({
       success: true,
-      url: blob.url,
-      key: blob.pathname,
-      contentLength: contentLength ? parseInt(contentLength) : null,
+      url: result.url,
+      key: result.key,
+      contentLength: buffer.length,
       contentType,
     });
   } catch (e: any) {

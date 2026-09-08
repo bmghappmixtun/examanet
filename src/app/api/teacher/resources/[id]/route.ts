@@ -4,8 +4,133 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { d1First, d1Run } from '@/lib/db-d1';
+import { isValidOrigin } from '@/lib/security';
 
 export const maxDuration = 60;
+
+/**
+ * PATCH /api/teacher/resources/[id]
+ * Edit a resource owned by the current teacher.
+ * 2026-09-04: Added — previously no PATCH handler existed so teachers couldn't
+ * edit their resources after creation. Only the metadata fields (no file swap).
+ */
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    if (isValidOrigin && !isValidOrigin(req)) {
+      return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
+    }
+
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    if (user.role !== 'TEACHER' && user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Réservé aux enseignants' }, { status: 403 });
+    }
+
+    const { id } = await params;
+    const resource = await d1First(
+      'SELECT id, teacherId, status, slug, numericId FROM Resource WHERE id = ?',
+      id,
+    );
+    if (!resource) return NextResponse.json({ error: 'Ressource introuvable' }, { status: 404 });
+    if (user.role !== 'ADMIN' && resource.teacherId !== user.id) {
+      return NextResponse.json({ error: 'Vous n\'êtes pas le propriétaire' }, { status: 403 });
+    }
+
+    // Only allow editing PENDING_APPROVAL or REJECTED resources (admin can edit anything)
+    // Once PUBLISHED, content changes go through the admin edit approval flow
+    if (user.role !== 'ADMIN' && resource.status !== 'PENDING_APPROVAL' && resource.status !== 'REJECTED') {
+      return NextResponse.json(
+        { error: `Impossible de modifier une ressource ${resource.status} (contactez un admin)` },
+        { status: 400 },
+      );
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const allowedFields: Record<string, any> = {};
+    const fieldMap: Record<string, string> = {
+      title: 'title',
+      description: 'description',
+      summary: 'summary',
+      type: 'type',
+      year: 'year',
+      trimester: 'trimester',
+      language: 'language',
+      tags: 'tags',
+      homeworkSubtype: 'homeworkSubtype',
+      homeworkNumber: 'homeworkNumber',
+      schoolType: 'schoolType',
+      product: 'product',
+      hasCorrection: 'hasCorrection',
+    };
+    for (const [bodyKey, dbCol] of Object.entries(fieldMap)) {
+      if (bodyKey in body) {
+        const v = body[bodyKey];
+        if (v === null || v === undefined) continue;
+        // Coerce hasCorrection to 0/1
+        if (bodyKey === 'hasCorrection') {
+          allowedFields[dbCol] = v ? 1 : 0;
+        } else {
+          allowedFields[dbCol] = String(v).slice(0, 1000);
+        }
+      }
+    }
+
+    // Resolve subject/class/section slugs → IDs
+    if ('subject' in body) {
+      const slug = body.subject;
+      if (slug) {
+        const r: any = await d1First('SELECT id FROM Subject WHERE slug = ?', String(slug));
+        if (!r) return NextResponse.json({ error: 'Matière invalide' }, { status: 400 });
+        allowedFields.subjectId = r.id;
+      }
+    }
+    if ('class' in body) {
+      const slug = body.class;
+      if (slug) {
+        const r: any = await d1First('SELECT id FROM "Class" WHERE slug = ?', String(slug));
+        if (!r) return NextResponse.json({ error: 'Classe invalide' }, { status: 400 });
+        allowedFields.classId = r.id;
+      }
+    }
+    if ('section' in body) {
+      const slug = body.section;
+      if (slug) {
+        const r: any = await d1First('SELECT id FROM Section WHERE slug = ?', String(slug));
+        if (r) allowedFields.sectionId = r.id;
+      }
+    }
+
+    if (Object.keys(allowedFields).length === 0) {
+      return NextResponse.json({ error: 'Aucun champ à modifier' }, { status: 400 });
+    }
+
+    // Bump updatedAt
+    allowedFields.updatedAt = Date.now();
+
+    // If status was REJECTED, reset to PENDING_APPROVAL so it re-enters the review flow
+    if (user.role !== 'ADMIN' && resource.status === 'REJECTED') {
+      allowedFields.status = 'PENDING_APPROVAL';
+      allowedFields.rejectionReason = null;
+      allowedFields.rejectionAt = null;
+    }
+
+    const setClause = Object.keys(allowedFields).map((k) => `${k} = ?`).join(', ');
+    const values = Object.values(allowedFields);
+    const r = await d1Run(
+      `UPDATE Resource SET ${setClause} WHERE id = ?`,
+      ...values,
+      id,
+    );
+    if (!(r as any).success) {
+      return NextResponse.json({ error: (r as any).error }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, resource: { id, ...allowedFields } });
+  } catch (e: any) {
+    console.error('PATCH resource error:', e);
+    return NextResponse.json({ error: e?.message || 'Erreur serveur' }, { status: 500 });
+  }
+}
 
 /**
  * GET /api/teacher/resources/[id]
@@ -56,10 +181,29 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     }
 
     const { id } = await params;
-    const resource = await d1First('SELECT teacherId FROM Resource WHERE id = ?', id);
-    if (!resource) return NextResponse.json({ error: 'Ressource introuvable' }, { status: 404 });
+    const resource = await d1First('SELECT teacherId, status FROM Resource WHERE id = ?', id);
+    if (!resource) {
+      return NextResponse.json(
+        { error: 'Cette ressource n\'existe plus (peut-être déjà supprimée). Rechargez la page.', code: 'NOT_FOUND' },
+        { status: 404 },
+      );
+    }
     if (user.role !== 'ADMIN' && resource.teacherId !== user.id) {
       return NextResponse.json({ error: 'Vous n\'êtes pas le propriétaire' }, { status: 403 });
+    }
+
+    // 2026-09-05: Block deletion of PUBLISHED resources. Teacher must
+    // unpublish first via /api/teacher/resources/[id]/unpublish. This
+    // prevents accidental deletion of live resources from the
+    // /enseignant/ressources page.
+    if (resource.status === 'PUBLISHED') {
+      return NextResponse.json(
+        {
+          error: 'Cette ressource est publiée. Dépubliez-la d\'abord (bouton "Dépublier") pour pouvoir la supprimer.',
+          code: 'RESOURCE_PUBLISHED',
+        },
+        { status: 409 },
+      );
     }
 
     // Unlink library file

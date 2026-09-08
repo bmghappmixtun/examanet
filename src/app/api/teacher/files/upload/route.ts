@@ -134,16 +134,108 @@ export async function POST(req: NextRequest) {
     // Build a public URL — for now use a placeholder (real CDN URL would be set in a custom domain binding)
     const fileUrl = `/api/files/${originalKey}`;
 
-    // 2. PDF conversion: not available on CF Workers. We mark SKIPPED in the
-    //    response and warn the client. For docx/doc/odt uploads, the user
-    //    must re-upload as PDF before publishing.
+    // 2. PDF conversion via iLovePDF (Office → PDF) if the file is convertible.
+    //    2026-09-06: HARD REQUIREMENT — if the file is .docx/.doc/.odt and
+    //    conversion is configured, it MUST succeed or the upload is rejected.
+    //    The teacher is shown an error modal, and admins get an email + in-app
+    //    notification. The original file is NOT saved to R2 or D1.
     let conversionStatus: 'SUCCESS' | 'FAILED' | 'SKIPPED' = 'SKIPPED';
-    const warnings: string[] = [];
+    let r2PdfKey: string | null = null;
+    let pdfUrl: string | null = null;
+
     if (format.isConvertible) {
-      conversionStatus = 'SKIPPED';
-      warnings.push(
-        "Conversion automatique non disponible sur Workers. Pour publier en PDF, ré-uploadez un PDF ou utilisez l'aperçu généré côté client.",
-      );
+      // 2026-09-06: Read iLoveAPI config from the ApiProvider DB table first
+      // (the user can set this via /admin/fournisseurs), then fall back to env vars.
+      let iLovePublicKey = process.env.I_LOVE_API_PUBLIC_KEY || '';
+      let iLoveSecretKey = process.env.I_LOVE_API_SECRET_KEY || '';
+      try {
+        const { d1First } = await import('@/lib/db-d1');
+        const { decryptSecret } = await import('@/lib/provider-keys');
+        const dbProvider: any = await d1First(
+          "SELECT publicKey, secretKey, isActive FROM ApiProvider WHERE type = 'iloveapi' LIMIT 1"
+        );
+        if (dbProvider && dbProvider.isActive && dbProvider.publicKey) {
+          iLovePublicKey = dbProvider.publicKey;
+          iLoveSecretKey = dbProvider.secretKey ? decryptSecret(dbProvider.secretKey) : '';
+          console.log('[upload] Using iLoveAPI config from ApiProvider DB');
+        }
+      } catch (e) {
+        console.warn('[upload] Failed to read iLoveAPI config from DB:', (e as Error).message);
+      }
+      if (!iLovePublicKey || !iLoveSecretKey) {
+        // Clean up the R2 original upload (we're going to fail the request)
+        try {
+          await bucket.delete(originalKey);
+        } catch (e) {
+          console.warn('[upload] Failed to clean up R2 original after missing keys:', e);
+        }
+        console.warn('[upload] iLoveAPI keys missing — rejecting .docx/.doc/.odt upload');
+        return NextResponse.json(
+          {
+            error: 'CONVERSION_NOT_CONFIGURED',
+            message: 'La conversion Office→PDF n\'est pas configurée. Ajoutez vos clés iLovePDF dans Admin > Fournisseurs, ou uploadez un fichier PDF.',
+          },
+          { status: 422 },
+        );
+      }
+      try {
+        const { convertOfficeToPdfViaIloveapi } = await import('@/lib/iloveapi');
+        console.log(
+          `[upload] Converting ${file.name} (${format.format}) to PDF via iLoveAPI…`,
+        );
+        const result = await convertOfficeToPdfViaIloveapi(
+          Buffer.from(arrayBuffer),
+          file.name,
+          iLovePublicKey,
+          iLoveSecretKey,
+        );
+        // Upload the PDF to R2 next to the original
+        const pdfSafeName = safeName.replace(/\.[a-z0-9]+$/i, '') + '.pdf';
+        const pdfKey = `teacher-library/${teacherId}/${timestamp}-${pdfSafeName}`;
+        await bucket.put(pdfKey, result.pdfBuffer, {
+          httpMetadata: { contentType: 'application/pdf' },
+        });
+        r2PdfKey = pdfKey;
+        pdfUrl = `/api/files/${pdfKey}`;
+        conversionStatus = 'SUCCESS';
+        console.log(
+          `[upload] Conversion OK: ${file.size} → ${result.pdfSize} bytes`,
+        );
+      } catch (e: any) {
+        conversionStatus = 'FAILED';
+        const errorMsg = e?.message || 'erreur inconnue';
+        console.error('[upload] iLoveAPI conversion failed:', errorMsg);
+
+        // Clean up the R2 original upload (we're going to fail the request)
+        try {
+          await bucket.delete(originalKey);
+        } catch (cleanupErr) {
+          console.warn('[upload] Failed to clean up R2 original after conversion failure:', cleanupErr);
+        }
+
+        // Notify admins (fire-and-forget — don't block the response on this)
+        try {
+          const { notifyAdminsConversionFailed } = await import('@/lib/admin-notify');
+          await notifyAdminsConversionFailed({
+            teacherId,
+            fileName: file.name,
+            originalFormat: format.format,
+            errorMessage: errorMsg,
+            resourceId: null,
+          });
+        } catch (notifyErr) {
+          console.error('[upload] Failed to notify admins of conversion failure:', notifyErr);
+        }
+
+        return NextResponse.json(
+          {
+            error: 'CONVERSION_FAILED',
+            message: `La conversion de "${file.name}" en PDF a échoué : ${errorMsg}. Votre fichier n'a pas été enregistré. L'administrateur a été notifié.`,
+            details: errorMsg,
+          },
+          { status: 422 },
+        );
+      }
     }
 
     // 3. Save TeacherFile record to D1
@@ -153,13 +245,14 @@ export async function POST(req: NextRequest) {
     await d1Run(
       `INSERT INTO TeacherFile (id, teacherId, resourceId, fileName, fileKey, fileUrl,
                                 r2Key, r2PdfKey, fileSize, mimeType, isActive, createdAt, updatedAt)
-       VALUES (?, ?, NULL, ?, ?, ?, ?, NULL, ?, ?, 1, ?, ?)`,
+       VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`,
       fileId,
       teacherId,
       file.name,
       originalKey,
       fileUrl,
       originalKey,
+      r2PdfKey, // null if no conversion, set if iLovePDF succeeded
       file.size,
       file.type || null,
       now,
@@ -171,11 +264,10 @@ export async function POST(req: NextRequest) {
       libraryFileId: fileId,
       fileKey: originalKey,
       fileUrl,
-      pdfKey: format.isPdf ? originalKey : null,
-      pdfUrl: format.isPdf ? fileUrl : null,
+      pdfKey: format.isPdf ? originalKey : r2PdfKey,
+      pdfUrl: format.isPdf ? fileUrl : pdfUrl,
       originalFormat: format.format,
       conversionStatus,
-      warnings: warnings.length > 0 ? warnings : undefined,
       file: {
         id: fileId,
         fileName: file.name,

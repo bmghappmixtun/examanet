@@ -18,61 +18,65 @@ Note: This doesn't actually notify Mavis in real-time (it has no email)
 But it provides a digest endpoint that the next session can poll
  */
 
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/d1-admin';
+import { NextRequest, NextResponse } from 'next/server';
+import { d1All, d1Run } from '@/lib/db-d1';
+import { requireCronSecret } from '@/lib/cf-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const AGENT_SECRET = process.env.CRON_SECRET || 'agent-poll-secret';
-
-export async function GET(req: Request) {
-  // Auth check
-  const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${AGENT_SECRET}`) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+export async function GET(req: NextRequest) {
+  // 2026-09-05: use cf-auth helper for cross-env secret
+  const authErr = await requireCronSecret(req, { devDefault: 'agent-poll-secret' });
+  if (authErr) return authErr;
 
   try {
+    // 2026-09-05: Replaced Prisma findMany/updateMany with raw D1 SQL
+    // (Prisma proxy was broken via d1-admin).
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+
     // Find un-seen CRITICAL/ERROR errors from last 24h
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const unseenErrors = await db.errorLog.findMany({
-      where: {
-        agentSeen: false,
-        severity: { in: ['ERROR', 'CRITICAL'] },
-        createdAt: { gte: cutoff },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
+    const rows: any[] = await d1All(
+      `SELECT id, level as severity, source, message, url, createdAt, userEmail
+       FROM ErrorLog
+       WHERE agentSeen = 0
+         AND level IN ('ERROR', 'CRITICAL')
+         AND createdAt >= ?
+       ORDER BY createdAt DESC
+       LIMIT 50`,
+      cutoff,
+    );
 
     // Mark them as seen
-    if (unseenErrors.length > 0) {
-      const ids = unseenErrors.map((e) => e.id);
-      await db.errorLog.updateMany({
-        where: { id: { in: ids } },
-        data: { agentSeen: true, agentSeenAt: new Date() },
-      });
+    if (rows.length > 0) {
+      const ids = rows.map((e) => e.id);
+      // Build IN clause with proper binding
+      const placeholders = ids.map(() => '?').join(',');
+      await d1Run(
+        `UPDATE ErrorLog SET agentSeen = 1, updatedAt = ? WHERE id IN (${placeholders})`,
+        Date.now(),
+        ...ids,
+      );
     }
 
     // Group by severity + source
     const summary = {
-      totalCount: unseenErrors.length,
-      bySeverity: unseenErrors.reduce<Record<string, number>>((acc, e) => {
+      totalCount: rows.length,
+      bySeverity: rows.reduce<Record<string, number>>((acc, e) => {
         acc[e.severity] = (acc[e.severity] || 0) + 1;
         return acc;
       }, {}),
-      bySource: unseenErrors.reduce<Record<string, number>>((acc, e) => {
+      bySource: rows.reduce<Record<string, number>>((acc, e) => {
         acc[e.source] = (acc[e.source] || 0) + 1;
         return acc;
       }, {}),
-      topErrors: unseenErrors.slice(0, 5).map((e) => ({
-        reference: e.reference,
+      topErrors: rows.slice(0, 5).map((e) => ({
+        reference: e.id, // ErrorLog uses `id` not `reference`
         severity: e.severity,
         source: e.source,
-        message: e.message.slice(0, 200),
+        message: (e.message || '').slice(0, 200),
         url: e.url,
-        time: (typeof e.createdAt === 'number' ? new Date(e.createdAt).toISOString() : e.createdAt),
+        time: new Date(e.createdAt).toISOString(),
         userEmail: e.userEmail,
       })),
       timestamp: new Date().toISOString(),
@@ -81,8 +85,8 @@ export async function GET(req: Request) {
     return NextResponse.json({
       ok: true,
       digest: summary,
-      note: unseenErrors.length > 0
-        ? `⚠️ ${unseenErrors.length} new error(s) since last check. Marked as seen.`
+      note: rows.length > 0
+        ? `⚠️ ${rows.length} new error(s) since last check. Marked as seen.`
         : '✅ No new errors since last check.',
     });
   } catch (err: any) {
@@ -91,6 +95,6 @@ export async function GET(req: Request) {
 }
 
 // GET (no auth) for Mavis to poll from any session
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   return GET(req);
 }

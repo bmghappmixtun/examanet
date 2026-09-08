@@ -1,32 +1,35 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/d1-admin';
+import { d1All, d1Run } from '@/lib/db-d1';
+import { requireCronSecret } from '@/lib/cf-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
- * Vercel Cron endpoint — runs nightly to delete old View records.
+ * CF Cron endpoint — runs nightly to delete old View records.
  *
- * Schedule (vercel.json):
- *   { "crons": [{ "path": "/api/cron/cleanup-views", "schedule": "0 3 * * *" }] }
+ * Auth: requires CRON_SECRET (read from CF env or process.env).
  *
- * Auth: requires CRON_SECRET in the Authorization header (Vercel sets this automatically).
+ * 2026-09-05: Migrated from Vercel Cron to CF Cron triggers (wrangler.prod.jsonc).
+ * 2026-09-05: Replaced Prisma $queryRaw/$executeRaw with raw D1 SQL (Prisma
+ * raw queries were broken via d1-admin proxy).
  */
+const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+
 export async function GET(req: NextRequest) {
-  // Verify Vercel Cron auth
-  const authHeader = req.headers.get('authorization');
-  const expected = `Bearer ${process.env.CRON_SECRET}`;
-  if (authHeader !== expected) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  // Auth (CF env → process.env → devDefault)
+  const authErr = await requireCronSecret(req);
+  if (authErr) return authErr;
 
   const start = Date.now();
+  const cutoff = start - NINETY_DAYS_MS;
 
   // Count
-  const count = await db.$queryRaw<{ c: bigint }[]>`
-    SELECT count(*) as c FROM "View" WHERE "createdAt" < NOW() - INTERVAL '90 days'
-  `;
+  const count = await d1All(
+    `SELECT COUNT(*) AS c FROM "View" WHERE createdAt < ?`,
+    cutoff,
+  );
   const toDelete = Number(count[0]?.c ?? 0);
 
   if (toDelete === 0) {
@@ -39,13 +42,14 @@ export async function GET(req: NextRequest) {
   }
 
   // Delete
-  const result = await db.$executeRaw`
-    DELETE FROM "View" WHERE "createdAt" < NOW() - INTERVAL '90 days'
-  `;
+  const result = await d1Run(
+    `DELETE FROM "View" WHERE createdAt < ?`,
+    cutoff,
+  );
 
   return NextResponse.json({
     ok: true,
-    deleted: Number(result),
+    deleted: result?.meta?.changes ?? 0,
     duration: Date.now() - start,
   });
 }

@@ -1,80 +1,161 @@
 // @ts-nocheck
+// Admin page: pending resource edits (modifications proposed by teachers).
+// 2026-09-07: Full D1 migration completed.
+// Workflow: teachers re-upload a file for a PUBLISHED resource → Resource.editStatus
+// becomes 'PENDING_EDIT_APPROVAL' + Resource.pendingEdit contains the proposed file.
+// Admin approves → file is replaced + status reverts to PUBLISHED.
+// Admin rejects → editStatus becomes 'EDIT_REJECTED' with reason.
+
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
-import { CheckCircle2, FileText } from 'lucide-react';
+import PendingEditsClient from '@/components/admin/PendingEditsClient';
+import { CheckCircle2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-const TYPE_LABELS: Record<string, string> = {
-  COURSE: '📖 Cours',
-  DEVOIR: '📝 Devoir',
-  EXERCISE: '✏️ Exercice',
-  SERIES: '📚 Série',
-  BAC_SUBJECT: '🎓 Sujet Bac',
-  CORRECTION: '✅ Corrigé',
-  SUMMARY: '📄 Résumé',
-  CARD: '🗂️ Fiche',
-};
+async function getD1() {
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env.DB;
+}
 
 export default async function PendingEditsPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
   if (user.role !== 'ADMIN') redirect('/');
 
-  // TODO: the edit workflow is not yet migrated to D1.
-  // For now, show a friendly empty state so the admin doesn't see a 500.
-  // The other tabs (Approbations, Modération) cover the equivalent workflow
-  // through the existing PENDING_APPROVAL status.
-  const pendingEdits: any[] = [];
-  const recentlyRejected: any[] = [];
+  const db = await getD1();
+  if (!db) {
+    return (
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+        ⚠️ Base de données indisponible. Réessayez dans quelques instants.
+      </div>
+    );
+  }
+
+  // Pending edits (PENDING_EDIT_APPROVAL)
+  const pendingRes = await db.prepare(`
+    SELECT
+      r.id, r.numericId, r.slug, r.title, r.type, r.status,
+      r.editRequestedAt, r.editRequestedById,
+      r.fileKey AS currentFileKey, r.fileUrl AS currentFileUrl,
+      r.fileSize AS currentFileSize, r.pageCount AS currentPageCount,
+      json_extract(r.pendingEdit, '$.fileKey') AS pendingFileKey,
+      json_extract(r.pendingEdit, '$.fileUrl') AS pendingFileUrl,
+      json_extract(r.pendingEdit, '$.fileSize') AS pendingFileSize,
+      json_extract(r.pendingEdit, '$.pageCount') AS pendingPageCount,
+      t.firstName AS teacherFirstName, t.lastName AS teacherLastName, t.email AS teacherEmail,
+      req.firstName AS requesterFirstName, req.lastName AS requesterLastName, req.email AS requesterEmail,
+      s.nameFr AS subjectNameFr, s.color AS subjectColor,
+      c.nameFr AS classNameFr,
+      sec.nameFr AS sectionNameFr
+    FROM Resource r
+    LEFT JOIN User t ON r.teacherId = t.id
+    LEFT JOIN User req ON r.editRequestedById = req.id
+    LEFT JOIN Subject s ON r.subjectId = s.id
+    LEFT JOIN "Class" c ON r.classId = c.id
+    LEFT JOIN Section sec ON r.sectionId = sec.id
+    WHERE r.editStatus = 'PENDING_EDIT_APPROVAL'
+    ORDER BY r.editRequestedAt DESC
+    LIMIT 100
+  `).all().catch((e: any) => {
+    console.error('[editions] pending query error:', e);
+    return { results: [] };
+  });
+
+  // Recently rejected (last 30 days)
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const rejectedRes = await db.prepare(`
+    SELECT
+      r.id, r.numericId, r.slug, r.title, r.type, r.status,
+      r.editRequestedAt, r.editRequestedById,
+      r.fileKey AS currentFileKey, r.fileUrl AS currentFileUrl,
+      r.fileSize AS currentFileSize, r.pageCount AS currentPageCount,
+      r.editRejectionReason,
+      json_extract(r.pendingEdit, '$.fileKey') AS pendingFileKey,
+      json_extract(r.pendingEdit, '$.fileUrl') AS pendingFileUrl,
+      json_extract(r.pendingEdit, '$.fileSize') AS pendingFileSize,
+      json_extract(r.pendingEdit, '$.pageCount') AS pendingPageCount,
+      t.firstName AS teacherFirstName, t.lastName AS teacherLastName, t.email AS teacherEmail,
+      req.firstName AS requesterFirstName, req.lastName AS requesterLastName, req.email AS requesterEmail,
+      s.nameFr AS subjectNameFr, s.color AS subjectColor,
+      c.nameFr AS classNameFr,
+      sec.nameFr AS sectionNameFr
+    FROM Resource r
+    LEFT JOIN User t ON r.teacherId = t.id
+    LEFT JOIN User req ON r.editRequestedById = req.id
+    LEFT JOIN Subject s ON r.subjectId = s.id
+    LEFT JOIN "Class" c ON r.classId = c.id
+    LEFT JOIN Section sec ON r.sectionId = sec.id
+    WHERE r.editStatus = 'EDIT_REJECTED' AND r.editReviewedAt > ?
+    ORDER BY r.editReviewedAt DESC
+    LIMIT 20
+  `).bind(thirtyDaysAgo).all().catch((e: any) => {
+    console.error('[editions] rejected query error:', e);
+    return { results: [] };
+  });
+
+  // Normalize for client
+  const pendingEdits = (pendingRes?.results || []).map((e: any) => ({
+    id: e.id,
+    numericId: e.numericId,
+    slug: e.slug,
+    title: e.title,
+    type: e.type,
+    status: e.status,
+    editRequestedAt: e.editRequestedAt ? Number(e.editRequestedAt) : null,
+    editRequestedById: e.editRequestedById,
+    editRequestedByName:
+      [e.requesterFirstName, e.requesterLastName].filter(Boolean).join(' ') || null,
+    editRequestedByEmail: e.requesterEmail,
+    teacherName: [e.teacherFirstName, e.teacherLastName].filter(Boolean).join(' ') || null,
+    teacherEmail: e.teacherEmail,
+    currentFileKey: e.currentFileKey,
+    currentFileUrl: e.currentFileUrl,
+    currentFileSize: e.currentFileSize ? Number(e.currentFileSize) : null,
+    currentPageCount: e.currentPageCount ? Number(e.currentPageCount) : null,
+    pendingFileKey: e.pendingFileKey,
+    pendingFileUrl: e.pendingFileUrl,
+    pendingFileSize: e.pendingFileSize ? Number(e.pendingFileSize) : null,
+    pendingPageCount: e.pendingPageCount ? Number(e.pendingPageCount) : null,
+    subjectNameFr: e.subjectNameFr,
+    subjectColor: e.subjectColor,
+    classNameFr: e.classNameFr,
+    sectionNameFr: e.sectionNameFr,
+  }));
+
+  const recentlyRejected = (rejectedRes?.results || []).map((e: any) => ({
+    id: e.id,
+    numericId: e.numericId,
+    slug: e.slug,
+    title: e.title,
+    type: e.type,
+    status: e.status,
+    editRequestedAt: e.editRequestedAt ? Number(e.editRequestedAt) : null,
+    editRequestedById: e.editRequestedById,
+    editRequestedByName:
+      [e.requesterFirstName, e.requesterLastName].filter(Boolean).join(' ') || null,
+    editRequestedByEmail: e.requesterEmail,
+    teacherName: [e.teacherFirstName, e.teacherLastName].filter(Boolean).join(' ') || null,
+    teacherEmail: e.teacherEmail,
+    currentFileKey: e.currentFileKey,
+    currentFileUrl: e.currentFileUrl,
+    currentFileSize: e.currentFileSize ? Number(e.currentFileSize) : null,
+    currentPageCount: e.currentPageCount ? Number(e.currentPageCount) : null,
+    pendingFileKey: e.pendingFileKey,
+    pendingFileUrl: e.pendingFileUrl,
+    pendingFileSize: e.pendingFileSize ? Number(e.pendingFileSize) : null,
+    pendingPageCount: e.pendingPageCount ? Number(e.pendingPageCount) : null,
+    subjectNameFr: e.subjectNameFr,
+    subjectColor: e.subjectColor,
+    classNameFr: e.classNameFr,
+    sectionNameFr: e.sectionNameFr,
+  }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold">✏️ Modifications en attente</h1>
-          <p className="text-slate-500 mt-1">
-            Approuvez ou refusez les modifications proposées par les enseignants.
-          </p>
-        </div>
-        <div className="text-right">
-          <div className="text-4xl font-extrabold text-blue-600">{pendingEdits.length}</div>
-          <div className="text-xs text-slate-500">en attente</div>
-        </div>
-      </div>
-
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-        ⚠️ <strong>Fonctionnalité en cours de migration.</strong> Le système d'approbation
-        des modifications d'enseignants est temporairement désactivé. Les autres flux
-        (Approbations, Modération) restent opérationnels.
-      </div>
-
-      {pendingEdits.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <CheckCircle2 className="w-16 h-16 mx-auto mb-4 text-emerald-300" />
-          <h3 className="font-bold text-xl mb-2">Tout est à jour !</h3>
-          <p className="text-slate-500">Aucune modification en attente d'approbation.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {pendingEdits.map((r: any) => (
-            <div key={r.id} className="bg-white rounded-2xl border border-slate-200 p-4">
-              <h3 className="font-bold">{r.title}</h3>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {recentlyRejected.length > 0 && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-bold">🕒 Rejetés récemment</h2>
-          {recentlyRejected.map((r: any) => (
-            <div key={r.id} className="bg-slate-50 rounded-xl border border-slate-200 p-4">
-              <h3 className="font-bold text-sm">{r.title}</h3>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <PendingEditsClient
+      pendingEdits={pendingEdits}
+      recentlyRejected={recentlyRejected}
+    />
   );
 }

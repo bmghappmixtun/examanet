@@ -60,7 +60,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     withAlternates('/bac/archives', 0.6, 'monthly'),
     withAlternates('/professeurs', 0.5, 'monthly'),
     withAlternates('/faq', 0.5, 'monthly'),
-    withAlternates('/recherche', 0.5, 'monthly'),
+    // 2026-09-07: removed /recherche from sitemap — noindex in generateMetadata,
+    // included here caused 7,448 bot visitors in 7 days on this single page.
     withAlternates('/referentiel-national', 0.5, 'monthly'),
   ];
 
@@ -115,7 +116,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const resourcesRes2: any = await db.prepare([
       "SELECT slug, numericId, updatedAt, type, viewsCount, downloadsCount",
       "FROM Resource",
-      "WHERE status = 'PUBLISHED'",
+      // 2026-09-05: also filter isHidden=0 so unpublished resources don't
+      // appear in the sitemap (the teacher isHidden flag is the same one
+      // the admin uses to hide a resource from the public site).
+      "WHERE status = 'PUBLISHED' AND isHidden = 0",
       "ORDER BY updatedAt DESC",
     ].join(' ')).all();
     resources = (resourcesRes2?.results || []) as any[];

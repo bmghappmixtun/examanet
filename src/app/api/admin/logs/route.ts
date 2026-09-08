@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
  * GET /api/admin/logs
  *
  * Live view of Vercel runtime logs stored from the log drain.
- * Uses raw D1 SQL (D1 VercelLog table has no Prisma schema yet).
+ * Uses raw D1 SQL (D1 CloudflareLog table has no Prisma schema yet).
  *
  * Query params:
  * - level: filter by level (error, warning, info) - uses statusCode as proxy
@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
  * - until: ISO timestamp (default: now)
  * - limit: max results (default 50, max 500)
  * - path: filter by request path (contains)
- * - source: 'vercellog' (default) or 'errorlog'
+ * - source: 'cloudflarelog' (default) or 'errorlog'
  */
 export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   const untilParam = url.searchParams.get('until');
   const limit = Math.min(500, parseInt(url.searchParams.get('limit') || '50'));
   const pathFilter = url.searchParams.get('path');
-  const source = url.searchParams.get('source') || 'vercellog';
+  const source = url.searchParams.get('source') || 'cloudflarelog';
 
   const since = sinceParam ? new Date(sinceParam).getTime() : Date.now() - 60 * 60 * 1000;
   const until = untilParam ? new Date(untilParam).getTime() : Date.now();
@@ -68,11 +68,14 @@ export async function GET(req: NextRequest) {
       );
       counts = countRows.map((c: any) => ({ level: c.level, count: Number(c.count) }));
     } else {
-      // Query VercelLog table
+      // Query CloudflareLog table
       const conditions = ['createdAt BETWEEN ? AND ?'];
       const params: any[] = [since, until];
       if (level === 'error') {
-        conditions.push('(responseStatusCode >= 400)');
+        // 2026-09-05: match the DB `level` column (set by cf-observability-sync)
+        // OR compute from responseStatusCode for legacy rows
+        conditions.push('(level = ? OR (level IS NULL AND responseStatusCode >= 400))');
+        params.push('error');
       }
       if (pathFilter) {
         conditions.push('requestPath LIKE ?');
@@ -80,28 +83,36 @@ export async function GET(req: NextRequest) {
       }
       logs = await d1All(
         `SELECT id, requestId, requestPath, requestMethod, responseStatusCode,
-                userAgent, ipAddress, country, region, city, durationMs, createdAt
-         FROM VercelLog
+                userAgent, ipAddress, country, region, city, durationMs,
+                level, message, source, createdAt
+         FROM CloudflareLog
          WHERE ${conditions.join(' AND ')}
          ORDER BY createdAt DESC
          LIMIT ?`,
         ...params, limit,
       );
-      // Add level computed from statusCode
+      // 2026-09-05: Use the `level` column from D1 (set by cf-observability-sync)
+      // when available. Fall back to computing from responseStatusCode for
+      // legacy Vercel Log Drain rows that don't have a level column.
       logs = logs.map((l: any) => ({
         ...l,
-        level: l.responseStatusCode >= 500 ? 'error' : l.responseStatusCode >= 400 ? 'warning' : 'info',
+        level: l.level || (
+          l.responseStatusCode >= 500 ? 'error' :
+          l.responseStatusCode >= 400 ? 'warning' :
+          'info'
+        ),
         timestamp: l.createdAt,
+        message: l.message || `${l.requestMethod || ''} ${l.requestPath || ''} → ${l.responseStatusCode || ''}`.trim(),
       }));
       const countRows: any[] = await d1All(
         `SELECT 
-           CASE 
+           COALESCE(level, CASE 
              WHEN responseStatusCode >= 500 THEN 'error'
              WHEN responseStatusCode >= 400 THEN 'warning'
              ELSE 'info'
-           END as level,
+           END) as level,
            COUNT(*) as count
-         FROM VercelLog
+         FROM CloudflareLog
          WHERE createdAt BETWEEN ? AND ?
          GROUP BY level`,
         since, until,

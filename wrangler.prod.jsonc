@@ -9,6 +9,12 @@
     "nodejs_compat",
     "global_fetch_strictly_public"
   ],
+  // 2026-09-07: DNS swap complete. examanet.com + www → CF Worker (D1).
+  // Vercel still serves as a fallback (any cached routes might still hit
+  // Vercel CDN until the Vercel deploy is shut down in Phase 9).
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://examanet.com"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
@@ -24,8 +30,13 @@
   },
   // PERF 2026-09-02 (Step 4): Cron trigger for performance monitoring
   // Calls /api/cron/monitor-alerts every 5 minutes
+  // 2026-09-05: Added 0 3 * * * for nightly cleanup (cleanup-views + nightly-cleanup)
+  // 2026-09-07: DNS swap - custom domains added via API
+  // (CF API token lacks Workers Routes:Edit scope)
+  // wrangler deploy will keep this config valid; custom domains are
+  // managed separately via /accounts/{id}/workers/domains
   "triggers": {
-    "crons": ["*/5 * * * *"]
+    "crons": ["*/5 * * * *", "0 3 * * *"]
   },
   "r2_buckets": [
     {

@@ -100,7 +100,7 @@ export default async function CollegePillar() {
       'INNER JOIN "Class" c ON r.classId = c.id',
       'INNER JOIN "Level" l ON c.levelId = l.id',
       'LEFT JOIN User u ON r.teacherId = u.id',
-      'WHERE r.status = ? AND l.slug = ?',
+      'WHERE r.status = ? AND l.slug = ? AND r.isHidden = 0',
       'ORDER BY r.viewsCount DESC LIMIT 8'
     ].join(' ')).bind('PUBLISHED', 'college').all();
     topResources = (topR.results || topR || []);
@@ -110,7 +110,7 @@ export default async function CollegePillar() {
       'SELECT c.id, c.numericId, c.slug, c.nameFr, c.nameAr, c."order", COUNT(r.id) as resourceCount',
       'FROM "Class" c',
       'INNER JOIN "Level" l ON c.levelId = l.id',
-      'LEFT JOIN Resource r ON r.classId = c.id AND r.status = ?',
+      'LEFT JOIN Resource r ON r.classId = c.id AND r.status = ? AND r.isHidden = 0',
       'WHERE l.slug = ?',
       'GROUP BY c.id ORDER BY c."order" ASC'
     ].join(' ')).bind('PUBLISHED', 'college').all();
@@ -123,7 +123,7 @@ export default async function CollegePillar() {
       'INNER JOIN Subject s ON r.subjectId = s.id',
       'INNER JOIN "Class" c ON r.classId = c.id',
       'INNER JOIN "Level" l ON c.levelId = l.id',
-      'WHERE l.slug = ? AND r.status = ?',
+      'WHERE l.slug = ? AND r.status = ? AND r.isHidden = 0',
       'GROUP BY s.id',
       'ORDER BY count DESC'
     ].join(' ')).bind('college', 'PUBLISHED').all();

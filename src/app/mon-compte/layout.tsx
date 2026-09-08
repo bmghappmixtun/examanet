@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { getCurrentUser } from '@/lib/auth';
 import Link from 'next/link';
-import { LayoutDashboard, Heart, Settings, Bell } from 'lucide-react';
+import { LayoutDashboard, Heart, Settings, Bell, MessageSquare } from 'lucide-react';
 
 // Student account pages should never be indexed
 export const metadata: Metadata = {
@@ -34,6 +34,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
     { href: '/mon-compte', icon: LayoutDashboard, label: 'Tableau de bord', exact: true },
     { href: '/mon-compte/favoris', icon: Heart, label: 'Mes favoris' },
     { href: '/mon-compte/notifications', icon: Bell, label: 'Notifications' },
+    { href: '/mon-compte/commentaires', icon: MessageSquare, label: 'Mes commentaires & avis' },
     { href: '/mon-compte/parametres', icon: Settings, label: 'Paramètres' },
   ];
 

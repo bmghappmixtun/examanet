@@ -64,9 +64,30 @@ export async function GET(
       WHERE r.numericId = ?
       LIMIT 1
     `).bind(numericId).first();
-    
+
     if (!r) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    // 2026-09-05: Filter out non-published + hidden resources from the public API.
+    // Previously the detail endpoint returned the resource as long as the row
+    // existed in the DB, even when status=DRAFT or isHidden=1. That meant after
+    // a teacher unpublished a resource, the /fr/ressources/[id] page still
+    // served the full content (because the client fetched /api/ressources/.../detail).
+    //
+    // Owners (the teacher who published it) and admins can still see their own
+    // unpublished/draft/hidden resources for editing purposes.
+    if (r.status !== 'PUBLISHED' || r.isHidden === 1) {
+      // Check if the requester is the owner or an admin
+      const { getCurrentUser } = await import('@/lib/auth');
+      const requester = await getCurrentUser();
+      const isOwner = requester && r.teacherId === requester.id;
+      const isAdmin = requester && requester.role === 'ADMIN';
+      if (!isOwner && !isAdmin) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
+      // Mark the response so the client can show a "this is unpublished" notice
+      r._unpublishedForViewer = true;
     }
     
     // Ratings - simple query, no template literal
@@ -91,7 +112,13 @@ export async function GET(
     
     // Comments - simple
     const comments = await db.prepare(
-      'SELECT c.id, c.content, c.createdAt FROM Comment c WHERE c.resourceId = ? AND c.isHidden = 0 ORDER BY c.createdAt DESC LIMIT 10'
+      `SELECT c.id, c.content, c.createdAt, c.userId,
+              u.firstName, u.lastName, u.avatarUrl
+       FROM Comment c
+       LEFT JOIN User u ON c.userId = u.id
+       WHERE c.resourceId = ? AND c.isHidden = 0
+       ORDER BY c.createdAt DESC
+       LIMIT 10`
     ).bind(r.id).all();
     
     // Increment views - fire and forget
@@ -134,7 +161,17 @@ export async function GET(
         summaryGeneratedAt: sum?.generatedAt || null,
       },
       ratings: ratings?.results || [],
-      comments: comments?.results || [],
+      comments: (comments?.results || []).map((c: any) => ({
+        id: c.id,
+        content: c.content,
+        createdAt: c.createdAt,
+        user: {
+          id: c.userId,
+          firstName: c.firstName,
+          lastName: c.lastName,
+          avatarUrl: c.avatarUrl,
+        },
+      })),
     };
 
     // PERF 2026-09-02: Store in KV cache (60s TTL)

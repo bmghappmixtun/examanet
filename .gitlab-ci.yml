@@ -4,14 +4,27 @@
 #   has no shared runner. Uncomment workflow: rules below to re-enable
 #   once a runner is added, or trigger manually from GitLab UI.
 #
-# Required GitLab CI variables (already set on project):
+# 2026-09-08: RE-ENABLED. workflow: rules now auto-triggers on push to
+#   feature/d1-migration-phase1 (and main).
+#
+# IMPORTANT: 2026-09-08 - Added 'tags: [gitlab-org]' to all jobs because
+# the GitLab.com shared instance runners are TAGGED with 'gitlab-org' and
+# don't pick up untagged jobs. The project-specific runners don't have
+# this tag restriction. This was the reason the pipeline was "failed"
+# without ever creating jobs.
+#
+# Required GitLab CI variables (set on project, masked+protected):
 #   CF_ACCOUNT_ID  - Cloudflare account ID
 #   CF_API_TOKEN   - Cloudflare API token (Workers:Edit)
-#   DATABASE_URL   - stub is fine, Hyperdrive used at runtime
+#   DATABASE_URL   - stub is fine, D1 used at runtime
 
 workflow:
   rules:
-    - when: never  # Disable all auto-pipelines. Use GitLab UI "Run pipeline" to trigger manually.
+    - if: '$CI_COMMIT_BRANCH == "feature/d1-migration-phase1"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - when: always
 
 stages:
   - install
@@ -24,7 +37,7 @@ variables:
 
 # Default image and setup
 default:
-  image: node:22-bullseye
+  image: node:22-bookworm
   before_script:
     - apt-get update -qq
     - apt-get install -y -qq curl unzip git > /dev/null
@@ -37,17 +50,19 @@ default:
 # Stage 1: install
 # ---------------------------------------------------------------------------
 install_dependencies:
+  tags:
+    - gitlab-org
   stage: install
   script:
-    - echo "Installing dependencies with bun"
-    - bun install --frozen-lockfile
-    - echo "Fallback npm install for postinstall scripts"
+    - echo "Installing dependencies with npm"
     - npm install --prefer-offline --no-audit --no-fund
+    - echo "Verify build tools"
+    - which npx && npx --version
   cache:
     key:
       files:
         - package.json
-        - bun.lock
+        # - bun.lock (removed, using npm now)
     paths:
       - node_modules/
       - .next/
@@ -61,6 +76,8 @@ install_dependencies:
 # Stage 2: build
 # ---------------------------------------------------------------------------
 build_cf_bundle:
+  tags:
+    - gitlab-org
   stage: build
   needs: ["install_dependencies"]
   script:
@@ -79,7 +96,7 @@ build_cf_bundle:
     key:
       files:
         - package.json
-        - bun.lock
+        # - bun.lock (removed, using npm now)
     paths:
       - node_modules/
       - .next/
@@ -91,9 +108,14 @@ build_cf_bundle:
     expire_in: 1 hour
 
 # ---------------------------------------------------------------------------
-# Stage 3a: deploy to PRODUCTION (main branch only)
+# Stage 3a: deploy to PRODUCTION (main + feature/d1-migration-phase1)
+# 2026-09-08: feature/d1-migration-phase1 is currently the PROD branch
+# (DNS swap was done on it, examanet.com points to its deploys).
+# Add "main" once the repo gets a proper main branch with this content.
 # ---------------------------------------------------------------------------
 deploy_production:
+  tags:
+    - gitlab-org
   stage: deploy
   needs: ["build_cf_bundle"]
   script:
@@ -108,6 +130,8 @@ deploy_production:
   rules:
     - if: $CI_COMMIT_REF_NAME == "main"
       when: on_success
+    - if: $CI_COMMIT_REF_NAME == "feature/d1-migration-phase1"
+      when: on_success
   retry:
     max: 2
     when:
@@ -117,7 +141,7 @@ deploy_production:
     key:
       files:
         - package.json
-        - bun.lock
+        # - bun.lock (removed, using npm now)
     paths:
       - node_modules/
       - .next/
@@ -128,6 +152,8 @@ deploy_production:
 # Stage 3b: deploy to STAGING (POC, all other branches)
 # ---------------------------------------------------------------------------
 deploy_staging:
+  tags:
+    - gitlab-org
   stage: deploy
   needs: ["build_cf_bundle"]
   script:
@@ -147,7 +173,7 @@ deploy_staging:
     key:
       files:
         - package.json
-        - bun.lock
+        # - bun.lock (removed, using npm now)
     paths:
       - node_modules/
       - .next/

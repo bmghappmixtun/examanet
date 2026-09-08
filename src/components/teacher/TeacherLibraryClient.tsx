@@ -69,7 +69,7 @@ function formatDate(d: string | null | undefined): string {
   });
 }
 
-function getFormatBadge(format: string) {
+function getFormatBadge(format: string | null | undefined) {
   switch (format) {
     case 'pdf':
       return {
@@ -93,7 +93,10 @@ function getFormatBadge(format: string) {
       };
     default:
       return {
-        label: format.toUpperCase(),
+        // Safety: format may be undefined/null (e.g. legacy rows without
+        // originalFormat). Don't crash on format.toUpperCase() — fall back
+        // to 'OTHER' label.
+        label: (format || 'OTHER').toUpperCase(),
         className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
       };
   }
@@ -197,7 +200,29 @@ export default function TeacherLibraryClient({
     try {
       const res = await fetch(`/api/teacher/files?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Erreur suppression');
+      if (!res.ok) {
+        // 2026-09-05: Special handling for "file is linked to published resource"
+        if (res.status === 409 && data?.code === 'RESOURCE_PUBLISHED') {
+          toast.error(
+            (t) => (
+              <div className="max-w-xs">
+                <div className="font-semibold mb-1">⚠️ Fichier lié à une ressource publiée</div>
+                <div className="text-xs opacity-90 mb-2">{data.error}</div>
+                <a
+                  href={data.unpublishUrl || '/enseignant/ressources'}
+                  className="inline-block px-3 py-1.5 text-xs font-bold bg-amber-600 text-white rounded hover:bg-amber-700"
+                  onClick={() => toast.dismiss(t.id)}
+                >
+                  → Dépublier d'abord
+                </a>
+              </div>
+            ),
+            { duration: 8000, style: { maxWidth: '420px' } },
+          );
+          return;
+        }
+        throw new Error(data.error || 'Erreur suppression');
+      }
       toast.success('Fichier supprimé de la bibliothèque');
       loadFiles();
     } catch (e) {

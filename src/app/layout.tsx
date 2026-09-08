@@ -128,19 +128,19 @@ export function generateMetadata(): Metadata {
       images: ['/api/og/page/home'],
       creator: '@examanet',
     },
-    // 2026-08-24: noindex for the CF POC site. See next.config.js for the matching
-    // X-Robots-Tag header. Combined, these prevent Google from indexing the POC.
-    // The real production is examanet.com (Vercel) — that site uses its own metadata.
+    // 2026-09-07: Allow full indexing on production (examanet.com).
+    // The previous noindex/nofollow was a leftover from the CF Workers POC.
+    // The matching X-Robots-Tag header in next.config.js was also removed.
+    // Pages that should NOT be indexed (admin, /connexion, /mon-compte,
+    // /enseignant, /recherche) override this in their own generateMetadata().
     robots: {
-      index: false,
-      follow: false,
-      nocache: true,
+      index: true,
+      follow: true,
       googleBot: {
-        index: false,
-        follow: false,
-        noimageindex: true,
-        'max-image-preview': 'none',
-        'max-snippet': 0,
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
       },
     },
     // SEO 2026-08-22: the canonical on the ROOT layout is the bare site URL

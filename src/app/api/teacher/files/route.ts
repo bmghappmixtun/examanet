@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { d1All, d1Run } from '@/lib/db-d1';
+import { d1All, d1First, d1Run } from '@/lib/db-d1';
 
 /**
  * Extract a timestamp from a file key like
@@ -64,16 +64,18 @@ export async function GET(req: NextRequest) {
                       r.rejectionReason AS r_rejectionReason, r.rejectionAt AS r_rejectionAt
                FROM TeacherFile f
                LEFT JOIN Resource r ON f.resourceId = r.id
-               WHERE f.teacherId = ?`;
+               WHERE f.teacherId = ? AND f.isActive = 1`;
     const params: any[] = [user.id];
     if (search) {
       sql += ' AND fileName LIKE ?';
       params.push(`%${search}%`);
     }
-    sql += ' ORDER BY createdAt DESC LIMIT 200';
+    sql += ' ORDER BY f.createdAt DESC LIMIT 200';
 
     const files = await d1All(sql, ...params);
     // Normalize: keep createdAt as ISO string (or null for missing timestamps)
+    // Also derive originalFormat from filename/mime (same logic as SSR page)
+    // so the client doesn't crash on `format.toUpperCase()` for undefined format.
     const normalized = (files || []).map((f: any) => {
       const resource = f.r_id
         ? {
@@ -86,9 +88,22 @@ export async function GET(req: NextRequest) {
             rejectionAt: f.r_rejectionAt ?? null,
           }
         : null;
+      // Derive originalFormat (page.tsx does the same)
+      let fmt = '';
+      if (f.fileName) {
+        const m = /\.([a-z0-9]+)$/i.exec(f.fileName);
+        if (m) fmt = m[1].toLowerCase();
+      }
+      if (!fmt && f.mimeType) {
+        const mt = String(f.mimeType).toLowerCase();
+        if (mt.includes('pdf')) fmt = 'pdf';
+        else if (mt.includes('word') || mt.includes('document')) fmt = 'docx';
+        else if (mt.includes('opendocument')) fmt = 'odt';
+      }
       return {
         ...f,
         isActive: Boolean(f.isActive),
+        originalFormat: fmt || 'other',
         resource,
         createdAt: resolveCreatedAt(f),
         updatedAt: resolveCreatedAt(f),
@@ -112,17 +127,41 @@ export async function DELETE(req: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: 'id requis' }, { status: 400 });
     }
-    // Verify ownership
-    const owner = await d1All(
-      'SELECT teacherId, fileKey, r2Key FROM TeacherFile WHERE id = ?',
+    // Verify ownership + check if file is linked to a published resource
+    const owner = await d1First(
+      'SELECT teacherId, fileKey, r2Key, resourceId FROM TeacherFile WHERE id = ?',
       id,
     );
-    if (!owner || owner.length === 0) {
+    if (!owner) {
       return NextResponse.json({ error: 'Fichier introuvable' }, { status: 404 });
     }
-    if (owner[0].teacherId !== user.id && user.role !== 'ADMIN') {
+    if (owner.teacherId !== user.id && user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
     }
+
+    // 2026-09-05: Block deletion if the file is linked to a published resource.
+    // Teacher must unpublish first from /enseignant/ressources, then they can
+    // delete the file from their library. This prevents the "file is gone
+    // from my library but still visible on the platform" inconsistency.
+    if (owner.resourceId) {
+      const linkedResource = await d1First(
+        'SELECT id, title, status, numericId, slug FROM Resource WHERE id = ?',
+        owner.resourceId,
+      );
+      if (linkedResource && linkedResource.status === 'PUBLISHED') {
+        return NextResponse.json(
+          {
+            error: 'Ce fichier est lié à une ressource publiée. Dépubliez-la d\'abord depuis "Mes ressources".',
+            code: 'RESOURCE_PUBLISHED',
+            resourceId: linkedResource.id,
+            resourceTitle: linkedResource.title,
+            unpublishUrl: '/enseignant/ressources',
+          },
+          { status: 409 },
+        );
+      }
+    }
+
     // TODO: actually delete the file from R2 storage
     // For now, just mark as inactive
     await d1Run('UPDATE TeacherFile SET isActive = 0 WHERE id = ?', id);

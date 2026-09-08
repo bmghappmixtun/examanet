@@ -2,6 +2,9 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import FilterShell from '@/components/ressources/FilterShell';
+import { breadcrumbSchema } from '@/lib/structured-data';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
 // ============== SIMPLIFIED PAGE (CF Workers + D1) ==============
 // All data fetching is done client-side via /api/ressources-data.
@@ -36,7 +39,10 @@ export async function generateMetadata({
   return {
     title,
     description,
-    robots: { index: false, follow: false },
+    // 2026-09-07: Allow indexing of the resource listing page.
+    // Was noindex (left over from CF Workers POC). This page has unique
+    // SEO value via filter combinations (?subject=, ?class=, ?year= etc.).
+    robots: { index: true, follow: true },
   };
 }
 
@@ -72,6 +78,17 @@ export default async function ResourcesPage(props: {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            breadcrumbSchema([
+              { name: 'Accueil', url: SITE_URL },
+              { name: 'Ressources', url: `${SITE_URL}/ressources` },
+            ]),
+          ),
+        }}
+      />
       <main className="flex-1 pt-24 lg:pt-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Page header */}

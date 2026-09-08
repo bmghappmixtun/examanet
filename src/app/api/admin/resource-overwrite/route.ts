@@ -4,14 +4,14 @@ export const dynamic = 'force-dynamic';
 /**
  * POST /api/admin/resource-overwrite
  * Overwrite the file for an existing Resource with a new PDF.
- * Uses a NEW path to bypass Vercel Blob CDN cache (which is 30 days).
  *
- * Auto-detects hasCorrection via size heuristic (no external deps).
+ * 2026-09-07: Migrated from Vercel Blob to R2 (Phase 9).
+ * Uses a NEW path to bypass any CDN cache.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
-import { put, del } from '@vercel/blob';
+import { uploadFile, deleteFile } from '@/lib/storage';
 
 export const maxDuration = 60;
 export const runtime = 'nodejs';
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const oldUrl = resource.fileUrl;
 
     // Strategy: upload to NEW path with random suffix to bypass CDN cache
-    // Then delete old blob (after confirming new is live)
+    // Then delete old R2 key (after confirming new is live)
     const pdfBuffer = Buffer.from(await file.arrayBuffer());
 
     // Get directory from old key (e.g., "teacher-library/teacherId/imported/")
@@ -65,10 +65,8 @@ export async function POST(req: NextRequest) {
     const newFilename = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}-${resourceId.substring(0, 6)}.pdf`;
     const newKey = `${keyDir}${newFilename}`;
 
-    const blob = await put(newKey, pdfBuffer, {
-      access: 'public',
-      addRandomSuffix: false,
-    });
+    // 2026-09-07: R2 migration — use uploadFile (was put() to Vercel Blob)
+    const result = await uploadFile(newKey, pdfBuffer, 'application/pdf');
 
     // ============================================================
     // AUTO-DETECT if the new file contains a correction
@@ -77,8 +75,8 @@ export async function POST(req: NextRequest) {
     //   2. Otherwise trust existing hasCorrection value
     // ============================================================
     const updateData: any = {
-      fileKey: blob.pathname,
-      fileUrl: blob.url,
+      fileKey: result.key,
+      fileUrl: result.url,
       fileSize: pdfBuffer.length,
     };
 
@@ -87,16 +85,12 @@ export async function POST(req: NextRequest) {
 
     const oldSize = resource.fileSize || 0;
     if (oldSize > 0 && pdfBuffer.length > oldSize * 1.3) {
-      // File significantly bigger - likely merged énoncé+correction
       detectedHasCorrection = true;
       const ratio = (pdfBuffer.length / oldSize).toFixed(2);
       detectionMethod = `size_heuristic_grew:new=${pdfBuffer.length},old=${oldSize},ratio=${ratio}`;
     } else if (oldSize > 0 && pdfBuffer.length < oldSize * 0.7) {
-      // File got significantly smaller - might be énoncé only replacement
-      // Don't change hasCorrection; let the explicit update decide
       detectionMethod = `size_heuristic_shrank:new=${pdfBuffer.length},old=${oldSize}`;
     } else {
-      // Similar size - keep existing value
       detectionMethod = `size_similar_kept:new=${pdfBuffer.length},old=${oldSize}`;
     }
 
@@ -122,17 +116,18 @@ export async function POST(req: NextRequest) {
     await db.teacherFile.updateMany({
       where: { resourceId },
       data: {
-        pdfUrl: blob.url,
+        pdfUrl: result.url,
         pdfSize: pdfBuffer.length,
       },
     });
 
-    // Try to delete old blob (best effort - might fail if not yet expired)
-    if (oldKey && oldKey !== blob.pathname) {
+    // Try to delete old R2 key (best effort)
+    if (oldKey && oldKey !== result.key) {
       try {
-        await del(oldUrl);
+        // 2026-09-07: R2 migration — use deleteFile (was del() from Vercel Blob)
+        await deleteFile(oldUrl);
       } catch (e) {
-        // Ignore - old blob will expire naturally
+        // Ignore
       }
     }
 
@@ -140,8 +135,8 @@ export async function POST(req: NextRequest) {
       success: true,
       resourceId,
       oldKey,
-      newKey: blob.pathname,
-      newUrl: blob.url,
+      newKey: result.key,
+      newUrl: result.url,
       oldSize: resource.fileSize,
       newSize: pdfBuffer.length,
       sizeDelta: resource.fileSize - pdfBuffer.length,

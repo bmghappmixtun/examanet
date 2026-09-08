@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/d1-admin';
-import { put } from '@vercel/blob';
+import { uploadFile } from '@/lib/storage';
 
 export const maxDuration = 60;
 export const runtime = 'nodejs';
@@ -72,10 +72,7 @@ export async function POST(req: NextRequest) {
     // Upload to Vercel Blob
     const safeName = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
     const key = `teacher-library/${teacherId}/jotform/${submissionId}-${Date.now()}-${safeName}`;
-    const blob = await put(key, buffer, {
-      access: 'public',
-      addRandomSuffix: false,
-    });
+    const blob = await uploadFile(key, buffer, 'application/pdf');
 
     // Create TeacherFile
     const teacherFile = await db.teacherFile.create({
@@ -83,10 +80,10 @@ export async function POST(req: NextRequest) {
         teacherId,
         fileName: filename,
         originalFormat: format,
-        fileKey: blob.pathname,
+        fileKey: blob.key,
         fileUrl: blob.url,
         fileSize: buffer.length,
-        pdfKey: format === 'pdf' ? blob.pathname : null,
+        pdfKey: format === 'pdf' ? blob.key : null,
         pdfUrl: format === 'pdf' ? blob.url : null,
         pdfSize: format === 'pdf' ? buffer.length : null,
         conversionStatus: format === 'pdf' ? 'NOT_NEEDED' : 'PENDING',
@@ -125,10 +122,10 @@ export async function POST(req: NextRequest) {
         description: '',
         type: resType,
         status: 'PUBLISHED',
-        fileKey: blob.pathname,
+        fileKey: blob.key,
         fileUrl: blob.url,
         fileSize: buffer.length,
-        originalFileKey: blob.pathname,
+        originalFileKey: blob.key,
         originalFileName: filename,
         originalFormat: format,
         originalFileSize: buffer.length,
@@ -151,7 +148,7 @@ export async function POST(req: NextRequest) {
       success: true,
       teacherFileId: teacherFile.id,
       resourceId: resource.id,
-      fileKey: blob.pathname,
+      fileKey: blob.key,
       fileUrl: blob.url,
       format,
       size: buffer.length,

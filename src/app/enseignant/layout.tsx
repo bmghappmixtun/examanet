@@ -20,6 +20,7 @@ import {
   Heart,
   Plus,
   CheckCircle2,
+  MessageSquare,
 } from 'lucide-react';
 
 // Teacher dashboard pages should never be indexed
@@ -136,6 +137,7 @@ export default async function TeacherLayout({ children }: { children: React.Reac
                     { href: '/enseignant/analytics', icon: BarChart3, label: 'Analytics' },
                     { href: '/enseignant/notifications', icon: Bell, label: 'Notifications', badge: unreadNotifs },
                     { href: '/enseignant/profil', icon: User, label: 'Profil' },
+                    { href: '/mon-compte/commentaires', icon: MessageSquare, label: 'Mes commentaires & avis' },
                     { href: '/enseignant/parametres', icon: Settings, label: 'Paramètres' },
                   ].map((item) => {
                     const Icon = item.icon;

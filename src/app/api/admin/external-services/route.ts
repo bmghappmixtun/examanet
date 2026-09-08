@@ -4,22 +4,28 @@ export const dynamic = 'force-dynamic';
 /**
  * Admin API: external service credentials + usage
  *
- * Vercel + Neon API tokens are stored encrypted in the ApiProvider table
- * (provider = 'vercel' | 'neon'), and we use them to fetch live usage.
+ * Stores API keys (Vercel, Neon, APIConvert, iLoveAPI) in the ApiProvider
+ * D1 table. The table has columns: id, name, type, apiKey, publicKey,
+ * secretKey, baseUrl, model, isActive, displayName, notes, monthlyQuota,
+ * priority, config, lastUsedAt, createdAt, updatedAt.
  *
- *   GET  /api/admin/external-services?type=vercel  — get Vercel usage
- *   GET  /api/admin/external-services?type=neon    — get Neon usage
- *   POST /api/admin/external-services              — save a token
- *   DELETE /api/admin/external-services?type=X     — remove a token
+ *   GET    /api/admin/external-services?type=X   — get X's stored config + live usage
+ *   POST   /api/admin/external-services           — save X's credentials
+ *   DELETE /api/admin/external-services?type=X    — remove X's credentials
+ *   GET    /api/admin/external-services           — list all configured providers
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
 import { getCurrentUser } from '@/lib/auth';
-import { db } from '@/lib/d1-admin';
+import { d1First, d1All, d1Run, genId } from '@/lib/db-d1';
 import { encryptSecret, decryptSecret, redactSecret } from '@/lib/provider-keys';
-import { checkVercelUsage } from '@/lib/external-services.vercel';
 import { checkConvertApiUsage, checkIlovepdfUsage, checkNeonUsage } from '@/lib/external-services';
+import {
+  checkCFWorkersUsage,
+  checkD1Usage,
+  checkR2Usage,
+} from '@/lib/external-services.cloudflare';
 
 export const runtime = 'nodejs';
 
@@ -30,80 +36,220 @@ async function requireAdmin() {
   return { user };
 }
 
+// Map our internal types to the DB column values
+const TYPE_VALUES = ['vercel', 'neon', 'cloudflare', 'd1', 'r2', 'apiconvert', 'iloveapi'] as const;
+type ProviderType = (typeof TYPE_VALUES)[number];
+
+// CF-native types use the CF_API_TOKEN env secret, not a user-supplied token
+const CF_NATIVE_TYPES: ProviderType[] = ['cloudflare', 'd1', 'r2'];
+
+/**
+ * 2026-09-06: Read the stored provider record from D1 directly.
+ * The table uses 'type' (not 'provider') as the column name, and stores:
+ *  - apiKey: encrypted single-token (vercel, neon, apiconvert)
+ *  - secretKey: encrypted (iloveapi secret)
+ *  - publicKey: plaintext (iloveapi public)
+ *  - isActive: 1/0 (instead of 'enabled')
+ *  - monthlyQuota: integer (optional)
+ *  - displayName, notes: text
+ */
+async function findProvider(type: ProviderType): Promise<any | null> {
+  const row = await d1First(
+    'SELECT * FROM ApiProvider WHERE type = ? AND isActive = 1 ORDER BY updatedAt DESC LIMIT 1',
+    type,
+  );
+  return row || null;
+}
+
 export async function GET(req: NextRequest) {
   const auth = await requireAdmin();
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const type = req.nextUrl.searchParams.get('type')?.toLowerCase();
-  if (!type || !['vercel', 'neon', 'apiconvert', 'iloveapi'].includes(type)) {
+  const { searchParams } = new URL(req.url);
+  const type = searchParams.get('type')?.toLowerCase() as ProviderType | null;
+
+  // No type → list all (include secretKey for the hasSecret badge + redacted display)
+  if (!type) {
+    const all = await d1All(
+      'SELECT id, name, type, displayName, isActive, publicKey, apiKey, secretKey, monthlyQuota, notes, lastUsedAt, createdAt FROM ApiProvider WHERE isActive = 1 ORDER BY type ASC'
+    );
+    return NextResponse.json({
+      providers: all.map((p: any) => ({
+        id: p.id,
+        name: p.name || p.type,
+        type: p.type,
+        displayName: p.displayName,
+        enabled: Boolean(p.isActive),
+        publicKey: p.publicKey,
+        hasSecret: Boolean(p.apiKey || p.secretKey),
+        secretKeyRedacted: p.apiKey
+          ? redactSecret(decryptSecret(p.apiKey))
+          : p.secretKey
+          ? redactSecret(decryptSecret(p.secretKey))
+          : '',
+        monthlyQuota: p.monthlyQuota,
+        notes: p.notes,
+        lastUsedAt: p.lastUsedAt,
+        createdAt: p.createdAt,
+      })),
+    });
+  }
+
+  if (!TYPE_VALUES.includes(type)) {
     return NextResponse.json(
-      { error: 'type doit être "vercel", "neon", "apiconvert" ou "iloveapi"' },
+      { error: `type doit être ${TYPE_VALUES.join(', ')}` },
       { status: 400 },
     );
   }
 
-  const provider = await db.apiProvider.findUnique({ where: { provider: type } });
-  if (!provider || !provider.secretKey) {
+  const provider = await findProvider(type);
+  // CF-native types don't need a stored token — they use the env secret
+  if (CF_NATIVE_TYPES.includes(type)) {
+    const cfToken = process.env.CF_API_TOKEN || '';
+    if (!cfToken) {
+      return NextResponse.json({
+        configured: false,
+        error: 'CF_API_TOKEN manquant côté worker',
+        usage: getEmptyUsage(type),
+      });
+    }
+    let usage: any;
+    try {
+      if (type === 'cloudflare') usage = await checkCFWorkersUsage(cfToken);
+      else if (type === 'd1') usage = await checkD1Usage(cfToken);
+      else if (type === 'r2') usage = await checkR2Usage(cfToken);
+    } catch (e: any) {
+      return NextResponse.json({
+        configured: true,
+        tokenInvalid: true,
+        error: e?.message,
+        usage: getEmptyUsage(type),
+      });
+    }
+    return NextResponse.json({
+      configured: true,
+      enabled: true,
+      displayName: 'Cloudflare (auto)',
+      tokenRedacted: 'cfat_***',
+      monthlyQuota: null,
+      usage,
+    });
+  }
+  if (!provider || !(provider.apiKey || provider.secretKey)) {
     return NextResponse.json({
       configured: false,
-      usage:
-        type === 'vercel'
-          ? {
-              periodStart: '',
-              periodEnd: '',
-              bandwidth: { used: 0, unit: 'GB' },
-              functions: { used: 0, unit: 'hours' },
-              builds: { used: 0, unit: 'builds' },
-            }
-          : {
-              periodStart: '',
-              periodEnd: '',
-              storage: { usedMb: 0 },
-              compute: { usedHours: 0 },
-              transfer: { usedGb: 0 },
-              projects: { active: 0 },
-            },
+      usage: getEmptyUsage(type),
       tokenRedacted: '',
     });
   }
 
-  const token = decryptSecret(provider.secretKey);
+  // Decrypt the secret and call the live usage API
+  const token = provider.apiKey ? decryptSecret(provider.apiKey)
+                : provider.secretKey ? decryptSecret(provider.secretKey)
+                : '';
+  const publicKey = provider.publicKey || '';
+
   if (!token) {
     return NextResponse.json({ configured: true, tokenInvalid: true });
   }
 
   let usage: any;
-  if (type === 'vercel') {
-    usage = await checkVercelUsage(token);
-  } else if (type === 'apiconvert') {
-    usage = await checkConvertApiUsage(token);
-  } else if (type === 'iloveapi') {
-    usage = await checkIlovepdfUsage(provider.publicKey || '', token);
-    // iLoveAPI doesn't return total quota in the response.
-    // Use the configured monthlyQuota from DB if set.
-    if (usage.quota && provider.monthlyQuota) {
-      const remaining = usage.quota.remaining;
-      const total = provider.monthlyQuota;
-      const used = Math.max(0, total - remaining);
-      usage.quota.total = total;
-      usage.quota.used = used;
-      usage.quota.percent = total > 0 ? Math.round((used / total) * 100) : 0;
+  try {
+    if (type === 'apiconvert') {
+      usage = await checkConvertApiUsage(token);
+    } else if (type === 'iloveapi') {
+      // iLoveAPI needs both keys
+      usage = await checkIlovepdfUsage(publicKey, token);
+    } else if (type === 'neon') {
+      usage = await checkNeonUsage(token);
+    } else if (CF_NATIVE_TYPES.includes(type)) {
+      // CF-native: use CF_API_TOKEN env secret, not the user-supplied token
+      const cfToken = process.env.CF_API_TOKEN || '';
+      if (!cfToken) {
+        usage = { error: 'CF_API_TOKEN non configuré sur le worker' };
+      } else if (type === 'cloudflare') {
+        usage = await checkCFWorkersUsage(cfToken);
+      } else if (type === 'd1') {
+        usage = await checkD1Usage(cfToken);
+      } else if (type === 'r2') {
+        usage = await checkR2Usage(cfToken);
+      }
+    } else {
+      usage = { error: 'Live usage not implemented for this type' };
     }
-  } else {
-    usage = await checkNeonUsage(token, provider.publicKey || undefined);
+  } catch (e: any) {
+    return NextResponse.json({
+      configured: true,
+      tokenInvalid: true,
+      error: e?.message || 'Live usage check failed',
+    });
   }
 
   return NextResponse.json({
     configured: true,
-    enabled: provider.enabled,
-    displayName: provider.displayName,
-    publicKey: provider.publicKey,
-    tokenRedacted: redactSecret(token),
-    monthlyQuota: provider.monthlyQuota,
-    notes: provider.notes,
-    updatedAt: provider.updatedAt,
     usage,
+    publicKey,
+    tokenRedacted: token ? redactSecret(token) : '',
+    monthlyQuota: provider.monthlyQuota,
   });
+}
+
+function getEmptyUsage(type: ProviderType) {
+  if (type === 'vercel') {
+    return {
+      periodStart: '',
+      periodEnd: '',
+      bandwidth: { used: 0, unit: 'GB' },
+      functions: { used: 0, unit: 'hours' },
+      builds: { used: 0, unit: 'builds' },
+    };
+  }
+  if (type === 'apiconvert' || type === 'iloveapi') {
+    return {
+      periodStart: '',
+      periodEnd: '',
+      quota: { used: 0, total: 0, remaining: 0, percent: 0 },
+    };
+  }
+  if (type === 'cloudflare') {
+    return {
+      periodStart: '',
+      periodEnd: '',
+      requests: 0,
+      errors: 0,
+      successRate: 100,
+      cpuTimeP50: 0,
+      cpuTimeP99: 0,
+    };
+  }
+  if (type === 'd1') {
+    return {
+      periodStart: '',
+      periodEnd: '',
+      storage: { usedMb: 0, unit: 'MB' },
+      rowsRead: 0,
+      rowsWritten: 0,
+      queries: 0,
+    };
+  }
+  if (type === 'r2') {
+    return {
+      periodStart: '',
+      periodEnd: '',
+      storage: { usedGb: 0, unit: 'GB' },
+      classAOps: 0,
+      classBOps: 0,
+    };
+  }
+  // neon (legacy)
+  return {
+    periodStart: '',
+    periodEnd: '',
+    storage: { usedMb: 0 },
+    compute: { usedHours: 0 },
+    transfer: { usedGb: 0 },
+    projects: { active: 0 },
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -120,6 +266,8 @@ export async function POST(req: NextRequest) {
     enabled?: boolean;
     displayName?: string | null;
     notes?: string | null;
+    monthlyQuota?: number | null;
+    name?: string | null;
   };
   try {
     body = await req.json();
@@ -127,36 +275,87 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Corps JSON invalide' }, { status: 400 });
   }
 
-  const type = (body.type || '').toLowerCase();
-  if (!['vercel', 'neon', 'apiconvert', 'iloveapi'].includes(type)) {
+  const type = (body.type || '').toLowerCase() as ProviderType;
+  if (!TYPE_VALUES.includes(type)) {
     return NextResponse.json(
-      { error: 'type doit être "vercel", "neon", "apiconvert" ou "iloveapi"' },
+      { error: `type doit être ${TYPE_VALUES.join(', ')}` },
       { status: 400 },
     );
   }
 
-  if (!body.token || body.token.trim().length < 8) {
-    return NextResponse.json({ error: 'token requis (min 8 caractères)' }, { status: 400 });
+  // CF-native types (cloudflare/d1/r2) don't need a stored token
+  if (CF_NATIVE_TYPES.includes(type)) {
+    // Just confirm the env secret is set
+    if (!process.env.CF_API_TOKEN) {
+      return NextResponse.json(
+        { error: 'CF_API_TOKEN manquant côté worker' },
+        { status: 500 },
+      );
+    }
+    return NextResponse.json({
+      success: true,
+      type,
+      configured: true,
+      message: `${type} utilise CF_API_TOKEN du worker (auto-configuré)`,
+    });
   }
 
-  const data: any = {
-    provider: type,
-    displayName: body.displayName?.trim() || null,
-    publicKey: body.publicKey?.trim() || null,
-    secretKey: encryptSecret(body.token.trim()),
-    enabled: body.enabled !== false,
-    notes: body.notes?.trim() || null,
-  };
-
-  const existing = await db.apiProvider.findUnique({ where: { provider: type } });
-  let saved;
-  if (existing) {
-    saved = await db.apiProvider.update({ where: { id: existing.id }, data });
+  // For iLoveAPI: need both publicKey and secretKey
+  // For others: just need a token
+  if (type === 'iloveapi') {
+    if (!body.publicKey || body.publicKey.trim().length < 5) {
+      return NextResponse.json({ error: 'publicKey requis (min 5 caractères)' }, { status: 400 });
+    }
+    if (!body.token || body.token.trim().length < 5) {
+      return NextResponse.json({ error: 'secretKey requis (min 5 caractères)' }, { status: 400 });
+    }
   } else {
-    saved = await db.apiProvider.create({ data });
+    if (!body.token || body.token.trim().length < 8) {
+      return NextResponse.json({ error: 'token requis (min 8 caractères)' }, { status: 400 });
+    }
   }
 
-  return NextResponse.json({ success: true, provider: saved.provider });
+  const now = Date.now();
+  const publicKey = body.publicKey?.trim() || null;
+  const encryptedToken = encryptSecret(body.token!.trim());
+  const displayName = body.displayName?.trim() || null;
+  const notes = body.notes?.trim() || null;
+  const isActive = body.enabled !== false ? 1 : 0;
+  const monthlyQuota = body.monthlyQuota ?? null;
+  const name = body.name?.trim() || displayName || type;
+
+  // Find existing
+  const existing = await d1First('SELECT id FROM ApiProvider WHERE type = ? LIMIT 1', type);
+
+  if (existing) {
+    // Update
+    const r = await d1Run(
+      `UPDATE ApiProvider
+       SET name = ?, displayName = ?, publicKey = ?, secretKey = ?, apiKey = ?,
+           isActive = ?, notes = ?, monthlyQuota = ?, updatedAt = ?
+       WHERE id = ?`,
+      name, displayName, publicKey, encryptedToken, encryptedToken,
+      isActive, notes, monthlyQuota, now, existing.id,
+    );
+    if (!(r as any).success) {
+      return NextResponse.json({ error: (r as any).error || 'Update failed' }, { status: 500 });
+    }
+  } else {
+    // Insert
+    const id = genId();
+    const r = await d1Run(
+      `INSERT INTO ApiProvider
+       (id, name, type, publicKey, secretKey, apiKey, isActive, displayName, notes, monthlyQuota, priority, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 100, ?, ?)`,
+      id, name, type, publicKey, encryptedToken, encryptedToken,
+      isActive, displayName, notes, monthlyQuota, now, now,
+    );
+    if (!(r as any).success) {
+      return NextResponse.json({ error: (r as any).error || 'Insert failed' }, { status: 500 });
+    }
+  }
+
+  return NextResponse.json({ success: true, type, configured: true });
 }
 
 export async function DELETE(req: NextRequest) {
@@ -166,16 +365,21 @@ export async function DELETE(req: NextRequest) {
   const auth = await requireAdmin();
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
-  const type = req.nextUrl.searchParams.get('type')?.toLowerCase();
-  if (!type || !['vercel', 'neon', 'apiconvert', 'iloveapi'].includes(type)) {
+  const type = req.nextUrl.searchParams.get('type')?.toLowerCase() as ProviderType;
+  if (!type || !TYPE_VALUES.includes(type)) {
     return NextResponse.json(
-      { error: 'type doit être "vercel", "neon", "apiconvert" ou "iloveapi"' },
+      { error: `type doit être ${TYPE_VALUES.join(', ')}` },
       { status: 400 },
     );
   }
 
-  const existing = await db.apiProvider.findUnique({ where: { provider: type } });
+  const existing = await d1First('SELECT id FROM ApiProvider WHERE type = ? LIMIT 1', type);
   if (!existing) return NextResponse.json({ error: 'Non trouvé' }, { status: 404 });
-  await db.apiProvider.delete({ where: { id: existing.id } });
+
+  const r = await d1Run('DELETE FROM ApiProvider WHERE id = ?', existing.id);
+  if (!(r as any).success) {
+    return NextResponse.json({ error: (r as any).error || 'Delete failed' }, { status: 500 });
+  }
+
   return NextResponse.json({ success: true });
 }

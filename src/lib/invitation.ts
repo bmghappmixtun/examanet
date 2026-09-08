@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { db } from './d1-admin';
 import { Resend } from 'resend';
 import { notifyAdminsInvitedTeacherActivated } from './admin-notify';
+import { genId } from './db-d1';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM || 'Examanet <noreply@examanet.com>';
@@ -69,18 +70,29 @@ export async function createInvitation(
   const tempPasswordHash = await bcrypt.hash(tempPassword, 12);
   const expiresAt = new Date(Date.now() + INVITATION_TTL_DAYS * 24 * 60 * 60 * 1000);
 
+  // d1-admin's create() needs an explicit id; otherwise it returns spread data
+  // (last_row_id is the SQLite rowid, not our TEXT id).
+  const newInvitationId = genId();
   const invitation = await db.teacherInvitation.create({
     data: {
+      id: newInvitationId,
       teacherId,
       email: teacher.email,
       token,
       tempPassword: tempPasswordHash, // Stored hashed
       expiresAt,
+      createdAt: new Date(), // NOT NULL in D1
       status: INV_STATUS.PENDING,
       invitedById,
       customMessage,
     },
   });
+  // Refetch the canonical record (the create helper returns either the spread
+  // data or a full row from findFirst — be safe and re-fetch by id).
+  const invitationRow = (invitation && (invitation as any).id)
+    ? invitation
+    : await db.teacherInvitation.findFirst({ where: { id: newInvitationId } });
+  if (!invitationRow) throw new Error('Invitation created but could not be retrieved');
 
   // Update User: lock account with new temp password
   await db.user.update({
@@ -88,13 +100,13 @@ export async function createInvitation(
     data: {
       passwordHash: tempPasswordHash,
       invitationStatus: USER_INV_STATUS.PENDING_INVITATION,
-      lastInvitationId: invitation.id,
+      lastInvitationId: (invitationRow as any).id,
       mustChangePassword: true,
       status: 'PENDING_OTP', // Force activation flow
     },
   });
 
-  return { invitation, tempPassword, token };
+  return { invitation: invitationRow, tempPassword, token };
 }
 
 /**
@@ -168,24 +180,21 @@ export async function sendInvitationEmail(
     // Resend returns the message ID for later delivery tracking
     const resendMessageId = result.data?.id || null;
 
-    await db.teacherInvitation.update({
-      where: { id: invitationId },
-      data: {
-        status: INV_STATUS.SENT,
-        emailSentAt: new Date(),
-        resendMessageId,
-        deliveryStatus: 'sent',
-        deliverySyncedAt: new Date(),
-      },
-    });
-
-    await db.user.update({
-      where: { id: inv.teacherId },
-      data: {
-        invitationStatus: USER_INV_STATUS.INVITED,
-        invitationSentAt: new Date(),
-      },
-    });
+    // 2026-09-05: Use raw d1Run — d1-admin.update fails silently on missing
+    // columns. The D1 schema has `invitationSentAt` (not `emailSentAt`)
+    // and User has no `invitationSentAt` column.
+    const { d1Run } = await import('./db-d1');
+    const now = Date.now();
+    await d1Run(
+      `UPDATE TeacherInvitation
+       SET status = ?, invitationSentAt = ?, resendMessageId = ?, deliveryStatus = ?, deliverySyncedAt = ?, updatedAt = ?
+       WHERE id = ?`,
+      INV_STATUS.SENT, now, resendMessageId, 'sent', now, now, invitationId,
+    );
+    await d1Run(
+      `UPDATE "User" SET invitationStatus = ?, updatedAt = ? WHERE id = ?`,
+      USER_INV_STATUS.INVITED, now, inv.teacherId,
+    );
 
     return { ok: true };
   } catch (e: any) {
@@ -250,7 +259,8 @@ export async function syncInvitationDeliveryStatus(invitationId: string): Promis
  * Record a link click
  */
 export async function recordInvitationClick(token: string, ipAddress?: string, userAgent?: string) {
-  const inv = await db.teacherInvitation.findUnique({ where: { token } });
+  const { d1First, d1Run } = await import('./db-d1');
+  const inv = await d1First('SELECT * FROM TeacherInvitation WHERE token = ?', token);
   if (!inv) return null;
   if (
     inv.status === INV_STATUS.ACTIVATED ||
@@ -262,27 +272,30 @@ export async function recordInvitationClick(token: string, ipAddress?: string, u
 
   // Auto-expire if past expiresAt
   if (new Date() > inv.expiresAt) {
-    await db.teacherInvitation.update({
-      where: { id: inv.id },
-      data: { status: INV_STATUS.EXPIRED },
-    });
+    await d1Run('UPDATE TeacherInvitation SET status = ?, updatedAt = ? WHERE id = ?', INV_STATUS.EXPIRED, Date.now(), inv.id);
     return { ...inv, status: INV_STATUS.EXPIRED };
   }
 
-  const updates: any = {
-    clickCount: { increment: 1 },
-  };
+  // d1-admin's update() doesn't support Prisma's { increment: 1 } syntax,
+  // so we have to use raw SQL with COALESCE for the clickCount increment.
+  const newClickCount = (inv.clickCount || 0) + 1;
+  const now = Date.now();
   if (!inv.linkClickedAt) {
-    updates.status = INV_STATUS.CLICKED;
-    updates.linkClickedAt = new Date();
-    updates.clickIpAddress = ipAddress;
-    updates.clickUserAgent = userAgent;
+    await d1Run(
+      `UPDATE TeacherInvitation
+       SET clickCount = ?, status = ?, linkClickedAt = ?, clickIpAddress = ?, clickUserAgent = ?, updatedAt = ?
+       WHERE id = ?`,
+      newClickCount, INV_STATUS.CLICKED, now, ipAddress || null, userAgent || null, now, inv.id,
+    );
+  } else {
+    await d1Run(
+      'UPDATE TeacherInvitation SET clickCount = ?, updatedAt = ? WHERE id = ?',
+      newClickCount, now, inv.id,
+    );
   }
 
-  return db.teacherInvitation.update({
-    where: { id: inv.id },
-    data: updates,
-  });
+  // Re-fetch and return the updated record
+  return await d1First('SELECT * FROM TeacherInvitation WHERE id = ?', inv.id);
 }
 
 /**

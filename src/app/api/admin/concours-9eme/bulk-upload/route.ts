@@ -1,12 +1,14 @@
 /**
- * Bulk upload Concours 9ème PDFs to Vercel Blob.
+ * Bulk upload Concours 9ème PDFs to R2.
+ *
+ * 2026-09-07: Migrated from Vercel Blob to R2 (Phase 9).
  *
  * This route is INTENTIONALLY protected by SEED_TOKEN (admin secret).
- * It runs on Vercel, so Vercel Blob auth is auto-detected via OIDC — no token needed.
+ * It runs on CF Workers, so R2 is auto-bound via PDFS_BUCKET — no token needed.
  *
  * POST /api/admin/concours-9eme/bulk-upload
  * Body: { files: [{ key: string, sourceUrl: string }] }
- *   key:       Blob key to use (e.g. "concours-9eme/officials/2024/general/math.pdf")
+ *   key:       R2 key to use (e.g. "concours-9eme/officials/2024/general/math.pdf")
  *   sourceUrl: External URL to fetch (9web.edunet.tn or ecoles.com.tn)
  *
  * Returns: {
@@ -14,12 +16,12 @@
  *   failed:   [{ key, sourceUrl, error }]
  * }
  *
- * Usage limit: max 20 files per call (to stay within Vercel function timeouts).
+ * Usage limit: max 20 files per call (to stay within CF Worker CPU limits).
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { uploadFile } from '@/lib/storage';
 
-export const maxDuration = 300; // 5 min for Pro plan
+export const maxDuration = 300; // 5 min for paid plan
 export const runtime = 'nodejs';
 
 const MAX_FILES_PER_BATCH = 20;
@@ -83,13 +85,9 @@ export async function POST(req: NextRequest) {
           failed.push({ ...task, error: 'Empty file' });
           return;
         }
-        const blob = await put(task.key, buf, {
-          access: 'public',
-          contentType: 'application/pdf',
-          addRandomSuffix: false, // We control the key for predictable URLs
-          allowOverwrite: true,
-        });
-        uploaded.push({ key: blob.pathname, url: blob.url, size: buf.length });
+        // 2026-09-07: R2 migration — use uploadFile (was put() to Vercel Blob)
+        const result = await uploadFile(task.key, buf, 'application/pdf');
+        uploaded.push({ key: result.key, url: result.url, size: buf.length });
       } catch (e: any) {
         failed.push({ ...task, error: e.message || 'Unknown error' });
       }
@@ -111,5 +109,6 @@ export async function GET() {
     endpoint: 'concours-9eme bulk upload',
     max_per_batch: MAX_FILES_PER_BATCH,
     auth: 'requires SEED_TOKEN',
+    storage: 'R2 (examanet-pdf-prod bucket)',
   });
 }

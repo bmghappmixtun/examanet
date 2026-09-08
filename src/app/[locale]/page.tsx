@@ -4,6 +4,9 @@ import { unstable_cache as nextCache } from 'next/cache';
 
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import HomeClient from '@/components/home/HomeClient';
+import { itemListSchema } from '@/lib/structured-data';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
 // PERF 2026-09-02: Migrated from Prisma to D1 direct.
 // The original used Prisma + Hyperdrive which returned empty data.
@@ -38,7 +41,7 @@ const getCachedHomeData = nextCache(
       LEFT JOIN \`Class\` c ON r.classId = c.id
       LEFT JOIN \`Section\` sec ON r.sectionId = sec.id
       LEFT JOIN \`User\` t ON r.teacherId = t.id
-      WHERE r.status = 'PUBLISHED'
+      WHERE r.status = 'PUBLISHED' AND r.isHidden = 0
       ORDER BY r.viewsCount DESC, r.publishedAt DESC
       LIMIT 8
     `).all();
@@ -59,7 +62,7 @@ const getCachedHomeData = nextCache(
       LEFT JOIN \`Class\` c ON r.classId = c.id
       LEFT JOIN \`Section\` sec ON r.sectionId = sec.id
       LEFT JOIN \`User\` t ON r.teacherId = t.id
-      WHERE r.status = 'PUBLISHED'
+      WHERE r.status = 'PUBLISHED' AND r.isHidden = 0
       ORDER BY r.publishedAt DESC
       LIMIT 8
     `).all();
@@ -137,7 +140,19 @@ function formatResource(r: any) {
 }
 
 export const metadata: Metadata = {
+  // 2026-09-07: Added explicit title. Was relying on inherited root title
+  // (which now uses `template: '%s | Examanet'` since we removed noindex).
+  title: 'Examanet — La plateforme pédagogique #1 en Tunisie',
   description: 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés pour le Primaire, Collège et Lycée. Gratuit.',
+  alternates: {
+    canonical: '/fr',
+  },
+  openGraph: {
+    title: 'Examanet — La plateforme pédagogique #1 en Tunisie',
+    description: 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés. Gratuit.',
+    url: '/fr',
+    type: 'website',
+  },
 };
 
 export const revalidate = 300;
@@ -148,5 +163,29 @@ async function getHomeData() {
 
 export default async function HomePage() {
   const { popular, recent, subjects, stats } = await getHomeData();
-  return <HomeClient popular={popular} recent={recent} subjects={subjects} stats={stats} />;
+  // 2026-09-07: ItemList JSON-LD for popular resources on the homepage.
+  // Helps Google show a "popular items" carousel in SERPs.
+  const popularListJsonLd = popular && popular.length > 0
+    ? itemListSchema({
+        name: 'Ressources populaires sur Examanet',
+        description: 'Les ressources les plus consultées sur Examanet — cours, exercices, sujets et corrigés pour le système éducatif tunisien.',
+        url: `${SITE_URL}/`,
+        items: popular.slice(0, 10).map((r: any) => ({
+          name: r.title,
+          url: `${SITE_URL}/fr/ressources/${r.numericId || r.id}/${r.slug}`,
+          description: r.description || r.summary || undefined,
+        })),
+      })
+    : null;
+  return (
+    <>
+      {popularListJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(popularListJsonLd) }}
+        />
+      )}
+      <HomeClient popular={popular} recent={recent} subjects={subjects} stats={stats} />
+    </>
+  );
 }

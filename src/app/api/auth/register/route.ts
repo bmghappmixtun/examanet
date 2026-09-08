@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
 import { hashPassword, generateOTP } from '@/lib/auth';
 import { sendOTPEmail, sendWelcomeEmail } from '@/lib/email';
-import { notifyAdminsNewTeacher } from '@/lib/admin-notify';
+import { notifyAdminsNewTeacher, notifyAdminsNewStudent } from '@/lib/admin-notify';
+import { getNextUserNumericId } from '@/lib/db-d1';
 
 function genId() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 25);
@@ -90,13 +91,16 @@ export async function POST(req: NextRequest) {
     const otpCode = generateOTP();
     const userId = genId();
     const now = Date.now();
+    // 2026-09-06: auto-assign numericId on user creation (was previously NULL,
+    // which broke /professeurs/[numericId]/[slug] URLs for new users).
+    const numericId = await getNextUserNumericId();
 
     await db
       .prepare(
         `INSERT INTO User (
           id, email, passwordHash, firstName, lastName, role, status,
-          emailVerifiedAt, slug, createdAt, updatedAt
-        ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING_OTP', NULL, '', ?, ?)`,
+          emailVerifiedAt, slug, numericId, createdAt, updatedAt, passwordChangedAt
+        ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING_OTP', NULL, '', ?, ?, ?, ?)`,
       )
       .bind(
         userId,
@@ -105,6 +109,8 @@ export async function POST(req: NextRequest) {
         firstName,
         lastName || '',
         role,
+        numericId,
+        now,
         now,
         now,
       )
@@ -131,6 +137,9 @@ export async function POST(req: NextRequest) {
     // If teacher, notify admins in-app
     if (role === 'TEACHER') {
       await notifyAdminsNewTeacher(userId).catch((e) => console.error('Admin notify error:', e));
+    } else if (role === 'STUDENT') {
+      // 2026-09-08: also notify admins for new students (in-app only, no email)
+      await notifyAdminsNewStudent(userId).catch((e) => console.error('Admin notify error:', e));
     }
 
     // Build response
@@ -141,12 +150,19 @@ export async function POST(req: NextRequest) {
       email: normalizedEmail,
     };
 
-    if (otpResult.devCode) {
+    // 2026-09-06: only expose the dev code when the email send actually failed.
+    // Previously, the devCode was always returned (even on success) for testing
+    // purposes. Now that Resend is wired up in CF Workers, we hide the dev code
+    // when the email was sent successfully — it's still in the response on
+    // failure so admins can debug delivery issues.
+    if (otpResult.devCode && !otpResult.success) {
       response.devCode = otpResult.devCode;
       response.devMode = true;
-      if (!otpResult.success) {
-        response.message = `Compte créé. ⚠️ Email non envoyé (${otpResult.error}). En dev, utilisez le code ci-dessous.`;
-      }
+      response.message = `Compte créé. ⚠️ Email non envoyé (${otpResult.error}). En dev, utilisez le code ci-dessous.`;
+    } else if (otpResult.devCode && process.env.SHOW_DEV_CODE === 'true') {
+      // Optional override for local dev (set SHOW_DEV_CODE=true in .env.local)
+      response.devCode = otpResult.devCode;
+      response.devMode = true;
     }
 
     return NextResponse.json(response);

@@ -84,6 +84,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       template: locale === 'ar' ? '%s | إكسامانت' : '%s | Examanet',
     },
     description: t.description,
+    // 2026-09-07: Explicit robots override on [locale]/* pages.
+    // The root layout had a noindex leftover from the CF Workers POC; child
+    // metadata merges with parent by default so this was being inherited.
+    // Pages that should NOT be indexed (admin, /connexion, /mon-compte,
+    // /enseignant, /recherche) override this in their own generateMetadata().
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
     alternates: {
       languages: {
         'fr-TN': `${SITE_URL}/fr`,

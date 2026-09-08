@@ -123,18 +123,32 @@ export async function POST(req: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
       .substring(0, 80) || 'teacher';
-    user = await db.user.create({
-      data: {
-        email: normalizedEmail,
-        firstName,
-        lastName,
-        slug: baseSlug,
-        role: 'TEACHER',
-        status: USER_INV_STATUS.PENDING_INVITATION,
-        // We don't set a password — the teacher will set it during activation
-      },
-      select: { id: true, role: true, status: true, firstName: true, lastName: true },
-    });
+    // Use raw SQL via d1Run + d1First to ensure id is returned properly
+    // (d1-admin's create() returns spread data when no explicit id, but user.id
+    // is needed immediately after to query the existing invitation check).
+    const { d1Run, d1First, genId, getNextUserNumericId } = await import('@/lib/db-d1');
+    const newUserId = genId();
+    const now = Date.now();
+    // 2026-09-06: auto-assign numericId on teacher creation (was NULL,
+    // which broke /professeurs/[numericId]/[slug] URLs).
+    const numericId = await getNextUserNumericId();
+    const insertRes = await d1Run(
+      `INSERT INTO "User" (id, email, firstName, lastName, slug, numericId, role, status, invitationStatus, createdAt, updatedAt, mustChangePassword)
+       VALUES (?, ?, ?, ?, ?, ?, 'TEACHER', ?, ?, ?, ?, 1)`,
+      newUserId, normalizedEmail, firstName, lastName, baseSlug, numericId,
+      USER_INV_STATUS.PENDING_INVITATION, USER_INV_STATUS.PENDING_INVITATION,
+      now, now,
+    );
+    if (!insertRes.success) {
+      return NextResponse.json(
+        { error: `Création user échouée: ${insertRes.error}` },
+        { status: 500 },
+      );
+    }
+    user = await d1First(
+      'SELECT id, role, status, firstName, lastName FROM "User" WHERE id = ?',
+      newUserId,
+    );
   }
 
   // Check if there's already a pending (non-expired) invitation
@@ -181,16 +195,34 @@ export async function POST(req: NextRequest) {
         to: [normalizedEmail],
         subject,
         html,
-      });
+        // 2026-09-05: Enable tracking so we get the resend message ID for delivery
+        // sync. Without this, `result.data.id` is undefined and we can't track bounces.
+        open_tracking: true,
+        click_tracking: true,
+      } as any);
       if (result.error) {
         emailError = result.error.message;
         console.error('📧 [JOTFORM INVITATION ERROR]', normalizedEmail, '→', result.error.message);
       } else {
         emailOk = true;
-        await db.teacherInvitation.update({
-          where: { id: invitation.id },
-          data: { status: 'SENT', emailSentAt: new Date() },
-        });
+        // 2026-09-05: D1 schema has `invitationSentAt` (not `emailSentAt`).
+        // Use raw d1Run to avoid d1-admin.update silently failing on missing columns.
+        // Set all 7 fields so delivery tracking works:
+        //   - status = SENT
+        //   - invitationSentAt = now
+        //   - resendMessageId = Resend's message ID (for later bounce/opens sync)
+        //   - deliveryStatus = 'sent' (will be updated by sync-delivery on opens/bounces)
+        //   - deliverySyncedAt = now
+        //   - updatedAt = now
+        const { d1Run } = await import('@/lib/db-d1');
+        const resendMessageId = result.data?.id || null;
+        const now = Date.now();
+        await d1Run(
+          `UPDATE TeacherInvitation
+           SET status = ?, invitationSentAt = ?, resendMessageId = ?, deliveryStatus = ?, deliverySyncedAt = ?, updatedAt = ?
+           WHERE id = ?`,
+          'SENT', now, resendMessageId, 'sent', now, now, invitation.id,
+        );
       }
     } catch (e: any) {
       emailError = e.message;

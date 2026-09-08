@@ -13,6 +13,9 @@
 
 import MatiereClient from '@/components/matieres/MatiereClient';
 import { getSubjectConfig } from '@/lib/subjects.config';
+import { breadcrumbSchema, itemListSchema } from '@/lib/structured-data';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,5 +101,63 @@ export default async function Page({
   params: Promise<{ subject: string }>;
 }) {
   const { subject: subjectSlug } = await params;
-  return <MatiereClient slug={subjectSlug} />;
+  // 2026-09-07: Inject breadcrumb + ItemList JSON-LD for SEO.
+  // The subject name and top resources are fetched server-side (D1 direct)
+  // so the schema is available on first paint, not after client hydration.
+  const breadcrumbJsonLd = breadcrumbSchema([
+    { name: 'Accueil', url: SITE_URL },
+    { name: 'Matières', url: `${SITE_URL}/matieres` },
+    { name: subjectSlug, url: `${SITE_URL}/matieres/${subjectSlug}` },
+  ]);
+  let itemListJsonLd: any = null;
+  try {
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = await getCloudflareContext({ async: true });
+    const db = (ctx as any).env.DB;
+    const subj: any = await db.prepare(
+      'SELECT id, nameFr, nameAr FROM Subject WHERE slug = ? LIMIT 1'
+    ).bind(subjectSlug).first();
+    if (subj) {
+      const top: any = await db.prepare(
+        "SELECT r.numericId, r.slug, r.title FROM Resource r WHERE r.subjectId = ? AND r.status = 'PUBLISHED' AND r.isHidden = 0 ORDER BY r.viewsCount DESC LIMIT 10"
+      ).bind(subj.id).all();
+      const items = (top?.results || []).map((r: any, i: number) => ({
+        name: r.title,
+        url: `${SITE_URL}/fr/ressources/${r.numericId}/${r.slug}`,
+        position: i + 1,
+      }));
+      if (items.length > 0) {
+        itemListJsonLd = {
+          '@context': 'https://schema.org',
+          '@type': 'ItemList',
+          name: `Ressources populaires en ${subj.nameFr}`,
+          url: `${SITE_URL}/matieres/${subjectSlug}`,
+          numberOfItems: items.length,
+          itemListElement: items.map((it: any) => ({
+            '@type': 'ListItem',
+            position: it.position,
+            name: it.name,
+            url: it.url,
+          })),
+        };
+      }
+    }
+  } catch {
+    // Don't fail the page on schema errors
+  }
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      {itemListJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        />
+      )}
+      <MatiereClient slug={subjectSlug} />
+    </>
+  );
 }

@@ -5,6 +5,9 @@
 
 import TeachersClient from '@/components/teachers/TeachersClient';
 import { headers } from 'next/headers';
+import { breadcrumbSchema, itemListSchema } from '@/lib/structured-data';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
 export const revalidate = 120; // PERF 2026-09-02: 2min ISR cache for public page
 
@@ -196,5 +199,36 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
     if (v) usp.set(k, String(v));
   }
   const initialData = await fetchInitialData(usp);
-  return <TeachersClient initialData={initialData} />;
+  // 2026-09-07: Inject breadcrumb + ItemList JSON-LD for SEO.
+  const breadcrumbJsonLd = breadcrumbSchema([
+    { name: 'Accueil', url: SITE_URL },
+    { name: 'Professeurs', url: `${SITE_URL}/professeurs` },
+  ]);
+  const teacherListJsonLd = initialData?.teachers && initialData.teachers.length > 0
+    ? itemListSchema({
+        name: 'Professeurs tunisiens sur Examanet',
+        description: 'Liste des enseignants tunisiens partageant des ressources pédagogiques sur Examanet.',
+        url: `${SITE_URL}/professeurs`,
+        items: initialData.teachers.slice(0, 20).map((t: any) => ({
+          name: `${t.firstName || ''} ${t.lastName || ''}`.trim() || `Professeur #${t.numericId}`,
+          url: `${SITE_URL}/fr/professeurs/${t.numericId || t.id}`,
+          description: t.schoolName || undefined,
+        })),
+      })
+    : null;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      {teacherListJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(teacherListJsonLd) }}
+        />
+      )}
+      <TeachersClient initialData={initialData} />
+    </>
+  );
 }

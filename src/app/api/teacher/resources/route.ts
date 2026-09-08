@@ -89,9 +89,20 @@ export async function POST(req: NextRequest) {
     let finalFileKey = fileKey;
     let finalFileUrl = fileUrl;
     let finalFileSize: number = fileSize || 0;
+    // 2026-09-06: Page count is no longer hardcoded to 10 — it's parsed
+    // from the actual PDF so the resource card shows the right value.
+    // Defaults to 1 if we can't determine it.
+    let finalPageCount = 1;
+    // 2026-09-06: When publishing a library file that was converted to PDF,
+    // we MUST use the PDF key as the resource's fileKey — otherwise the public
+    // viewer will try to display a .docx file as if it were a PDF ("Invalid
+    // PDF structure"). The original docx is preserved as originalFileKey
+    // so the teacher can still download the source file.
+    let finalOriginalFileKey: string | null = null;
+    let finalOriginalFileName: string | null = null;
     if (libraryFileId) {
       const libFile = await d1First(
-        'SELECT id, teacherId, resourceId, fileName, fileKey, fileUrl, fileSize, r2Key, mimeType, isActive FROM TeacherFile WHERE id = ?',
+        'SELECT id, teacherId, resourceId, fileName, fileKey, fileUrl, fileSize, r2Key, r2PdfKey, mimeType, isActive FROM TeacherFile WHERE id = ?',
         libraryFileId,
       );
       if (!libFile || libFile.teacherId !== user.id) {
@@ -103,9 +114,61 @@ export async function POST(req: NextRequest) {
           { status: 409 },
         );
       }
-      finalFileKey = libFile.fileKey;
-      finalFileUrl = libFile.fileUrl;
-      finalFileSize = libFile.fileSize || 0;
+      // Prefer the PDF key (r2PdfKey) for the published resource so the public
+      // viewer can render it. Fall back to the original fileKey only if no PDF
+      // was generated (e.g. the file was already a PDF, or conversion was skipped).
+      if (libFile.r2PdfKey) {
+        finalOriginalFileKey = libFile.fileKey;
+        finalOriginalFileName = libFile.fileName;
+        finalFileKey = libFile.r2PdfKey;
+        finalFileUrl = `/api/files/${libFile.r2PdfKey}`;
+        // 2026-09-06: also fetch the actual page count from the PDF (was
+        // hardcoded to 10 before, showing wrong info in the resource card).
+        try {
+          const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+          const ctx = await getCloudflareContext({ async: true });
+          const bucket = (ctx as any).env?.PDFS_BUCKET as R2Bucket | undefined;
+          if (bucket) {
+            const headObj = await bucket.head(libFile.r2PdfKey);
+            if (headObj) finalFileSize = headObj.size;
+            // Download the PDF to count pages
+            const pdfObj = await bucket.get(libFile.r2PdfKey);
+            if (pdfObj) {
+              const buf = await pdfObj.arrayBuffer();
+              const { countPdfPages } = await import('@/lib/pdf-utils');
+              const pages = countPdfPages(buf);
+              if (pages && pages > 0) finalPageCount = pages;
+            }
+          }
+        } catch (e) {
+          console.warn('[publish] Failed to read PDF metadata from R2:', (e as Error).message);
+        }
+      } else {
+        finalFileKey = libFile.fileKey;
+        finalFileUrl = libFile.fileUrl;
+        finalFileSize = libFile.fileSize || 0;
+        // For non-PDF uploads (rare, legacy), try counting pages anyway
+        // since some PDFs are stored without r2PdfKey (e.g. uploaded before
+        // the conversion feature was added)
+        if (libFile.fileKey?.toLowerCase().endsWith('.pdf')) {
+          try {
+            const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+            const ctx = await getCloudflareContext({ async: true });
+            const bucket = (ctx as any).env?.PDFS_BUCKET as R2Bucket | undefined;
+            if (bucket) {
+              const pdfObj = await bucket.get(libFile.fileKey);
+              if (pdfObj) {
+                const buf = await pdfObj.arrayBuffer();
+                const { countPdfPages } = await import('@/lib/pdf-utils');
+                const pages = countPdfPages(buf);
+                if (pages && pages > 0) finalPageCount = pages;
+              }
+            }
+          } catch (e) {
+            console.warn('[publish] Failed to read legacy PDF pages:', (e as Error).message);
+          }
+        }
+      }
     }
 
     if (!finalFileKey || !finalFileUrl) {
@@ -173,14 +236,16 @@ export async function POST(req: NextRequest) {
           homeworkSubtype, homeworkNumber, schoolType, hasCorrection,
           isHidden, isFeatured,
           viewsCount, downloadsCount, avgRating, ratingsCount, commentsCount, favoritesCount,
+          originalFileKey, originalFileName,
           createdAt, updatedAt
         ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING_APPROVAL',
-          ?, ?, ?, 10,
+          ?, ?, ?, ?,
           ?, ?, ?, ?,
           ?, ?, ?, 'fr',
           ?, ?, ?, ?,
           0, 0,
           0, 0, 0, 0, 0, 0,
+          ?, ?,
           ?, ?)`,
       )
       .bind(
@@ -193,6 +258,7 @@ export async function POST(req: NextRequest) {
         finalFileKey,
         finalFileUrl,
         finalFileSize,
+        finalPageCount,
         subjectRec.id,
         classRec.id,
         sectionRec?.id || null,
@@ -204,6 +270,8 @@ export async function POST(req: NextRequest) {
         finalHomeworkNumber,
         finalSchoolType,
         finalHasCorrection ? 1 : 0,
+        finalOriginalFileKey,
+        finalOriginalFileName,
         now,
         now,
       )

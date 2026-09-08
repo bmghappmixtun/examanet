@@ -8,28 +8,6 @@
   "regions": [
     "fra1"
   ],
-  "crons": [
-    {
-      "path": "/api/cron/cleanup-views",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/health",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/db-sync",
-      "schedule": "0 8,20 * * *"
-    },
-    {
-      "path": "/api/cron/agent-poll",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/cron/nightly-cleanup",
-      "schedule": "0 2 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/uploads/(.*)",

@@ -9,7 +9,7 @@
  * Models covered: User, Resource, TeacherInvitation, Comment, Rating,
  * Favorite, View, Report, Notification, ErrorLog, ApiProvider,
  * ApiProviderUsage, SearchSynonym, Setting, OtpCode, Session,
- * TeacherFile, TeacherVerificationFile, VercelLog, Download, Share,
+ * TeacherFile, TeacherVerificationFile, CloudflareLog, Download, Share,
  * ResourceMetadata, ResourceContent, ResourceSummary, Class, Section,
  * Subject, Level, Newsletter.
  */
@@ -203,9 +203,15 @@ export async function create(
     const placeholders = cols.map(() => '?').join(', ');
     const values = cols.map(c => toDbValue(data[c]));
     const sql = `INSERT INTO ${q(table)} (${cols.map(c => q(c)).join(', ')}) VALUES (${placeholders})`;
-    const res: any = await db.prepare(sql).bind(...values).run();
-    const id = data.id || res?.meta?.last_row_id || null;
-    if (id) return await findFirst(table, { id });
+    await db.prepare(sql).bind(...values).run();
+    // Always return the inserted record. If we have an id, fetch the canonical
+    // row from the DB (with any defaults applied by SQLite). Otherwise spread
+    // the input data so callers always get a usable object (no last_row_id
+    // for tables with TEXT primary keys — it's the SQLite rowid, not the id).
+    if (data.id) {
+      const fetched = await findFirst(table, { id: data.id });
+      if (fetched) return fetched;
+    }
     return { ...data };
   } catch (e) {
     console.error(`[d1-admin] create ${table} error:`, e);
@@ -352,8 +358,14 @@ function buildWhere(where: WhereInput): { whereSql: string; values: any[] } {
           parts.push(`${col} = ?`);
           values.push(toDbValue(opVal));
         } else if (op === 'not') {
-          parts.push(`${col} != ?`);
-          values.push(toDbValue(opVal));
+          // 2026-09-07 FIX: { not: null } must use IS NOT NULL, not != NULL
+          // (SQL's three-valued logic: `col != NULL` is always NULL, not TRUE)
+          if (opVal === null) {
+            parts.push(`${col} IS NOT NULL`);
+          } else {
+            parts.push(`${col} != ?`);
+            values.push(toDbValue(opVal));
+          }
         } else if (op === 'in') {
           const arr = Array.isArray(opVal) ? opVal : [opVal];
           if (arr.length > 0) {
@@ -494,10 +506,31 @@ export const db = new Proxy({}, {
   get(target, prop) {
     if (typeof prop !== 'string') return undefined;
     if (prop === '$transaction') {
-      return async (fn: any) => {
-        // Simple sequential execution (D1 doesn't have multi-statement tx easily)
+      return async (arg: any) => {
+        // Prisma $transaction supports BOTH a callback function and an array
+        // of operations. We need to handle both. D1 doesn't have multi-statement
+        // transactions easily, so we execute the operations sequentially
+        // (the array case) and rely on caller to ensure atomicity isn't
+        // required across rows.
         try {
-          return await fn(db);
+          if (Array.isArray(arg)) {
+            // db.$transaction([op1, op2, ...]) - sequential array execution
+            // Each `op` is already a Promise (from calling db.x.update etc.)
+            // because the proxy intercepted the call. Await each in order.
+            const results = [];
+            for (const op of arg) {
+              if (op && typeof op.then === 'function') {
+                results.push(await op);
+              }
+            }
+            return results;
+          }
+          if (typeof arg === 'function') {
+            // db.$transaction(async (tx) => {...}) - interactive transaction
+            return await arg(db);
+          }
+          // Unknown shape - just return the arg as-is
+          return arg;
         } catch (e) {
           console.error('[d1-admin] $transaction error:', e);
           return [];

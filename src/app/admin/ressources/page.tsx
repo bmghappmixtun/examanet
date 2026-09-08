@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { FileText, Search, Eye, Download, Star } from 'lucide-react';
 import { formatNumber, timeAgo } from '@/lib/utils';
 import { isArabic } from '@/lib/text-utils';
+import HardDeleteResourceButton from '@/components/admin/HardDeleteResourceButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -231,6 +232,7 @@ export default async function AdminResourcesPage(props: {
                       >
                         <Eye className="w-3.5 h-3.5" /> Voir
                       </Link>
+                      <HardDeleteResourceButton resourceId={r.id} resourceTitle={r.title} />
                     </div>
                   </div>
                 </div>

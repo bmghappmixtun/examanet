@@ -17,7 +17,7 @@ import { Client } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://edutunisie_app:npg_uwOy9TgqYS5D@ep-round-art-asyh88wq-pooler.c-4.eu-central-1.aws.neon.tech/neondb';
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://edutunisie_app:***REMOVED***@ep-round-art-asyh88wq-pooler.c-4.eu-central-1.aws.neon.tech/neondb';
 
 const EXPORT_DIR = path.join(__dirname, 'exports');
 

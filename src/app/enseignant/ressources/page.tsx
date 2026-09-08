@@ -18,6 +18,7 @@ import {
 import { formatNumber, timeAgo } from '@/lib/utils';
 import { isArabic } from '@/lib/text-utils';
 import DeleteResourceButton from '@/components/teacher/DeleteResourceButton';
+import UnpublishResourceButton from '@/components/teacher/UnpublishResourceButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -290,7 +291,10 @@ export default async function TeacherResourcesPage(props: {
                         <Edit className="w-4 h-4" />
                       </Link>
                     )}
-                    <DeleteResourceButton id={r.id} title={r.title} />
+                    {r.status === 'PUBLISHED' && (
+                      <UnpublishResourceButton resourceId={r.id} resourceTitle={r.title} />
+                    )}
+                    <DeleteResourceButton resourceId={r.id} resourceTitle={r.title} />
                   </div>
                 </div>
               </div>

@@ -16,6 +16,25 @@ function genId() {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 25);
 }
 
+/**
+ * Get the next available numericId for a User.
+ * 2026-09-06: Added because some users (created via admin invite or
+ * self-registration) had numericId=NULL, which broke URLs like
+ * /professeurs/null/slug. Call this when creating a new User.
+ */
+export async function getNextUserNumericId(): Promise<number> {
+  try {
+    const db = await getD1();
+    const r: any = await db
+      .prepare('SELECT COALESCE(MAX(numericId), 0) + 1 AS next FROM User')
+      .first();
+    return Number(r?.next || 1);
+  } catch {
+    // Fallback: timestamp-based id (rare collision, but safe)
+    return Date.now();
+  }
+}
+
 /** Run a SELECT and return all rows. Returns [] on error. */
 export async function d1All(sql: string, ...params: any[]): Promise<any[]> {
   try {

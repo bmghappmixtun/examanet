@@ -17,7 +17,7 @@ const SQL_DIR = path.join(__dirname, 'sql');
 
 const CF_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
-const D1_DATABASE_ID = '22ad2e7f-1692-486e-9131-d6c4062012e1';
+const D1_DATABASE_ID = '***REMOVED***';
 
 if (!CF_API_TOKEN || !CF_ACCOUNT_ID) {
   console.error('Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID');

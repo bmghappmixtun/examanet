@@ -36,6 +36,14 @@ export async function GET(
       parentId: c.parentId,
       likes: 0,
       createdAt: c.createdAt,
+      // 2026-09-07: Return BOTH 'user' (new canonical name) and 'author' (legacy)
+      // for backward compat with old clients.
+      user: c.userId ? {
+        id: c.userId,
+        firstName: c.firstName,
+        lastName: c.lastName,
+        avatarUrl: c.avatarUrl,
+      } : null,
       author: c.userId ? {
         id: c.userId,
         firstName: c.firstName,
@@ -85,20 +93,83 @@ export async function POST(
     ).bind(id).run();
 
     return NextResponse.json({
-      id: commentId,
-      content,
-      parentId,
-      likes: 0,
-      createdAt: now,
-      author: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        avatarUrl: user.avatarUrl,
+      comment: {
+        id: commentId,
+        content,
+        parentId,
+        likes: 0,
+        createdAt: new Date(now).toISOString(),
+        createdAtLabel: 'à l\'instant',
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarUrl: user.avatarUrl,
+        },
       },
     });
   } catch (e: any) {
     console.error('[comments POST] error:', e?.message);
     return NextResponse.json({ error: e?.message }, { status: 500 });
+  }
+}
+
+
+/**
+ * DELETE /api/resources/[id]/comments
+ *
+ * Delete a specific comment by the current user (or admin).
+ * Body: { commentId: string }
+ * 
+ * 2026-09-07: Added — students can now manage their own comments from
+ * /mon-compte/commentaires page.
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+
+    const { id: resourceId } = await params;
+    const body = await req.json().catch(() => ({}));
+    const commentId = body?.commentId;
+    if (!commentId) {
+      return NextResponse.json({ error: 'commentId requis' }, { status: 400 });
+    }
+
+    const db = await getD1();
+    if (!db) return NextResponse.json({ error: 'DB not available' }, { status: 503 });
+
+    // Fetch the comment first to verify ownership
+    const comment: any = await db.prepare(
+      'SELECT id, userId, resourceId, isHidden FROM Comment WHERE id = ? LIMIT 1'
+    ).bind(commentId).first();
+    if (!comment) {
+      return NextResponse.json({ error: 'Commentaire introuvable' }, { status: 404 });
+    }
+    if (comment.resourceId !== resourceId) {
+      return NextResponse.json({ error: 'Commentaire pas lié à cette ressource' }, { status: 400 });
+    }
+    if (user.role !== 'ADMIN' && comment.userId !== user.id) {
+      return NextResponse.json({ error: 'Vous n\'êtes pas l\'auteur de ce commentaire' }, { status: 403 });
+    }
+
+    // Soft-delete: set isHidden=1 (preserves the row for reply threading)
+    const now = Date.now();
+    await db.prepare(
+      'UPDATE Comment SET isHidden = 1, updatedAt = ? WHERE id = ?'
+    ).bind(now, commentId).run();
+
+    // Decrement comment count
+    await db.prepare(
+      'UPDATE Resource SET commentsCount = MAX(0, COALESCE(commentsCount, 0) - 1) WHERE id = ?'
+    ).bind(resourceId).run();
+
+    return NextResponse.json({ success: true, deletedId: commentId });
+  } catch (e: any) {
+    console.error('[comments DELETE] error:', e?.message);
+    return NextResponse.json({ error: e?.message || 'Erreur' }, { status: 500 });
   }
 }

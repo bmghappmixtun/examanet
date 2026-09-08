@@ -128,7 +128,9 @@ async function fetchRessourcesData(opts: any) {
   } = opts;
 
   // Build WHERE clauses
-  const conditions: string[] = ["r.status = 'PUBLISHED'"];
+  // 2026-09-05: also filter isHidden=0 so unpublished resources don't appear
+  // in the public list. The teacher unpublish flow sets isHidden=1.
+  const conditions: string[] = ["r.status = 'PUBLISHED'", "r.isHidden = 0"];
   const params: any[] = [];
 
   if (q) {
