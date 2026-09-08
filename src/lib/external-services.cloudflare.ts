@@ -2,7 +2,7 @@
  * Cloudflare + D1 + R2 usage checkers
  *
  * Uses CF GraphQL Analytics API:
- *   POST https://api.cloudflare.com/client/v4/accounts/{account_id}/analytics/engine
+ *   POST https://api.cloudflare.com/client/v4/graphql
  *     Body: { query: "query { ... }", variables: { ... } }
  *
  * For Workers, D1, R2 specific metrics
@@ -83,7 +83,7 @@ export async function checkCFWorkersUsage(
   `;
 
   try {
-    const r = await fetch(`${CF_API_BASE}/accounts/${CF_ACCOUNT_ID}/analytics/engine`, {
+    const r = await fetch(`${CF_API_BASE}/client/v4/graphql`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiToken}`,
@@ -185,7 +185,7 @@ export async function checkD1Usage(
   `;
 
   try {
-    const r = await fetch(`${CF_API_BASE}/accounts/${CF_ACCOUNT_ID}/analytics/engine`, {
+    const r = await fetch(`${CF_API_BASE}/client/v4/graphql`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiToken}`,
@@ -304,7 +304,7 @@ export async function checkR2Usage(
   `;
 
   try {
-    const r = await fetch(`${CF_API_BASE}/accounts/${CF_ACCOUNT_ID}/analytics/engine`, {
+    const r = await fetch(`${CF_API_BASE}/client/v4/graphql`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiToken}`,
