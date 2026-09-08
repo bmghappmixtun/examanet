@@ -108,10 +108,9 @@ build_cf_bundle:
     expire_in: 1 hour
 
 # ---------------------------------------------------------------------------
-# Stage 3a: deploy to PRODUCTION (main + feature/d1-migration-phase1)
-# 2026-09-08: feature/d1-migration-phase1 is currently the PROD branch
-# (DNS swap was done on it, examanet.com points to its deploys).
-# Add "main" once the repo gets a proper main branch with this content.
+# Stage 3a: deploy to PRODUCTION (main only)
+# 2026-09-08: feature/d1-migration-phase1 is now archived. main is the
+# canonical production branch. Single source of truth.
 # ---------------------------------------------------------------------------
 deploy_production:
   tags:
@@ -129,8 +128,6 @@ deploy_production:
     url: https://examanet-prod.examanet-poc.workers.dev
   rules:
     - if: $CI_COMMIT_REF_NAME == "main"
-      when: on_success
-    - if: $CI_COMMIT_REF_NAME == "feature/d1-migration-phase1"
       when: on_success
   retry:
     max: 2
