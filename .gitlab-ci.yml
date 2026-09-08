@@ -5,8 +5,13 @@
 #   once a runner is added, or trigger manually from GitLab UI.
 #
 # 2026-09-08: RE-ENABLED. workflow: rules now auto-triggers on push to
-#   feature/d1-migration-phase1 (and main). Requires a runner to be
-#   configured in Settings → CI/CD → Runners.
+#   feature/d1-migration-phase1 (and main).
+#
+# IMPORTANT: 2026-09-08 - Added 'tags: [gitlab-org]' to all jobs because
+# the GitLab.com shared instance runners are TAGGED with 'gitlab-org' and
+# don't pick up untagged jobs. The project-specific runners don't have
+# this tag restriction. This was the reason the pipeline was "failed"
+# without ever creating jobs.
 #
 # Required GitLab CI variables (set on project, masked+protected):
 #   CF_ACCOUNT_ID  - Cloudflare account ID
@@ -45,6 +50,8 @@ default:
 # Stage 1: install
 # ---------------------------------------------------------------------------
 install_dependencies:
+  tags:
+    - gitlab-org
   stage: install
   script:
     - echo "Installing dependencies with bun"
@@ -69,6 +76,8 @@ install_dependencies:
 # Stage 2: build
 # ---------------------------------------------------------------------------
 build_cf_bundle:
+  tags:
+    - gitlab-org
   stage: build
   needs: ["install_dependencies"]
   script:
@@ -105,6 +114,8 @@ build_cf_bundle:
 # Add "main" once the repo gets a proper main branch with this content.
 # ---------------------------------------------------------------------------
 deploy_production:
+  tags:
+    - gitlab-org
   stage: deploy
   needs: ["build_cf_bundle"]
   script:
@@ -141,6 +152,8 @@ deploy_production:
 # Stage 3b: deploy to STAGING (POC, all other branches)
 # ---------------------------------------------------------------------------
 deploy_staging:
+  tags:
+    - gitlab-org
   stage: deploy
   needs: ["build_cf_bundle"]
   script:
