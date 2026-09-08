@@ -4,14 +4,22 @@
 #   has no shared runner. Uncomment workflow: rules below to re-enable
 #   once a runner is added, or trigger manually from GitLab UI.
 #
-# Required GitLab CI variables (already set on project):
+# 2026-09-08: RE-ENABLED. workflow: rules now auto-triggers on push to
+#   feature/d1-migration-phase1 (and main). Requires a runner to be
+#   configured in Settings → CI/CD → Runners.
+#
+# Required GitLab CI variables (set on project, masked+protected):
 #   CF_ACCOUNT_ID  - Cloudflare account ID
 #   CF_API_TOKEN   - Cloudflare API token (Workers:Edit)
-#   DATABASE_URL   - stub is fine, Hyperdrive used at runtime
+#   DATABASE_URL   - stub is fine, D1 used at runtime
 
 workflow:
   rules:
-    - when: never  # Disable all auto-pipelines. Use GitLab UI "Run pipeline" to trigger manually.
+    - if: '$CI_COMMIT_BRANCH == "feature/d1-migration-phase1"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - when: always
 
 stages:
   - install
@@ -91,7 +99,10 @@ build_cf_bundle:
     expire_in: 1 hour
 
 # ---------------------------------------------------------------------------
-# Stage 3a: deploy to PRODUCTION (main branch only)
+# Stage 3a: deploy to PRODUCTION (main + feature/d1-migration-phase1)
+# 2026-09-08: feature/d1-migration-phase1 is currently the PROD branch
+# (DNS swap was done on it, examanet.com points to its deploys).
+# Add "main" once the repo gets a proper main branch with this content.
 # ---------------------------------------------------------------------------
 deploy_production:
   stage: deploy
@@ -107,6 +118,8 @@ deploy_production:
     url: https://examanet-prod.examanet-poc.workers.dev
   rules:
     - if: $CI_COMMIT_REF_NAME == "main"
+      when: on_success
+    - if: $CI_COMMIT_REF_NAME == "feature/d1-migration-phase1"
       when: on_success
   retry:
     max: 2
