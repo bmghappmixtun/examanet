@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
 import { createSession, setSessionCookie } from '@/lib/auth';
 import { sendWelcomeConfirmedEmail } from '@/lib/email';
-import { notifyAdminsTeacherActivated } from '@/lib/admin-notify';
+import { notifyAdminsTeacherActivated, notifyAdminsStudentActivated } from '@/lib/admin-notify';
 
 async function getD1() {
   const { getCloudflareContext } = await import('@opennextjs/cloudflare');
@@ -92,6 +92,10 @@ export async function POST(req: NextRequest) {
     if (newStatus === 'ACTIVE') {
       const { token, expiresAt } = await createSession(user.id);
       await setSessionCookie(token, expiresAt);
+      // 2026-09-09: Notify admin (in-app + email) about student activation
+      await notifyAdminsStudentActivated(user.id).catch((e) =>
+        console.error('Admin notify error:', e),
+      );
       return NextResponse.json({ success: true, status: 'ACTIVE', autoLoggedIn: true });
     }
 

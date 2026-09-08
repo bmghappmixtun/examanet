@@ -155,11 +155,12 @@ export async function POST(req: NextRequest) {
     // purposes. Now that Resend is wired up in CF Workers, we hide the dev code
     // when the email was sent successfully — it's still in the response on
     // failure so admins can debug delivery issues.
-    if (otpResult.devCode && !otpResult.success) {
+    // SECURITY: Never expose dev code in production (even on email failure).
+    if (otpResult.devCode && !otpResult.success && !isProduction()) {
       response.devCode = otpResult.devCode;
       response.devMode = true;
       response.message = `Compte créé. ⚠️ Email non envoyé (${otpResult.error}). En dev, utilisez le code ci-dessous.`;
-    } else if (otpResult.devCode && process.env.SHOW_DEV_CODE === 'true') {
+    } else if (otpResult.devCode && process.env.SHOW_DEV_CODE === 'true' && !isProduction()) {
       // Optional override for local dev (set SHOW_DEV_CODE=true in .env.local)
       response.devCode = otpResult.devCode;
       response.devMode = true;

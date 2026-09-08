@@ -193,8 +193,8 @@ function VerifyOtpForm() {
           </div>
 
           <div className="p-8">
-            {/* DEV MODE: Show code directly */}
-            {showDevCode && devCode && (
+            {/* DEV MODE: Show code directly — ONLY in non-production */}
+            {process.env.NODE_ENV !== 'production' && showDevCode && devCode && (
               <div className="mb-6 p-4 bg-amber-50 border-2 border-amber-300 rounded-xl">
                 <div className="flex items-start gap-2 mb-2">
                   <KeyRound className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />

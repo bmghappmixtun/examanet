@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getCurrentUser } from '@/lib/auth';
+import { notifyAdminsNewRating } from '@/lib/admin-notify';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,6 +91,14 @@ export async function POST(
     await db.prepare(
       "UPDATE Resource SET avgRating = ?, ratingsCount = ? WHERE id = ?"
     ).bind(agg?.avg || 0, agg?.count || 0, id).run();
+
+    // 2026-09-09: Notify admin about new rating (in-app + email)
+    await notifyAdminsNewRating({
+      studentId: user.id,
+      resourceId: id,
+      value,
+      review,
+    }).catch((e) => console.error('[rating POST] admin notify error:', e));
 
     return NextResponse.json({
       value,

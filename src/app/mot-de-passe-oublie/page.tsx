@@ -248,7 +248,7 @@ export default function ForgotPasswordPage() {
                 className="input text-center text-2xl tracking-[0.5em] font-bold"
                 placeholder="000000"
               />
-              {devCode && (
+              {process.env.NODE_ENV !== 'production' && devCode && (
                 <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" /> Dev mode: code is {devCode}
                 </p>

@@ -1,6 +1,14 @@
 // @ts-nocheck
 import { Resend } from 'resend';
-import { renderNewTeacherEmail, renderNewResourceEmail, renderTeacherActivatedEmail, renderNewStudentEmail } from './email-templates';
+import {
+  renderNewTeacherEmail,
+  renderNewResourceEmail,
+  renderTeacherActivatedEmail,
+  renderNewStudentEmail,
+  renderNewRatingEmail,
+  renderNewCommentEmail,
+  renderStudentActivatedEmail,
+} from './email-templates';
 import { getAdminEmailsFromConfig } from './admin-config';
 
 // 2026-09-06: Lazy-init Resend. process.env.RESEND_API_KEY is UNDEFINED
@@ -558,5 +566,269 @@ export async function notifyAdminsNewStudent(studentId: string) {
     }
   } catch (e) {
     console.error('[notifyAdminsNewStudent] email send exception:', e);
+  }
+}
+
+/**
+ * 2026-09-09: Notify all admins when a student rates a resource.
+ * Admins get a notification + an email with the rating + review (if any).
+ * This helps monitor community engagement and catch coordinated abuse.
+ */
+export async function notifyAdminsNewRating(opts: {
+  studentId: string;
+  resourceId: string;
+  value: number;
+  review: string | null;
+}) {
+  const db = await getD1();
+
+  // Get student
+  const student: any = await db
+    .prepare('SELECT firstName, lastName, email FROM User WHERE id = ? LIMIT 1')
+    .bind(opts.studentId)
+    .first();
+  if (!student) {
+    console.warn('[notifyAdminsNewRating] student not found:', opts.studentId);
+    return;
+  }
+
+  // Get resource
+  const resource: any = await db
+    .prepare('SELECT title FROM Resource WHERE id = ? LIMIT 1')
+    .bind(opts.resourceId)
+    .first();
+  if (!resource) {
+    console.warn('[notifyAdminsNewRating] resource not found:', opts.resourceId);
+    return;
+  }
+
+  // Get admins
+  const adminsResult: any = await db
+    .prepare("SELECT id, email FROM User WHERE role = 'ADMIN'")
+    .all();
+  const admins = adminsResult.results || adminsResult;
+  if (admins.length === 0) return;
+
+  const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Un élève';
+  const stars = '★'.repeat(opts.value) + '☆'.repeat(5 - opts.value);
+
+  // In-app notifications
+  const now = Date.now();
+  for (const admin of admins) {
+    try {
+      await db
+        .prepare(
+          \`INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)\`,
+        )
+        .bind(
+          genId(),
+          admin.id,
+          'new_rating',
+          \`⭐ Nouvelle note \${opts.value}/5\`,
+          \`\${fullName} a noté « \${resource.title} » : \${stars}\${opts.review ? ' — ' + opts.review.slice(0, 80) : ''}\`,
+          \`/admin/ressources\`,
+          now,
+        )
+        .run();
+    } catch (e) {
+      console.error('[notifyAdminsNewRating] notification insert failed:', e);
+    }
+  }
+
+  // Email
+  try {
+    const html = renderNewRatingEmail(
+      fullName,
+      student.email,
+      resource.title,
+      opts.resourceId,
+      opts.value,
+      opts.review,
+    );
+    const adminEmails = getAdminEmailsFromConfig();
+    const recipients = new Set<string>(adminEmails);
+    for (const admin of admins) {
+      if (admin.email) recipients.add(admin.email);
+    }
+    if (recipients.size === 0) return;
+    await sendEmail({
+      to: Array.from(recipients),
+      subject: \`⭐ \${fullName} a noté \${opts.value}/5 : \${resource.title}\`,
+      html,
+    });
+  } catch (e) {
+    console.error('[notifyAdminsNewRating] email send failed:', e);
+  }
+}
+
+/**
+ * 2026-09-09: Notify all admins when a student posts a comment.
+ * Helps with moderation of community content.
+ */
+export async function notifyAdminsNewComment(opts: {
+  studentId: string;
+  resourceId: string;
+  commentContent: string;
+}) {
+  const db = await getD1();
+
+  // Get student
+  const student: any = await db
+    .prepare('SELECT firstName, lastName, email FROM User WHERE id = ? LIMIT 1')
+    .bind(opts.studentId)
+    .first();
+  if (!student) {
+    console.warn('[notifyAdminsNewComment] student not found:', opts.studentId);
+    return;
+  }
+
+  // Get resource
+  const resource: any = await db
+    .prepare('SELECT title FROM Resource WHERE id = ? LIMIT 1')
+    .bind(opts.resourceId)
+    .first();
+  if (!resource) {
+    console.warn('[notifyAdminsNewComment] resource not found:', opts.resourceId);
+    return;
+  }
+
+  // Get admins
+  const adminsResult: any = await db
+    .prepare("SELECT id, email FROM User WHERE role = 'ADMIN'")
+    .all();
+  const admins = adminsResult.results || adminsResult;
+  if (admins.length === 0) return;
+
+  const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Un élève';
+  const preview = opts.commentContent.slice(0, 100);
+
+  // In-app notifications
+  const now = Date.now();
+  for (const admin of admins) {
+    try {
+      await db
+        .prepare(
+          \`INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)\`,
+        )
+        .bind(
+          genId(),
+          admin.id,
+          'new_comment',
+          '💬 Nouveau commentaire',
+          \`\${fullName} a commenté « \${resource.title} » : "\${preview}\${opts.commentContent.length > 100 ? '...' : ''}"\`,
+          \`/admin/ressources\`,
+          now,
+        )
+        .run();
+    } catch (e) {
+      console.error('[notifyAdminsNewComment] notification insert failed:', e);
+    }
+  }
+
+  // Email
+  try {
+    const html = renderNewCommentEmail(
+      fullName,
+      student.email,
+      resource.title,
+      opts.resourceId,
+      opts.commentContent,
+    );
+    const adminEmails = getAdminEmailsFromConfig();
+    const recipients = new Set<string>(adminEmails);
+    for (const admin of admins) {
+      if (admin.email) recipients.add(admin.email);
+    }
+    if (recipients.size === 0) return;
+    await sendEmail({
+      to: Array.from(recipients),
+      subject: \`💬 \${fullName} a commenté : \${resource.title}\`,
+      html,
+    });
+  } catch (e) {
+    console.error('[notifyAdminsNewComment] email send failed:', e);
+  }
+}
+
+/**
+ * 2026-09-09: Notify all admins when a student activates their account
+ * via OTP verification. This is the moment the student becomes "real"
+ * (ACTIVE status, can login, can use the platform).
+ *
+ * Replaces the previous in-app-only behavior — now also sends an email
+ * since the user requested email notifications for all important student events.
+ */
+export async function notifyAdminsStudentActivated(studentId: string) {
+  const db = await getD1();
+  const student = await db
+    .prepare('SELECT firstName, lastName, email, schoolName, governorate, classLevel FROM User WHERE id = ? LIMIT 1')
+    .bind(studentId)
+    .first();
+  if (!student) return;
+
+  const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Un élève';
+
+  // Get admins
+  const adminsResult = await db
+    .prepare("SELECT id, email FROM User WHERE role = 'ADMIN'")
+    .all();
+  const admins = adminsResult.results || adminsResult;
+  if (admins.length === 0) return;
+
+  // In-app notifications
+  const now = Date.now();
+  for (const admin of admins) {
+    try {
+      await db
+        .prepare(
+          \`INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)\`,
+        )
+        .bind(
+          genId(),
+          admin.id,
+          'student_activated',
+          '✅ Élève a activé son compte',
+          \`\${fullName} (\${student.email}) — compte maintenant ACTIF\`,
+          '/admin/utilisateurs?role=STUDENT',
+          now,
+        )
+        .run();
+    } catch (e) {
+      console.error('[notifyAdminsStudentActivated] notification insert failed:', e);
+    }
+  }
+
+  // Email
+  try {
+    const html = renderStudentActivatedEmail(
+      student.firstName || '',
+      student.lastName || '',
+      student.email,
+      student.classLevel,
+      student.schoolName,
+      student.governorate,
+    );
+    const adminEmails = getAdminEmailsFromConfig();
+    const recipients = new Set<string>(adminEmails);
+    for (const admin of admins) {
+      if (admin.email) recipients.add(admin.email);
+    }
+    if (recipients.size === 0) {
+      console.warn('[notifyAdminsStudentActivated] no admin recipients');
+      return;
+    }
+    const result = await sendEmail({
+      to: Array.from(recipients),
+      subject: \`✅ \${fullName} a activé son compte\`,
+      html,
+    });
+    if (!result.ok) {
+      console.error('[notifyAdminsStudentActivated] email send failed:', result.error);
+    }
+  } catch (e) {
+    console.error('[notifyAdminsStudentActivated] email send exception:', e);
   }
 }

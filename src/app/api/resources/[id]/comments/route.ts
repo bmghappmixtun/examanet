@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getCurrentUser } from '@/lib/auth';
+import { notifyAdminsNewComment } from '@/lib/admin-notify';
 
 export const dynamic = 'force-dynamic';
 
@@ -91,6 +92,13 @@ export async function POST(
     await db.prepare(
       "UPDATE Resource SET commentsCount = COALESCE(commentsCount, 0) + 1 WHERE id = ?"
     ).bind(id).run();
+
+    // 2026-09-09: Notify admin about new comment (in-app + email)
+    await notifyAdminsNewComment({
+      studentId: user.id,
+      resourceId: id,
+      commentContent: content,
+    }).catch((e) => console.error('[comments POST] admin notify error:', e));
 
     return NextResponse.json({
       comment: {
