@@ -54,15 +54,15 @@ install_dependencies:
     - gitlab-org
   stage: install
   script:
-    - echo "Installing dependencies with bun"
-    - bun install --frozen-lockfile
-    - echo "Fallback npm install for postinstall scripts"
+    - echo "Installing dependencies with npm"
     - npm install --prefer-offline --no-audit --no-fund
+    - echo "Verify build tools"
+    - which npx && npx --version
   cache:
     key:
       files:
         - package.json
-        - bun.lock
+        # - bun.lock (removed, using npm now)
     paths:
       - node_modules/
       - .next/
@@ -96,7 +96,7 @@ build_cf_bundle:
     key:
       files:
         - package.json
-        - bun.lock
+        # - bun.lock (removed, using npm now)
     paths:
       - node_modules/
       - .next/
@@ -141,7 +141,7 @@ deploy_production:
     key:
       files:
         - package.json
-        - bun.lock
+        # - bun.lock (removed, using npm now)
     paths:
       - node_modules/
       - .next/
@@ -173,7 +173,7 @@ deploy_staging:
     key:
       files:
         - package.json
-        - bun.lock
+        # - bun.lock (removed, using npm now)
     paths:
       - node_modules/
       - .next/
