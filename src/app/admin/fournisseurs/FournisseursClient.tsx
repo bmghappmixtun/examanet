@@ -17,6 +17,11 @@ import {
   Loader2,
   ExternalLink,
   TrendingUp,
+  HardDrive,
+  Globe,
+  Cpu,
+  CheckCircle2,
+  Box,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -88,6 +93,9 @@ export default function FournisseursClient() {
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [vercel, setVercel] = useState<ExternalInfo | null>(null);
   const [neon, setNeon] = useState<ExternalInfo | null>(null);
+  const [cloudflare, setCloudflare] = useState<ExternalInfo | null>(null);
+  const [d1, setD1] = useState<ExternalInfo | null>(null);
+  const [r2, setR2] = useState<ExternalInfo | null>(null);
   const [liveQuota, setLiveQuota] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState<string | null>(null);
@@ -95,10 +103,22 @@ export default function FournisseursClient() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [provRes, vercelRes, neonRes, apiconvertRes, iloveapiRes] = await Promise.all([
+      const [
+        provRes,
+        vercelRes,
+        neonRes,
+        cloudflareRes,
+        d1Res,
+        r2Res,
+        apiconvertRes,
+        iloveapiRes,
+      ] = await Promise.all([
         fetch('/api/admin/providers'),
         fetch('/api/admin/external-services?type=vercel'),
         fetch('/api/admin/external-services?type=neon'),
+        fetch('/api/admin/external-services?type=cloudflare'),
+        fetch('/api/admin/external-services?type=d1'),
+        fetch('/api/admin/external-services?type=r2'),
         fetch('/api/admin/external-services?type=apiconvert'),
         fetch('/api/admin/external-services?type=iloveapi'),
       ]);
@@ -106,6 +126,9 @@ export default function FournisseursClient() {
       setProviders(provData.providers || []);
       if (vercelRes.ok) setVercel(await vercelRes.json());
       if (neonRes.ok) setNeon(await neonRes.json());
+      if (cloudflareRes.ok) setCloudflare(await cloudflareRes.json());
+      if (d1Res.ok) setD1(await d1Res.json());
+      if (r2Res.ok) setR2(await r2Res.json());
       // Live quota for conversion providers (overrides the monthlyQuota in DB if available)
       const newLiveQuota: Record<string, any> = {};
       if (apiconvertRes.ok) newLiveQuota.apiconvert = await apiconvertRes.json();
@@ -122,7 +145,17 @@ export default function FournisseursClient() {
     load();
   }, [load]);
 
-  const refresh = async (type: 'providers' | 'vercel' | 'neon' | 'apiconvert' | 'iloveapi') => {
+  const refresh = async (
+    type:
+      | 'providers'
+      | 'vercel'
+      | 'neon'
+      | 'cloudflare'
+      | 'd1'
+      | 'r2'
+      | 'apiconvert'
+      | 'iloveapi',
+  ) => {
     setRefreshing(type);
     try {
       if (type === 'providers') {
@@ -135,6 +168,9 @@ export default function FournisseursClient() {
           const d = await r.json();
           if (type === 'vercel') setVercel(d);
           else if (type === 'neon') setNeon(d);
+          else if (type === 'cloudflare') setCloudflare(d);
+          else if (type === 'd1') setD1(d);
+          else if (type === 'r2') setR2(d);
           else setLiveQuota((prev) => ({ ...prev, [type]: d }));
         }
       }
@@ -236,13 +272,44 @@ export default function FournisseursClient() {
         </div>
       </section>
 
-      {/* ==== Section: Vercel & Neon usage ==== */}
+      {/* ==== Section: Cloudflare + D1 + R2 (current infra) ==== */}
       <section>
         <h2 className="text-xl font-extrabold text-slate-800 mb-3 flex items-center gap-2">
-          <Cloud className="w-5 h-5 text-sky-500" />
-          Infrastructure
+          <Cloud className="w-5 h-5 text-orange-500" />
+          Infrastructure Cloudflare
+          <span className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+            Source de vérité
+          </span>
         </h2>
         <div className="grid md:grid-cols-2 gap-4">
+          <CloudflareCard
+            info={cloudflare}
+            refreshing={refreshing === 'cloudflare'}
+            onRefresh={() => refresh('cloudflare')}
+          />
+          <D1Card
+            info={d1}
+            refreshing={refreshing === 'd1'}
+            onRefresh={() => refresh('d1')}
+          />
+          <R2Card
+            info={r2}
+            refreshing={refreshing === 'r2'}
+            onRefresh={() => refresh('r2')}
+          />
+        </div>
+      </section>
+
+      {/* ==== Section: Legacy infra (Vercel + Neon, kept for reference) ==== */}
+      <section>
+        <h2 className="text-xl font-extrabold text-slate-500 mb-3 flex items-center gap-2">
+          <Server className="w-5 h-5 text-slate-400" />
+          Ancienne infrastructure
+          <span className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+            Plus utilisée (DNS swap → Cloudflare)
+          </span>
+        </h2>
+        <div className="grid md:grid-cols-2 gap-4 opacity-60">
           <VercelCard
             info={vercel}
             refreshing={refreshing === 'vercel'}
@@ -1079,6 +1146,350 @@ function UsageBar({
         {value.toLocaleString('fr-FR')}{' '}
         <span className="text-xs font-normal text-slate-500">{unit}</span>
       </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// CloudflareCard (Workers — primary infrastructure)
+// ============================================================================
+
+type CFUsage = {
+  source: string;
+  requests?: number;
+  errors?: number;
+  successRate?: number;
+  cpuTimeP50?: number;
+  cpuTimeP99?: number;
+  periodStart?: string;
+  periodEnd?: string;
+  error?: string;
+};
+
+type D1UsageType = {
+  source: string;
+  sizeMb?: number;
+  rowsRead?: number;
+  rowsWritten?: number;
+  queries?: number;
+  storage?: { usedMb: number; unit: string };
+  periodStart?: string;
+  periodEnd?: string;
+  error?: string;
+};
+
+type R2UsageType = {
+  source: string;
+  bucketName?: string;
+  objectsCount?: number;
+  storage?: { usedGb: number; unit: string };
+  classAOps?: number;
+  classBOps?: number;
+  periodStart?: string;
+  periodEnd?: string;
+  error?: string;
+};
+
+function CloudflareCard({
+  info,
+  refreshing,
+  onRefresh,
+}: {
+  info: ExternalInfo | null;
+  refreshing: boolean;
+  onRefresh: () => void;
+}) {
+  const u = info?.usage as CFUsage | undefined;
+  const configured = info?.configured;
+  const hasError = !!u?.error || info?.error;
+
+  return (
+    <div className="bg-white rounded-2xl border-2 border-orange-200 p-5 shadow-sm">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-extrabold text-slate-900 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-orange-500" />
+            Cloudflare Workers
+            {configured && (
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                  hasError ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
+                }`}
+              >
+                {hasError ? (
+                  <>
+                    <AlertCircle className="w-3 h-3" /> Erreur
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3 h-3" /> Actif
+                  </>
+                )}
+              </span>
+            )}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Hébergement principal (DNS swap 2026-09-06). Auto-configuré via CF_API_TOKEN.
+          </p>
+        </div>
+        <div className="flex gap-1">
+          {configured && (
+            <button
+              onClick={onRefresh}
+              disabled={refreshing}
+              className="p-1.5 hover:bg-slate-100 rounded text-slate-500"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {!configured ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+          ⚠️ CF_API_TOKEN non configuré. Ajouter via <code>wrangler secret put CF_API_TOKEN</code>.
+        </div>
+      ) : hasError ? (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+          Erreur: {u?.error || info?.error}
+        </div>
+      ) : u ? (
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <UsageBar
+              icon={<Activity className="w-4 h-4 text-orange-500" />}
+              label="Requêtes (7j)"
+              value={formatNumber(u.requests || 0)}
+            />
+            <UsageBar
+              icon={<AlertCircle className="w-4 h-4 text-red-500" />}
+              label="Erreurs"
+              value={formatNumber(u.errors || 0)}
+            />
+            <UsageBar
+              icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+              label="Taux de succès"
+              value={`${u.successRate || 100}%`}
+            />
+            <UsageBar
+              icon={<Cpu className="w-4 h-4 text-sky-500" />}
+              label="CPU p50 / p99"
+              value={`${u.cpuTimeP50 || 0}ms / ${u.cpuTimeP99 || 0}ms`}
+            />
+          </div>
+          {u.periodStart && (
+            <p className="text-xs text-slate-400 mt-2">
+              Période : {new Date(u.periodStart).toLocaleDateString('fr-FR')} →{' '}
+              {new Date(u.periodEnd || Date.now()).toLocaleDateString('fr-FR')}
+            </p>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500">Chargement...</p>
+      )}
+    </div>
+  );
+}
+
+function D1Card({
+  info,
+  refreshing,
+  onRefresh,
+}: {
+  info: ExternalInfo | null;
+  refreshing: boolean;
+  onRefresh: () => void;
+}) {
+  const u = info?.usage as D1UsageType | undefined;
+  const configured = info?.configured;
+  const hasError = !!u?.error || info?.error;
+
+  return (
+    <div className="bg-white rounded-2xl border-2 border-blue-200 p-5 shadow-sm">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-extrabold text-slate-900 flex items-center gap-2">
+            <Database className="w-5 h-5 text-blue-500" />
+            Cloudflare D1
+            {configured && (
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                  hasError ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
+                }`}
+              >
+                {hasError ? (
+                  <>
+                    <AlertCircle className="w-3 h-3" /> Erreur
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3 h-3" /> Actif
+                  </>
+                )}
+              </span>
+            )}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Base de données SQLite. Source de vérité. Auto-configuré.
+          </p>
+        </div>
+        <div className="flex gap-1">
+          {configured && (
+            <button
+              onClick={onRefresh}
+              disabled={refreshing}
+              className="p-1.5 hover:bg-slate-100 rounded text-slate-500"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {!configured ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+          ⚠️ CF_API_TOKEN non configuré.
+        </div>
+      ) : hasError ? (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+          Erreur: {u?.error || info?.error}
+        </div>
+      ) : u ? (
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <UsageBar
+              icon={<Database className="w-4 h-4 text-blue-500" />}
+              label="Stockage"
+              value={`${u.storage?.usedMb || 0} ${u.storage?.unit || 'MB'}`}
+            />
+            <UsageBar
+              icon={<TrendingUp className="w-4 h-4 text-emerald-500" />}
+              label="Requêtes (7j)"
+              value={formatNumber(u.queries || 0)}
+            />
+            <UsageBar
+              icon={<Eye className="w-4 h-4 text-sky-500" />}
+              label="Rows read"
+              value={formatNumber(u.rowsRead || 0)}
+            />
+            <UsageBar
+              icon={<Save className="w-4 h-4 text-amber-500" />}
+              label="Rows written"
+              value={formatNumber(u.rowsWritten || 0)}
+            />
+          </div>
+          {u.periodStart && (
+            <p className="text-xs text-slate-400 mt-2">
+              Période : {new Date(u.periodStart).toLocaleDateString('fr-FR')} →{' '}
+              {new Date(u.periodEnd || Date.now()).toLocaleDateString('fr-FR')}
+            </p>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500">Chargement...</p>
+      )}
+    </div>
+  );
+}
+
+function R2Card({
+  info,
+  refreshing,
+  onRefresh,
+}: {
+  info: ExternalInfo | null;
+  refreshing: boolean;
+  onRefresh: () => void;
+}) {
+  const u = info?.usage as R2UsageType | undefined;
+  const configured = info?.configured;
+  const hasError = !!u?.error || info?.error;
+
+  return (
+    <div className="bg-white rounded-2xl border-2 border-purple-200 p-5 shadow-sm md:col-span-2">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-extrabold text-slate-900 flex items-center gap-2">
+            <Box className="w-5 h-5 text-purple-500" />
+            Cloudflare R2
+            {configured && (
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                  hasError ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
+                }`}
+              >
+                {hasError ? (
+                  <>
+                    <AlertCircle className="w-3 h-3" /> Erreur
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3 h-3" /> Actif
+                  </>
+                )}
+              </span>
+            )}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Stockage objet (PDFs, thumbnails). Bucket:{' '}
+            <code className="text-[10px]">examanet-pdf-prod</code>
+          </p>
+        </div>
+        <div className="flex gap-1">
+          {configured && (
+            <button
+              onClick={onRefresh}
+              disabled={refreshing}
+              className="p-1.5 hover:bg-slate-100 rounded text-slate-500"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {!configured ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+          ⚠️ CF_API_TOKEN non configuré.
+        </div>
+      ) : hasError ? (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+          Erreur: {u?.error || info?.error}
+        </div>
+      ) : u ? (
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <UsageBar
+              icon={<HardDrive className="w-4 h-4 text-purple-500" />}
+              label="Stockage"
+              value={`${u.storage?.usedGb || 0} ${u.storage?.unit || 'GB'}`}
+            />
+            <UsageBar
+              icon={<Box className="w-4 h-4 text-sky-500" />}
+              label="Objets"
+              value={formatNumber(u.objectsCount || 0)}
+            />
+            <UsageBar
+              icon={<Zap className="w-4 h-4 text-amber-500" />}
+              label="Class A (7j)"
+              value={formatNumber(u.classAOps || 0)}
+            />
+            <UsageBar
+              icon={<Zap className="w-4 h-4 text-emerald-500" />}
+              label="Class B (7j)"
+              value={formatNumber(u.classBOps || 0)}
+            />
+          </div>
+          {u.periodStart && (
+            <p className="text-xs text-slate-400 mt-2">
+              Période : {new Date(u.periodStart).toLocaleDateString('fr-FR')} →{' '}
+              {new Date(u.periodEnd || Date.now()).toLocaleDateString('fr-FR')}
+            </p>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500">Chargement...</p>
+      )}
     </div>
   );
 }

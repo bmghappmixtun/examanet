@@ -21,6 +21,11 @@ import { getCurrentUser } from '@/lib/auth';
 import { d1First, d1All, d1Run, genId } from '@/lib/db-d1';
 import { encryptSecret, decryptSecret, redactSecret } from '@/lib/provider-keys';
 import { checkConvertApiUsage, checkIlovepdfUsage, checkNeonUsage } from '@/lib/external-services';
+import {
+  checkCFWorkersUsage,
+  checkD1Usage,
+  checkR2Usage,
+} from '@/lib/external-services.cloudflare';
 
 export const runtime = 'nodejs';
 
@@ -32,8 +37,11 @@ async function requireAdmin() {
 }
 
 // Map our internal types to the DB column values
-const TYPE_VALUES = ['vercel', 'neon', 'apiconvert', 'iloveapi'] as const;
+const TYPE_VALUES = ['vercel', 'neon', 'cloudflare', 'd1', 'r2', 'apiconvert', 'iloveapi'] as const;
 type ProviderType = (typeof TYPE_VALUES)[number];
+
+// CF-native types use the CF_API_TOKEN env secret, not a user-supplied token
+const CF_NATIVE_TYPES: ProviderType[] = ['cloudflare', 'd1', 'r2'];
 
 /**
  * 2026-09-06: Read the stored provider record from D1 directly.
@@ -95,6 +103,38 @@ export async function GET(req: NextRequest) {
   }
 
   const provider = await findProvider(type);
+  // CF-native types don't need a stored token — they use the env secret
+  if (CF_NATIVE_TYPES.includes(type)) {
+    const cfToken = process.env.CF_API_TOKEN || '';
+    if (!cfToken) {
+      return NextResponse.json({
+        configured: false,
+        error: 'CF_API_TOKEN manquant côté worker',
+        usage: getEmptyUsage(type),
+      });
+    }
+    let usage: any;
+    try {
+      if (type === 'cloudflare') usage = await checkCFWorkersUsage(cfToken);
+      else if (type === 'd1') usage = await checkD1Usage(cfToken);
+      else if (type === 'r2') usage = await checkR2Usage(cfToken);
+    } catch (e: any) {
+      return NextResponse.json({
+        configured: true,
+        tokenInvalid: true,
+        error: e?.message,
+        usage: getEmptyUsage(type),
+      });
+    }
+    return NextResponse.json({
+      configured: true,
+      enabled: true,
+      displayName: 'Cloudflare (auto)',
+      tokenRedacted: 'cfat_***',
+      monthlyQuota: null,
+      usage,
+    });
+  }
   if (!provider || !(provider.apiKey || provider.secretKey)) {
     return NextResponse.json({
       configured: false,
@@ -122,6 +162,18 @@ export async function GET(req: NextRequest) {
       usage = await checkIlovepdfUsage(publicKey, token);
     } else if (type === 'neon') {
       usage = await checkNeonUsage(token);
+    } else if (CF_NATIVE_TYPES.includes(type)) {
+      // CF-native: use CF_API_TOKEN env secret, not the user-supplied token
+      const cfToken = process.env.CF_API_TOKEN || '';
+      if (!cfToken) {
+        usage = { error: 'CF_API_TOKEN non configuré sur le worker' };
+      } else if (type === 'cloudflare') {
+        usage = await checkCFWorkersUsage(cfToken);
+      } else if (type === 'd1') {
+        usage = await checkD1Usage(cfToken);
+      } else if (type === 'r2') {
+        usage = await checkR2Usage(cfToken);
+      }
     } else {
       usage = { error: 'Live usage not implemented for this type' };
     }
@@ -159,7 +211,37 @@ function getEmptyUsage(type: ProviderType) {
       quota: { used: 0, total: 0, remaining: 0, percent: 0 },
     };
   }
-  // neon
+  if (type === 'cloudflare') {
+    return {
+      periodStart: '',
+      periodEnd: '',
+      requests: 0,
+      errors: 0,
+      successRate: 100,
+      cpuTimeP50: 0,
+      cpuTimeP99: 0,
+    };
+  }
+  if (type === 'd1') {
+    return {
+      periodStart: '',
+      periodEnd: '',
+      storage: { usedMb: 0, unit: 'MB' },
+      rowsRead: 0,
+      rowsWritten: 0,
+      queries: 0,
+    };
+  }
+  if (type === 'r2') {
+    return {
+      periodStart: '',
+      periodEnd: '',
+      storage: { usedGb: 0, unit: 'GB' },
+      classAOps: 0,
+      classBOps: 0,
+    };
+  }
+  // neon (legacy)
   return {
     periodStart: '',
     periodEnd: '',
@@ -199,6 +281,23 @@ export async function POST(req: NextRequest) {
       { error: `type doit être ${TYPE_VALUES.join(', ')}` },
       { status: 400 },
     );
+  }
+
+  // CF-native types (cloudflare/d1/r2) don't need a stored token
+  if (CF_NATIVE_TYPES.includes(type)) {
+    // Just confirm the env secret is set
+    if (!process.env.CF_API_TOKEN) {
+      return NextResponse.json(
+        { error: 'CF_API_TOKEN manquant côté worker' },
+        { status: 500 },
+      );
+    }
+    return NextResponse.json({
+      success: true,
+      type,
+      configured: true,
+      message: `${type} utilise CF_API_TOKEN du worker (auto-configuré)`,
+    });
   }
 
   // For iLoveAPI: need both publicKey and secretKey
