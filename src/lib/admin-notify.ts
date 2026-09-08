@@ -474,3 +474,52 @@ export async function notifyAdminsConversionFailed(opts: {
     console.error('[notifyAdminsConversionFailed] email send failed:', e);
   }
 }
+
+/**
+ * 2026-09-08: Notify all admins that a new STUDENT has registered.
+ * Students don't need admin approval, but admins should know about
+ * new signups to monitor growth and detect abuse.
+ *
+ * In-app notification only (no email) — students are low-signal
+ * compared to teachers, and email volume would be too high.
+ */
+export async function notifyAdminsNewStudent(studentId: string) {
+  const db = await getD1();
+  const student = await db
+    .prepare('SELECT firstName, lastName, email, schoolName, governorate, classLevel FROM User WHERE id = ? LIMIT 1')
+    .bind(studentId)
+    .first();
+  if (!student) return;
+
+  const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Un élève';
+  const meta = [student.classLevel, student.schoolName, student.governorate]
+    .filter(Boolean)
+    .join(' · ') || '—';
+
+  // Get admins
+  const adminsResult = await db
+    .prepare("SELECT id, email FROM User WHERE role = 'ADMIN'")
+    .all();
+  const admins = adminsResult.results || adminsResult;
+  if (admins.length === 0) return;
+
+  // In-app notifications only
+  const now = Date.now();
+  for (const admin of admins) {
+    await db
+      .prepare(
+        `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+         VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
+      )
+      .bind(
+        genId(),
+        admin.id,
+        'new_student_signed_up',
+        '🎓 Nouvel élève inscrit',
+        `${fullName} (${student.email}) — ${meta}`,
+        '/admin/utilisateurs?role=STUDENT',
+        now,
+      )
+      .run();
+  }
+}
