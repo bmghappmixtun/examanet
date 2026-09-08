@@ -322,7 +322,7 @@ export function renderNewStudentEmail(
   const safeGov = governorate ? governorate.replace(/</g, '&lt;').replace(/>/g, '&gt;') : null;
   const meta = [safeClass, safeSchool, safeGov].filter(Boolean).join(' · ');
   return renderEmailShell({
-    accent: 'sky',
+    accent: 'blue',
     icon: '🎓',
     title: 'Nouvel élève inscrit',
     subtitle: 'Un nouvel élève vient de rejoindre la plateforme',
@@ -337,7 +337,7 @@ export function renderNewStudentEmail(
         ${meta ? `<p style="margin:4px 0;color:#075985;font-size:14px;"><strong>Profil :</strong> ${meta}</p>` : ''}
       </div>
       ${muted("Vous pouvez consulter la liste complète des élèves depuis votre dashboard admin.")}
-      ${ctaButton(`${SITE_URL}/admin/utilisateurs?role=STUDENT`, 'Voir les élèves', 'sky')}
+      ${ctaButton(`${SITE_URL}/admin/utilisateurs?role=STUDENT`, 'Voir les élèves', 'blue')}
     `,
     footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
   });
@@ -411,7 +411,7 @@ export function renderNewCommentEmail(
     .replace(/>/g, '&gt;')
     .slice(0, 1000);
   return renderEmailShell({
-    accent: 'sky',
+    accent: 'blue',
     icon: '💬',
     title: 'Nouveau commentaire',
     subtitle: `Un élève a commenté une ressource`,
@@ -431,7 +431,7 @@ export function renderNewCommentEmail(
         <p style="margin:0 0 4px;color:#1E40AF;font-weight:bold;font-size:13px;">👤 ${safeStudent}</p>
         <p style="margin:0;color:#1E3A8A;font-size:12px;">${studentEmail}</p>
       </div>
-      ${ctaButton(`${SITE_URL}/ressources/${resourceId}`, 'Voir la ressource', 'sky')}
+      ${ctaButton(`${SITE_URL}/ressources/${resourceId}`, 'Voir la ressource', 'blue')}
     `,
     footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
   });
@@ -454,7 +454,7 @@ export function renderStudentActivatedEmail(
   const safeGov = governorate ? governorate.replace(/</g, '&lt;').replace(/>/g, '&gt;') : null;
   const meta = [safeClass, safeSchool, safeGov].filter(Boolean).join(' · ');
   return renderEmailShell({
-    accent: 'emerald',
+    accent: 'green',
     icon: '✅',
     title: 'Élève a activé son compte',
     subtitle: 'Un élève vient de vérifier son email',
@@ -469,7 +469,7 @@ export function renderStudentActivatedEmail(
         ${meta ? `<p style="margin:4px 0;color:#064E3B;font-size:14px;"><strong>Profil :</strong> ${meta}</p>` : ''}
       </div>
       ${muted("L'élève peut maintenant se connecter et accéder aux ressources de la plateforme.")}
-      ${ctaButton(`${SITE_URL}/admin/utilisateurs?role=STUDENT`, 'Voir les élèves', 'emerald')}
+      ${ctaButton(`${SITE_URL}/admin/utilisateurs?role=STUDENT`, 'Voir les élèves', 'green')}
     `,
     footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
   });
@@ -492,7 +492,7 @@ export function renderMagicLinkEmail(
     : `Cliquez sur le bouton ci-dessous pour vous connecter à votre compte ${safeEmail}.`;
 
   return renderEmailShell({
-    accent: 'sky',
+    accent: 'blue',
     icon: '🔗',
     title: isNewUser ? 'Bienvenue sur Examanet' : 'Votre lien de connexion',
     subtitle: isNewUser ? 'Votre compte a été créé' : 'Connexion sans mot de passe',
@@ -505,7 +505,7 @@ export function renderMagicLinkEmail(
         <p style="margin:4px 0;color:#0C4A6E;font-size:14px;">Ce lien expire dans <strong>${expiresInMinutes} minutes</strong> et ne peut être utilisé qu'une seule fois.</p>
         <p style="margin:4px 0;color:#0C4A6E;font-size:14px;">Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email en toute sécurité.</p>
       </div>
-      ${ctaButton(magicLink, isNewUser ? 'Créer mon compte' : 'Me connecter', 'sky')}
+      ${ctaButton(magicLink, isNewUser ? 'Créer mon compte' : 'Me connecter', 'blue')}
       <p style="margin:16px 0 0;font-size:12px;color:#64748B;font-family:${F};word-break:break-all;">
         Ou copiez ce lien : <a href="${magicLink}" style="color:#0369A1;">${magicLink}</a>
       </p>

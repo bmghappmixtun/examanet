@@ -667,3 +667,31 @@ export async function sendPasswordChangedEmail(opts: {
   }
   return new EmailResult(true, sendResult.id || 'sent');
 }
+
+/**
+ * 2026-09-09: Generic email send for new use cases (magic link, etc.).
+ * Use this for any new email type. Subject + html are required.
+ */
+export async function sendEmail(opts: {
+  to: string | string[];
+  subject: string;
+  html: string;
+  from?: string;
+}): Promise<{ ok: boolean; id?: string; error?: string }> {
+  if (process.env.DISABLE_EMAILS === 'true' || process.env.NODE_ENV === 'test') {
+    console.log(`[EMAIL SKIP] To: ${Array.isArray(opts.to) ? opts.to.join(',') : opts.to}, Subject: ${opts.subject}`);
+    return { ok: true, id: 'test-mode' };
+  }
+  
+  const recipients = Array.isArray(opts.to) ? opts.to : [opts.to];
+  const sendResult = await sendViaResend({
+    to: recipients,
+    subject: opts.subject,
+    html: opts.html,
+  });
+  
+  if (!sendResult.ok) {
+    return { ok: false, error: sendResult.error };
+  }
+  return { ok: true, id: sendResult.id || 'sent' };
+}
