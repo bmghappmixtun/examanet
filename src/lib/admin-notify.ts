@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { Resend } from 'resend';
-import { renderNewTeacherEmail, renderNewResourceEmail, renderTeacherActivatedEmail } from './email-templates';
+import { renderNewTeacherEmail, renderNewResourceEmail, renderTeacherActivatedEmail, renderNewStudentEmail } from './email-templates';
 import { getAdminEmailsFromConfig } from './admin-config';
 
 // 2026-09-06: Lazy-init Resend. process.env.RESEND_API_KEY is UNDEFINED
@@ -480,8 +480,10 @@ export async function notifyAdminsConversionFailed(opts: {
  * Students don't need admin approval, but admins should know about
  * new signups to monitor growth and detect abuse.
  *
- * In-app notification only (no email) — students are low-signal
- * compared to teachers, and email volume would be too high.
+ * 2026-09-08 (v2): Now also sends an EMAIL to admins. The user reported
+ * not receiving any email notifications for student signups (in-app only
+ * was insufficient). Resend is configured for this account and works for
+ * other admin notifications, so we mirror that pattern here.
  */
 export async function notifyAdminsNewStudent(studentId: string) {
   const db = await getD1();
@@ -503,23 +505,58 @@ export async function notifyAdminsNewStudent(studentId: string) {
   const admins = adminsResult.results || adminsResult;
   if (admins.length === 0) return;
 
-  // In-app notifications only
+  // In-app notifications
   const now = Date.now();
   for (const admin of admins) {
-    await db
-      .prepare(
-        `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
-         VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
-      )
-      .bind(
-        genId(),
-        admin.id,
-        'new_student_signed_up',
-        '🎓 Nouvel élève inscrit',
-        `${fullName} (${student.email}) — ${meta}`,
-        '/admin/utilisateurs?role=STUDENT',
-        now,
-      )
-      .run();
+    try {
+      await db
+        .prepare(
+          `INSERT INTO Notification (id, userId, type, title, body, link, isRead, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
+        )
+        .bind(
+          genId(),
+          admin.id,
+          'new_student_signed_up',
+          '🎓 Nouvel élève inscrit',
+          `${fullName} (${student.email}) — ${meta}`,
+          '/admin/utilisateurs?role=STUDENT',
+          now,
+        )
+        .run();
+    } catch (e) {
+      console.error('[notifyAdminsNewStudent] notification insert failed:', e);
+    }
+  }
+
+  // Email notification (added 2026-09-08 after user feedback)
+  try {
+    const html = renderNewStudentEmail(
+      student.firstName || '',
+      student.lastName || '',
+      student.email,
+      student.classLevel,
+      student.schoolName,
+      student.governorate,
+    );
+    const adminEmails = getAdminEmailsFromConfig();
+    const recipients = new Set<string>(adminEmails);
+    for (const admin of admins) {
+      if (admin.email) recipients.add(admin.email);
+    }
+    if (recipients.size === 0) {
+      console.warn('[notifyAdminsNewStudent] no admin recipients');
+      return;
+    }
+    const result = await sendEmail({
+      to: Array.from(recipients),
+      subject: `🎓 Nouvel élève inscrit : ${fullName}`,
+      html,
+    });
+    if (!result.ok) {
+      console.error('[notifyAdminsNewStudent] email send failed:', result.error);
+    }
+  } catch (e) {
+    console.error('[notifyAdminsNewStudent] email send exception:', e);
   }
 }

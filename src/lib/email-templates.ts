@@ -303,3 +303,42 @@ export function renderConversionFailedEmail(
     footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système d'alerte admin</p>`,
   });
 }
+
+/**
+ * 2026-09-08: Email sent to admins when a new STUDENT signs up.
+ * Students don't need admin approval, but admins should know about
+ * new signups to monitor growth and detect abuse.
+ */
+export function renderNewStudentEmail(
+  firstName: string,
+  lastName: string,
+  email: string,
+  classLevel: string | null,
+  schoolName: string | null,
+  governorate: string | null,
+): string {
+  const safeClass = classLevel ? classLevel.replace(/</g, '&lt;').replace(/>/g, '&gt;') : null;
+  const safeSchool = schoolName ? schoolName.replace(/</g, '&lt;').replace(/>/g, '&gt;') : null;
+  const safeGov = governorate ? governorate.replace(/</g, '&lt;').replace(/>/g, '&gt;') : null;
+  const meta = [safeClass, safeSchool, safeGov].filter(Boolean).join(' · ');
+  return renderEmailShell({
+    accent: 'sky',
+    icon: '🎓',
+    title: 'Nouvel élève inscrit',
+    subtitle: 'Un nouvel élève vient de rejoindre la plateforme',
+    preheader: `Inscription de ${firstName} ${lastName}`,
+    body: `
+      <p style="margin:0 0 16px;font-size:16px;color:#0F172A;font-family:${F};">Bonjour Admin,</p>
+      ${paragraph("Un nouvel élève vient de s'inscrire sur Examanet. Aucune action requise — c'est juste pour information.")}
+      <div style="background:#E0F2FE;border-left:4px solid #0EA5E9;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#0C4A6E;font-weight:bold;">📋 Informations de l'élève</p>
+        <p style="margin:4px 0;color:#075985;font-size:14px;"><strong>Nom :</strong> ${firstName} ${lastName}</p>
+        <p style="margin:4px 0;color:#075985;font-size:14px;"><strong>Email :</strong> <a href="mailto:${email}" style="color:#0369A1;">${email}</a></p>
+        ${meta ? `<p style="margin:4px 0;color:#075985;font-size:14px;"><strong>Profil :</strong> ${meta}</p>` : ''}
+      </div>
+      ${muted("Vous pouvez consulter la liste complète des élèves depuis votre dashboard admin.")}
+      ${ctaButton(`${SITE_URL}/admin/utilisateurs?role=STUDENT`, 'Voir les élèves', 'sky')}
+    `,
+    footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
+  });
+}
