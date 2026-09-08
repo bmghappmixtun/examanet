@@ -52,30 +52,6 @@ type ProviderInfo = {
   lastUse: { at: string; success: boolean; fileName: string } | null;
 };
 
-type VercelUsage = {
-  periodStart: string;
-  periodEnd: string;
-  bandwidth: { used: number; unit: string };
-  functions: { used: number; unit: string };
-  builds: { used: number; unit: string };
-  username?: string;
-  plan?: string;
-  error?: string;
-};
-
-type NeonUsage = {
-  periodStart: string;
-  periodEnd: string;
-  storage: { usedMb: number };
-  compute: { usedHours: number };
-  transfer: { usedGb: number };
-  projects: { active: number };
-  branches?: { active: number };
-  email?: string;
-  plan?: string;
-  error?: string;
-};
-
 type ExternalInfo = {
   configured: boolean;
   enabled?: boolean;
@@ -86,13 +62,11 @@ type ExternalInfo = {
   monthlyQuota?: number | null;
   notes?: string | null;
   updatedAt?: string;
-  usage?: VercelUsage | NeonUsage;
+  usage?: any;
 };
 
 export default function FournisseursClient() {
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
-  const [vercel, setVercel] = useState<ExternalInfo | null>(null);
-  const [neon, setNeon] = useState<ExternalInfo | null>(null);
   const [cloudflare, setCloudflare] = useState<ExternalInfo | null>(null);
   const [d1, setD1] = useState<ExternalInfo | null>(null);
   const [r2, setR2] = useState<ExternalInfo | null>(null);
@@ -105,8 +79,6 @@ export default function FournisseursClient() {
     try {
       const [
         provRes,
-        vercelRes,
-        neonRes,
         cloudflareRes,
         d1Res,
         r2Res,
@@ -114,8 +86,6 @@ export default function FournisseursClient() {
         iloveapiRes,
       ] = await Promise.all([
         fetch('/api/admin/providers'),
-        fetch('/api/admin/external-services?type=vercel'),
-        fetch('/api/admin/external-services?type=neon'),
         fetch('/api/admin/external-services?type=cloudflare'),
         fetch('/api/admin/external-services?type=d1'),
         fetch('/api/admin/external-services?type=r2'),
@@ -124,8 +94,6 @@ export default function FournisseursClient() {
       ]);
       const provData = await provRes.json();
       setProviders(provData.providers || []);
-      if (vercelRes.ok) setVercel(await vercelRes.json());
-      if (neonRes.ok) setNeon(await neonRes.json());
       if (cloudflareRes.ok) setCloudflare(await cloudflareRes.json());
       if (d1Res.ok) setD1(await d1Res.json());
       if (r2Res.ok) setR2(await r2Res.json());
@@ -148,8 +116,6 @@ export default function FournisseursClient() {
   const refresh = async (
     type:
       | 'providers'
-      | 'vercel'
-      | 'neon'
       | 'cloudflare'
       | 'd1'
       | 'r2'
@@ -166,9 +132,7 @@ export default function FournisseursClient() {
         const r = await fetch(`/api/admin/external-services?type=${type}`);
         if (r.ok) {
           const d = await r.json();
-          if (type === 'vercel') setVercel(d);
-          else if (type === 'neon') setNeon(d);
-          else if (type === 'cloudflare') setCloudflare(d);
+          if (type === 'cloudflare') setCloudflare(d);
           else if (type === 'd1') setD1(d);
           else if (type === 'r2') setR2(d);
           else setLiveQuota((prev) => ({ ...prev, [type]: d }));
@@ -296,31 +260,6 @@ export default function FournisseursClient() {
             info={r2}
             refreshing={refreshing === 'r2'}
             onRefresh={() => refresh('r2')}
-          />
-        </div>
-      </section>
-
-      {/* ==== Section: Legacy infra (Vercel + Neon, kept for reference) ==== */}
-      <section>
-        <h2 className="text-xl font-extrabold text-slate-500 mb-3 flex items-center gap-2">
-          <Server className="w-5 h-5 text-slate-400" />
-          Ancienne infrastructure
-          <span className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
-            Plus utilisée (DNS swap → Cloudflare)
-          </span>
-        </h2>
-        <div className="grid md:grid-cols-2 gap-4 opacity-60">
-          <VercelCard
-            info={vercel}
-            refreshing={refreshing === 'vercel'}
-            onRefresh={() => refresh('vercel')}
-            onChanged={() => refresh('vercel')}
-          />
-          <NeonCard
-            info={neon}
-            refreshing={refreshing === 'neon'}
-            onRefresh={() => refresh('neon')}
-            onChanged={() => refresh('neon')}
           />
         </div>
       </section>
@@ -697,459 +636,6 @@ function ProviderCard({
 }
 
 // ============================================================================
-// VercelCard
-// ============================================================================
-
-function VercelCard({
-  info,
-  refreshing,
-  onRefresh,
-  onChanged,
-}: {
-  info: ExternalInfo | null;
-  refreshing: boolean;
-  onRefresh: () => void;
-  onChanged: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [token, setToken] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  async function save() {
-    if (!token || token.trim().length < 8) {
-      toast.error('Token requis (min 8 caractères)');
-      return;
-    }
-    setSaving(true);
-    try {
-      const r = await fetch('/api/admin/external-services', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'vercel', token: token.trim() }),
-      });
-      const d = await r.json();
-      if (!r.ok) {
-        toast.error(d.error || 'Erreur');
-        return;
-      }
-      toast.success('Token Vercel enregistré');
-      setEditing(false);
-      setToken('');
-      onChanged();
-    } catch {
-      toast.error('Erreur');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function remove() {
-    if (!confirm('Supprimer le token Vercel ?')) return;
-    const r = await fetch('/api/admin/external-services?type=vercel', { method: 'DELETE' });
-    if (!r.ok) {
-      toast.error('Erreur');
-      return;
-    }
-    toast.success('Supprimé');
-    onChanged();
-  }
-
-  const u = info?.usage as VercelUsage | undefined;
-  const configured = info?.configured;
-
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="font-extrabold text-slate-900 flex items-center gap-2">
-            <Server className="w-5 h-5 text-slate-900" />
-            Vercel
-            {configured && (
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full ${info?.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}
-              >
-                Connecté
-              </span>
-            )}
-          </h3>
-          <p className="text-xs text-slate-500 mt-1">
-            Hébergement Next.js. Suivi bandwidth / functions / builds.
-          </p>
-        </div>
-        <div className="flex gap-1">
-          {configured && (
-            <button
-              onClick={onRefresh}
-              disabled={refreshing}
-              className="p-1.5 hover:bg-slate-100 rounded text-slate-500"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {configured && u && !u.error && (
-        <div className="space-y-2 mb-3">
-          {u.username && (
-            <div className="text-xs text-slate-500">
-              Compte: <strong>{u.username}</strong>{' '}
-              {u.plan && <span className="ml-1 text-slate-400">({u.plan})</span>}
-            </div>
-          )}
-          <div className="grid grid-cols-3 gap-2">
-            <UsageBar
-              icon={<TrendingUp className="w-3 h-3" />}
-              label="Bandwidth"
-              value={u.bandwidth.used}
-              unit={u.bandwidth.unit}
-            />
-            <UsageBar
-              icon={<Zap className="w-3 h-3" />}
-              label="Functions"
-              value={u.functions.used}
-              unit={u.functions.unit}
-            />
-            <UsageBar
-              icon={<Activity className="w-3 h-3" />}
-              label="Builds"
-              value={u.builds.used}
-              unit={u.builds.unit}
-            />
-          </div>
-          <div className="text-xs text-slate-500 text-center pt-1">
-            Période: {u.periodStart} → {u.periodEnd}
-          </div>
-        </div>
-      )}
-
-      {u?.error && (
-        <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800 flex items-start gap-2">
-          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-          {u.error}
-        </div>
-      )}
-
-      {configured && !editing && (
-        <div className="flex gap-2">
-          <button
-            onClick={() => setEditing(true)}
-            className="btn-secondary text-sm flex items-center gap-1.5"
-          >
-            <Key className="w-3.5 h-3.5" />
-            Modifier le token
-          </button>
-          <button
-            onClick={remove}
-            className="btn-secondary text-sm text-red-600 hover:bg-red-50 flex items-center gap-1.5"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            Supprimer
-          </button>
-        </div>
-      )}
-
-      {(!configured || editing) && (
-        <div className="space-y-3 mt-2">
-          <div>
-            <label htmlFor="vercelToken" className="block text-xs font-bold text-slate-700 mb-1">Vercel API Token</label>
-            <input id="vercelToken"
-              type="password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="vercel_token_xxxxx..."
-              className="input text-sm"
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Créez un token sur{' '}
-              <a
-                href="https://vercel.com/dashboard/settings/tokens"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary-600 hover:underline"
-              >
-                vercel.com/dashboard/settings/tokens
-              </a>
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={save}
-              disabled={saving}
-              className="btn-primary text-sm flex items-center gap-1.5"
-            >
-              {saving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
-              Connecter
-            </button>
-            {configured && (
-              <button onClick={() => setEditing(false)} className="btn-secondary text-sm">
-                Annuler
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================================
-// NeonCard
-// ============================================================================
-
-function NeonCard({
-  info,
-  refreshing,
-  onRefresh,
-  onChanged,
-}: {
-  info: ExternalInfo | null;
-  refreshing: boolean;
-  onRefresh: () => void;
-  onChanged: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [token, setToken] = useState('');
-  const [projectId, setProjectId] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  async function save() {
-    if (!token || token.trim().length < 8) {
-      toast.error('API key requise');
-      return;
-    }
-    setSaving(true);
-    try {
-      const r = await fetch('/api/admin/external-services', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'neon',
-          token: token.trim(),
-          publicKey: projectId.trim() || null,
-        }),
-      });
-      const d = await r.json();
-      if (!r.ok) {
-        toast.error(d.error || 'Erreur');
-        return;
-      }
-      toast.success('Token Neon enregistré');
-      setEditing(false);
-      setToken('');
-      onChanged();
-    } catch {
-      toast.error('Erreur');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function remove() {
-    if (!confirm('Supprimer le token Neon ?')) return;
-    const r = await fetch('/api/admin/external-services?type=neon', { method: 'DELETE' });
-    if (!r.ok) {
-      toast.error('Erreur');
-      return;
-    }
-    toast.success('Supprimé');
-    onChanged();
-  }
-
-  const u = info?.usage as NeonUsage | undefined;
-  const configured = info?.configured;
-
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="font-extrabold text-slate-900 flex items-center gap-2">
-            <Database className="w-5 h-5 text-emerald-600" />
-            Neon
-            {configured && (
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full ${info?.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}
-              >
-                Connecté
-              </span>
-            )}
-          </h3>
-          <p className="text-xs text-slate-500 mt-1">
-            Base PostgreSQL serverless. Suivi storage, compute, projets.
-          </p>
-        </div>
-        <div className="flex gap-1">
-          {configured && (
-            <button
-              onClick={onRefresh}
-              disabled={refreshing}
-              className="p-1.5 hover:bg-slate-100 rounded text-slate-500"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {configured && u && !u.error && (
-        <div className="space-y-2 mb-3">
-          <div className="grid grid-cols-2 gap-2">
-            <UsageBar
-              icon={<Database className="w-3 h-3" />}
-              label="Stockage"
-              value={u.storage.usedMb}
-              unit="MB"
-            />
-            <UsageBar
-              icon={<Zap className="w-3 h-3" />}
-              label="Compute"
-              value={u.compute.usedHours}
-              unit="heures"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="p-2 bg-slate-50 rounded">
-              <div className="text-slate-500">Projets actifs</div>
-              <div className="font-bold text-slate-900">{u.projects.active}</div>
-            </div>
-            {u.branches && (
-              <div className="p-2 bg-slate-50 rounded">
-                <div className="text-slate-500">Branches</div>
-                <div className="font-bold text-slate-900">{u.branches.active}</div>
-              </div>
-            )}
-          </div>
-          <div className="text-xs text-slate-500 text-center pt-1">
-            Période: {u.periodStart} → {u.periodEnd}
-          </div>
-        </div>
-      )}
-
-      {u?.error && (
-        <div className="mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800 flex items-start gap-2">
-          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-          {u.error}
-        </div>
-      )}
-
-      {configured && !editing && (
-        <div className="flex gap-2">
-          <button
-            onClick={() => setEditing(true)}
-            className="btn-secondary text-sm flex items-center gap-1.5"
-          >
-            <Key className="w-3.5 h-3.5" />
-            Modifier le token
-          </button>
-          <button
-            onClick={remove}
-            className="btn-secondary text-sm text-red-600 hover:bg-red-50 flex items-center gap-1.5"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            Supprimer
-          </button>
-        </div>
-      )}
-
-      {(!configured || editing) && (
-        <div className="space-y-3 mt-2">
-          <div>
-            <label htmlFor="neonKey" className="block text-xs font-bold text-slate-700 mb-1">Neon API Key</label>
-            <input id="neonKey"
-              type="password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="neon_xxx..."
-              className="input text-sm"
-            />
-            <p className="text-xs text-slate-500 mt-1">
-              Créez une clé sur{' '}
-              <a
-                href="https://console.neon.tech/app/settings/api-keys"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary-600 hover:underline"
-              >
-                console.neon.tech → Settings → API Keys
-              </a>
-            </p>
-          </div>
-          <div>
-            <label htmlFor="projectId" className="block text-xs font-bold text-slate-700 mb-1">
-              Project ID (optionnel, défaut = premier projet)
-            </label>
-            <input id="projectId" type="text" value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              placeholder="ep-xxx-xxx"
-              className="input text-sm"
-            />
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={save}
-              disabled={saving}
-              className="btn-primary text-sm flex items-center gap-1.5"
-            >
-              {saving ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Save className="w-3.5 h-3.5" />
-              )}
-              Connecter
-            </button>
-            {configured && (
-              <button onClick={() => setEditing(false)} className="btn-secondary text-sm">
-                Annuler
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-function formatNumber(n: number): string {
-  return n.toLocaleString('fr-FR');
-}
-
-// ============================================================================
-// UsageBar (small metric display)
-// ============================================================================
-
-function UsageBar({
-  icon,
-  label,
-  value,
-  unit,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  unit: string;
-}) {
-  return (
-    <div className="p-2 bg-slate-50 rounded">
-      <div className="flex items-center gap-1 text-slate-500 text-xs mb-0.5">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <div className="text-sm font-bold text-slate-900">
-        {value.toLocaleString('fr-FR')}{' '}
-        <span className="text-xs font-normal text-slate-500">{unit}</span>
-      </div>
-    </div>
-  );
-}
-
 // ============================================================================
 // CloudflareCard (Workers — primary infrastructure)
 // ============================================================================
@@ -1250,8 +736,27 @@ function CloudflareCard({
           ⚠️ CF_API_TOKEN non configuré. Ajouter via <code>wrangler secret put CF_API_TOKEN</code>.
         </div>
       ) : hasError ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
-          Erreur: {u?.error || info?.error}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800 space-y-2">
+          {(u?.error || info?.error || '').includes('403') ||
+          (u?.error || info?.error || '').includes('Authentication') ? (
+            <>
+              <div className="font-bold">🔐 Token sans scope analytics</div>
+              <p>
+                Le token <code>CF_API_TOKEN</code> fonctionne mais n'a pas la permission{' '}
+                <code>Account Analytics: Read</code>.
+              </p>
+              <a
+                href="https://dash.cloudflare.com/profile/api-tokens"
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-1 text-blue-700 hover:underline font-semibold"
+              >
+                Créer un nouveau token avec les scopes Analytics: Read, D1: Read, R2: Read →
+              </a>
+            </>
+          ) : (
+            <>Erreur: {u?.error || info?.error}</>
+          )}
         </div>
       ) : u ? (
         <div className="space-y-2">
@@ -1351,8 +856,16 @@ function D1Card({
           ⚠️ CF_API_TOKEN non configuré.
         </div>
       ) : hasError ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
-          Erreur: {u?.error || info?.error}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800 space-y-2">
+          {(u?.error || info?.error || '').includes('403') ||
+          (u?.error || info?.error || '').includes('Authentication') ? (
+            <>
+              <div className="font-bold">🔐 Token sans scope analytics</div>
+              <p>Le token CF_API_TOKEN n'a pas la permission Account Analytics: Read.</p>
+            </>
+          ) : (
+            <>Erreur: {u?.error || info?.error}</>
+          )}
         </div>
       ) : u ? (
         <div className="space-y-2">
@@ -1453,8 +966,16 @@ function R2Card({
           ⚠️ CF_API_TOKEN non configuré.
         </div>
       ) : hasError ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
-          Erreur: {u?.error || info?.error}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800 space-y-2">
+          {(u?.error || info?.error || '').includes('403') ||
+          (u?.error || info?.error || '').includes('Authentication') ? (
+            <>
+              <div className="font-bold">🔐 Token sans scope analytics</div>
+              <p>Le token CF_API_TOKEN n'a pas la permission Account Analytics: Read.</p>
+            </>
+          ) : (
+            <>Erreur: {u?.error || info?.error}</>
+          )}
         </div>
       ) : u ? (
         <div className="space-y-2">
