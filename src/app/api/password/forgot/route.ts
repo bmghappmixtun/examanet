@@ -126,6 +126,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     success: true,
     email: user.email,
-    ...(result.devCode ? { devCode: result.devCode } : {}),
+    // SECURITY: never expose dev code in production
+    ...(result.devCode && !isProduction() ? { devCode: result.devCode } : {}),
   });
 }

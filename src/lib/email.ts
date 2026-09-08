@@ -80,9 +80,9 @@ async function sendViaResend(args: {
   }
 }
 
-// Always include dev code as fallback in case email is not delivered
-// (e.g., Resend test mode, custom domain not verified, spam folder)
-const ALWAYS_INCLUDE_DEV_CODE = process.env.HIDE_DEV_CODE !== 'true';
+// SECURITY: Only return devCode in non-production environments.
+// In production, the dev code should NEVER be exposed (security risk).
+const INCLUDE_DEV_CODE = process.env.NODE_ENV !== 'production' && process.env.HIDE_DEV_CODE !== 'true';
 
 export class EmailResult {
   constructor(
@@ -118,7 +118,7 @@ export async function sendOTPEmail(
     true,
     sendResult.id || 'sent',
     undefined,
-    ALWAYS_INCLUDE_DEV_CODE ? code : undefined,
+    INCLUDE_DEV_CODE ? code : undefined,
   );
 }
 

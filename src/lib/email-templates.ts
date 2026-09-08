@@ -342,3 +342,135 @@ export function renderNewStudentEmail(
     footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
   });
 }
+
+/**
+ * 2026-09-09: Email sent to admins when a student rates a resource.
+ * Ratings are valuable engagement signals, but the admin should know
+ * if there's a sudden drop or coordinated low-rating campaign.
+ */
+export function renderNewRatingEmail(
+  studentName: string,
+  studentEmail: string,
+  resourceTitle: string,
+  resourceId: string,
+  value: number,
+  review: string | null,
+): string {
+  const safeTitle = resourceTitle.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeStudent = studentName.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeReview = review
+    ? review.replace(/</g, '&lt;').replace(/>/g, '&gt;').slice(0, 500)
+    : null;
+  const stars = '★'.repeat(value) + '☆'.repeat(5 - value);
+  return renderEmailShell({
+    accent: 'amber',
+    icon: '⭐',
+    title: `Nouvelle note ${value}/5`,
+    subtitle: `Un élève a noté une ressource`,
+    preheader: `${stars} par ${safeStudent}`,
+    body: `
+      <p style="margin:0 0 16px;font-size:16px;color:#0F172A;font-family:${F};">Bonjour Admin,</p>
+      ${paragraph('Un élève a laissé une note sur une ressource.')}
+      <div style="background:#FEF3C7;border-left:4px solid #F59E0B;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#92400E;font-weight:bold;">📚 Ressource notée</p>
+        <p style="margin:4px 0;color:#78350F;font-size:14px;"><strong>Titre :</strong> ${safeTitle}</p>
+        <p style="margin:4px 0;color:#78350F;font-size:18px;"><strong>Note :</strong> <span style="color:#F59E0B;">${stars}</span> (${value}/5)</p>
+      </div>
+      <div style="background:#EFF6FF;border-left:4px solid #3B82F6;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#1E40AF;font-weight:bold;">👤 Élève</p>
+        <p style="margin:4px 0;color:#1E3A8A;font-size:14px;"><strong>Nom :</strong> ${safeStudent}</p>
+        <p style="margin:4px 0;color:#1E3A8A;font-size:14px;"><strong>Email :</strong> <a href="mailto:${studentEmail}" style="color:#0369A1;">${studentEmail}</a></p>
+      </div>
+      ${safeReview ? `
+      <div style="background:#F1F5F9;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#0F172A;font-weight:bold;">💬 Avis</p>
+        <p style="margin:0;color:#334155;font-size:14px;font-style:italic;">"${safeReview}"</p>
+      </div>
+      ` : ''}
+      ${ctaButton(`${SITE_URL}/ressources/${resourceId}`, 'Voir la ressource', 'amber')}
+    `,
+    footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
+  });
+}
+
+/**
+ * 2026-09-09: Email sent to admins when a student posts a comment.
+ * Comments need moderation — let admin know about new content.
+ */
+export function renderNewCommentEmail(
+  studentName: string,
+  studentEmail: string,
+  resourceTitle: string,
+  resourceId: string,
+  commentContent: string,
+): string {
+  const safeTitle = resourceTitle.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeStudent = studentName.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeContent = commentContent
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .slice(0, 1000);
+  return renderEmailShell({
+    accent: 'sky',
+    icon: '💬',
+    title: 'Nouveau commentaire',
+    subtitle: `Un élève a commenté une ressource`,
+    preheader: `Commentaire de ${safeStudent}`,
+    body: `
+      <p style="margin:0 0 16px;font-size:16px;color:#0F172A;font-family:${F};">Bonjour Admin,</p>
+      ${paragraph('Un élève vient de poster un commentaire. À modérer si nécessaire.')}
+      <div style="background:#E0F2FE;border-left:4px solid #0EA5E9;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#0C4A6E;font-weight:bold;">📚 Ressource</p>
+        <p style="margin:4px 0;color:#075985;font-size:14px;"><strong>Titre :</strong> ${safeTitle}</p>
+      </div>
+      <div style="background:#F1F5F9;border-left:4px solid #64748B;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#0F172A;font-weight:bold;">💬 Commentaire</p>
+        <p style="margin:0;color:#334155;font-size:14px;">${safeContent}</p>
+      </div>
+      <div style="background:#EFF6FF;border-radius:8px;padding:12px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 4px;color:#1E40AF;font-weight:bold;font-size:13px;">👤 ${safeStudent}</p>
+        <p style="margin:0;color:#1E3A8A;font-size:12px;">${studentEmail}</p>
+      </div>
+      ${ctaButton(`${SITE_URL}/ressources/${resourceId}`, 'Voir la ressource', 'sky')}
+    `,
+    footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
+  });
+}
+
+/**
+ * 2026-09-09: Email sent to admins when a student activates their account
+ * via OTP verification. Provides visibility on new active users.
+ */
+export function renderStudentActivatedEmail(
+  firstName: string,
+  lastName: string,
+  email: string,
+  classLevel: string | null,
+  schoolName: string | null,
+  governorate: string | null,
+): string {
+  const safeClass = classLevel ? classLevel.replace(/</g, '&lt;').replace(/>/g, '&gt;') : null;
+  const safeSchool = schoolName ? schoolName.replace(/</g, '&lt;').replace(/>/g, '&gt;') : null;
+  const safeGov = governorate ? governorate.replace(/</g, '&lt;').replace(/>/g, '&gt;') : null;
+  const meta = [safeClass, safeSchool, safeGov].filter(Boolean).join(' · ');
+  return renderEmailShell({
+    accent: 'emerald',
+    icon: '✅',
+    title: 'Élève a activé son compte',
+    subtitle: 'Un élève vient de vérifier son email',
+    preheader: `${firstName} ${lastName} a activé son compte`,
+    body: `
+      <p style="margin:0 0 16px;font-size:16px;color:#0F172A;font-family:${F};">Bonjour Admin,</p>
+      ${paragraph('Un nouvel élève a confirmé son adresse email. Son compte est maintenant actif.')}
+      <div style="background:#D1FAE5;border-left:4px solid #10B981;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#065F46;font-weight:bold;">👤 Profil de l'élève</p>
+        <p style="margin:4px 0;color:#064E3B;font-size:14px;"><strong>Nom :</strong> ${firstName} ${lastName}</p>
+        <p style="margin:4px 0;color:#064E3B;font-size:14px;"><strong>Email :</strong> <a href="mailto:${email}" style="color:#0369A1;">${email}</a></p>
+        ${meta ? `<p style="margin:4px 0;color:#064E3B;font-size:14px;"><strong>Profil :</strong> ${meta}</p>` : ''}
+      </div>
+      ${muted("L'élève peut maintenant se connecter et accéder aux ressources de la plateforme.")}
+      ${ctaButton(`${SITE_URL}/admin/utilisateurs?role=STUDENT`, 'Voir les élèves', 'emerald')}
+    `,
+    footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
+  });
+}

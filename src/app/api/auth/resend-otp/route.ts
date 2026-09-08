@@ -83,7 +83,8 @@ export async function POST(req: NextRequest) {
         success: true,
         message: 'Si votre email est valide et non vérifié, un nouveau code a été envoyé.',
       };
-      if (result.devCode) {
+      // SECURITY: Never expose dev code in production
+      if (result.devCode && !isProduction()) {
         response.devCode = result.devCode;
         response.devMode = true;
       }
