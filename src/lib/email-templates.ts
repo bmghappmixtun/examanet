@@ -474,3 +474,42 @@ export function renderStudentActivatedEmail(
     footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
   });
 }
+
+/**
+ * 2026-09-09: Magic link email for passwordless login.
+ * Sent when user requests a login link instead of using password.
+ * Works for both existing and new users (auto-creates account if new).
+ */
+export function renderMagicLinkEmail(
+  email: string,
+  magicLink: string,
+  expiresInMinutes: number = 15,
+  isNewUser: boolean = false,
+): string {
+  const safeEmail = email.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const welcomeText = isNewUser
+    ? `Bienvenue sur Examanet ! Un compte a été créé automatiquement pour ${safeEmail}.`
+    : `Cliquez sur le bouton ci-dessous pour vous connecter à votre compte ${safeEmail}.`;
+
+  return renderEmailShell({
+    accent: 'sky',
+    icon: '🔗',
+    title: isNewUser ? 'Bienvenue sur Examanet' : 'Votre lien de connexion',
+    subtitle: isNewUser ? 'Votre compte a été créé' : 'Connexion sans mot de passe',
+    preheader: `Lien de connexion Examanet pour ${safeEmail}`,
+    body: `
+      <p style="margin:0 0 16px;font-size:16px;color:#0F172A;font-family:${F};">Bonjour,</p>
+      ${paragraph(welcomeText)}
+      <div style="background:#E0F2FE;border-left:4px solid #0EA5E9;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#075985;font-weight:bold;">🔐 Lien sécurisé</p>
+        <p style="margin:4px 0;color:#0C4A6E;font-size:14px;">Ce lien expire dans <strong>${expiresInMinutes} minutes</strong> et ne peut être utilisé qu'une seule fois.</p>
+        <p style="margin:4px 0;color:#0C4A6E;font-size:14px;">Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email en toute sécurité.</p>
+      </div>
+      ${ctaButton(magicLink, isNewUser ? 'Créer mon compte' : 'Me connecter', 'sky')}
+      <p style="margin:16px 0 0;font-size:12px;color:#64748B;font-family:${F};word-break:break-all;">
+        Ou copiez ce lien : <a href="${magicLink}" style="color:#0369A1;">${magicLink}</a>
+      </p>
+    `,
+    footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Connexion sécurisée par lien magique</p>`,
+  });
+}
