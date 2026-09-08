@@ -37,7 +37,7 @@ variables:
 
 # Default image and setup
 default:
-  image: node:22-bullseye
+  image: node:22-bookworm
   before_script:
     - apt-get update -qq
     - apt-get install -y -qq curl unzip git > /dev/null
