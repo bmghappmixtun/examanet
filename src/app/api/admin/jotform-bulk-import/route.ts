@@ -40,7 +40,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { db } from '@/lib/d1-admin';
-import { put } from '@vercel/blob';
+import { uploadFile } from '@/lib/storage';
 import { properSlugify } from '@/lib/slugify';
 import { convertDocxToPdf } from '@/lib/document-converter';
 
@@ -291,19 +291,17 @@ async function processFile(
 
     // Upload original (always with random suffix to avoid collisions on retry)
     const originalKey = `teacher-library/${teacher.id}/jotform/${submissionId}-${safeBase}-orig.${format}`;
-    const originalBlob = await put(originalKey, originalBuffer, {
-      access: 'public',
-      addRandomSuffix: true,
-    });
+    const originalBlob = await uploadFile(originalKey, originalBuffer, 'application/pdf');
 
     // Upload PDF (either original was PDF, or we converted it)
     const pdfKey = `teacher-library/${teacher.id}/jotform/${submissionId}-${safeBase}.pdf`;
-    const pdfBlob: { url: string; pathname: string; size: number } | null = pdfBuffer
-      ? await put(pdfKey, pdfBuffer, { access: 'public', addRandomSuffix: true }).then((b) => ({
-          url: b.url, pathname: b.pathname, size: pdfBuffer!.length,
-        }))
+    const pdfBlob: { url: string; key: string; size: number } | null = pdfBuffer
+      ? (async () => {
+          const r = await uploadFile(pdfKey, pdfBuffer, 'application/pdf');
+          return { url: r.url, key: r.key, size: pdfBuffer!.length };
+        })()
       : format === 'pdf'
-        ? { url: originalBlob.url, pathname: originalBlob.pathname, size: originalBuffer.length }
+        ? { url: originalBlob.url, key: originalBlob.key, size: originalBuffer.length }
         : null;
 
     // STEP 4: Create TeacherFile + Resource
@@ -312,7 +310,7 @@ async function processFile(
         teacherId: teacher.id,
         fileName: fileName,
         originalFormat: format,
-        fileKey: originalBlob.pathname,
+        fileKey: originalBlob.key,
         fileUrl: originalBlob.url,
         fileSize: originalBuffer.length,
         pdfKey: pdfBlob?.pathname || null,
@@ -399,10 +397,10 @@ async function processFile(
         description: sub.sujet || '',
         type: resType as any,
         status: 'PUBLISHED',
-        fileKey: pdfBlob?.pathname || originalBlob.pathname,
+        fileKey: pdfBlob?.pathname || originalBlob.key,
         fileUrl: pdfBlob?.url || originalBlob.url,
         fileSize: pdfBlob?.size || originalBuffer.length,
-        originalFileKey: originalBlob.pathname,
+        originalFileKey: originalBlob.key,
         originalFileName: fileName,
         originalFormat: format,
         originalFileSize: originalBuffer.length,

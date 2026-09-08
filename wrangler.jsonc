@@ -50,7 +50,7 @@
     {
       "binding": "DB",
       "database_name": "examanet-db",
-      "database_id": "22ad2e7f-1692-486e-9131-d6c4062012e1",
+      "database_id": "***REMOVED***",
       "migrations_dir": "drizzle-migrations"
     }
   ]

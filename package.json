@@ -45,7 +45,6 @@
     "@statsig/web-analytics": "^3.33.4",
     "@tanstack/react-virtual": "^3.14.10",
     "@types/pg": "^8.20.0",
-    "@vercel/blob": "^2.4.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",

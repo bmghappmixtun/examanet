@@ -23,7 +23,7 @@ const LOG_FILE = path.join(__dirname, `resync-${new Date().toISOString().slice(0
 const DATABASE_URL = process.env.DATABASE_URL;
 const CF_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
-const D1_DATABASE_ID = '22ad2e7f-1692-486e-9131-d6c4062012e1';
+const D1_DATABASE_ID = '***REMOVED***';
 
 if (!DATABASE_URL || !CF_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID) {
   console.error('Missing DATABASE_URL, CLOUDFLARE_API_TOKEN, or CLOUDFLARE_ACCOUNT_ID');

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { uploadFile } from '@/lib/storage';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -21,17 +21,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'file required' }, { status: 400 });
     }
 
-    // Use a stream to upload to Vercel Blob (bypasses 4.5MB function payload limit)
-    // The @vercel/blob put() function can accept a ReadableStream
-    const blob = await put(pathname || file.name, file.stream(), {
-      access: 'public',
-      contentType: file.type || 'application/pdf',
-    });
+    // 2026-09-07: R2 migration — use uploadFile (was put() to Vercel Blob)
+    // Read the file as ArrayBuffer to bypass formData size limits
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const contentType = file.type || 'application/pdf';
+    const result = await uploadFile(pathname || file.name, buffer, contentType);
 
     return NextResponse.json({
       success: true,
-      url: blob.url,
-      key: blob.pathname,
+      url: result.url,
+      key: result.key,
       fileName: file.name,
       fileSize: file.size,
     });

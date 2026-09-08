@@ -3,14 +3,14 @@ export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/admin/blob-cleanup
- * Delete blob URLs from Vercel Blob storage.
- * Body: { urls: string[] }
+ * Delete files from R2 storage (Vercel Blob → R2 migration 2026-09-07).
+ * Body: { urls: string[] } or { keys: string[] }
  *
  * Auth: ADMIN role OR SEED_TOKEN (consistent with other admin endpoints)
  * Returns: { success, requested, deleted, failed, errors }
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { del } from '@vercel/blob';
+import { deleteFile } from '@/lib/storage';
 import { db } from '@/lib/d1-admin';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -34,28 +34,31 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const urls = Array.isArray(body.urls) ? body.urls : [];
+    const keys = Array.isArray(body.keys) ? body.keys : [];
 
-    if (urls.length === 0) {
-      return NextResponse.json({ error: 'urls requis' }, { status: 400 });
+    if (urls.length === 0 && keys.length === 0) {
+      return NextResponse.json({ error: 'urls or keys requis' }, { status: 400 });
     }
 
     let deleted = 0,
       failed = 0;
     const errors: string[] = [];
 
-    for (const url of urls) {
+    for (const item of [...urls, ...keys]) {
       try {
-        await del(url);
+        // 2026-09-07: R2 migration — use deleteFile (was del() from Vercel Blob)
+        // Accepts both R2 keys and our proxy URLs (/api/file/KEY)
+        await deleteFile(item);
         deleted++;
       } catch (e: any) {
         failed++;
-        errors.push(`${url.slice(-40)}: ${e.message?.slice(0, 60) || 'unknown'}`);
+        errors.push(`${item.toString().slice(-40)}: ${e.message?.slice(0, 60) || 'unknown'}`);
       }
     }
 
     return NextResponse.json({
       success: true,
-      requested: urls.length,
+      requested: urls.length + keys.length,
       deleted,
       failed,
       errors: errors.slice(0, 5),

@@ -87,6 +87,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const pendingReports = num(pendingReportsR?.c);
   const newUsers = num(newUsersR?.c);
   const unseenErrors = num(unseenErrorsR?.c);
+  // 2026-09-07: count of pending contact messages
+  const pendingMessagesR = await db
+    .prepare("SELECT COUNT(*) as c FROM ContactMessage WHERE status = 'PENDING'")
+    .first()
+    .catch(() => ({ c: 0 }));
+  const pendingMessages = num(pendingMessagesR?.c);
 
   const navItems: any[] = [
     { group: "Vue d'ensemble" },
@@ -127,7 +133,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     },
     { href: '/admin/invitations', icon: Mail, label: 'Invitations profs' },
     { href: '/admin/catalog', icon: BookOpen, label: 'Catalogue (matières/niveaux)' },
-    { href: '/admin/messages', icon: MessageSquare, label: 'Messages' },
+    { href: '/admin/messages', icon: MessageSquare, label: 'Messages', badge: pendingMessages, badgeColor: 'bg-amber-500' },
 
     { group: 'Surveillance' },
     {

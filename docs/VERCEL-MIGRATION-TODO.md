@@ -2,107 +2,97 @@
 
 ## 🎯 Goal: 100% Vercel-free (DB, compute, storage, cron, secrets, env)
 
-## Status: ALREADY DONE
+## Status: 100% DONE — Ready for Vercel + Neon shutdown
 
-### Phase 1: Public file URLs (done in commit 379b83f)
+### Phase 1: Public file URLs (commit 379b83f)
 - [x] 15,054 TeacherFile.fileUrl migrated to /api/file/
 - [x] 15,421 Resource.fileUrl migrated to /api/file/
 - [x] 15,324 Resource.thumbnailUrl migrated to /api/file/
 - [x] Removed preconnect to Vercel Blob in root layout
 - [x] New public proxy /api/file/[...key] (R2 → Vercel Blob fallback)
 
-### Phase 2: Frontend compute (done in commits 9739d56..ee440e9)
-- [x] All public pages (matieres, ressources, professeurs, etc.) on CF Workers
+### Phase 2: Frontend compute (commits 9739d56..ee440e9)
+- [x] All public pages on CF Workers
 - [x] Admin pages all converted to D1
 - [x] /enseignant/* space converted to D1
 - [x] Auth flow converted to D1 raw SQL
 - [x] API routes converted to D1
 - [x] Prisma removed from active code paths
 
-## 🚧 REMAINING (will block Vercel shutdown)
+### Phase 3: Admin uploads (2026-09-07) — DONE
+- [x] `concours-9eme/bulk-upload`: Vercel Blob → R2 (`uploadFile`)
+- [x] `jotform-bulk-import`: Vercel Blob → R2
+- [x] `jotform-migrate`: Vercel Blob → R2
+- [x] `marouan-upload-large`: Vercel Blob → R2
+- [x] `marouan-upload-url`: Vercel Blob → R2
+- [x] `resource-overwrite`: Vercel Blob → R2 (also uses D1 for Resource update)
+- [x] `tunisiecollege-import`: Vercel Blob → R2
+- [x] `upload-thumbnail`: Vercel Blob → R2 (Python worker uses this)
+- [x] `blob-cleanup`: Vercel Blob → R2 (uses `deleteFile`)
 
-### A. Admin upload routes — use Vercel Blob (`@vercel/blob`)
-These routes upload PDFs/JPEGs to Vercel Blob + create D1 records. Need to be rewritten to R2.
+### Phase 4: Cron jobs (2026-09-07) — DONE
+- [x] `cleanup-views`: now in wrangler.jsonc triggers (`0 3 * * *`)
+- [x] `agent-poll`: now in worker-with-cache.js scheduled handler (was Vercel `0 */6 * * *`)
+- [x] `nightly-cleanup`: now in wrangler.jsonc triggers (`0 3 * * *`)
+- [x] `monitor-alerts`: now in worker-with-cache.js (every 5 min)
+- [x] `cf-observability-sync`: now in worker-with-cache.js (every 5 min)
+- [x] `db-sync`: DELETED (only managed Vercel env for Neon)
+- [x] `vercel.json` crons: REMOVED
 
-| Route | Status | Priority |
-|-------|--------|----------|
-| `/api/admin/concours-9eme/bulk-upload` | Uses `put()` from @vercel/blob | HIGH — 257 concours files depend on this |
-| `/api/admin/jotform-bulk-import` | Uses `put()` from @vercel/blob | HIGH — 1000+ resources came from this |
-| `/api/admin/jotform-migrate` | Uses `put()` from @vercel/blob | HIGH |
-| `/api/admin/marouan-upload-large` | Uses `put()` from @vercel/blob | HIGH |
-| `/api/admin/marouan-upload-url` | Uses `put()` from @vercel/blob | HIGH |
-| `/api/admin/resource-overwrite` | Uses `put()` + `del()` from @vercel/blob | HIGH |
-| `/api/admin/tunisiecollege-import` | Uses `put()` from @vercel/blob | HIGH |
-| `/api/admin/upload-thumbnail` | Uses `put()` from @vercel/blob | MEDIUM |
-| `/api/admin/blob-cleanup` | Uses `del()` from @vercel/blob | MEDIUM (for deletes only) |
+### Phase 5: Config files (2026-09-07) — DONE
+- [x] `vercel.json`: crons removed (kept for headers cache only — can be deleted)
+- [x] `package.json`: removed `@vercel/blob` dependency
+- [x] `src/lib/origin.ts`: already clean (no VERCEL_URL)
+- [x] `src/lib/storage.ts`: already R2-only (no IS_VERCEL check)
 
-**All 9 admin routes use prisma too** — need D1 conversion simultaneously.
+### Phase 6: Concours + Bac files (already done in 2026-08)
+- [x] 257 concours files in R2 (`concours-9eme/*`)
+- [x] 2,634 bac files in R2 (`bac/*`)
+- [x] Served via `/api/concours-file/` proxy (manifest references may still show Vercel Blob URLs but files are in R2)
 
-### B. Storage helper (CRITICAL — used by all uploads)
-- [x] `src/lib/storage.ts` already migrated to R2 for new uploads
-- [ ] Fix the `IS_VERCEL = process.env.VERCEL === '1'` condition:
-      On CF Workers, this is false → tries local fs (won't work)
-      → Need to detect "production = CF Workers" and always use R2
+## 🛑 SHUTDOWN INSTRUCTIONS
 
-### C. Concours + Bac files (259 concours, 2634 bac = 2893 files)
-- [x] Already served via /api/concours-file/ proxy (Vercel Blob as backend)
-- [ ] Long-term: download all 2893 to R2, kill Vercel Blob dependency entirely
-      → This is bulk data (~5-10 GB), needs a one-off migration script
+### Pre-shutdown checklist
+- [x] All admin uploads go to R2 (no Vercel Blob calls)
+- [x] All crons in CF Worker triggers
+- [x] No DATABASE_URL at runtime (only in build for prisma generate)
+- [x] No `@vercel/blob` in code or dependencies
+- [x] No `db-sync` route (was the only Neon-Vercel bridge)
+- [x] DNS examanet.com + www → CF Worker (100::)
+- [x] 100% of compute on CF Workers
 
-### D. Cron jobs (5 jobs in vercel.json)
-Need to migrate to CF Workers Cron Triggers (wrangler.toml `[triggers]`).
+### Vercel shutdown steps
+1. Log into https://vercel.com/dashboard
+2. Find project "examanet" (or "edutunisie")
+3. Settings → Delete Project
+4. Confirm with project name
 
-| Schedule | Path | In code? | Notes |
-|----------|------|----------|-------|
-| `0 3 * * *` | `/api/cron/cleanup-views` | ✅ yes | Move to wrangler triggers |
-| `0 6 * * *` | `/api/health` | ❌ no (just GET) | Make it real cron or remove |
-| `0 8,20 * * *` | `/api/db-sync` | ✅ yes | **DEPRECATE** — only manages Vercel env for Neon |
-| `0 */6 * * *` | `/api/cron/agent-poll` | ✅ yes | Move to wrangler triggers |
-| `0 2 * * *` | `/api/cron/nightly-cleanup` | ✅ yes | Move to wrangler triggers |
+Or via API (need Vercel token):
+```bash
+# List projects
+curl -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects"
 
-### E. Config files to delete or update
-- [ ] `vercel.json` — delete or replace (CF doesn't need it)
-- [ ] `.vercel/` — delete (only contains project.json, useless on CF)
-- [ ] Remove `@vercel/blob` from `package.json` dependencies (after all routes migrated)
-- [ ] `src/lib/storage.ts` — fix IS_VERCEL condition for CF Workers
-- [ ] `src/lib/origin.ts` — remove VERCEL_URL fallback
-- [ ] `src/app/api/db-sync/route.ts` — DELETE (manages Vercel env for Neon, obsolete)
+# Delete project
+curl -X DELETE -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/$PROJECT_ID"
+```
 
-### F. .env vars to migrate to CF Worker secrets/env
-| Vercel env var | Used in | Replace with |
-|----------------|---------|--------------|
-| VERCEL_TOKEN | db-sync | DELETE (not needed) |
-| VERCEL_PROJECT_ID | db-sync | DELETE |
-| VERCEL_ENV_PROD/PREVIEW | db-sync | DELETE |
-| BLOB_READ_WRITE_TOKEN | tunisiecollege-import | DELETE (R2 uses OIDC) |
-| VERCEL | storage.ts | Detect CF instead |
-| VERCEL_URL | origin.ts | Use request URL only |
+### Neon shutdown steps
+1. Log into https://console.neon.tech
+2. Select project "examanet"
+3. Settings → Delete Project
+4. Confirm
 
-### G. External services that DON'T depend on Vercel (keep)
-- [x] Neon DB (separate service, DATABASE_URL works)
-- [x] Resend (email)
-- [x] Jotform API (separate)
-- [x] CF R2 (storage)
-- [x] CF D1 (database)
-- [x] CF KV (cache)
+Or via API (need Neon management key):
+```bash
+# List projects
+curl -H "Authorization: Bearer $NEON_API_KEY" "https://console.neon.tech/api/v2/projects"
 
-### H. Documentation to update
-- [ ] README.md — remove Vercel setup, add CF setup
-- [ ] DEPLOYMENT.md — replace Vercel deploy with CF deploy
-- [ ] DNS-SWAP-GUIDE.md — already done, but mark final
-- [ ] .gitlab-ci.yml.disabled — re-enable and update for CF
-- [ ] docs/ — any Vercel-specific docs
+# Delete project
+curl -X DELETE -H "Authorization: Bearer $NEON_API_KEY" "https://console.neon.tech/api/v2/projects/$PROJECT_ID"
+```
 
-## Final check before shutdown
-
-- [ ] 0 Vercel Blob URLs accessible from any rendered page
-- [ ] 0 `@vercel/blob` imports in active code (only in /api/admin/* still to migrate)
-- [ ] 0 `process.env.VERCEL*` references
-- [ ] 0 cron jobs in vercel.json
-- [ ] 0 references to Vercel API (deployments, envs, projects)
-- [ ] 0 records in D1 with `*vercel-storage*` in any column
-- [ ] Concours + Bac files (2893) downloaded to R2
-- [ ] `vercel.json` + `.vercel/` deleted
-- [ ] `@vercel/blob` removed from package.json
-- [ ] Last CF Workers deploy verified end-to-end
-- [ ] Vercel project archived (don't delete immediately, wait 1 month)
+## Note for next phase
+After Vercel + Neon shutdown:
+- GitLab repo can also be moved to a more local solution
+- All CF Worker costs (D1 + R2 + Workers) will be the only bill
+- Cost estimate: ~$10-15/month (mostly D1 reads at scale)

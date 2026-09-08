@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
 import { hashPassword, generateOTP } from '@/lib/auth';
 import { sendOTPEmail, sendWelcomeEmail } from '@/lib/email';
-import { notifyAdminsNewTeacher } from '@/lib/admin-notify';
+import { notifyAdminsNewTeacher, notifyAdminsNewStudent } from '@/lib/admin-notify';
 import { getNextUserNumericId } from '@/lib/db-d1';
 
 function genId() {
@@ -137,6 +137,9 @@ export async function POST(req: NextRequest) {
     // If teacher, notify admins in-app
     if (role === 'TEACHER') {
       await notifyAdminsNewTeacher(userId).catch((e) => console.error('Admin notify error:', e));
+    } else if (role === 'STUDENT') {
+      // 2026-09-08: also notify admins for new students (in-app only, no email)
+      await notifyAdminsNewStudent(userId).catch((e) => console.error('Admin notify error:', e));
     }
 
     // Build response
