@@ -387,10 +387,15 @@
         "subtitle": "Explorez {count} matières du système éducatif tunisien — de la 7ème de base jusqu'au Baccalauréat. Cours, devoirs, séries, sujets BAC et corrigés gratuits, conformes au programme officiel.",
         "matieres": "matières",
         "ressources": "ressources",
-        "gratuit": "100% gratuit"
+        "gratuit": "100% gratuit",
+        "badge": "Programme officiel tunisien"
       },
       "richSnippet": "${count} matières disponibles : cours, devoirs, exercices et corrigés gratuits pour le système éducatif tunisien.",
-      "richSnippetItem": "${count} ressources en ${name}"
+      "richSnippetItem": "${count} ressources en ${name}",
+      "grid": {
+        "ressources": "ressources",
+        "voir": "Voir"
+      }
     }
   },
   "teacher": {
@@ -1096,8 +1101,7 @@
         "content": "Pour toute question concernant cette politique de confidentialité ou tes données personnelles :\n\n• Email : contact@examanet.com\n• Délai de réponse : 7 jours ouvrés maximum\n• Langues : français, arabe, anglais"
       }
     ]
-  }
-,
+  },
   "about": {
     "hero": {
       "badge": "Fait avec ❤️ en Tunisie 🇹🇳",
