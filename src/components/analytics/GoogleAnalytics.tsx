@@ -2,7 +2,7 @@
 
 import Script from 'next/script';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 
 /**
  * Google Analytics 4 tracking via gtag.js.
@@ -11,17 +11,6 @@ import { useEffect } from 'react';
  */
 export default function GoogleAnalytics() {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    if (!measurementId || typeof window.gtag !== 'function') return;
-    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
-    window.gtag('config', measurementId, {
-      page_path: url,
-    });
-  }, [pathname, searchParams, measurementId]);
-
   if (!measurementId) return null;
 
   return (
@@ -45,8 +34,30 @@ export default function GoogleAnalytics() {
           `,
         }}
       />
+      <Suspense fallback={null}>
+        <PageViewTracker measurementId={measurementId} />
+      </Suspense>
     </>
   );
+}
+
+/**
+ * Page view tracker — must be wrapped in Suspense because it uses useSearchParams.
+ * Updates the page_path on every route change.
+ */
+function PageViewTracker({ measurementId }: { measurementId: string }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (typeof window.gtag !== 'function') return;
+    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+    window.gtag('config', measurementId, {
+      page_path: url,
+    });
+  }, [pathname, searchParams, measurementId]);
+
+  return null;
 }
 
 declare global {
