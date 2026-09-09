@@ -110,7 +110,10 @@ export default function MatieresListClient({
               </span>
             </h1>
             <p className="text-lg text-slate-600 leading-relaxed mb-6">
-              {t('subjects.page.hero.subtitle', { count: total, defaultValue: `${total} matières du programme tunisien` }).replace('{count}', String(total))}
+              {t('subjects.page.hero.subtitle', {
+                count: total,
+                defaultValue: 'Explorez {count} matières du programme tunisien',
+              })}
             </p>
 
             <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -141,10 +144,10 @@ export default function MatieresListClient({
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {subjects.map((s) => {
             const cfg = getSubjectConfig(s.slug);
-            const Icon = cfg ? (SUBJECT_ICONS[cfg.design.iconName] ?? BookOpen) : BookOpen;
+            const Icon = cfg ? (SUBJECT_ICONS[cfg.design?.iconName] ?? BookOpen) : BookOpen;
             const color = cfg?.color ?? s.color ?? '#0EA5E9';
-            const emoji = cfg?.design.emoji ?? '📚';
-            const gradient = cfg?.design.gradient ?? 'from-slate-100 to-slate-50';
+            const emoji = cfg?.design?.emoji ?? '📚';
+            const gradient = cfg?.design?.gradient ?? 'from-slate-100 to-slate-50';
 
             return (
               <Link
