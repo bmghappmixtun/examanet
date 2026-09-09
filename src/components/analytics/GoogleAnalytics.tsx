@@ -36,6 +36,7 @@ export default function GoogleAnalytics() {
           appear in the initial HTML and Google's tag scanner can detect them. */}
       <script
         async
+        data-cfasync="false"
         src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
       />
       <script
