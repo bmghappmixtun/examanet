@@ -188,7 +188,7 @@ const nextConfig = {
               "frame-src 'self' https://*.youtube.com https://*.vimeo.com https://*.public.blob.vercel-storage.com",
               // SECURITY: connect-src must include Vercel Blob storage (where PDFs are hosted)
               // for the React PDF viewer to fetch them. Also includes R2 (backup storage) + analytics.
-              "connect-src 'self' https://*.examanet.com https://*.r2.dev https://*.amazonaws.com https://*.google-analytics.com https://*.public.blob.vercel-storage.com blob:",
+              "connect-src 'self' https://*.examanet.com https://*.r2.dev https://*.amazonaws.com https://*.google-analytics.com https://*.googletagmanager.com https://www.google.com https://*.public.blob.vercel-storage.com blob:",
               "worker-src 'self' blob:",
               "child-src 'self' blob:",
               "object-src 'none'",
