@@ -5,6 +5,7 @@ import { Users, FileText, TrendingUp, Activity, Download, Award, BookOpen, Gradu
 import { formatNumber } from '@/lib/utils';
 import { cachedD1Query } from '@/lib/kv-cache';
 import { getVisitors, padVisitorsData } from '@/lib/analytics/ga-api';
+import { ActivityChartCard } from '@/components/admin/analytics/ActivityChart';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -304,18 +305,8 @@ export default async function AdminAnalyticsPage() {
         ))}
       </div>
 
-      {/* DAILY ACTIVITY 7d — SVG line chart */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6">
-        <h2 className="font-bold text-lg mb-1">📈 Activité des 7 derniers jours</h2>
-        <p className="text-xs text-slate-400 mb-4">Nouveaux utilisateurs, ressources, téléchargements et visiteurs uniques par jour</p>
-        <div className="flex items-center gap-4 text-xs text-slate-600 mb-3 flex-wrap">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-blue-500" /> Utilisateurs inscrits</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-emerald-500" /> Ressources</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-amber-500" /> Téléchargements</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-purple-500" style={{ background: '#A855F7' }} /> Visiteurs (GA)</span>
-        </div>
-        <Chart days={days} maxSeries={maxSeries} showVisitors />
-      </div>
+      {/* DAILY ACTIVITY 7d — modern activity chart with KPI cards */}
+      <ActivityChartCard days={days} maxSeries={maxSeries} showVisitors />
 
       {/* ÉLÈVES — cumul + nouveaux par jour */}
       <div className="bg-white rounded-2xl border border-slate-100 p-6">
