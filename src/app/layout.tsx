@@ -4,7 +4,6 @@ import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import ServiceWorkerRegister from '@/components/pwa/ServiceWorkerRegister';
 import ErrorHandlerInit from '@/components/errors/ErrorHandlerInit';
-import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { NextIntlClientProvider } from 'next-intl';
 import { organizationSchema } from '@/lib/structured-data';
@@ -247,7 +246,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
           />
         ))}
-                <GoogleAnalytics />
         <ServiceWorkerRegister />
         <ErrorHandlerInit />
       </body>
