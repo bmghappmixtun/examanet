@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { Users, FileText, TrendingUp, Activity, Download, Award, BookOpen, GraduationCap } from 'lucide-react';
 import { formatNumber } from '@/lib/utils';
 import { cachedD1Query } from '@/lib/kv-cache';
+import { getVisitors, padVisitorsData } from '@/lib/analytics/ga-api';
 
 export const dynamic = 'force-dynamic';
 export const metadata = {
@@ -120,10 +121,17 @@ export default async function AdminAnalyticsPage() {
   const dailyRows = Array.isArray(daily) ? daily : (daily?.results || []);
 
   // Build last 7 days with 0 defaults
-  const days: { ts: number; users: number; resources: number; downloads: number }[] = [];
+  const days: {
+    ts: number;
+    users: number;        // NEW users (registered this day)
+    resources: number;    // NEW resources published this day
+    downloads: number;    // Downloads this day
+    visitors: number;     // GA visitors (unique users) this day
+    totalStudents: number;// CUMULATIVE total students up to this day
+  }[] = [];
   for (let i = 6; i >= 0; i--) {
     const ts = (Math.floor(now / 86400000) - i) * 86400000;
-    days.push({ ts, users: 0, resources: 0, downloads: 0 });
+    days.push({ ts, users: 0, resources: 0, downloads: 0, visitors: 0, totalStudents: 0 });
   }
   for (const r of dailyRows) {
     const ts = Number(r.day);
@@ -135,7 +143,46 @@ export default async function AdminAnalyticsPage() {
     }
   }
 
-  const maxSeries = Math.max(1, ...days.flatMap((d) => [d.users, d.resources, d.downloads]));
+  // 2b. CUMULATIVE students: count all students created before each day
+  const totalStudentsRow: any = await cachedD1Query({
+    key: 'analytics-total-students-v1',
+    ttl: 300,
+    query: () =>
+      db
+        .prepare("SELECT COUNT(*) AS n FROM User WHERE role = 'STUDENT'")
+        .first(),
+  });
+  const totalStudentsEver = num(totalStudentsRow?.n);
+
+  // Get the count of students who joined BEFORE the 7-day window start
+  // so we can compute cumulative for each of the 7 days
+  const studentsBeforeWindow: any = await cachedD1Query({
+    key: 'analytics-students-before-7d-v1',
+    ttl: 300,
+    query: () =>
+      db
+        .prepare("SELECT COUNT(*) AS n FROM User WHERE role = 'STUDENT' AND createdAt <= ?")
+        .bind(sevenDaysAgo)
+        .first(),
+  });
+  let cumulative = num(studentsBeforeWindow?.n);
+  for (const d of days) {
+    cumulative += d.users; // 'users' here is new user registrations on that day (any role, but mostly students)
+    d.totalStudents = cumulative;
+  }
+
+  // 2c. GA visitors per day (real visitors, not just registrations)
+  const rawVisitors = await getVisitors(7);
+  const visitors = padVisitorsData(rawVisitors, 7);
+  for (let i = 0; i < days.length; i++) {
+    days[i].visitors = visitors[i]?.visitors || 0;
+  }
+
+  const maxSeries = Math.max(
+    1,
+    ...days.flatMap((d) => [d.users, d.resources, d.downloads, d.visitors])
+  );
+  const maxStudents = Math.max(1, ...days.map((d) => d.totalStudents));
 
   // 3. RESOURCES BY TYPE
   const byType: any = await cachedD1Query({
@@ -260,13 +307,47 @@ export default async function AdminAnalyticsPage() {
       {/* DAILY ACTIVITY 7d — SVG line chart */}
       <div className="bg-white rounded-2xl border border-slate-100 p-6">
         <h2 className="font-bold text-lg mb-1">📈 Activité des 7 derniers jours</h2>
-        <p className="text-xs text-slate-400 mb-4">Nouveaux utilisateurs, ressources et téléchargements par jour</p>
-        <div className="flex items-center gap-4 text-xs text-slate-600 mb-3">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-blue-500" /> Utilisateurs</span>
+        <p className="text-xs text-slate-400 mb-4">Nouveaux utilisateurs, ressources, téléchargements et visiteurs uniques par jour</p>
+        <div className="flex items-center gap-4 text-xs text-slate-600 mb-3 flex-wrap">
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-blue-500" /> Utilisateurs inscrits</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-emerald-500" /> Ressources</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-amber-500" /> Téléchargements</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-purple-500" style={{ background: '#A855F7' }} /> Visiteurs (GA)</span>
         </div>
-        <Chart days={days} maxSeries={maxSeries} />
+        <Chart days={days} maxSeries={maxSeries} showVisitors />
+      </div>
+
+      {/* ÉLÈVES — cumul + nouveaux par jour */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="font-bold text-lg mb-1">👨‍🎓 Évolution des élèves inscrits</h2>
+            <p className="text-xs text-slate-400">Total cumulé et nouveaux inscrits par jour (7 derniers jours)</p>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-extrabold text-primary-600">{formatNumber(totalStudentsEver)}</div>
+            <div className="text-xs text-slate-400">élèves au total</div>
+          </div>
+        </div>
+        <StudentsChart days={days} maxStudents={maxStudents} />
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+          <div className="bg-slate-50 rounded-lg p-3">
+            <div className="text-xs text-slate-500">Aujourd'hui</div>
+            <div className="text-lg font-bold text-emerald-600">+{formatNumber(days[6]?.users || 0)}</div>
+          </div>
+          <div className="bg-slate-50 rounded-lg p-3">
+            <div className="text-xs text-slate-500">Cette semaine</div>
+            <div className="text-lg font-bold text-emerald-600">+{formatNumber(days.reduce((s, d) => s + d.users, 0))}</div>
+          </div>
+          <div className="bg-slate-50 rounded-lg p-3">
+            <div className="text-xs text-slate-500">Visiteurs (7j)</div>
+            <div className="text-lg font-bold text-purple-600">{formatNumber(days.reduce((s, d) => s + d.visitors, 0))}</div>
+          </div>
+          <div className="bg-slate-50 rounded-lg p-3">
+            <div className="text-xs text-slate-500">Visiteurs aujourd'hui</div>
+            <div className="text-lg font-bold text-purple-600">{formatNumber(days[6]?.visitors || 0)}</div>
+          </div>
+        </div>
       </div>
 
       {/* TWO-COLUMN: BY TYPE + BY LANGUAGE */}
@@ -447,11 +528,13 @@ export default async function AdminAnalyticsPage() {
 function Chart({
   days,
   maxSeries,
+  showVisitors = false,
 }: {
-  days: { ts: number; users: number; resources: number; downloads: number }[];
+  days: { ts: number; users: number; resources: number; downloads: number; visitors: number }[];
   maxSeries: number;
+  showVisitors?: boolean;
 }) {
-  if (days.every((d) => d.users + d.resources + d.downloads === 0)) {
+  if (days.every((d) => d.users + d.resources + d.downloads + (showVisitors ? d.visitors : 0) === 0)) {
     return <p className="text-sm text-slate-400 italic py-6 text-center">Aucune activité sur les 7 derniers jours</p>;
   }
 
@@ -468,7 +551,7 @@ function Chart({
     return [x, y];
   };
 
-  const buildPath = (key: 'users' | 'resources' | 'downloads') => {
+  const buildPath = (key: 'users' | 'resources' | 'downloads' | 'visitors') => {
     return days
       .map((d, i) => {
         const [x, y] = point(i, d[key]);
@@ -481,6 +564,7 @@ function Chart({
     users: '#3B82F6',
     resources: '#10B981',
     downloads: '#F59E0B',
+    visitors: '#A855F7', // purple for visitors
   };
 
   return (
@@ -519,20 +603,155 @@ function Chart({
         <path d={buildPath('downloads')} fill="none" stroke={colors.downloads} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
         <path d={buildPath('resources')} fill="none" stroke={colors.resources} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
         <path d={buildPath('users')} fill="none" stroke={colors.users} strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round" />
+        {showVisitors && <path d={buildPath('visitors')} fill="none" stroke={colors.visitors} strokeWidth={2.5} strokeDasharray="4 3" strokeLinejoin="round" strokeLinecap="round" />}
 
         {/* Dots */}
         {days.map((d, i) => {
           const [xu, yu] = point(i, d.users);
           const [xr, yr] = point(i, d.resources);
           const [xd, yd] = point(i, d.downloads);
+          const [xv, yv] = point(i, d.visitors);
           return (
             <g key={i}>
               {d.users > 0 && <circle cx={xu} cy={yu} r={3} fill={colors.users} />}
               {d.resources > 0 && <circle cx={xr} cy={yr} r={3} fill={colors.resources} />}
               {d.downloads > 0 && <circle cx={xd} cy={yd} r={3} fill={colors.downloads} />}
+              {showVisitors && d.visitors > 0 && <circle cx={xv} cy={yv} r={3} fill={colors.visitors} />}
             </g>
           );
         })}
+      </svg>
+    </div>
+  );
+}
+
+/**
+ * Students chart: shows cumulative total students as a line
+ * + new students per day as bars.
+ */
+function StudentsChart({
+  days,
+  maxStudents,
+}: {
+  days: { ts: number; users: number; totalStudents: number }[];
+  maxStudents: number;
+}) {
+  if (days.every((d) => d.users === 0 && d.totalStudents === 0)) {
+    return <p className="text-sm text-slate-400 italic py-6 text-center">Aucune inscription sur les 7 derniers jours</p>;
+  }
+
+  const W = 800;
+  const H = 220;
+  const PAD = 40;
+  const innerW = W - PAD * 2;
+  const innerH = H - PAD * 2;
+  const xStep = innerW / Math.max(1, days.length - 1);
+  const maxNew = Math.max(1, ...days.map((d) => d.users));
+
+  const point = (i: number, val: number, max: number) => {
+    const x = PAD + i * xStep;
+    const y = PAD + innerH - (val / max) * innerH;
+    return [x, y];
+  };
+
+  const buildPath = (key: 'users' | 'totalStudents') => {
+    return days
+      .map((d, i) => {
+        const max = key === 'users' ? maxNew : maxStudents;
+        const [x, y] = point(i, d[key], max);
+        return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      })
+      .join(' ');
+  };
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="xMidYMid meet" style={{ minWidth: 480 }}>
+        {/* Y axis grid lines */}
+        {[0, 0.25, 0.5, 0.75, 1].map((p, i) => {
+          const y = PAD + innerH * (1 - p);
+          return (
+            <g key={i}>
+              <line x1={PAD} y1={y} x2={W - PAD} y2={y} stroke="#F1F5F9" strokeWidth={1} />
+              <text x={PAD - 6} y={y + 3} textAnchor="end" className="text-[10px] fill-slate-400">
+                {formatNumber(Math.round(maxStudents * p))}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* X axis labels (days) */}
+        {days.map((d, i) => {
+          const x = PAD + i * xStep;
+          return (
+            <text
+              key={i}
+              x={x}
+              y={H - 8}
+              textAnchor="middle"
+              className="text-[10px] fill-slate-500"
+            >
+              {fmtShort(d.ts)}
+            </text>
+          );
+        })}
+
+        {/* Bars for new users */}
+        {days.map((d, i) => {
+          const x = PAD + i * xStep;
+          const barW = Math.min(30, xStep * 0.4);
+          const [_, yTop] = point(i, d.users, maxNew);
+          return (
+            <rect
+              key={`bar-${i}`}
+              x={x - barW / 2}
+              y={yTop}
+              width={barW}
+              height={H - PAD - yTop}
+              fill="#10B981"
+              opacity={d.users > 0 ? 0.3 : 0}
+              rx={2}
+            />
+          );
+        })}
+
+        {/* Line for cumulative students */}
+        <path
+          d={buildPath('totalStudents')}
+          fill="none"
+          stroke="#0EA5E9"
+          strokeWidth={3}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+
+        {/* Area under cumulative line */}
+        <path
+          d={`${buildPath('totalStudents')} L ${PAD + (days.length - 1) * xStep} ${PAD + innerH} L ${PAD} ${PAD + innerH} Z`}
+          fill="#0EA5E9"
+          opacity={0.1}
+        />
+
+        {/* Dots for cumulative */}
+        {days.map((d, i) => {
+          const [x, y] = point(i, d.totalStudents, maxStudents);
+          return (
+            <g key={`dot-${i}`}>
+              <circle cx={x} cy={y} r={4} fill="#0EA5E9" />
+              <text x={x} y={y - 8} textAnchor="middle" className="text-[10px] fill-sky-700 font-bold">
+                {d.totalStudents > 0 ? formatNumber(d.totalStudents) : ''}
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Legend */}
+        <g transform={`translate(${PAD}, ${H - 4})`}>
+          <rect x="0" y="-10" width="12" height="6" fill="#10B981" opacity={0.5} />
+          <text x="16" y="-5" className="text-[10px] fill-slate-600">Nouveaux</text>
+          <line x1="80" y1="-7" x2="92" y2="-7" stroke="#0EA5E9" strokeWidth={2} />
+          <text x="96" y="-5" className="text-[10px] fill-slate-600">Total cumulé</text>
+        </g>
       </svg>
     </div>
   );
