@@ -170,6 +170,11 @@ export default async function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/politique-confidentialite" className="hover:text-primary-400 transition">
+                  {t('footer.privacy', { defaultValue: 'Politique de confidentialité' })}
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="hover:text-primary-400 transition">
                   {t('nav.contact')}
                 </Link>
