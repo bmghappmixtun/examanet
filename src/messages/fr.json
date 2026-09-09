@@ -588,6 +588,7 @@
     "bacSubjects": "Sujets Bac",
     "corrections": "Corrigés",
     "cgu": "CGU",
+    "privacy": "Politique de confidentialité",
     "aboutUs": "À propos",
     "contact": "Contact",
     "joinAsTeacher": "Devenir enseignant",
@@ -1010,6 +1011,93 @@
       }
     ]
   },
+  "privacy": {
+    "badge": "Protection des données",
+    "hero": {
+      "title": "Politique de confidentialité",
+      "lastUpdate": "Dernière mise à jour : ",
+      "lastUpdateDate": "9 septembre 2026",
+      "intro": "Nous prenons la protection de tes données très au sérieux. Voici exactement ce qu'on collecte, pourquoi, et comment on le protège."
+    },
+    "sommaire": "Sommaire",
+    "engagement": {
+      "title": "Notre engagement",
+      "body": "Examanet collecte uniquement les données strictement nécessaires au fonctionnement de la plateforme. Nous ne vendons jamais tes données et ne les partageons avec aucun tiers à des fins commerciales."
+    },
+    "sections": [
+      {
+        "id": "responsable",
+        "title": "1. Responsable du traitement",
+        "content": "Le responsable du traitement des données personnelles est :\n\nExamanet SARL\nEmail : contact@examanet.com\nSite : examanet.com\n\nPour toute question relative à tes données personnelles, tu peux nous contacter à l'adresse ci-dessus. Nous nous engageons à te répondre dans un délai de 7 jours ouvrés."
+      },
+      {
+        "id": "donnees-collectees",
+        "title": "2. Données que nous collectons",
+        "content": "Nous collectons uniquement les données strictement nécessaires au fonctionnement du service :\n\n• Données d'identification : adresse email, prénom, nom\n• Photo de profil (si tu utilises Google Sign-In, elle provient de ton compte Google)\n• Mot de passe (haché et salé avec bcrypt, jamais stocké en clair)\n• Données de profil facultatives : niveau scolaire, classe, établissement, gouvernorat\n• Données d'utilisation : ressources consultées, téléchargements, favoris, notes et commentaires que tu laisses\n• Données techniques : adresse IP, type de navigateur, pages visitées (pour la sécurité et l'amélioration du service)\n• Données de session : cookies de session pour te garder connecté"
+      },
+      {
+        "id": "finalites",
+        "title": "3. Pourquoi nous collectons ces données",
+        "content": "Tes données sont utilisées exclusivement pour :\n\n• Créer et gérer ton compte utilisateur\n• Authentifier tes connexions (y compris via Google, Facebook ou Apple)\n• Afficher et personnaliser ton profil sur la plateforme\n• Te permettre d'accéder aux ressources pédagogiques, de les noter, commenter et sauvegarder\n• Assurer la sécurité de la plateforme et prévenir les abus\n• T'envoyer des notifications importantes relatives à ton compte (nouvelles ressources, validations, etc.)\n• Répondre à tes demandes de support\n\nNous n'utilisons JAMAIS tes données pour :\n• De la publicité ciblée\n• Du profilage commercial\n• Les vendre ou les louer à des tiers"
+      },
+      {
+        "id": "base-legale",
+        "title": "4. Base légale du traitement",
+        "content": "Conformément à la loi organique tunisienne n° 2004-63 du 27 juillet 2004 relative à la protection des données à caractère personnel, et au Règlement Général sur la Protection des Données (RGPD) pour nos utilisateurs européens, le traitement de tes données repose sur :\n\n• L'exécution du contrat (CGU) que tu acceptes en créant ton compte\n• Ton consentement explicite (case à cocher lors de l'inscription, Google/Facebook/Apple OAuth)\n• Notre intérêt légitime à assurer la sécurité de la plateforme"
+      },
+      {
+        "id": "stockage",
+        "title": "5. Où sont stockées tes données",
+        "content": "Tes données sont stockées sur des infrastructures sécurisées :\n\n• Base de données : Cloudflare D1 (système de stockage distribué)\n• Région de stockage : ENAM (Amérique du Nord)\n• Fichiers (PDF, avatars) : Cloudflare R2 (stockage objet)\n• Emails : infogérés par Resend (États-Unis)\n\nToutes les communications entre ton navigateur et nos serveurs sont chiffrées en HTTPS/TLS 1.3.\n\nLes mots de passe sont hachés avec l'algorithme bcrypt (coût 12), ce qui les rend illisibles même par nos administrateurs."
+      },
+      {
+        "id": "duree",
+        "title": "6. Combien de temps conservons-nous tes données",
+        "content": "Tes données sont conservées tant que ton compte est actif.\n\nEn cas de suppression de ton compte :\n• Tes données personnelles (email, nom, profil) sont supprimées définitivement sous 30 jours\n• Tes contenus publiés (commentaires, notes) sont anonymisés ou supprimés\n• Les données techniques (logs) sont conservées 12 mois maximum pour des raisons de sécurité\n• Certaines données peuvent être conservées plus longtemps si la loi l'exige (obligations comptables, etc.)"
+      },
+      {
+        "id": "partage",
+        "title": "7. Partage avec des tiers",
+        "content": "Nous ne vendons jamais tes données personnelles. Nous ne les partageons avec des tiers que dans les cas suivants :\n\n• Fournisseurs d'infrastructure technique (Cloudflare, Resend) qui nous aident à faire fonctionner le service, uniquement dans la mesure nécessaire\n• Obligations légales : si nous y sommes contraints par la loi ou par une décision de justice\n• Protection de tes droits ou de notre plateforme en cas de fraude ou d'abus\n\nPour l'authentification via Google, Facebook ou Apple : ces providers peuvent recevoir des informations techniques (adresse IP, User-Agent) lors de la connexion. Examanet ne leur envoie aucune donnée autre que la demande d'authentification. Consulte leurs propres politiques de confidentialité pour plus de détails :\n• Google : policies.google.com/privacy\n• Facebook : facebook.com/privacy\n• Apple : apple.com/legal/privacy"
+      },
+      {
+        "id": "cookies",
+        "title": "8. Cookies et technologies similaires",
+        "content": "Examanet utilise des cookies et technologies similaires pour :\n\n• Cookies strictement nécessaires (session d'authentification, langue préférée) — pas de consentement requis\n• Cookies d'analyse anonymisée (Cloudflare Analytics) — pour comprendre comment la plateforme est utilisée et l'améliorer\n\nNous n'utilisons PAS de cookies publicitaires ou de tracking commercial.\n\nTu peux gérer tes préférences cookies via les paramètres de ton navigateur. Le refus des cookies strictement nécessaires peut empêcher le bon fonctionnement du service."
+      },
+      {
+        "id": "securite",
+        "title": "9. Sécurité de tes données",
+        "content": "Nous mettons en œuvre les mesures techniques et organisationnelles appropriées pour protéger tes données :\n\n• Chiffrement HTTPS/TLS pour toutes les communications\n• Mots de passe hachés avec bcrypt (coût 12)\n• Protection contre les injections SQL (requêtes paramétrées)\n• Rate limiting sur les API sensibles (login, mot de passe oublié, etc.)\n• Verrouillage de compte après 5 tentatives échouées (15 min)\n• Authentification à deux facteurs disponible pour les administrateurs\n• Surveillance 24/7 des erreurs et incidents\n• Backups quotidiens\n\nMalgré ces mesures, aucune plateforme n'est 100% sécurisée. En cas de violation de données, nous nous engageons à t'en informer dans les 72 heures."
+      },
+      {
+        "id": "tes-droits",
+        "title": "10. Tes droits",
+        "content": "Conformément à la loi tunisienne et au RGPD, tu disposes des droits suivants sur tes données :\n\n• Droit d'accès : tu peux demander une copie de toutes les données que nous avons sur toi\n• Droit de rectification : tu peux corriger tes informations depuis ton profil\n• Droit à la suppression : tu peux supprimer ton compte et toutes tes données\n• Droit à la portabilité : tu peux exporter tes données dans un format lisible (JSON)\n• Droit d'opposition : tu peux t'opposer à certains traitements (ex : emails marketing)\n• Droit de limitation : tu peux demander la suspension temporaire d'un traitement\n\nPour exercer ces droits, contacte-nous à contact@examanet.com. Nous nous engageons à répondre dans un délai de 7 jours ouvrés.\n\nSi tu estimes que nous ne respectons pas tes droits, tu peux saisir l'Instance Nationale de Protection des Données Personnelles (INPDP) en Tunisie, ou la CNIL en France."
+      },
+      {
+        "id": "mineurs",
+        "title": "11. Protection des mineurs",
+        "content": "Examanet est destiné aux élèves à partir de 13 ans. Pour les utilisateurs de moins de 16 ans, nous recommandons fortement le consentement d'un parent ou tuteur.\n\nNous ne collectons pas sciemment de données personnelles d'enfants de moins de 13 ans. Si tu es parent et tu constates que ton enfant nous a fourni des données sans ton consentement, contacte-nous à contact@examanet.com pour suppression."
+      },
+      {
+        "id": "transferts",
+        "title": "12. Transferts internationaux de données",
+        "content": "Tes données sont principalement stockées aux États-Unis (Cloudflare, région ENAM).\n\nPour les utilisateurs basés en Tunisie ou dans l'Union Européenne, ce transfert est encadré par :\n\n• Les Clauses Contractuelles Types (CCT) de la Commission Européenne avec nos sous-traitants\n• Le bouclier de protection des données UE-États-Unis (Data Privacy Framework) dont Cloudflare est certifié\n\nEn acceptant nos CGU et cette politique, tu consens à ce transfert."
+      },
+      {
+        "id": "modifications",
+        "title": "13. Modifications de cette politique",
+        "content": "Nous nous réservons le droit de modifier cette politique de confidentialité pour refléter les évolutions du service ou de la réglementation.\n\nEn cas de modification importante, tu seras informé par email et/ou par notification sur la plateforme au moins 30 jours avant l'entrée en vigueur des changements.\n\nLa date de dernière mise à jour est indiquée en haut de cette page."
+      },
+      {
+        "id": "contact",
+        "title": "14. Nous contacter",
+        "content": "Pour toute question concernant cette politique de confidentialité ou tes données personnelles :\n\n• Email : contact@examanet.com\n• Délai de réponse : 7 jours ouvrés maximum\n• Langues : français, arabe, anglais"
+      }
+    ]
+  }
+,
   "about": {
     "hero": {
       "badge": "Fait avec ❤️ en Tunisie 🇹🇳",
