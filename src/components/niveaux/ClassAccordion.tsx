@@ -409,7 +409,9 @@ function SectionResourceView({
             };
             const subjectColor = r.subject.color || '#0EA5E9';
             const teacherName = r.teacher ? teacherNameFr(r.teacher) || null : null;
-            const teacherNameAr = r.teacher ? teacherNameAr(r.teacher) || null : null;
+            // 2026-09-10: BUG FIX — was `const teacherNameAr = ... teacherNameAr(...)`
+            // which shadowed the import (TDZ → 500). Renamed to arName.
+            const arName = r.teacher ? teacherNameAr(r.teacher) || null : null;
             return (
               <Link
                 key={r.id}
@@ -471,9 +473,9 @@ function SectionResourceView({
                         <span>·</span>
                         <span>
                           par {teacherName}
-                          {teacherNameAr && teacherNameAr !== teacherName && (
+                          {arName && arName !== teacherName && (
                             <span className="text-slate-400 ms-1" dir="rtl" lang="ar">
-                              · {teacherNameAr}
+                              · {arName}
                             </span>
                           )}
                         </span>
