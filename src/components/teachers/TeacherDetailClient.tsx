@@ -221,7 +221,6 @@ function DetailView({ data }: { data: any }) {
                 </div>
               </div>
             </div>
-          </div>
         </section>
       </div>
     </div>
