@@ -37,6 +37,17 @@ export default function TeachersClient({ initialData }: { initialData?: PageData
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(initialData ? null : null);
 
+  // 2026-09-10: useSearchParams() works in SSR too (returns the same value as
+  // the client), so we don't need `typeof window` checks. Pass it to TeachersView
+  // so it can compute `hasFilters` consistently on both server and client
+  // (previously the SSR used `window.location.search` which is undefined on
+  // the server, causing hydration mismatches and HTTP 500 on filtered pages).
+  const spEntries: Array<[string, string]> = [];
+  if (searchParams) {
+    searchParams.forEach((value, key) => spEntries.push([key, value]));
+  }
+  const sp = Object.fromEntries(spEntries);
+
   useEffect(() => {
     // Skip first fetch if initialData matches the current URL
     const currentQs = searchParams.toString();
@@ -76,7 +87,7 @@ export default function TeachersClient({ initialData }: { initialData?: PageData
   if (error && !data) return <TeachersError />;
   if (!data) return <TeachersLoading />;
 
-  return <TeachersView data={data} />;
+  return <TeachersView data={data} sp={sp} />;
 }
 
 function TeachersLoading() {
@@ -112,10 +123,10 @@ function TeachersError() {
   );
 }
 
-function TeachersView({ data }: { data: PageData }) {
-  const sp = Object.fromEntries(
-    typeof window !== 'undefined' ? Array.from(new URLSearchParams(window.location.search).entries()) : []
-  );
+function TeachersView({ data, sp }: { data: PageData; sp: Record<string, string> }) {
+  // 2026-09-10: `sp` is now passed in from TeachersClient (which uses
+  // useSearchParams). This works on both server and client, replacing the
+  // previous `window.location.search` which threw ReferenceError on SSR.
   const q = data.q || (sp.q || '');
   const subjectSlugs = (sp.subject || '').split(',').filter(Boolean);
   const classSlugs = (sp.class || '').split(',').filter(Boolean);
@@ -221,7 +232,7 @@ function TeachersView({ data }: { data: PageData }) {
                   </div>
 
                   {totalPages > 1 && (
-                    <Pagination current={page} total={totalPages} />
+                    <Pagination current={page} total={totalPages} sp={sp} />
                   )}
                 </>
               )}
@@ -284,18 +295,31 @@ function ActiveChips({ subjectSlugs, classSlugs, q, verifiedOnly, subjects, clas
   if (q) chips.push({ key: 'q', label: `"${q}"`, param: 'q', value: '' });
   if (verifiedOnly) chips.push({ key: 'v', label: 'Vérifiés', param: 'verified', value: '' });
   if (chips.length === 0) return null;
+
+  // 2026-09-10: Build each chip's "remove" URL from the OTHER chips' params.
+  // The previous implementation used `window.location.search` directly, which
+  // throws ReferenceError on SSR (Node has no `window`) — this caused HTTP 500
+  // on every filtered page that had chips (e.g. ?q=mehdi, ?subject=X, etc.).
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4">
-      {chips.map((c) => (
-        <Link
-          key={c.key}
-          href={`/professeurs?${new URLSearchParams(window.location.search).toString().replace(new RegExp(`&?${c.param}=[^&]*`), '')}`}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-800 text-sm font-medium rounded-full hover:bg-amber-200 transition"
-        >
-          {c.label}
-          <X className="w-3 h-3" />
-        </Link>
-      ))}
+      {chips.map((c) => {
+        const params = new URLSearchParams();
+        for (const other of chips) {
+          if (other.key === c.key) continue; // skip self → "remove this filter"
+          if (other.value) params.set(other.param, other.value);
+        }
+        const qs = params.toString();
+        return (
+          <Link
+            key={c.key}
+            href={('/professeurs' + (qs ? `?${qs}` : '')) as any}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-800 text-sm font-medium rounded-full hover:bg-amber-200 transition"
+          >
+            {c.label}
+            <X className="w-3 h-3" />
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -372,10 +396,12 @@ function TeacherCard({ t, stats, featured }: any) {
   );
 }
 
-function Pagination({ current, total }: { current: number; total: number }) {
+function Pagination({ current, total, sp }: { current: number; total: number; sp: Record<string, string> }) {
   if (total <= 1) return null;
   const buildHref = (page: number) => {
-    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    // 2026-09-10: Use `sp` from props (already serialized searchParams) instead
+    // of `window.location.search` which is undefined on SSR.
+    const params = new URLSearchParams(sp as any);
     if (page === 1) params.delete('page');
     else params.set('page', String(page));
     const qs = params.toString();
