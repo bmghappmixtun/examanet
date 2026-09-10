@@ -222,6 +222,7 @@ function TeachersView({ data, sp }: { data: PageData; sp: Record<string, string>
                       verifiedOnly={verifiedOnly}
                       subjects={subjectsTaught}
                       classes={classesTaught}
+                      sp={sp}
                     />
                   )}
 
@@ -270,49 +271,48 @@ function EmptyState({ q }: { q: string }) {
   );
 }
 
-function ActiveChips({ subjectSlugs, classSlugs, q, verifiedOnly, subjects, classes }: any) {
-  const chips: { key: string; label: string; param: string; value: string }[] = [];
+function ActiveChips({ subjectSlugs, classSlugs, q, verifiedOnly, subjects, classes, sp }: any) {
+  // 2026-09-10: Each chip represents one filter. Clicking it removes that
+  // specific filter while keeping all others. We build the "remove" URL by
+  // starting from the current `sp` (passed in as prop) and deleting the
+  // clicked chip's param(s).
+  //
+  // Previous bug: the loop used `if (other.value)` which excluded chips with
+  // empty values (boolean flags like verified=1, q=mehdi). So clicking a
+  // subject chip stripped ALL filters, not just the subject.
+  const chips: { key: string; label: string; params: string[] }[] = [];
   for (const slug of subjectSlugs) {
     const s = subjects.find((x: any) => x.slug === slug);
-    const remaining = subjectSlugs.filter((x: string) => x !== slug);
     chips.push({
       key: `s-${slug}`,
       label: s?.nameFr || slug,
-      param: 'subject',
-      value: remaining.join(','),
+      params: [`subject`], // param name(s) to remove
     });
   }
   for (const slug of classSlugs) {
     const c = classes.find((x: any) => x.slug === slug);
-    const remaining = classSlugs.filter((x: string) => x !== slug);
     chips.push({
       key: `c-${slug}`,
       label: c?.nameFr || slug,
-      param: 'class',
-      value: remaining.join(','),
+      params: [`class`],
     });
   }
-  if (q) chips.push({ key: 'q', label: `"${q}"`, param: 'q', value: '' });
-  if (verifiedOnly) chips.push({ key: 'v', label: 'Vérifiés', param: 'verified', value: '' });
+  if (q) chips.push({ key: 'q', label: `"${q}"`, params: ['q'] });
+  if (verifiedOnly) chips.push({ key: 'v', label: 'Vérifiés', params: ['verified'] });
   if (chips.length === 0) return null;
 
-  // 2026-09-10: Build each chip's "remove" URL from the OTHER chips' params.
-  // The previous implementation used `window.location.search` directly, which
-  // throws ReferenceError on SSR (Node has no `window`) — this caused HTTP 500
-  // on every filtered page that had chips (e.g. ?q=mehdi, ?subject=X, etc.).
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4">
       {chips.map((c) => {
-        const params = new URLSearchParams();
-        for (const other of chips) {
-          if (other.key === c.key) continue; // skip self → "remove this filter"
-          if (other.value) params.set(other.param, other.value);
-        }
+        // Start from the current searchParams and remove the chip's param(s)
+        // to get the "remove this filter" URL.
+        const params = new URLSearchParams(sp as any);
+        for (const p of c.params) params.delete(p);
         const qs = params.toString();
         return (
           <Link
             key={c.key}
-            href={('/professeurs' + (qs ? `?${qs}` : '')) as any}
+            href={`/professeurs${qs ? `?${qs}` : ''}` as any}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-800 text-sm font-medium rounded-full hover:bg-amber-200 transition"
           >
             {c.label}
