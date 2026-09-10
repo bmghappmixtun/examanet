@@ -83,14 +83,16 @@ export default {
     
     if (cacheable) {
       const cache = caches.default;
-      const urlNoQuery = new URL(url);
-      urlNoQuery.search = '';
-      const cacheKey = new Request(urlNoQuery.toString(), { method: 'GET' });
+      // 2026-09-10: Cache key now INCLUDES query string so filtered pages
+      // (e.g. ?subject=mathematiques) get separate cache entries from the
+      // unfiltered page. Previously the cache key stripped the query string,
+      // causing all filtered pages to return the same HTML as the unfiltered one.
+      const cacheKey = new Request(url.toString(), { method: 'GET' });
       const cached = await cache.match(cacheKey);
       if (cached) {
         const headers = new Headers(cached.headers);
         headers.set('cf-cache-status', 'HIT');
-        headers.set('x-cache-wrapper', 'v15-HIT');
+        headers.set('x-cache-wrapper', 'v16-HIT');
         // Record metric for cache hit
         if (recordMetricEnabled) {
           recordMetric(env, ctx, url.pathname, cached.status, Date.now() - startTime);
@@ -102,14 +104,13 @@ export default {
         });
       }
     }
-    
+
     const response = await openNextWorker.fetch(request, env, ctx);
-    
+
     if (cacheable && response.ok && !response.headers.has('set-cookie')) {
       const cache = caches.default;
-      const urlNoQuery = new URL(url);
-      urlNoQuery.search = '';
-      const cacheKey = new Request(urlNoQuery.toString(), { method: 'GET' });
+      // 2026-09-10: Cache key INCLUDES query string (see above).
+      const cacheKey = new Request(url.toString(), { method: 'GET' });
       ctx.waitUntil(cache.put(cacheKey, response.clone()));
     }
     
@@ -119,7 +120,7 @@ export default {
     }
     
     const headers = new Headers(response.headers);
-    headers.set('x-cache-wrapper', cacheable ? 'v15-MISS' : 'v15-bypass');
+    headers.set('x-cache-wrapper', cacheable ? 'v16-MISS' : 'v16-bypass');
     
     return new Response(response.body, {
       status: response.status,
