@@ -24,6 +24,7 @@ import {
   Box,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { formatNumber } from '@/lib/utils';
 
 type ProviderInfo = {
   id: string;
@@ -245,22 +246,24 @@ export default function FournisseursClient() {
             Source de vérité
           </span>
         </h2>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="space-y-4">
           <CloudflareCard
             info={cloudflare}
             refreshing={refreshing === 'cloudflare'}
             onRefresh={() => refresh('cloudflare')}
           />
-          <D1Card
-            info={d1}
-            refreshing={refreshing === 'd1'}
-            onRefresh={() => refresh('d1')}
-          />
-          <R2Card
-            info={r2}
-            refreshing={refreshing === 'r2'}
-            onRefresh={() => refresh('r2')}
-          />
+          <div className="grid md:grid-cols-2 gap-4">
+            <D1Card
+              info={d1}
+              refreshing={refreshing === 'd1'}
+              onRefresh={() => refresh('d1')}
+            />
+            <R2Card
+              info={r2}
+              refreshing={refreshing === 'r2'}
+              onRefresh={() => refresh('r2')}
+            />
+          </div>
         </div>
       </section>
 
