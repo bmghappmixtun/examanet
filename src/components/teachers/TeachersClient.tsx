@@ -325,8 +325,18 @@ function ActiveChips({ subjectSlugs, classSlugs, q, verifiedOnly, subjects, clas
 }
 
 function TeacherCard({ t, stats, featured }: any) {
-  const fullName = [t.firstName, t.lastName].filter(Boolean).join(' ') || t.firstNameAr || 'Professeur';
-  const initials = fullName.split(' ').map((p: string) => p[0]).slice(0, 2).join('').toUpperCase();
+  // 2026-09-10: Build FR and AR names independently.
+  // Many teachers have AR name stored in lastNameAr only (firstNameAr is null)
+  // — the previous code only showed AR when firstNameAr was truthy, hiding
+  // the AR name for ~6 profs per page (e.g. FR="A. CHAABANE", AR="ع. شعباني").
+  //
+  // Order in card: FR on top (h3), AR below (p, dir="rtl").
+  const frName = [t.firstName, t.lastName].filter(Boolean).join(' ')
+    || [t.firstNameAr, t.lastNameAr].filter(Boolean).join(' ')
+    || 'Professeur';
+  const arName = [t.firstNameAr, t.lastNameAr].filter(Boolean).join(' ').trim();
+  const fullName = frName;
+  const initials = fullName.split(' ').map((p: string) => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'P';
   const href = `/professeurs/${t.numericId}/${t.slug}`;
   const s = stats || { files: 0, downloads: 0, views: 0, rating: 0, followers: 0 };
   return (
@@ -349,11 +359,11 @@ function TeacherCard({ t, stats, featured }: any) {
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <h3 className="font-bold text-slate-900 truncate group-hover:text-amber-600 transition-colors">{fullName}</h3>
+            <h3 className="font-bold text-slate-900 truncate group-hover:text-amber-600 transition-colors">{frName}</h3>
             {t.isVerifiedTeacher && <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
           </div>
-          {t.firstNameAr && (
-            <p className="text-xs text-slate-500 truncate" dir="rtl" lang="ar">{t.firstNameAr} {t.lastNameAr}</p>
+          {arName && arName !== frName && (
+            <p className="text-xs text-slate-500 truncate" dir="rtl" lang="ar">{arName}</p>
           )}
         </div>
       </div>

@@ -66,7 +66,10 @@ export default async function Page({
       "SELECT id, firstName, lastName, firstNameAr, lastNameAr, schoolName, schoolNameAr, bio, isVerifiedTeacher FROM User WHERE numericId = ? AND role = 'TEACHER' LIMIT 1"
     ).bind(numericId).first();
     if (teacher) {
-      const nameFr = `${teacher.firstName || ''} ${teacher.lastName || ''}`.trim() || `Professeur #${numericId}`;
+      // 2026-09-10: Fallback to AR name if FR is missing (some teachers only have AR).
+      const nameFr = `${teacher.firstName || ''} ${teacher.lastName || ''}`.trim()
+        || `${teacher.firstNameAr || ''} ${teacher.lastNameAr || ''}`.trim()
+        || `Professeur #${numericId}`;
       const profileUrl = `${SITE_URL}/professeurs/${numericId}/${slug}`;
       personJsonLd = {
         '@context': 'https://schema.org',
