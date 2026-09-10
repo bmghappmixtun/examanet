@@ -153,6 +153,15 @@ function DetailView({ data }: { data: any }) {
                     </span>
                   ) : null}
                 </div>
+                {/* 2026-09-10: Inline stats in the header (between tags and action buttons).
+                   Mirror of the sidebar stats but compact, so the user sees them at a glance
+                   without scrolling to the sidebar. */}
+                <div className="flex flex-wrap items-center gap-2 mb-4">
+                  <StatChip icon={FileText} value={resourceCount} label="Ressources" color="text-primary-600 bg-primary-50" />
+                  <StatChip icon={Users} value={teacher.followersCount} label="Abonnés" color="text-rose-600 bg-rose-50" />
+                  <StatChip icon={Heart} value={totalFavorites} label="Favoris" color="text-amber-600 bg-amber-50" />
+                  <StatChip icon={Download} value={resources.reduce((a: number, r: any) => a + (r.downloadsCount ?? 0), 0)} label="Téléchargements" color="text-emerald-600 bg-emerald-50" />
+                </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <FollowButton teacherId={teacher.id} teacherName={fullName} />
                   <MessageTeacherButton teacherId={teacher.id} teacherName={fullName} />
@@ -267,5 +276,20 @@ function StatItem({ icon: Icon, value, label, color }: any) {
         <div className="text-xs text-slate-500">{label}</div>
       </div>
     </div>
+  );
+}
+
+// 2026-09-10: Compact stat chip for the header (next to the teacher's name).
+// Same color scheme as the sidebar StatItem, but smaller so the 4 chips fit
+// in a single row without making the header too tall.
+function StatChip({ icon: Icon, value, label, color }: any) {
+  return (
+    <span className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur border border-slate-200 px-2.5 py-1.5 rounded-lg text-slate-700">
+      <span className={`w-6 h-6 rounded-md flex items-center justify-center ${color}`}>
+        <Icon className="w-3.5 h-3.5" />
+      </span>
+      <span className="text-sm font-bold text-slate-900 leading-none">{(value ?? 0).toLocaleString('fr-FR')}</span>
+      <span className="text-xs text-slate-500 leading-none">{label}</span>
+    </span>
   );
 }
