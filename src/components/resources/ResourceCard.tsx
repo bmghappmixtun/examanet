@@ -1,6 +1,6 @@
 import { Link } from '@/i18n/navigation';
 import { Star, Eye, Download, CheckCircle2, GraduationCap, MessageCircle } from 'lucide-react';
-import { RESOURCE_TYPE_LABELS, HOMEWORK_SUBTYPE_LABELS } from '@/lib/utils';
+import { RESOURCE_TYPE_LABELS, HOMEWORK_SUBTYPE_LABELS, teacherNameFr, teacherNameAr } from '@/lib/utils';
 import { isArabic } from '@/lib/text-utils';
 import FavoriteButton from './FavoriteButton';
 import ResourceAge from './ResourceAge';
@@ -86,13 +86,15 @@ function langBadge(lang?: string): string {
 
 export default function ResourceCard({ resource }: { resource: ResourceCardData }) {
   const typeLabel = RESOURCE_TYPE_LABELS[resource.type] || RESOURCE_TYPE_LABELS.OTHER;
+  // 2026-09-10: Use shared helpers for FR+AR consistency across the app.
+  // Note: empty fallback ('') preserves the original behavior of hiding the byline
+  // when the teacher has no name (vs the homepage / list which DO want 'Professeur').
   const teacherName = resource.teacher
-    ? `${resource.teacher.firstName || ''} ${resource.teacher.lastName || ''}`.trim()
+    ? teacherNameFr(resource.teacher, '') || null
     : null;
-  const teacherNameAr =
-    resource.teacher && (resource.teacher.firstNameAr || resource.teacher.lastNameAr)
-      ? `${resource.teacher.firstNameAr || ''} ${resource.teacher.lastNameAr || ''}`.trim()
-      : null;
+  const teacherNameAr = resource.teacher
+    ? teacherNameAr(resource.teacher) || null
+    : null;
   const subjectColor = resource.subject.color || '#0EA5E9';
   const titleIsAr = isArabic(resource.title);
   const summaryIsAr = resource.summary ? isArabic(resource.summary) : false;
