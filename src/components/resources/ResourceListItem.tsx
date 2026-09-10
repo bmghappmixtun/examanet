@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   GraduationCap,
 } from 'lucide-react';
-import { HOMEWORK_SUBTYPE_LABELS } from '@/lib/utils';
+import { HOMEWORK_SUBTYPE_LABELS, teacherNameFr, teacherNameAr } from '@/lib/utils';
 import { isArabic } from '@/lib/text-utils';
 
 type Resource = {
@@ -58,9 +58,9 @@ function formatSize(bytes: number): string {
 }
 
 export default function ResourceListItem({ resource }: { resource: Resource }) {
-  const teacherName = resource.teacher
-    ? `${resource.teacher.firstName || ''} ${resource.teacher.lastName || ''}`.trim()
-    : null;
+  // 2026-09-10: Use shared helpers for FR+AR display
+  const teacherName = resource.teacher ? teacherNameFr(resource.teacher) || null : null;
+  const teacherNameAr = resource.teacher ? teacherNameAr(resource.teacher) || null : null;
   return (
     <Link
       href={`/ressources/${resource.numericId}/${resource.slug}`}
@@ -128,9 +128,9 @@ export default function ResourceListItem({ resource }: { resource: Resource }) {
             <p className="text-xs text-slate-500 flex items-center gap-1">
               <User className="w-3 h-3" /> {teacherName}
             </p>
-            {resource.teacher && (resource.teacher.firstNameAr || resource.teacher.lastNameAr) && (
+            {teacherNameAr && teacherNameAr !== teacherName && (
               <span className="text-xs text-slate-400" dir="rtl" lang="ar">
-                {resource.teacher.firstNameAr} {resource.teacher.lastNameAr}
+                {teacherNameAr}
               </span>
             )}
           </div>

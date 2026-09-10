@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
+import { teacherNameFr, teacherNameAr } from '@/lib/utils';
 import {
   ChevronDown,
   ChevronRight,
@@ -40,7 +41,12 @@ export interface ResourceMini {
   viewsCount: number;
   downloadsCount: number;
   subject: { slug: string; nameFr: string; color: string | null };
-  teacher: { firstName: string | null; lastName: string | null } | null;
+  teacher: {
+    firstName: string | null;
+    lastName: string | null;
+    firstNameAr?: string | null;
+    lastNameAr?: string | null;
+  } | null;
 }
 
 interface ClassAccordionProps {
@@ -402,8 +408,8 @@ function SectionResourceView({
               color: 'bg-slate-100 text-slate-700',
             };
             const subjectColor = r.subject.color || '#0EA5E9';
-            const teacherName =
-              [r.teacher?.firstName, r.teacher?.lastName].filter(Boolean).join(' ') || null;
+            const teacherName = r.teacher ? teacherNameFr(r.teacher) || null : null;
+            const teacherNameAr = r.teacher ? teacherNameAr(r.teacher) || null : null;
             return (
               <Link
                 key={r.id}
@@ -463,7 +469,14 @@ function SectionResourceView({
                     {teacherName && (
                       <>
                         <span>·</span>
-                        <span>par {teacherName}</span>
+                        <span>
+                          par {teacherName}
+                          {teacherNameAr && teacherNameAr !== teacherName && (
+                            <span className="text-slate-400 ms-1" dir="rtl" lang="ar">
+                              · {teacherNameAr}
+                            </span>
+                          )}
+                        </span>
                       </>
                     )}
                   </div>

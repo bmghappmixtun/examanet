@@ -103,3 +103,37 @@ export const GOVERNORATES = [
   'Tozeur',
   'Kebili',
 ];
+
+// 2026-09-10: Teacher name helpers.
+// DB has 4 fields: firstName/lastName (FR) and firstNameAr/lastNameAr (AR).
+// Many teachers have AR in lastNameAr only (firstNameAr is null) — the previous
+// pattern `{t.firstNameAr && (...)}` hid the AR name for them. These helpers
+// build the display name robustly from any non-empty FR or AR field.
+type TeacherLike = {
+  firstName?: string | null;
+  lastName?: string | null;
+  firstNameAr?: string | null;
+  lastNameAr?: string | null;
+};
+
+function joinNonEmpty(...parts: Array<string | null | undefined>): string {
+  return parts.filter(Boolean).join(' ').trim();
+}
+
+export function teacherNameFr(t: TeacherLike | null | undefined, fallback = 'Professeur'): string {
+  if (!t) return fallback;
+  return joinNonEmpty(t.firstName, t.lastName)
+    || joinNonEmpty(t.firstNameAr, t.lastNameAr)
+    || fallback;
+}
+
+export function teacherNameAr(t: TeacherLike | null | undefined): string {
+  if (!t) return '';
+  return joinNonEmpty(t.firstNameAr, t.lastNameAr);
+}
+
+export function teacherInitials(t: TeacherLike | null | undefined): string {
+  const name = teacherNameFr(t, '');
+  return name.split(' ').map((p) => p[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'P';
+}
+

@@ -3,6 +3,7 @@
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useCallback } from 'react';
 import { X, Users, BookOpen, BookText, Filter } from 'lucide-react';
+import { teacherNameFr } from '@/lib/utils';
 
 interface FilterOption {
   slug: string;
@@ -182,8 +183,8 @@ export default function SubjectFilters({
             <div className="space-y-1 max-h-64 overflow-y-auto">
               {teachers.slice(0, 12).map((t) => {
                 const active = activeFilters.prof === t.id;
-                const name =
-                  [t.firstName, t.lastName].filter(Boolean).join(' ') || t.firstNameAr || 'Prof';
+                // 2026-09-10: Use shared helper for FR with AR fallback
+                const name = teacherNameFr(t, 'Prof');
                 return (
                   <button
                     key={t.id}

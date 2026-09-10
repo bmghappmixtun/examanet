@@ -2,6 +2,7 @@
 // @ts-nocheck
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/navigation';
+import { teacherNameFr, teacherNameAr } from '@/lib/utils';
 
 
 // import { db } from '@/lib/d1-admin'; (removed for client)
@@ -146,11 +147,7 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
     subject: resource.subject?.nameFr || 'Éducation',
     type: resource.type,
     year: resource.year,
-    teacher: resource.teacher
-      ? `${resource.teacher.firstName || ''} ${resource.teacher.lastName || ''}`
-          .replace(/\s+/g, ' ')
-          .trim() || null
-      : null,
+    teacher: resource.teacher ? teacherNameFr(resource.teacher) || null : null,
     teacherAr: resource.teacherNameAr || null,
     url: resourceUrl,
     datePublished: resource.publishedAt?.toISOString() || resource.createdAt?.toISOString(),
@@ -286,16 +283,8 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
             avgRating={resource.avgRating}
             commentsCount={resource.commentsCount}
             downloadUrl={`/api/resources/${resource.numericId}/download`}
-            teacherName={
-              resource.teacher
-                ? `${resource.teacher.firstName || ''} ${resource.teacher.lastName || ''}`.trim() || null
-                : null
-            }
-            teacherNameAr={
-              resource.teacher
-                ? `${resource.teacher.firstNameAr || ''} ${resource.teacher.lastNameAr || ''}`.trim() || null
-                : null
-            }
+            teacherName={resource.teacher ? teacherNameFr(resource.teacher) || null : null}
+            teacherNameAr={resource.teacher ? teacherNameAr(resource.teacher) || null : null}
             teacherProfileUrl={
               resource.teacher
                 ? `/professeurs/${resource.teacher.numericId}/${resource.teacher.slug}`
