@@ -3,11 +3,10 @@
 // SSR shell + initial data = much faster TTI.
 // Client component re-fetches only on filter changes.
 //
-// 2026-09-10: Force dynamic rendering.
-// The previous `revalidate = 120` + ISR was caching the SSR response
-// across all searchParams combinations, so /professeurs?q=mehdi was
-// returning the same HTML as /professeurs (no-filter).
-// With `dynamic = 'force-dynamic'`, every request re-runs the server query.
+// 2026-09-10: Real root cause of searchParams being ignored was the
+// CF Worker cache key stripping the query string (worker-with-cache.js).
+// After fixing the cache key, ISR is fine — each unique URL (incl. query
+// string) gets its own cache entry.
 
 import TeachersClient from '@/components/teachers/TeachersClient';
 import { headers } from 'next/headers';
@@ -15,7 +14,7 @@ import { breadcrumbSchema, itemListSchema } from '@/lib/structured-data';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
-export const dynamic = 'force-dynamic'; // 2026-09-10: respect searchParams (no ISR cache)
+export const revalidate = 120; // PERF 2026-09-02: 2min ISR cache for public page
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ q?: string; subject?: string }> }) {
   const sp = await searchParams;
