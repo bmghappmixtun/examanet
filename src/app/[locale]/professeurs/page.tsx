@@ -97,7 +97,17 @@ async function fetchInitialData(searchParams: URLSearchParams) {
     ]);
 
     // Build teacher WHERE
-    const teacherConds: string[] = ["u.role = 'TEACHER'", "u.status = 'ACTIVE'"];
+    // 2026-09-10: Added the same conditions as route.ts (numericId + slug) so
+    // SSR pre-fetch matches the API. Without this, SSR could include teachers
+    // the API filters out (broken profile URLs), causing client-side refetch
+    // to return different results than the initial SSR render.
+    const teacherConds: string[] = [
+      "u.role = 'TEACHER'",
+      "u.status = 'ACTIVE'",
+      "u.numericId IS NOT NULL",
+      "u.slug IS NOT NULL",
+      "u.slug != ''",
+    ];
     const teacherParams: any[] = [];
     if (verifiedOnly) teacherConds.push('u.isVerifiedTeacher = 1');
     if (q) {
@@ -216,11 +226,17 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
         name: 'Professeurs tunisiens sur Examanet',
         description: 'Liste des enseignants tunisiens partageant des ressources pédagogiques sur Examanet.',
         url: `${SITE_URL}/professeurs`,
-        items: initialData.teachers.slice(0, 20).map((t: any) => ({
-          name: `${t.firstName || ''} ${t.lastName || ''}`.trim() || `Professeur #${t.numericId}`,
-          url: `${SITE_URL}/fr/professeurs/${t.numericId || t.id}`,
-          description: t.schoolName || undefined,
-        })),
+        items: initialData.teachers.slice(0, 20).map((t: any) => {
+          // 2026-09-10: Build FR name with AR fallback (some teachers only have AR names).
+          const frName = `${t.firstName || ''} ${t.lastName || ''}`.trim()
+            || `${t.firstNameAr || ''} ${t.lastNameAr || ''}`.trim()
+            || `Professeur #${t.numericId}`;
+          return {
+            name: frName,
+            url: `${SITE_URL}/fr/professeurs/${t.numericId || t.id}`,
+            description: t.schoolName || undefined,
+          };
+        }),
       })
     : null;
   return (
