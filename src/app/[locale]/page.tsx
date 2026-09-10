@@ -162,21 +162,33 @@ async function getHomeData() {
 }
 
 export default async function HomePage() {
-  const { popular, recent, subjects, stats } = await getHomeData();
+  let homeData: any;
+  try {
+    homeData = await getHomeData();
+  } catch (e: any) {
+    console.error('[HOME] getHomeData failed:', e?.message, e?.stack);
+    return <div style={{padding: 40}}>Home data error: {e?.message || 'unknown'}</div>;
+  }
+  const { popular, recent, subjects, stats } = homeData;
   // 2026-09-07: ItemList JSON-LD for popular resources on the homepage.
   // Helps Google show a "popular items" carousel in SERPs.
-  const popularListJsonLd = popular && popular.length > 0
-    ? itemListSchema({
-        name: 'Ressources populaires sur Examanet',
-        description: 'Les ressources les plus consultées sur Examanet — cours, exercices, sujets et corrigés pour le système éducatif tunisien.',
-        url: `${SITE_URL}/`,
-        items: popular.slice(0, 10).map((r: any) => ({
-          name: r.title,
-          url: `${SITE_URL}/fr/ressources/${r.numericId || r.id}/${r.slug}`,
-          description: r.description || r.summary || undefined,
-        })),
-      })
-    : null;
+  let popularListJsonLd: any = null;
+  try {
+    popularListJsonLd = popular && popular.length > 0
+      ? itemListSchema({
+          name: 'Ressources populaires sur Examanet',
+          description: 'Les ressources les plus consultées sur Examanet — cours, exercices, sujets et corrigés pour le système éducatif tunisien.',
+          url: `${SITE_URL}/`,
+          items: popular.slice(0, 10).map((r: any) => ({
+            name: r.title,
+            url: `${SITE_URL}/fr/ressources/${r.numericId || r.id}/${r.slug}`,
+            description: r.description || r.summary || undefined,
+          })),
+        })
+      : null;
+  } catch (e: any) {
+    console.error('[HOME] itemListSchema failed:', e?.message);
+  }
   return (
     <>
       {popularListJsonLd && (
