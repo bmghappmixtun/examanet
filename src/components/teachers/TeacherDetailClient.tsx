@@ -11,6 +11,7 @@ import {
 import FollowButton from '@/components/social/FollowButton';
 import MessageTeacherButton from '@/components/social/MessageTeacherButton';
 import ShareButton from '@/components/share/ShareButton';
+import { teacherNameFr, teacherNameAr, teacherInitials } from '@/lib/utils';
 
 const TYPE_LABELS: Record<string, string> = {
   COURS: 'Cours', EXERCICES: 'Exercices', EXAMEN: 'Examen', DEVOIR: 'Devoir',
@@ -78,8 +79,12 @@ function LoadingView() {
 
 function DetailView({ data }: { data: any }) {
   const { teacher, resources, resourceCount, totalFavorites, teachingSubjects, teachingClasses } = data;
-  const fullName = [teacher.firstName, teacher.lastName].filter(Boolean).join(' ') || 'Professeur';
-  const initials = getInitials(teacher.firstName || '', teacher.lastName || '');
+  // 2026-09-10: Use shared helpers — FR on top, AR below. Works for any
+  // combination of fields (including lastNameAr-only).
+  const frName = teacherNameFr(teacher);
+  const arName = teacherNameAr(teacher);
+  const fullName = frName;
+  const initials = teacherInitials(teacher);
   const latestResources = resources.slice(0, 6);
   const showToutVoir = resources.length > 6;
   const joinDate = teacher.approvedAt || teacher.createdAt;
@@ -128,8 +133,8 @@ function DetailView({ data }: { data: any }) {
                   <h1 className="text-2xl lg:text-4xl font-extrabold text-slate-900 truncate">{fullName}</h1>
                   {teacher.isVerifiedTeacher && <CheckCircle2 className="w-6 h-6 text-emerald-500 flex-shrink-0" />}
                 </div>
-                {teacher.firstNameAr && teacher.lastNameAr && (
-                  <p className="text-lg text-slate-600 mb-3" dir="rtl" lang="ar">{teacher.firstNameAr} {teacher.lastNameAr}</p>
+                {arName && arName !== frName && (
+                  <p className="text-lg text-slate-600 mb-3" dir="rtl" lang="ar">{arName}</p>
                 )}
                 <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
                   {teacher.schoolName && (

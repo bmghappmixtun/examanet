@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
 import ResourceCard from '@/components/resources/ResourceCard';
 import { getUserFavorites, decorateWithFavorites } from '@/lib/resource-helpers';
+import { teacherNameFr, teacherNameAr, teacherInitials } from '@/lib/utils';
 import {
   ChevronRight,
   GraduationCap,
@@ -468,23 +469,32 @@ export default async function CollegePillar() {
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {topTeachers.map((t) => (
+                {topTeachers.map((t) => {
+                  // 2026-09-10: Use shared helpers — FR on top, AR below.
+                  const frName = teacherNameFr(t);
+                  const arName = teacherNameAr(t);
+                  return (
                   <Link
                     key={t.id}
                     href={`/professeurs/${t.numericId}/${t.slug}`}
                     className="group bg-slate-50 rounded-2xl p-5 text-center hover:bg-white hover:shadow-lg transition-all border border-transparent hover:border-primary-200"
                   >
                     <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white font-bold text-xl flex items-center justify-center mb-3">
-                      {(t.firstName?.[0] || '') + (t.lastName?.[0] || '')}
+                      {teacherInitials(t)}
                     </div>
                     <div className="flex items-center justify-center gap-1 mb-1">
                       <h3 className="font-bold text-slate-900 group-hover:text-primary-600 transition">
-                        {t.firstName} {t.lastName}
+                        {frName}
                       </h3>
                       {t.isVerifiedTeacher && (
                         <CheckCircle className="w-4 h-4 text-primary-600 fill-primary-100" />
                       )}
                     </div>
+                    {arName && arName !== frName && (
+                      <p className="text-xs text-slate-500 mb-1 line-clamp-1" dir="rtl" lang="ar">
+                        {arName}
+                      </p>
+                    )}
                     {t.schoolName && (
                       <p className="text-xs text-slate-500 mb-2 line-clamp-1">{t.schoolName}</p>
                     )}
@@ -492,7 +502,8 @@ export default async function CollegePillar() {
                       +{t._count.uploadedFiles} ressources
                     </p>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
 
               <div className="text-center mt-8">
