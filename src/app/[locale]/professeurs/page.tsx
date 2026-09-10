@@ -106,18 +106,20 @@ async function fetchInitialData(searchParams: URLSearchParams) {
       teacherConds.push('(' + tokenConds.join(' AND ') + ')');
     }
     if (subjectSlugs.length || classSlugs.length) {
-      const extraConds: string[] = [];
+      const existsConds: string[] = ["r.status = 'PUBLISHED'", "r.teacherId = u.id"];
       if (subjectSlugs.length) {
         const ph = subjectSlugs.map(() => '?').join(',');
-        extraConds.push(`r.subjectId IN (SELECT id FROM Subject WHERE slug IN (${ph}))`);
+        existsConds.push(`r.subjectId IN (SELECT id FROM Subject WHERE slug IN (${ph}))`);
         teacherParams.push(...subjectSlugs);
       }
       if (classSlugs.length) {
         const ph = classSlugs.map(() => '?').join(',');
-        extraConds.push(`r.classId IN (SELECT id FROM "Class" WHERE slug IN (${ph}))`);
+        existsConds.push(`r.classId IN (SELECT id FROM "Class" WHERE slug IN (${ph}))`);
         teacherParams.push(...classSlugs);
       }
-      teacherConds.push(`EXISTS (SELECT 1 FROM Resource r WHERE r.teacherId = u.id ${extraConds.length ? ' AND ' + extraConds.join(' AND ') : ''})`);
+      teacherConds.push(
+        `EXISTS (SELECT 1 FROM Resource r WHERE ${existsConds.join(' AND ')})`
+      );
     }
     const teacherWhereSql = teacherConds.join(' AND ');
     const offset = (page - 1) * PAGE_SIZE;
