@@ -89,10 +89,12 @@ export default function ResourceCard({ resource }: { resource: ResourceCardData 
   // 2026-09-10: Use shared helpers for FR+AR consistency across the app.
   // Note: empty fallback ('') preserves the original behavior of hiding the byline
   // when the teacher has no name (vs the homepage / list which DO want 'Professeur').
+  // BUG FIX 2026-09-10: previous code used `const teacherNameAr = ... teacherNameAr(...)`
+  // which shadowed the import with a self-reference (TDZ → 500 on /fr + /fr/college).
   const teacherName = resource.teacher
     ? teacherNameFr(resource.teacher, '') || null
     : null;
-  const teacherNameAr = resource.teacher
+  const arName = resource.teacher
     ? teacherNameAr(resource.teacher) || null
     : null;
   const subjectColor = resource.subject.color || '#0EA5E9';
@@ -212,9 +214,9 @@ export default function ResourceCard({ resource }: { resource: ResourceCardData 
           <div className="flex items-center gap-2 mb-4 flex-wrap text-xs">
             <span className="text-slate-500">{isAr ? 'الأستاذ' : 'Par'}</span>
             <span className="font-semibold text-slate-700">{teacherName}</span>
-            {teacherNameAr && !isAr && (
+            {arName && !isAr && (
               <span className="text-slate-400" dir="rtl" lang="ar">
-                · {teacherNameAr}
+                · {arName}
               </span>
             )}
             {resource.schoolType === 'PILOTE' && (

@@ -58,9 +58,11 @@ function formatSize(bytes: number): string {
 }
 
 export default function ResourceListItem({ resource }: { resource: Resource }) {
-  // 2026-09-10: Use shared helpers for FR+AR display
+  // 2026-09-10: Use shared helpers for FR+AR display.
+  // BUG FIX 2026-09-10: rename to arName to avoid shadowing the import
+  // (TDZ on `const teacherNameAr = ... teacherNameAr(...)` → 500).
   const teacherName = resource.teacher ? teacherNameFr(resource.teacher) || null : null;
-  const teacherNameAr = resource.teacher ? teacherNameAr(resource.teacher) || null : null;
+  const arName = resource.teacher ? teacherNameAr(resource.teacher) || null : null;
   return (
     <Link
       href={`/ressources/${resource.numericId}/${resource.slug}`}
@@ -128,9 +130,9 @@ export default function ResourceListItem({ resource }: { resource: Resource }) {
             <p className="text-xs text-slate-500 flex items-center gap-1">
               <User className="w-3 h-3" /> {teacherName}
             </p>
-            {teacherNameAr && teacherNameAr !== teacherName && (
+            {arName && arName !== teacherName && (
               <span className="text-xs text-slate-400" dir="rtl" lang="ar">
-                {teacherNameAr}
+                {arName}
               </span>
             )}
           </div>
