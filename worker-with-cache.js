@@ -1,5 +1,5 @@
 /**
- * Custom Worker with edge cache + metrics collection (v15).
+ * Custom Worker with edge cache + metrics collection (v17).
  * 
  * - Caches HTML pages at CF edge (caches.default)
  * - Records request metrics (path, durationMs, statusCode) to KV
@@ -92,7 +92,7 @@ export default {
       if (cached) {
         const headers = new Headers(cached.headers);
         headers.set('cf-cache-status', 'HIT');
-        headers.set('x-cache-wrapper', 'v16-HIT');
+        headers.set('x-cache-wrapper', 'v17-HIT');
         // Record metric for cache hit
         if (recordMetricEnabled) {
           recordMetric(env, ctx, url.pathname, cached.status, Date.now() - startTime);
@@ -120,7 +120,7 @@ export default {
     }
     
     const headers = new Headers(response.headers);
-    headers.set('x-cache-wrapper', cacheable ? 'v16-MISS' : 'v16-bypass');
+    headers.set('x-cache-wrapper', cacheable ? 'v17-MISS' : 'v17-bypass');
     
     return new Response(response.body, {
       status: response.status,
