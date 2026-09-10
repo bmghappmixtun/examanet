@@ -147,11 +147,11 @@ function DetailView({ data }: { data: any }) {
                       <MapPin className="w-3.5 h-3.5 text-rose-500" />{teacher.governorate}
                     </span>
                   )}
-                  {joinDate && (
+                  {joinDate ? (
                     <span className="inline-flex items-center gap-1 bg-white/70 backdrop-blur border border-amber-200 px-2.5 py-1 rounded-lg text-slate-700">
                       <Calendar className="w-3.5 h-3.5 text-slate-500" />Membre depuis {new Date(joinDate).getFullYear()}
                     </span>
-                  )}
+                  ) : null}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <FollowButton teacherId={teacher.id} teacherName={fullName} />
