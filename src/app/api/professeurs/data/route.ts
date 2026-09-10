@@ -104,6 +104,10 @@ export async function GET(request: NextRequest) {
     const totalResources = num(statsRow?.totalResources);
 
     // ----- Build teacher WHERE -----
+    // 2026-09-10: Refactored to fix duplicate teachers on paginated results.
+    // Previously: JOIN User with Resource created N rows per teacher (one per resource).
+    // LIMIT 24 then returned 24 rows of the SAME teacher. Now: use EXISTS in WHERE
+    // for filters, no JOIN. The main query is always User-only, ensuring one row per teacher.
     const teacherConds: string[] = [
       "u.role = 'TEACHER'",
       "u.status = 'ACTIVE'",
@@ -129,60 +133,28 @@ export async function GET(request: NextRequest) {
       teacherConds.push('(' + tokenConds.join(' AND ') + ')');
     }
 
-    // Filter by subject/class via resource existence
-    let allowedTeacherIds: string[] | null = null;
-    let filterJoinSql = '';
+    // Filter by subject/class via EXISTS in WHERE (no JOIN — keeps 1 row per teacher)
     if (subjectSlugs.length || classSlugs.length) {
-      const resConds: string[] = ["r.status = 'PUBLISHED'", "r.teacherId IS NOT NULL"];
-      const resParams: any[] = [];
+      const existsConds: string[] = ["r.status = 'PUBLISHED'", "r.teacherId = u.id"];
       if (subjectSlugs.length) {
         const placeholders = subjectSlugs.map(() => '?').join(',');
-        resConds.push(`r.subjectId IN (SELECT id FROM Subject WHERE slug IN (${placeholders}))`);
-        resParams.push(...subjectSlugs);
-      }
-      if (classSlugs.length) {
-        const placeholders = classSlugs.map(() => '?').join(',');
-        resConds.push(`r.classId IN (SELECT id FROM "Class" WHERE slug IN (${placeholders}))`);
-        resParams.push(...classSlugs);
-      }
-      const groups = await safeQuery(
-        `SELECT DISTINCT r.teacherId FROM Resource r WHERE ${resConds.join(' AND ')}`,
-        resParams
-      );
-      allowedTeacherIds = groups.map((g: any) => g.teacherId).filter((id: any) => id !== null);
-      if (allowedTeacherIds.length === 0) {
-        return NextResponse.json(
-          {
-            totalActive, totalVerified, totalResources,
-            totalMatching: 0, totalPages: 1, page, pageSize: PAGE_SIZE,
-            sort, q, teachers: [], subjectsTaught, classesTaught,
-            ms: Date.now() - t0,
-          },
-          { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300' } }
-        );
-      }
-      // Use a JOIN instead of IN clause with hundreds of params
-      filterJoinSql = ` INNER JOIN Resource r ON r.teacherId = u.id AND r.status = 'PUBLISHED'`;
-      // Add subject/class conditions to the JOIN
-      const extraConds: string[] = [];
-      if (subjectSlugs.length) {
-        const placeholders = subjectSlugs.map(() => '?').join(',');
-        extraConds.push(`r.subjectId IN (SELECT id FROM Subject WHERE slug IN (${placeholders}))`);
+        existsConds.push(`r.subjectId IN (SELECT id FROM Subject WHERE slug IN (${placeholders}))`);
         teacherParams.push(...subjectSlugs);
       }
       if (classSlugs.length) {
         const placeholders = classSlugs.map(() => '?').join(',');
-        extraConds.push(`r.classId IN (SELECT id FROM "Class" WHERE slug IN (${placeholders}))`);
+        existsConds.push(`r.classId IN (SELECT id FROM "Class" WHERE slug IN (${placeholders}))`);
         teacherParams.push(...classSlugs);
       }
-      // Deduplicate teachers using EXISTS (D1 doesn't have DISTINCT ON)
       teacherConds.push(
-        `EXISTS (SELECT 1 FROM Resource r WHERE r.teacherId = u.id ${extraConds.length ? ' AND ' + extraConds.join(' AND ') : ''})`
+        `EXISTS (SELECT 1 FROM Resource r WHERE ${existsConds.join(' AND ')})`
       );
     }
 
     const teacherWhereSql = teacherConds.join(' AND ');
-    const fromUserSql = filterJoinSql ? `User u ${filterJoinSql}` : 'User u';
+    // Always User-only (no JOIN) — EXISTS in WHERE handles the subject/class filter
+    // without duplicating rows. Stats come from the LEFT JOIN with the stats subquery.
+    const fromUserSql = 'User u';
 
     // PERF 2026-09-02 (Step 3): Build cache key from filter params
     // Cache the full data assembly (queries + result transformation)
