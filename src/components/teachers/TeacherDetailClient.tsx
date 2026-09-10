@@ -136,6 +136,9 @@ function DetailView({ data }: { data: any }) {
                 {arName && arName !== frName && (
                   <p className="text-lg text-slate-600 mb-3" dir="rtl" lang="ar">{arName}</p>
                 )}
+                {teacher.bio && (
+                  <p className="text-sm text-slate-700 leading-relaxed mb-4 max-w-2xl">{teacher.bio}</p>
+                )}
                 <div className="flex flex-wrap items-center gap-2 mb-4 text-sm">
                   {teacher.schoolName && (
                     <span className="inline-flex items-center gap-1 bg-white/70 backdrop-blur border border-amber-200 px-2.5 py-1 rounded-lg text-slate-700">
@@ -173,52 +176,12 @@ function DetailView({ data }: { data: any }) {
         </section>
 
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid lg:grid-cols-3 gap-8">
-            <aside className="lg:sticky lg:top-24 lg:self-start space-y-4">
-              <div className="bg-white rounded-2xl border border-slate-200 p-5">
-                <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Statistiques</h2>
-                <div className="space-y-3">
-                  <StatItem icon={FileText} value={resourceCount} label="Ressources" color="text-primary-600 bg-primary-50" />
-                  <StatItem icon={Users} value={teacher.followersCount} label="Abonnés" color="text-rose-600 bg-rose-50" />
-                  <StatItem icon={Heart} value={totalFavorites} label="Favoris" color="text-amber-600 bg-amber-50" />
-                  <StatItem icon={Download} value={resources.reduce((a: number, r: any) => a + (r.downloadsCount ?? 0), 0)} label="Téléchargements" color="text-emerald-600 bg-emerald-50" />
-                </div>
-              </div>
-              {teachingSubjects.length > 0 && (
-                <div className="bg-white rounded-2xl border border-slate-200 p-5">
-                  <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Matières enseignées</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {teachingSubjects.map((s: any) => (
-                      <Link key={s.slug} href={`/matieres/${s.slug}`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium hover:scale-105 transition" style={{ backgroundColor: s.color ? `${s.color}15` : '#f1f5f9', color: s.color || '#475569' }}>
-                        {s.icon && <span>{s.icon}</span>}{s.nameFr}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {teachingClasses.length > 0 && (
-                <div className="bg-white rounded-2xl border border-slate-200 p-5">
-                  <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Niveaux</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {teachingClasses.map((c: any) => (
-                      <span key={c.slug} className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium">📚 {c.nameFr}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {teacher.bio && (
-                <div className="bg-white rounded-2xl border border-slate-200 p-5">
-                  <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">À propos</h2>
-                  <p className="text-sm text-slate-700 leading-relaxed">{teacher.bio}</p>
-                </div>
-              )}
-            </aside>
-            <div className="lg:col-span-2 space-y-6">
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-extrabold flex items-center gap-2">
-                    <BookOpen className="w-6 h-6 text-primary-500" />Ressources ({resourceCount})
-                  </h2>
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-extrabold flex items-center gap-2">
+                  <BookOpen className="w-6 h-6 text-primary-500" />Ressources ({resourceCount})
+                </h2>
                   <Link href={`/ressources?teacherId=${teacher.numericId}` as any} className={`text-sm text-primary-600 hover:text-primary-700 font-semibold ${showToutVoir ? '' : 'hidden'}`} aria-hidden={!showToutVoir} tabIndex={showToutVoir ? 0 : -1}>
                     Tout voir →
                   </Link>
@@ -265,22 +228,8 @@ function DetailView({ data }: { data: any }) {
   );
 }
 
-function StatItem({ icon: Icon, value, label, color }: any) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}>
-        <Icon className="w-5 h-5" />
-      </div>
-      <div>
-        <div className="text-xl font-extrabold text-slate-900">{(value ?? 0).toLocaleString('fr-FR')}</div>
-        <div className="text-xs text-slate-500">{label}</div>
-      </div>
-    </div>
-  );
-}
-
 // 2026-09-10: Compact stat chip for the header (next to the teacher's name).
-// Same color scheme as the sidebar StatItem, but smaller so the 4 chips fit
+// Same color scheme as the old sidebar StatItem, but smaller so the 4 chips fit
 // in a single row without making the header too tall.
 function StatChip({ icon: Icon, value, label, color }: any) {
   return (
