@@ -57,8 +57,13 @@ export async function GET(req: NextRequest) {
   const backfillHours = parseInt(url.searchParams.get('backfill') || '0');
   const windowMin = backfillHours > 0 ? backfillHours * 60 : WINDOW_MIN;
 
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+  // 2026-09-11: Use getCloudflareContext() for CF secrets (process.env was undefined
+  // for wrangler secret put values, which broke the cron sync since v#493).
+  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+  const ctx = await getCloudflareContext({ async: true });
+  const env = (ctx as any).env as Record<string, string> | undefined;
+  const accountId = env?.CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID || '59cffdeaadf3809cc3d2039c43f836e0';
+  const apiToken = env?.CLOUDFLARE_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN;
   const workerName = 'examanet-prod';
 
   if (!accountId || !apiToken) {
