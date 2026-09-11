@@ -83,6 +83,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const num = (v: any) => (v == null ? 0 : Number(v) || 0);
   const pendingApprovals = num(pendingApprovalsR?.c);
+  // 2026-09-11: Count teachers awaiting file verification review
+  const pendingVerificationsR = await db
+    .prepare(
+      "SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER' AND status = 'PENDING_REVIEW'",
+    )
+    .first()
+    .catch(() => ({ c: 0 }));
+  const pendingVerifications = num(pendingVerificationsR?.c);
   const pendingEdits = num(pendingEditsR?.c);
   const pendingReports = num(pendingReportsR?.c);
   const newUsers = num(newUsersR?.c);
@@ -107,6 +115,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       label: 'Approbations',
       badge: pendingApprovals,
       badgeColor: 'bg-amber-500',
+    },
+    {
+      href: '/admin/verifications',
+      icon: Shield,
+      label: 'Vérifications fichiers',
+      badge: pendingVerifications,
+      badgeColor: 'bg-violet-500',
     },
     {
       href: '/admin/ressources/editions',
