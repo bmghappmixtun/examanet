@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { db } from '@/lib/d1-admin';
+import { d1First, d1All, d1Run } from '@/lib/db-d1';
 
 /**
  * GET /api/admin/teacher/[id]/verification-files
@@ -18,28 +18,28 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   const { id } = await params;
 
-  const [teacher, files] = await Promise.all([
-    db.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        schoolName: true,
-        governorate: true,
-        diploma: true,
-        status: true,
-        verificationFilesRequestedAt: true,
-        verificationFilesCount: true,
-        verificationFilesReceivedAt: true,
-        verificationFilesNote: true,
-      },
-    }),
-    db.teacherVerificationFile.findMany({
-      where: { teacherId: id },
-      orderBy: { uploadedAt: 'desc' },
-    }),
+  // 2026-09-11: Switched from d1-admin (db.user.findUnique) to raw SQL (d1First/d1All).
+  // Bug: db.user.findUnique was returning null even though the teacher existed in D1.
+  // Likely cause: the proxy model-name translation or select-handling had a subtle
+  // issue that swallowed the result. Raw SQL is more reliable + matches the pattern
+  // used by the sibling /api/admin/teacher/[id]/approve-verification route.
+
+  const [teacher, filesResult] = await Promise.all([
+    d1First(
+      `SELECT id, firstName, lastName, email, schoolName, governorate, diploma, status,
+              verificationFilesRequestedAt, verificationFilesCount,
+              verificationFilesReceivedAt, verificationFilesNote
+       FROM User WHERE id = ?`,
+      id,
+    ),
+    d1All(
+      `SELECT id, fileName, originalFormat, fileKey, fileUrl, mimeType, fileSize, type,
+              description, year, teacherId, userId, reviewedByAdmin, reviewNote,
+              reviewedAt, rejectionReason, createdAt, uploadedAt
+       FROM TeacherVerificationFile WHERE userId = ?
+       ORDER BY uploadedAt DESC`,
+      id,
+    ),
   ]);
 
   if (!teacher) {
@@ -48,7 +48,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   return NextResponse.json({
     teacher,
-    files: files.map((f) => ({
+    files: (filesResult || []).map((f: any) => ({
       id: f.id,
       fileName: f.fileName,
       fileSize: f.fileSize,
@@ -57,9 +57,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       type: f.type,
       description: f.description,
       year: f.year,
-      uploadedAt: f.uploadedAt.toISOString(),
-      reviewedByAdmin: f.reviewedByAdmin,
-      reviewedAt: f.reviewedAt?.toISOString() || null,
+      uploadedAt: f.uploadedAt ? new Date(Number(f.uploadedAt)).toISOString() : new Date().toISOString(),
+      reviewedByAdmin: !!f.reviewedByAdmin,
+      reviewedAt: f.reviewedAt ? new Date(Number(f.reviewedAt)).toISOString() : null,
       reviewNote: f.reviewNote,
     })),
   });
@@ -75,28 +75,37 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!admin || admin.role !== 'ADMIN') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
+  if (!isValidOrigin(req)) {
+    return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
+  }
 
-  const { id: teacherId } = await params;
+  const { id } = await params;
   const body = await req.json().catch(() => ({}));
-  const { fileId, reviewed, note } = body;
+  const { fileId, reviewed, note } = body as { fileId?: string; reviewed?: boolean; note?: string };
 
   if (!fileId) {
     return NextResponse.json({ error: 'fileId requis' }, { status: 400 });
   }
 
-  const file = await db.teacherVerificationFile.findUnique({ where: { id: fileId } });
-  if (!file || file.teacherId !== teacherId) {
+  // 2026-09-11: Switched to raw SQL (same reason as the GET handler above).
+  const file: any = await d1First(
+    'SELECT id, userId, teacherId FROM TeacherVerificationFile WHERE id = ?',
+    fileId,
+  );
+
+  if (!file || (file.userId !== id && file.teacherId !== id)) {
     return NextResponse.json({ error: 'Fichier non trouvé' }, { status: 404 });
   }
 
-  await db.teacherVerificationFile.update({
-    where: { id: fileId },
-    data: {
-      reviewedByAdmin: !!reviewed,
-      reviewedAt: reviewed ? new Date() : null,
-      reviewNote: note || null,
-    },
-  });
+  await d1Run(
+    `UPDATE TeacherVerificationFile
+     SET reviewedByAdmin = ?, reviewedAt = ?, reviewNote = ?
+     WHERE id = ?`,
+    reviewed ? 1 : 0,
+    reviewed ? Date.now() : null,
+    note || null,
+    fileId,
+  );
 
   return NextResponse.json({ success: true });
 }
