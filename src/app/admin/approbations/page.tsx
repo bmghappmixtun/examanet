@@ -46,7 +46,10 @@ export default async function AdminApprovalsPage() {
     FROM User u
     LEFT JOIN TeacherFile tf ON tf.teacherId = u.id
     LEFT JOIN TeacherVerificationFile tvf ON tvf.userId = u.id
-    WHERE u.role = 'TEACHER' AND u.status IN ('PENDING_APPROVAL', 'PENDING_FILE_VERIFICATION', 'PENDING_OTP')
+    -- 2026-09-11: Added PENDING_REVIEW. Was missing — teachers disappeared from the
+    -- admin view as soon as they uploaded their first verification file (status
+    -- flips PENDING_FILE_VERIFICATION → PENDING_REVIEW, then no longer in this list).
+    WHERE u.role = 'TEACHER' AND u.status IN ('PENDING_APPROVAL', 'PENDING_FILE_VERIFICATION', 'PENDING_OTP', 'PENDING_REVIEW')
     GROUP BY u.id
     ORDER BY u.createdAt DESC
     LIMIT 50
