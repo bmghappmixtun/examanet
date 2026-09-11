@@ -1,17 +1,10 @@
 # GitLab CI/CD for Examanet Cloudflare Workers
 #
-# 2026-09-11: HEAVILY OPTIMIZED with researched best practices:
-# - GIT_CLEAN_FLAGS=-ffdx -e node_modules/ : keeps node_modules between jobs
-#   (Docker volumes persist on shared runners)
-# - FF_USE_FASTZIP + fastest compression : -8.6s per job
-# - CACHE_COMPRESSION_FORMAT=zipzstd : parallel multi-core compression
-# - interruptible: true : cancel outdated pipelines (MRs)
-# - needs: chaining (DAG) : parallel jobs where possible
-#
-# Performance gains measured:
-# - Install once, reused across all jobs (was: 2min per job)
-# - Cache/artifacts compression ~3x faster
-# - Outdated MR pipelines auto-cancel
+# Optimized with researched best practices (2026-09-11):
+# - FF_USE_FASTZIP + fastest compression
+# - GIT_CLEAN_FLAGS preserves node_modules between jobs
+# - Direct bun run build (avoid OpenNext's swallowed stderr)
+# - Retry on transient failures
 #
 # Required GitLab CI variables:
 #   CF_ACCOUNT_ID, CF_API_TOKEN, DATABASE_URL
@@ -32,13 +25,11 @@ stages:
 variables:
   NODE_VERSION: "22"
   DATABASE_URL: "postgresql://stub:stub@localhost:5432/stub"
-  # 🚀 OPTIMIZATION 1: Fastzip with fastest compression
   FF_USE_FASTZIP: "true"
   ARTIFACT_COMPRESSION_LEVEL: "fastest"
   CACHE_COMPRESSION_LEVEL: "fastest"
   CACHE_COMPRESSION_FORMAT: "zipzstd"
   TRANSFER_METER_FREQUENCY: "2s"
-  # 🚀 OPTIMIZATION 2: Preserve node_modules between jobs
   GIT_CLEAN_FLAGS: "-ffdx -e node_modules/ -e .next/ -e .open-next/"
 
 default:
@@ -50,7 +41,7 @@ default:
     - export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
 
 # ---------------------------------------------------------------------------
-# Stage 1: install (one-time, ~30s on warm cache, ~2min cold)
+# Stage 1: install
 # ---------------------------------------------------------------------------
 install_dependencies:
   tags:
@@ -59,8 +50,6 @@ install_dependencies:
   script:
     - echo "Installing dependencies with npm"
     - npm install --prefer-offline --no-audit --no-fund
-    - echo "Verify build tools"
-    - 'which npx && npx --version'
     - 'echo "node_modules size: $(du -sh node_modules | cut -f1)"'
   cache:
     key:
@@ -77,7 +66,7 @@ install_dependencies:
       - stuck_or_timeout_failure
 
 # ---------------------------------------------------------------------------
-# Stage 2: build (uses cached node_modules from previous stage)
+# Stage 2: build (direct bun run build to see real errors)
 # ---------------------------------------------------------------------------
 build_cf_bundle:
   tags:
@@ -86,12 +75,15 @@ build_cf_bundle:
   needs:
     - install_dependencies
   script:
-    - echo "Verifying node_modules preserved"
-    - 'ls node_modules/.package-lock.json > /dev/null 2>&1 || echo MISSING'
-    - echo "Building OpenNext bundle"
-    - npx opennextjs-cloudflare build
-    - echo "Build complete"
-    - ls -la .open-next/ 2>&1 | head -10
+    - 'echo "node_modules preserved: $(du -sh node_modules | cut -f1)"'
+    - echo "Running Next.js build directly (bypass OpenNext's stderr swallow)"
+    - prisma generate 2>&1
+    - bash scripts/ensure-search.sh 2>&1
+    - next build 2>&1 | tee /tmp/next-build.log
+    - echo "Generating OpenNext bundle"
+    - npx opennextjs-cloudflare build 2>&1 | tee /tmp/opennext-build.log
+    - 'echo "Build complete - bundle size:"'
+    - du -sh .open-next/ 2>&1
   cache:
     key:
       files:
@@ -104,8 +96,6 @@ build_cf_bundle:
     paths:
       - .open-next/
     expire_in: 1 hour
-    exclude:
-      - .open-next/cache/**
   retry:
     max: 1
     when:
@@ -113,7 +103,7 @@ build_cf_bundle:
       - stuck_or_timeout_failure
 
 # ---------------------------------------------------------------------------
-# Stage 3: deploy (production only on main)
+# Stage 3: deploy
 # ---------------------------------------------------------------------------
 deploy_production:
   tags:
@@ -122,8 +112,6 @@ deploy_production:
   needs:
     - build_cf_bundle
   script:
-    - echo "Installing wrangler deps (minimal)"
-    - npm install --prefer-offline --no-audit --no-fund wrangler 2>&1 | tail -3 || true
     - echo "Deploying to production"
     - export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
     - npx wrangler deploy --config wrangler.prod.jsonc
