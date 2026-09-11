@@ -116,9 +116,9 @@ export async function POST(req: NextRequest) {
     const year = (formData.get('year') as string) || null;
 
     await db.prepare(`
-      INSERT INTO TeacherVerificationFile (id, fileName, originalFormat, fileKey, fileUrl, fileSize, type, description, year, teacherId, reviewedByAdmin, uploadedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
-    `).bind(fileId, file.name, format, key, fileUrl, file.size, type, description, year, user.id, now).run();
+      INSERT INTO TeacherVerificationFile (id, userId, fileName, originalFormat, fileKey, fileUrl, fileSize, type, description, year, teacherId, reviewedByAdmin, uploadedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+    `).bind(fileId, user.id, file.name, format, key, fileUrl, file.size, type, description, year, user.id, now).run();
 
     // Update teacher status
     await db.prepare(
