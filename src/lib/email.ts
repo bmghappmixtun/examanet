@@ -485,13 +485,22 @@ export function renderTeacherFileRequestEmail(opts: {
   lastName: string;
   resourceTitle?: string;
   uploadUrl?: string;
+  /** 2026-09-11: '5_file_verification' (default) or 'single_file_upload' (legacy) */
+  purpose?: '5_file_verification' | 'single_file_upload';
 }): string {
   const safeFirst = opts.firstName.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const safeTitle = (opts.resourceTitle ?? 'votre fichier')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-  return `<!DOCTYPE html>
-<html><body style="font-family:sans-serif;background:#f8fafc;padding:20px">
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
+  // 2026-09-11: Always link to /enseignant/verification, never to an undefined URL.
+  // Falls back to SITE_URL + verification path if uploadUrl is not provided.
+  const verificationUrl = opts.uploadUrl || `${SITE_URL}/enseignant/verification`;
+  const F = EMAIL_FONT_STACK;
+  const purpose = opts.purpose || '5_file_verification';
+
+  if (purpose === 'single_file_upload' && opts.resourceTitle) {
+    // Legacy: single file upload (kept for backward compat)
+    const safeTitle = opts.resourceTitle.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `<!DOCTYPE html>
+<html><body style="font-family:${F};background:#f8fafc;padding:20px">
 <div style="max-width:600px;margin:0 auto;background:white;border-radius:16px;padding:32px">
 <h1 style="color:#0f172a">Bonjour ${safeFirst},</h1>
 <p>Pour finaliser la publication de votre ressource <strong>${safeTitle}</strong>, merci d'uploader le fichier original.</p>
@@ -501,6 +510,32 @@ export function renderTeacherFileRequestEmail(opts: {
 <p style="color:#64748b;font-size:13px">Ce lien est personnel et expire dans 7 jours.</p>
 </div>
 </body></html>`;
+  }
+
+  // 2026-09-11: New 5-file verification flow (default)
+  return renderEmailShell({
+    accent: 'violet',
+    icon: '📁',
+    title: 'Bienvenue ! Envoyez vos 5 fichiers de vérification',
+    subtitle: 'Pour devenir un Enseignant Vérifié',
+    preheader: `Action requise : 5 fichiers de vérification`,
+    body: `
+      <p style="margin:0 0 8px;color:#0F172A;font-size:16px;font-family:${F};">Bonjour <strong style="color:#0F172A;">${safeFirst}</strong>,</p>
+      ${paragraph(opts.lastName ? `${safeFirst} ${opts.lastName.replace(/</g, '&lt;').replace(/>/g, '&gt;')}` : safeFirst + ',', '')}
+      ${paragraph('Pour finaliser la vérification de votre compte enseignant et obtenir le badge <strong style="color:#16A34A;">"Enseignant Vérifié"</strong>, merci d\'envoyer 5 fichiers Word ou PDF d\'exemple (cours, séries d\'exercices, devoirs) avec votre nom et prénom.')}
+      <div style="background:#FEF3C7;border-left:4px solid #F59E0B;padding:14px 18px;border-radius:8px;margin:20px 0;font-family:${F};">
+        <div style="color:#92400E;font-weight:700;font-size:14px;margin-bottom:4px;">📋 Ce que nous vérifions</div>
+        <div style="color:#78350F;font-size:13px;line-height:1.6;">
+          • Que les fichiers sont bien des productions pédagogiques de votre cru<br/>
+          • Que votre nom et prénom apparaissent sur chaque document<br/>
+          • Que le contenu est cohérent avec une activité d'enseignement
+        </div>
+      </div>
+      ${paragraph('Vous avez <strong>7 jours</strong> pour envoyer vos fichiers. Passé ce délai, votre demande devra être renouvelée.')}
+      ${ctaButton(verificationUrl, '📤 Envoyer mes 5 fichiers', 'violet')}
+      ${paragraph('<strong>Confidentialité :</strong> vos fichiers ne sont utilisés que pour la vérification. Ils ne sont jamais publiés sur Examanet.', 'muted')}
+    `,
+  });
 }
 
 // 2026-09-11: Email sent when teacher becomes VERIFIED (after file approval)
