@@ -97,15 +97,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Fichier non trouvé' }, { status: 404 });
   }
 
-  await d1Run(
-    `UPDATE TeacherVerificationFile
-     SET reviewedByAdmin = ?, reviewedAt = ?, reviewNote = ?
-     WHERE id = ?`,
-    reviewed ? 1 : 0,
-    reviewed ? Date.now() : null,
-    note || null,
-    fileId,
-  );
+  try {
+    const result = await d1Run(
+      `UPDATE TeacherVerificationFile
+       SET reviewedByAdmin = ?, reviewedAt = ?, reviewNote = ?
+       WHERE id = ?`,
+      reviewed ? 1 : 0,
+      reviewed ? Date.now() : null,
+      note || null,
+      fileId,
+    );
+
+    if (!result.success) {
+      console.error('[PATCH verification-files] d1Run failed:', result.error);
+      return NextResponse.json({ error: result.error || 'Update failed' }, { status: 500 });
+    }
+  } catch (e: any) {
+    console.error('[PATCH verification-files] exception:', e.message);
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 
   return NextResponse.json({ success: true });
 }
