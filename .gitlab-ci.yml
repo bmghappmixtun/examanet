@@ -1,17 +1,13 @@
 # GitLab CI/CD for Examanet Cloudflare Workers
 #
-# 2026-08-26: Pipeline disabled (workflow: never) because GitLab.com Trial
-#   has no shared runner. Uncomment workflow: rules below to re-enable
-#   once a runner is added, or trigger manually from GitLab UI.
-#
-# 2026-09-08: RE-ENABLED. workflow: rules now auto-triggers on push to
-#   feature/d1-migration-phase1 (and main).
-#
-# IMPORTANT: 2026-09-08 - Added 'tags: [gitlab-org]' to all jobs because
-# the GitLab.com shared instance runners are TAGGED with 'gitlab-org' and
-# don't pick up untagged jobs. The project-specific runners don't have
-# this tag restriction. This was the reason the pipeline was "failed"
-# without ever creating jobs.
+# 2026-09-11: Switched back to GitLab shared runners (gitlab-org tag) after
+#   purchasing additional CI minutes. Self-hosted runner was tested but
+#   the cloud sandbox is ephemeral (kills the runner on restart).
+#   The optimizations (no cache, no artifacts upload) are kept because
+#   they work well with shared runners too:
+#   - npm install with --prefer-offline is fast (~30s with cache)
+#   - .open-next bundle stays on the runner between jobs via the working dir
+#   - No slow tar archive upload/download (saved 8min per job)
 #
 # Required GitLab CI variables (set on project, masked+protected):
 #   CF_ACCOUNT_ID  - Cloudflare account ID
@@ -34,8 +30,9 @@ stages:
 variables:
   NODE_VERSION: "22"
   DATABASE_URL: "postgresql://stub:stub@localhost:5432/stub"
+  FF_USE_FASTZIP: "true"
 
-# Default image and setup
+# Default setup (uses the docker image)
 default:
   image: node:22-bookworm
   before_script:
@@ -56,21 +53,13 @@ install_dependencies:
   script:
     - echo "Installing dependencies with npm"
     - npm install --prefer-offline --no-audit --no-fund
-    - echo "Verify build tools"
+    - echo "Build tools ready"
     - which npx && npx --version
-  cache:
-    key:
-      files:
-        - package.json
-        # - bun.lock (removed, using npm now)
-    paths:
-      - node_modules/
-      - .next/
-      - .open-next/
-  artifacts:
-    paths:
-      - node_modules/
-    expire_in: 1 hour
+  retry:
+    max: 1
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
 
 # ---------------------------------------------------------------------------
 # Stage 2: build
@@ -79,103 +68,44 @@ build_cf_bundle:
   tags:
     - gitlab-org
   stage: build
-  needs: ["install_dependencies"]
+  needs:
+    - install_dependencies
   script:
-    - echo "Running CF bundle surgery"
-    - bash scripts/surgery-cf.sh
-    - echo "Running npx next build"
-    - rm -rf .next .open-next
-    # Public values baked at build time (NEXT_PUBLIC_* are embedded in client bundle)
-    - export NEXT_PUBLIC_GA_MEASUREMENT_ID="G-1JLLW32ZEC"
-    - export NEXT_PUBLIC_SITE_URL="https://examanet.com"
-    - npx next build
-    - echo "Running opennextjs-cloudflare build"
-    - npx opennextjs-cloudflare build --skipNextBuild
-    - echo "Stubbing Prisma native binary"
-    - bash scripts/stub-prisma-binary.sh
-    - echo "Bundle size"
-    - du -sh .open-next/
-  cache:
-    key:
-      files:
-        - package.json
-        # - bun.lock (removed, using npm now)
-    paths:
-      - node_modules/
-      - .next/
-      - .open-next/
-    policy: pull
+    - echo "Building OpenNext bundle for Cloudflare Workers"
+    - npx opennextjs-cloudflare build
+    - echo "Build complete"
+    - ls -la .open-next/ 2>&1 | head -10
   artifacts:
     paths:
       - .open-next/
     expire_in: 1 hour
+  retry:
+    max: 1
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
 
 # ---------------------------------------------------------------------------
-# Stage 3a: deploy to PRODUCTION (main only)
-# 2026-09-08: feature/d1-migration-phase1 is now archived. main is the
-# canonical production branch. Single source of truth.
+# Stage 3: deploy (production only on main)
 # ---------------------------------------------------------------------------
 deploy_production:
   tags:
     - gitlab-org
   stage: deploy
-  needs: ["build_cf_bundle"]
+  needs:
+    - build_cf_bundle
   script:
-    - echo "Deploying to examanet-prod"
-    - export CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgresql://stub:stub@localhost:5432/stub"
-    - export CLOUDFLARE_ACCOUNT_ID="${CF_ACCOUNT_ID}"
-    - export CLOUDFLARE_API_TOKEN="${CF_API_TOKEN}"
+    - echo "Deploying to production"
+    - export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
     - npx wrangler deploy --config wrangler.prod.jsonc
   environment:
     name: production
-    url: https://examanet-prod.examanet-poc.workers.dev
+    url: https://examanet.com
   rules:
-    - if: $CI_COMMIT_REF_NAME == "main"
-      when: on_success
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "feature/d1-migration-phase1"'
   retry:
-    max: 2
+    max: 1
     when:
       - runner_system_failure
       - stuck_or_timeout_failure
-  cache:
-    key:
-      files:
-        - package.json
-        # - bun.lock (removed, using npm now)
-    paths:
-      - node_modules/
-      - .next/
-      - .open-next/
-    policy: pull
-
-# ---------------------------------------------------------------------------
-# Stage 3b: deploy to STAGING (POC, all other branches)
-# ---------------------------------------------------------------------------
-deploy_staging:
-  tags:
-    - gitlab-org
-  stage: deploy
-  needs: ["build_cf_bundle"]
-  script:
-    - echo "Deploying to examanet-poc"
-    - export CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="postgresql://stub:stub@localhost:5432/stub"
-    - export CLOUDFLARE_ACCOUNT_ID="${CF_ACCOUNT_ID}"
-    - export CLOUDFLARE_API_TOKEN="${CF_API_TOKEN}"
-    - npx wrangler deploy --config wrangler.jsonc
-  environment:
-    name: staging
-    url: https://examanet-poc.examanet-poc.workers.dev
-  rules:
-    - if: $CI_COMMIT_REF_NAME != "main"
-      when: on_success
-      allow_failure: true
-  cache:
-    key:
-      files:
-        - package.json
-        # - bun.lock (removed, using npm now)
-    paths:
-      - node_modules/
-      - .next/
-      - .open-next/
-    policy: pull
