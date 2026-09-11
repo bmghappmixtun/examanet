@@ -1,13 +1,9 @@
 # GitLab CI/CD for Examanet Cloudflare Workers
 #
-# 2026-09-11: Switched back to GitLab shared runners (gitlab-org tag) after
-#   purchasing additional CI minutes. Self-hosted runner was tested but
-#   the cloud sandbox is ephemeral (kills the runner on restart).
-#   The optimizations (no cache, no artifacts upload) are kept because
-#   they work well with shared runners too:
-#   - npm install with --prefer-offline is fast (~30s with cache)
-#   - .open-next bundle stays on the runner between jobs via the working dir
-#   - No slow tar archive upload/download (saved 8min per job)
+# 2026-09-11: Combined install + build into a single job to avoid
+#   the slow node_modules transfer between jobs (GitLab cache = 8min
+#   tar upload, artifacts = same). With combined job, npm install
+#   runs once with --prefer-offline (~30s incremental).
 #
 # Required GitLab CI variables (set on project, masked+protected):
 #   CF_ACCOUNT_ID  - Cloudflare account ID
@@ -23,7 +19,6 @@ workflow:
     - when: always
 
 stages:
-  - install
   - build
   - deploy
 
@@ -32,7 +27,7 @@ variables:
   DATABASE_URL: "postgresql://stub:stub@localhost:5432/stub"
   FF_USE_FASTZIP: "true"
 
-# Default setup (uses the docker image)
+# Default setup
 default:
   image: node:22-bookworm
   before_script:
@@ -44,33 +39,15 @@ default:
     - node --version
 
 # ---------------------------------------------------------------------------
-# Stage 1: install
-# ---------------------------------------------------------------------------
-install_dependencies:
-  tags:
-    - gitlab-org
-  stage: install
-  script:
-    - echo "Installing dependencies with npm"
-    - npm install --prefer-offline --no-audit --no-fund
-    - echo "Build tools ready"
-    - which npx && npx --version
-  retry:
-    max: 1
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
-
-# ---------------------------------------------------------------------------
-# Stage 2: build
+# Stage 1: install + build (combined to avoid node_modules transfer)
 # ---------------------------------------------------------------------------
 build_cf_bundle:
   tags:
     - gitlab-org
   stage: build
-  needs:
-    - install_dependencies
   script:
+    - echo "Installing dependencies with npm"
+    - npm install --prefer-offline --no-audit --no-fund
     - echo "Building OpenNext bundle for Cloudflare Workers"
     - npx opennextjs-cloudflare build
     - echo "Build complete"
@@ -86,7 +63,7 @@ build_cf_bundle:
       - stuck_or_timeout_failure
 
 # ---------------------------------------------------------------------------
-# Stage 3: deploy (production only on main)
+# Stage 2: deploy (production only on main)
 # ---------------------------------------------------------------------------
 deploy_production:
   tags:
