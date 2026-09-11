@@ -24,23 +24,26 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   // issue that swallowed the result. Raw SQL is more reliable + matches the pattern
   // used by the sibling /api/admin/teacher/[id]/approve-verification route.
 
-  const [teacher, filesResult] = await Promise.all([
-    d1First(
-      `SELECT id, firstName, lastName, email, schoolName, governorate, diploma, status,
-              verificationFilesRequestedAt, verificationFilesCount,
-              verificationFilesReceivedAt, verificationFilesNote
-       FROM User WHERE id = ?`,
-      id,
-    ),
-    d1All(
-      `SELECT id, fileName, originalFormat, fileKey, fileUrl, mimeType, fileSize, type,
-              description, year, teacherId, userId, reviewedByAdmin, reviewNote,
-              reviewedAt, rejectionReason, createdAt, uploadedAt
-       FROM TeacherVerificationFile WHERE userId = ?
-       ORDER BY uploadedAt DESC`,
-      id,
-    ),
-  ]);
+  const teacher = await d1First(
+    `SELECT id, firstName, lastName, email, schoolName, governorate, diploma, status,
+            verificationFilesRequestedAt, verificationFilesCount,
+            verificationFilesReceivedAt, verificationFilesNote
+     FROM User WHERE id = ?`,
+    id,
+  );
+
+  console.log('[GET verification-files] teacher for id', id, ':', teacher ? `FOUND ${teacher.email}` : 'NULL');
+
+  const filesResult = await d1All(
+    `SELECT id, fileName, originalFormat, fileKey, fileUrl, mimeType, fileSize, type,
+            description, year, teacherId, userId, reviewedByAdmin, reviewNote,
+            reviewedAt, rejectionReason, createdAt, uploadedAt
+     FROM TeacherVerificationFile WHERE userId = ?
+     ORDER BY uploadedAt DESC`,
+    id,
+  );
+
+  console.log('[GET verification-files] files count:', (filesResult || []).length);
 
   if (!teacher) {
     return NextResponse.json({ error: 'Enseignant non trouvé' }, { status: 404 });
