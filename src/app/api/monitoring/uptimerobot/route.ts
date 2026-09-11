@@ -150,6 +150,7 @@ async function attemptRollback(accountId: string, scriptName: string, apiToken: 
     const targetVersion = versions[1];
 
     // Rollback by setting the active deployment to the target version
+    // CF API expects: { "versions": [{ "percentage": 100, "version_id": "..." }] }
     const rollbackRes = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${scriptName}/deployments`,
       {
@@ -158,7 +159,10 @@ async function attemptRollback(accountId: string, scriptName: string, apiToken: 
           Authorization: `Bearer ${apiToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ strategy: 'percentage', versions: { [targetVersion.id]: 100 } }),
+        body: JSON.stringify({
+          strategy: 'percentage',
+          versions: [{ percentage: 100, version_id: targetVersion.id }],
+        }),
       }
     );
 
