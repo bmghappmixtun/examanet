@@ -17,7 +17,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   const { id } = await params;
-  console.error('[admin/verification-files] called with id:', id, 'admin:', admin.email);
 
   // 2026-09-11: Switched from d1-admin (db.user.findUnique) to raw SQL (d1First/d1All).
   // Bug: db.user.findUnique was returning null even though the teacher existed in D1.
@@ -44,16 +43,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   ]);
 
   if (!teacher) {
-    console.error('[admin/verification-files] teacher query returned null for id:', id);
-    // Try a different query to debug
-    try {
-      const { getD1 } = await import('@/lib/db-d1');
-      const db = await getD1();
-      const debugRow: any = await db.prepare('SELECT id, email FROM User WHERE id = ?').bind(id).first();
-      console.error('[admin/verification-files] debug query result:', debugRow);
-    } catch (e: any) {
-      console.error('[admin/verification-files] debug query error:', e?.message);
-    }
     return NextResponse.json({ error: 'Enseignant non trouvé' }, { status: 404 });
   }
 

@@ -12,7 +12,7 @@
  * - Beautiful gradients, smooth transitions, mobile-responsive
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Shield,
   CheckCircle2,
@@ -21,11 +21,9 @@ import {
   FileText,
   Download,
   Eye,
-  Check,
   Loader2,
   AlertCircle,
   Search,
-  Filter,
   ChevronRight,
   Mail,
   GraduationCap,
@@ -113,9 +111,10 @@ function formatDate(ts: number | null): string {
   });
 }
 
-function formatRelative(ts: number | null): string {
+function formatRelative(ts: number | null, now: number | null): string {
   if (!ts) return '—';
-  const diff = Date.now() - ts;
+  if (now == null) return formatDate(ts); // SSR-safe: use absolute date until client hydrates
+  const diff = now - ts;
   const min = 60 * 1000;
   const hr = 60 * min;
   const day = 24 * hr;
@@ -135,6 +134,13 @@ export default function VerificationsClient({ initialTeachers }: Props) {
   const [openTeacherId, setOpenTeacherId] = useState<string | null>(null);
   const [acting, setActing] = useState<Record<string, boolean>>({});
   const [previewFile, setPreviewFile] = useState<VerificationFile | null>(null);
+  // 2026-09-12: Avoid hydration mismatch by setting 'now' only on client mount.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
 
   // Stats
   const stats = useMemo(() => {
@@ -543,13 +549,13 @@ function TeacherCard({
             {t.verificationFilesRequestedAt && (
               <div className="flex items-center gap-2 text-slate-500">
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                Demande envoyée {formatRelative(t.verificationFilesRequestedAt)}
+                Demande envoyée {formatRelative(t.verificationFilesRequestedAt, now)}
               </div>
             )}
             {t.verificationFilesReceivedAt && (
               <div className="flex items-center gap-2 text-slate-500">
                 <Mail className="w-3.5 h-3.5 text-slate-400" />
-                Premier fichier reçu {formatRelative(t.verificationFilesReceivedAt)}
+                Premier fichier reçu {formatRelative(t.verificationFilesReceivedAt, now)}
               </div>
             )}
             {t.verificationFilesNote && (
@@ -588,6 +594,7 @@ function TeacherCard({
               <button
                 onClick={() => onApproveReject('reject')}
                 disabled={isActing}
+                title="Rejeter les fichiers et demander un renvoi"
                 className="flex-1 px-3 py-2 text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-1.5"
               >
                 {isActing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
@@ -596,6 +603,7 @@ function TeacherCard({
               <button
                 onClick={() => onApproveReject('approve')}
                 disabled={isActing || !allReviewed}
+                title={allReviewed ? 'Approuver et envoyer l\'email de félicitations' : 'Examiner tous les fichiers d\'abord'}
                 className="flex-1 px-3 py-2 text-xs font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:from-slate-300 disabled:to-slate-400 rounded-lg transition disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shadow-sm"
               >
                 {isActing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
