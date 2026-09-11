@@ -102,7 +102,8 @@ export async function POST(req: NextRequest) {
     }
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const format = detectFormat(file.name, file.type);
+    const formatResult = detectFormat(file.name, file.type);
+    const format = formatResult.format;
 
     const safeName = file.name.replace(/[^a-zA-Z0-9.-_]/g, '_').slice(0, 100);
     const key = `verification/${user.id}/${Date.now()}-${safeName}`;
