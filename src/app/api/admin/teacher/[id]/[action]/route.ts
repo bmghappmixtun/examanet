@@ -69,7 +69,7 @@ export async function POST(
     // In-app notification
     try {
       await d1Run(
-        `INSERT INTO Notification (id, userId, type, title, message, link, createdAt)
+        `INSERT INTO Notification (id, userId, type, title, body, link, createdAt)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         genId(), id, 'verification_files_requested',
         '📁 Bienvenue ! Envoyez 5 fichiers de vérification',

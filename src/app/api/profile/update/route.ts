@@ -96,7 +96,7 @@ export async function PATCH(req: NextRequest) {
         try {
           await db
             .prepare(
-              `INSERT INTO Notification (id, userId, type, title, message, link, createdAt)
+              `INSERT INTO Notification (id, userId, type, title, body, link, createdAt)
                VALUES (?, ?, ?, ?, ?, ?, ?)`,
             )
             .bind(

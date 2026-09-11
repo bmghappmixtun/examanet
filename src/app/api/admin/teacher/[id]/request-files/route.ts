@@ -74,7 +74,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // Create in-app notification (D1 Notification table may not exist, but we try)
   try {
     await d1Run(
-      `INSERT INTO Notification (id, userId, type, title, message, link, createdAt)
+      `INSERT INTO Notification (id, userId, type, title, body, link, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       genId(), id, 'verification_files_requested',
       '📁 Action requise : envoyez 5 fichiers de vérification',
