@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import { GraduationCap, School, MapPin, User } from 'lucide-react';
 
 export default function ProfileCompletionForm({

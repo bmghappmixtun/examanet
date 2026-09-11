@@ -43,9 +43,14 @@ interface UptimeRobotAlert {
 export async function POST(req: NextRequest) {
   const CF_ACCOUNT_ID = '59cffdeaadf3809cc3d2039c43f836e0';
   const SCRIPT_NAME = 'examanet-prod';
-  const CF_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
-  const DISCORD_WEBHOOK_URL = process.env.UPTIMEROBOT_DISCORD_WEBHOOK_URL;
-  const SHARED_SECRET = process.env.UPTIMEROBOT_WEBHOOK_SECRET;
+
+  // 2026-09-11: Use getCloudflareContext() to read secrets (process.env is undefined
+  // in CF Workers for wrangler secret put values).
+  const ctx = await getCloudflareContext({ async: true });
+  const env = (ctx as any).env as Record<string, string> | undefined;
+  const CF_API_TOKEN = env?.CLOUDFLARE_API_TOKEN;
+  const DISCORD_WEBHOOK_URL = env?.UPTIMEROBOT_DISCORD_WEBHOOK_URL;
+  const SHARED_SECRET = env?.UPTIMEROBOT_WEBHOOK_SECRET;
 
   // 1. Parse + verify
   let body: UptimeRobotAlert;
