@@ -56,6 +56,7 @@ export default function TeacherVerificationFilesViewer({ teacherId }: { teacherI
   const [files, setFiles] = useState<VerificationFile[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState<string>('');
+  const [approving, setApproving] = useState(false);
 
   useEffect(() => {
     if (open && !teacher) load();
@@ -105,6 +106,55 @@ export default function TeacherVerificationFilesViewer({ teacherId }: { teacherI
       toast.success(!currentValue ? '✅ Marqué examiné' : 'Marqué non examiné');
     } catch {
       toast.error('Erreur');
+    }
+  }
+
+  async function approveOrReject(action: 'approve' | 'reject') {
+    if (action === 'approve') {
+      const reviewedCount = files.filter((f) => f.reviewedByAdmin).length;
+      if (reviewedCount < files.length) {
+        toast.error(`Vous devez examiner tous les fichiers (${reviewedCount}/${files.length})`);
+        return;
+      }
+      if (!confirm(`✅ Approuver ${teacher?.firstName} ${teacher?.lastName} comme Enseignant Vérifié ?\n\nUn email de félicitations lui sera envoyé.`)) {
+        return;
+      }
+    } else {
+      const reason = prompt(`Motif de rejet (optionnel) :`);
+      if (reason === null) return; // cancelled
+      await sendAction('reject', reason);
+      return;
+    }
+    await sendAction('approve');
+  }
+
+  async function sendAction(action: 'approve' | 'reject', reason?: string) {
+    setApproving(true);
+    try {
+      const res = await fetch(`/api/admin/teacher/${teacherId}/approve-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, reason }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Erreur');
+        return;
+      }
+      if (action === 'approve') {
+        toast.success(data.emailSent
+          ? '🎉 Enseignant vérifié ! Email envoyé.'
+          : '🎉 Enseignant vérifié (email non envoyé).');
+      } else {
+        toast.success('Fichiers rejetés. Prof peut renvoyer.');
+      }
+      setOpen(false);
+      // Reload parent page
+      window.location.reload();
+    } catch (e) {
+      toast.error('Erreur réseau');
+    } finally {
+      setApproving(false);
     }
   }
 
@@ -305,11 +355,34 @@ export default function TeacherVerificationFilesViewer({ teacherId }: { teacherI
 
             {/* Footer */}
             {files.length > 0 && (
-              <div className="bg-slate-50 border-t border-slate-200 p-4 flex-shrink-0">
+              <div className="bg-slate-50 border-t border-slate-200 p-4 flex-shrink-0 space-y-2">
                 <div className="text-xs text-slate-600 text-center">
-                  Quand vous avez tout examiné, retournez sur la liste et cliquez{' '}
-                  <strong>Approuver</strong> ou <strong>Rejeter</strong>.
+                  Marquez chaque fichier examiné, puis cliquez sur{' '}
+                  <strong>Approuver</strong> ou <strong>Rejeter</strong> ci-dessous.
                 </div>
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => approveOrReject('approve')}
+                    disabled={approving || reviewedCount < files.length}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Approuver ({reviewedCount}/{files.length})
+                  </button>
+                  <button
+                    onClick={() => approveOrReject('reject')}
+                    disabled={approving}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <X className="w-4 h-4" />
+                    Rejeter
+                  </button>
+                </div>
+                {reviewedCount < files.length && (
+                  <div className="text-xs text-amber-700 text-center">
+                    ⚠️ Vous devez examiner tous les fichiers avant d'approuver.
+                  </div>
+                )}
               </div>
             )}
           </div>

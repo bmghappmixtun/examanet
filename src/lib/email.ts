@@ -503,6 +503,47 @@ export function renderTeacherFileRequestEmail(opts: {
 </body></html>`;
 }
 
+// 2026-09-11: Email sent when teacher becomes VERIFIED (after file approval)
+export function renderTeacherVerifiedEmail(firstName: string): string {
+  return renderEmailShell({
+    accent: 'green',
+    icon: '🎉',
+    title: 'Vous êtes désormais un Enseignant Vérifié !',
+    subtitle: 'Votre badge est maintenant visible',
+    preheader: 'Félicitations, votre compte enseignant a été vérifié',
+    body: `
+      <p style="margin:0 0 8px;color:#0F172A;font-size:16px;font-family:${EMAIL_FONT_STACK};">Bonjour <strong style="color:#0F172A;">${firstName || ''}</strong>,</p>
+      ${paragraph('Après vérification de vos 5 fichiers, votre compte enseignant a été <strong style="color:#16A34A;">officiellement vérifié</strong> par notre équipe.')}
+      <div style="background:#16A34A;color:white;font-size:18px;font-weight:700;text-align:center;padding:20px;border-radius:12px;margin:24px 0;font-family:${EMAIL_FONT_STACK};">
+        ✓ Enseignant Vérifié
+      </div>
+      ${paragraph('Le badge "✓ Vérifié" est maintenant visible sur votre profil et à côté de vos ressources publiées. Cela renforce la confiance des élèves et parents envers votre travail.')}
+      ${paragraph('Vous pouvez dès maintenant publier vos ressources sans restriction. Merci pour votre confiance !')}
+    `,
+  });
+}
+
+export async function sendTeacherVerifiedEmail(opts: {
+  to: string;
+  firstName: string;
+  lastName?: string;
+}): Promise<EmailResult> {
+  if (process.env.DISABLE_EMAILS === 'true' || process.env.NODE_ENV === 'test') {
+    console.log(`[EMAIL SKIP] Teacher verified for ${opts.to}`);
+    return new EmailResult(true, 'test-mode');
+  }
+  const html = renderTeacherVerifiedEmail(opts.firstName);
+  const sendResult = await sendViaResend({
+    to: [opts.to],
+    subject: '🎉 Vous êtes désormais un Enseignant Vérifié !',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
+  }
+  return new EmailResult(true, sendResult.id || 'sent');
+}
+
 export function renderResourceApprovedEmail(
   firstName: string,
   resourceTitle: string,
