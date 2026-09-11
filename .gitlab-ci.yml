@@ -5,10 +5,8 @@
 # - GIT_CLEAN_FLAGS preserves node_modules between jobs (1.7GB cached)
 # - CACHE_COMPRESSION_FORMAT=zipzstd (parallel multi-core)
 # - Cache policies: push/pull differentiated
-# - Direct bun run build (bypass OpenNext stderr swallow)
-# - node_modules/.bin added to PATH (prisma, etc.)
-# - interruptible: true on safe jobs (cancels superseded MRs)
-# - retry on transient failures
+# - node_modules/.bin added in job scripts (not globally - breaks runner)
+# - interruptible: true on safe jobs, false on deploy
 #
 # Required GitLab CI variables:
 #   CF_ACCOUNT_ID, CF_API_TOKEN, DATABASE_URL
@@ -35,8 +33,6 @@ variables:
   CACHE_COMPRESSION_FORMAT: "zipzstd"
   TRANSFER_METER_FREQUENCY: "2s"
   GIT_CLEAN_FLAGS: "-ffdx -e node_modules/ -e .next/ -e .open-next/"
-  # 🚀 Add node_modules/.bin to PATH so binaries (prisma, next, etc.) work
-  PATH: "$PATH:/builds/thm-group871435/edutunisie/node_modules/.bin"
 
 default:
   image: node:22-bookworm
@@ -45,8 +41,6 @@ default:
     - apt-get install -y -qq curl unzip git > /dev/null
     - which bun || (curl -fsSL https://bun.sh/install | bash)
     - export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
-    - export PATH="$PATH:./node_modules/.bin"
-    - 'echo "Tools: bun=$(which bun) npx=$(which npx) prisma=$(which prisma 2>/dev/null || echo MISSING)"'
 
 # ---------------------------------------------------------------------------
 # Stage 1: install
@@ -57,6 +51,7 @@ install_dependencies:
   stage: install
   interruptible: true
   script:
+    - export PATH="$PATH:./node_modules/.bin"
     - echo "Installing dependencies with npm"
     - npm install --prefer-offline --no-audit --no-fund
     - 'echo "node_modules size: $(du -sh node_modules | cut -f1)"'
@@ -88,8 +83,9 @@ build_cf_bundle:
     - install_dependencies
   interruptible: true
   script:
+    - export PATH="$PATH:./node_modules/.bin"
     - 'echo "node_modules preserved: $(du -sh node_modules | cut -f1)"'
-    - 'echo "Bin check: prisma=$(which prisma 2>/dev/null || echo MISSING) next=$(which next 2>/dev/null || echo MISSING)"'
+    - 'echo "Tools: prisma=$(which prisma 2>/dev/null || echo MISSING) next=$(which next 2>/dev/null || echo MISSING)"'
     - echo "Running prisma generate"
     - prisma generate 2>&1 | tail -5
     - echo "Running FTS setup"
@@ -131,10 +127,8 @@ deploy_production:
     - build_cf_bundle
   interruptible: false
   script:
-    - echo "Installing wrangler deps (minimal)"
-    - npm install --prefer-offline --no-audit --no-fund wrangler 2>&1 | tail -3 || true
-    - echo "Deploying to production"
     - export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
+    - echo "Deploying to production"
     - npx wrangler deploy --config wrangler.prod.jsonc
   environment:
     name: production
