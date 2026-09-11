@@ -20,7 +20,7 @@ import { routing } from '@/i18n/routing';
  * - /api/* (API routes don't need locale)
  * - /_next/* (Next.js internals)
  * - Files with extensions (favicon.ico, robots.txt, etc.)
- * - /admin, /enseignant, /connexion, /mon-compte, etc. (NOT localized - admin & auth pages stay FR only)
+ * - /admin, /enseignant, /profil, /connexion, /mon-compte, etc. (NOT localized - admin & auth pages stay FR only)
  */
 const intlMiddleware = createMiddleware(routing);
 
@@ -49,6 +49,6 @@ export const config = {
     // - /api/*, /_next/*, /_vercel/* (internals)
     // - Files with extensions (favicon.ico, robots.txt, etc.)
     // - Admin/auth pages that are NOT localized
-    '/((?!api|_next|_vercel|admin|enseignant|connexion|inscription|en-attente|messages|verifier|invitation|mon-compte|mot-de-passe-oublie|privacy|politique-confidentialite|.*\\..*).*)',
+    '/((?!api|_next|_vercel|admin|enseignant|connexion|inscription|en-attente|messages|verifier|invitation|mon-compte|mot-de-passe-oublie|privacy|politique-confidentialite|profil|.*\\..*).*)',
   ],
 };
