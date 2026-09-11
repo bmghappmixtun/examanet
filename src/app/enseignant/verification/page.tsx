@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
-import VerificationFilesUploader from '@/components/teacher/VerificationFilesUploader';
+import VerificationUploader from '@/components/teacher/VerificationUploader';
 import { Shield, Clock, CheckCircle2 } from 'lucide-react';
 import { sendTeacherFileRequestEmail } from '@/lib/email';
 import { genId } from '@/lib/db-d1';
@@ -222,12 +222,12 @@ export default async function VerificationPage() {
       )}
 
       {/* Uploader */}
-      <VerificationFilesUploader
+      <VerificationUploader
         initialFiles={files}
         initialRemaining={remaining}
+        initialStatus={status}
         initialRequestedAt={requestedAtISO}
         initialReceivedAt={receivedAtISO}
-        initialStatus={status}
         note={teacher.verificationFilesNote}
       />
 

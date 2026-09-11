@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { formatNumber, timeAgo } from '@/lib/utils';
 import { isArabic } from '@/lib/text-utils';
-import VerificationFilesUploader from '@/components/teacher/VerificationFilesUploader';
+import VerificationUploader from '@/components/teacher/VerificationUploader';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,10 +63,10 @@ export default async function TeacherDashboard(props: {
   const verificationFiles = needsVerification
     ? await db
         .prepare(
-          `SELECT id, type, fileKey, fileUrl, mimeType, fileSize, status, createdAt
+          `SELECT id, fileName, originalFormat, fileKey, fileUrl, fileSize, type, description, year, teacherId, reviewedByAdmin, uploadedAt, createdAt
            FROM TeacherVerificationFile
            WHERE userId = ?
-           ORDER BY createdAt DESC`,
+           ORDER BY uploadedAt DESC`,
         )
         .bind(user.id)
         .all()
@@ -149,10 +149,13 @@ export default async function TeacherDashboard(props: {
               )}
             </div>
           </div>
-          <VerificationFilesUploader
-            teacherId={user.id}
-            existingFiles={verificationFiles?.results || []}
-            remaining={verificationRemaining}
+          <VerificationUploader
+            initialFiles={verificationFiles?.results || []}
+            initialRemaining={verificationRemaining}
+            initialStatus={user.status}
+            initialRequestedAt={null}
+            initialReceivedAt={null}
+            note={user.verificationFilesNote}
           />
         </div>
       )}

@@ -38,7 +38,7 @@ export async function GET() {
     if (!db) return NextResponse.json({ files: [], request: null });
 
     const [filesResult, teacher] = await Promise.all([
-      db.prepare('SELECT * FROM TeacherVerificationFile WHERE teacherId = ? ORDER BY uploadedAt DESC').bind(user.id).all(),
+      db.prepare('SELECT * FROM TeacherVerificationFile WHERE userId = ? ORDER BY uploadedAt DESC').bind(user.id).all(),
       db.prepare("SELECT status, verificationFilesRequestedAt, verificationFilesNote, verificationFilesReceivedAt FROM User WHERE id = ?").bind(user.id).first(),
     ]);
 
@@ -74,16 +74,18 @@ export async function POST(req: NextRequest) {
     const db = await getD1();
     if (!db) return NextResponse.json({ error: 'DB not available' }, { status: 503 });
 
-    const teacher: any = await db.prepare(
-      "SELECT status, verificationFilesRequestedAt FROM User WHERE id = ?"
-    ).bind(user.id).first();
-
-    if (teacher?.status !== 'PENDING_FILE_VERIFICATION') {
-      return NextResponse.json({ error: "Vous n'êtes pas en attente de vérification de fichiers." }, { status: 400 });
-    }
+    // 2026-09-11: Removed the strict PENDING_FILE_VERIFICATION status check.
+    // Bug: after the first upload, status flips to PENDING_REVIEW (correct), but
+    // this check then blocked all subsequent uploads. The teacher needs to send
+    // 5 files in total, not just 1.
+    //
+    // New logic: just check the count. The teacher can upload as long as they
+    // haven't hit MAX_FILES, regardless of intermediate status.
+    // (DELETE handler reverts status to PENDING_FILE_VERIFICATION when they
+    //  delete a file below the threshold.)
 
     const countResult: any = await db.prepare(
-      "SELECT COUNT(*) as c FROM TeacherVerificationFile WHERE teacherId = ?"
+      'SELECT COUNT(*) as c FROM TeacherVerificationFile WHERE userId = ?'
     ).bind(user.id).first();
     if ((countResult?.c || 0) >= MAX_FILES) {
       return NextResponse.json({ error: `Vous avez déjà atteint la limite de ${MAX_FILES} fichiers.` }, { status: 400 });
@@ -145,5 +147,79 @@ export async function POST(req: NextRequest) {
   } catch (e: any) {
     console.error('[verification-files POST] error:', e?.message);
     return NextResponse.json({ error: e?.message }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/teacher/verification-files?id=xxx
+ *
+ * 2026-09-11: Added because the new VerificationUploader component calls DELETE.
+ * The previous component referenced this endpoint but it never existed (silent 404 → broken UI).
+ */
+export async function DELETE(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    if (user.role !== 'TEACHER')
+      return NextResponse.json({ error: 'Réservé aux enseignants' }, { status: 403 });
+
+    const db = await getD1();
+    if (!db) return NextResponse.json({ error: 'DB not available' }, { status: 503 });
+
+    const url = new URL(req.url);
+    const id = url.searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ error: 'id requis' }, { status: 400 });
+    }
+
+    // Verify the file belongs to this teacher AND is not yet reviewed
+    const existing: any = await db
+      .prepare(
+        'SELECT id, reviewedByAdmin, userId FROM TeacherVerificationFile WHERE id = ?',
+      )
+      .bind(id)
+      .first();
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Fichier introuvable' }, { status: 404 });
+    }
+    if (existing.userId !== user.id) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+    }
+    if (existing.reviewedByAdmin) {
+      return NextResponse.json(
+        { error: 'Impossible de supprimer un fichier déjà examiné par l\'équipe' },
+        { status: 400 },
+      );
+    }
+
+    await db
+      .prepare('DELETE FROM TeacherVerificationFile WHERE id = ?')
+      .bind(id)
+      .run();
+
+    // Recount remaining files
+    const countResult: any = await db
+      .prepare('SELECT COUNT(*) as c FROM TeacherVerificationFile WHERE userId = ?')
+      .bind(user.id)
+      .first();
+
+    const remaining = Math.max(0, MAX_FILES - (countResult?.c || 0));
+
+    // If teacher falls below 5 files again, revert status to PENDING_FILE_VERIFICATION
+    // (so they can upload more)
+    if (remaining > 0) {
+      await db
+        .prepare(
+          "UPDATE User SET status = 'PENDING_FILE_VERIFICATION', verificationFilesReceivedAt = NULL, updatedAt = ? WHERE id = ?",
+        )
+        .bind(Date.now(), user.id)
+        .run();
+    }
+
+    return NextResponse.json({ success: true, remaining });
+  } catch (e: any) {
+    console.error('[verification-files DELETE] error:', e?.message);
+    return NextResponse.json({ error: e?.message || 'Erreur' }, { status: 500 });
   }
 }

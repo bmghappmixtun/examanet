@@ -50,7 +50,7 @@ export async function POST(
       `SELECT COUNT(*) as total,
               SUM(CASE WHEN reviewedByAdmin = 1 THEN 1 ELSE 0 END) as reviewed,
               SUM(CASE WHEN reviewedByAdmin = 1 AND reviewNote IS NOT NULL THEN 1 ELSE 0 END) as rejected
-       FROM TeacherVerificationFile WHERE teacherId = ?`,
+       FROM TeacherVerificationFile WHERE userId = ?`,
       id,
     );
 
