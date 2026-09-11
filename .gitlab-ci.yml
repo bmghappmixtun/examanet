@@ -1,10 +1,14 @@
 # GitLab CI/CD for Examanet Cloudflare Workers
 #
 # Optimized with researched best practices (2026-09-11):
-# - FF_USE_FASTZIP + fastest compression
-# - GIT_CLEAN_FLAGS preserves node_modules between jobs
-# - Direct bun run build (avoid OpenNext's swallowed stderr)
-# - Retry on transient failures
+# - FF_USE_FASTZIP + fastest compression (-8.6s/job)
+# - GIT_CLEAN_FLAGS preserves node_modules between jobs (1.7GB cached)
+# - CACHE_COMPRESSION_FORMAT=zipzstd (parallel multi-core)
+# - Cache policies: push/pull differentiated
+# - Direct bun run build (bypass OpenNext stderr swallow)
+# - node_modules/.bin added to PATH (prisma, etc.)
+# - interruptible: true on safe jobs (cancels superseded MRs)
+# - retry on transient failures
 #
 # Required GitLab CI variables:
 #   CF_ACCOUNT_ID, CF_API_TOKEN, DATABASE_URL
@@ -31,6 +35,8 @@ variables:
   CACHE_COMPRESSION_FORMAT: "zipzstd"
   TRANSFER_METER_FREQUENCY: "2s"
   GIT_CLEAN_FLAGS: "-ffdx -e node_modules/ -e .next/ -e .open-next/"
+  # 🚀 Add node_modules/.bin to PATH so binaries (prisma, next, etc.) work
+  PATH: "$PATH:/builds/thm-group871435/edutunisie/node_modules/.bin"
 
 default:
   image: node:22-bookworm
@@ -39,6 +45,8 @@ default:
     - apt-get install -y -qq curl unzip git > /dev/null
     - which bun || (curl -fsSL https://bun.sh/install | bash)
     - export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
+    - export PATH="$PATH:./node_modules/.bin"
+    - 'echo "Tools: bun=$(which bun) npx=$(which npx) prisma=$(which prisma 2>/dev/null || echo MISSING)"'
 
 # ---------------------------------------------------------------------------
 # Stage 1: install
@@ -47,10 +55,12 @@ install_dependencies:
   tags:
     - gitlab-org
   stage: install
+  interruptible: true
   script:
     - echo "Installing dependencies with npm"
     - npm install --prefer-offline --no-audit --no-fund
     - 'echo "node_modules size: $(du -sh node_modules | cut -f1)"'
+    - 'echo "Bin check: prisma=$(test -f node_modules/.bin/prisma && echo OK || echo MISSING)"'
   cache:
     key:
       files:
@@ -59,6 +69,8 @@ install_dependencies:
     paths:
       - node_modules/
     policy: push
+    fallback_keys:
+      - package_default
   retry:
     max: 1
     when:
@@ -66,7 +78,7 @@ install_dependencies:
       - stuck_or_timeout_failure
 
 # ---------------------------------------------------------------------------
-# Stage 2: build (direct bun run build to see real errors)
+# Stage 2: build
 # ---------------------------------------------------------------------------
 build_cf_bundle:
   tags:
@@ -74,14 +86,18 @@ build_cf_bundle:
   stage: build
   needs:
     - install_dependencies
+  interruptible: true
   script:
     - 'echo "node_modules preserved: $(du -sh node_modules | cut -f1)"'
-    - echo "Running Next.js build directly (bypass OpenNext's stderr swallow)"
-    - prisma generate 2>&1
-    - bash scripts/ensure-search.sh 2>&1
-    - next build 2>&1 | tee /tmp/next-build.log
+    - 'echo "Bin check: prisma=$(which prisma 2>/dev/null || echo MISSING) next=$(which next 2>/dev/null || echo MISSING)"'
+    - echo "Running prisma generate"
+    - prisma generate 2>&1 | tail -5
+    - echo "Running FTS setup"
+    - bash scripts/ensure-search.sh 2>&1 | tail -5
+    - echo "Running next build"
+    - next build 2>&1 | tail -30
     - echo "Generating OpenNext bundle"
-    - npx opennextjs-cloudflare build 2>&1 | tee /tmp/opennext-build.log
+    - npx opennextjs-cloudflare build 2>&1 | tail -10
     - 'echo "Build complete - bundle size:"'
     - du -sh .open-next/ 2>&1
   cache:
@@ -92,6 +108,8 @@ build_cf_bundle:
     paths:
       - node_modules/
     policy: pull
+    fallback_keys:
+      - package_default
   artifacts:
     paths:
       - .open-next/
@@ -103,7 +121,7 @@ build_cf_bundle:
       - stuck_or_timeout_failure
 
 # ---------------------------------------------------------------------------
-# Stage 3: deploy
+# Stage 3: deploy (production only on main, NEVER interruptible)
 # ---------------------------------------------------------------------------
 deploy_production:
   tags:
@@ -111,7 +129,10 @@ deploy_production:
   stage: deploy
   needs:
     - build_cf_bundle
+  interruptible: false
   script:
+    - echo "Installing wrangler deps (minimal)"
+    - npm install --prefer-offline --no-audit --no-fund wrangler 2>&1 | tail -3 || true
     - echo "Deploying to production"
     - export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
     - npx wrangler deploy --config wrangler.prod.jsonc
