@@ -73,7 +73,7 @@ export async function POST(
 
     try {
       await d1Run(
-        `INSERT INTO Notification (id, userId, type, title, message, link, createdAt)
+        `INSERT INTO Notification (id, userId, type, title, body, link, createdAt)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         genId(), id, 'teacher_verified',
         '🎉 Félicitations, vous êtes désormais un Enseignant Vérifié !',
@@ -124,7 +124,7 @@ export async function POST(
 
     try {
       await d1Run(
-        `INSERT INTO Notification (id, userId, type, title, message, link, createdAt)
+        `INSERT INTO Notification (id, userId, type, title, body, link, createdAt)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         genId(), id, 'verification_rejected',
         '⚠️ Fichiers de vérification rejetés',
