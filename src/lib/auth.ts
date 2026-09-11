@@ -67,7 +67,8 @@ export async function getSession() {
          s.id as sessionId, s.userId, s.expiresAt as sessionExpiresAt, s.createdAt as sessionCreatedAt,
          u.id, u.email, u.role, u.status, u.firstName, u.lastName, u.firstNameAr, u.lastNameAr,
          u.avatarUrl, u.bio, u.phone, u.website, u.schoolLevel, u.classLevel, u.schoolName, u.schoolNameAr,
-         u.governorate, u.diploma, u.isVerifiedTeacher, u.numericId, u.slug, u.uploadsCount, u.followersCount,
+         u.governorate, u.diploma, u.isVerifiedTeacher, u.verifiedAt,
+         u.numericId, u.slug, u.uploadsCount, u.followersCount,
          u.createdAt, u.updatedAt, u.approvedAt, u.passwordChangedAt
        FROM Session s
        INNER JOIN User u ON s.userId = u.id
@@ -102,6 +103,7 @@ export async function getSession() {
       governorate: row.governorate,
       diploma: row.diploma,
       isVerifiedTeacher: !!row.isVerifiedTeacher,
+      verifiedAt: row.verifiedAt,
       numericId: row.numericId,
       slug: row.slug,
       uploadsCount: row.uploadsCount || 0,
@@ -144,4 +146,27 @@ export async function clearSessionCookie() {
 
 export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * 2026-09-11: Check if a teacher's profile is complete enough to access
+ * /enseignant/* pages. Required fields:
+ * - firstName, lastName (identity)
+ * - schoolName (teaching context)
+ * - governorate (location)
+ *
+ * Returning false triggers a redirect to /profil/completer in layouts.
+ */
+export function isTeacherProfileComplete(user: {
+  firstName?: string | null;
+  lastName?: string | null;
+  schoolName?: string | null;
+  governorate?: string | null;
+}): boolean {
+  return Boolean(
+    user.firstName &&
+      user.lastName &&
+      user.schoolName &&
+      user.governorate,
+  );
 }

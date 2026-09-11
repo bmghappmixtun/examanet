@@ -99,12 +99,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, status: 'ACTIVE', autoLoggedIn: true });
     }
 
-    // Notify admins for teacher approval
+    // 2026-09-11: Auto-login teacher too (was: had to re-login manually)
+    // Teacher is still PENDING_APPROVAL but now has a session to navigate
     if (user.role === 'TEACHER') {
+      const { token, expiresAt } = await createSession(user.id);
+      await setSessionCookie(token, expiresAt);
       await notifyAdminsTeacherActivated(user.id).catch((e) =>
         console.error('Admin notify error:', e),
       );
-      return NextResponse.json({ success: true, status: 'PENDING_APPROVAL' });
+      // Return autoLoggedIn so client knows to skip the manual login
+      return NextResponse.json({
+        success: true,
+        status: 'PENDING_APPROVAL',
+        autoLoggedIn: true,
+        message: 'Email vérifié ! Votre compte enseignant est en attente d\'approbation.',
+        nextStep: 'profile_completion', // tells UI to redirect to /profil/completer
+      });
     }
 
     return NextResponse.json({ success: true, status: newStatus });

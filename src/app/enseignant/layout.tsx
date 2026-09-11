@@ -5,7 +5,7 @@ import { getInitials } from '@/lib/text-utils';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import FloatingUploadButton from '@/components/layout/FloatingUploadButton';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser, isTeacherProfileComplete } from '@/lib/auth';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -45,6 +45,16 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
   if (user.role !== 'TEACHER' && user.role !== 'ADMIN') redirect('/');
+
+  // 2026-09-11: Force profile completion for teachers
+  // Admins can always access (they need to manage teachers)
+  // Skip check for the /profil/completer page itself to avoid redirect loop
+  if (
+    user.role === 'TEACHER' &&
+    !isTeacherProfileComplete(user)
+  ) {
+    redirect('/profil/completer?welcome=1&from=incomplete');
+  }
 
   const db = await getD1();
 
@@ -105,12 +115,30 @@ export default async function TeacherLayout({ children }: { children: React.Reac
                 className="block bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-4 text-white shadow-md hover:shadow-lg transition group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-extrabold text-xl flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-extrabold text-xl flex-shrink-0 relative">
                     {initials}
+                    {/* 2026-09-11: Verified teacher badge */}
+                    {user.isVerifiedTeacher && (
+                      <span
+                        className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-amber-600"
+                        title="Enseignant Vérifié"
+                      >
+                        <CheckCircle2 className="w-3 h-3 text-white" strokeWidth={3} />
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold truncate">
+                    <div className="font-bold truncate flex items-center gap-1.5">
                       {user.firstName} {user.lastName}
+                      {user.isVerifiedTeacher && (
+                        <span
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-green-500/20 text-green-50 text-[10px] font-bold rounded-full"
+                          title={`Vérifié le ${user.verifiedAt ? new Date(user.verifiedAt).toLocaleDateString('fr-FR') : ''}`}
+                        >
+                          <CheckCircle2 className="w-2.5 h-2.5" strokeWidth={3} />
+                          Vérifié
+                        </span>
+                      )}
                     </div>
                     <div className="text-xs text-amber-100 truncate">
                       {user.schoolName || 'Enseignant'}

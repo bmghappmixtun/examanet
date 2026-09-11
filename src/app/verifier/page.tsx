@@ -127,11 +127,17 @@ function VerifyOtpForm() {
       toast.success(data.message || 'Vérifié !');
 
       // Redirect based on status
+      // 2026-09-11: For teachers after auto-login, force profile completion first
       setTimeout(() => {
         if (data.status === 'ACTIVE') {
           router.push(redirectTo);
         } else if (data.status === 'PENDING_APPROVAL') {
-          router.push('/en-attente');
+          // Teacher verified email: go to profile completion (en-attente will be shown after)
+          if (data.nextStep === 'profile_completion') {
+            router.push('/profil/completer?welcome=1&from=otp');
+          } else {
+            router.push('/en-attente');
+          }
         } else {
           router.push('/connexion');
         }
@@ -188,7 +194,7 @@ function VerifyOtpForm() {
             </div>
             <h1 className="text-2xl font-extrabold mb-1">Vérifiez votre email</h1>
             <p className="text-primary-100 text-sm">
-              Entrez le code à 6 chiffres envoyé à votre adresse
+              Entrez le code à 6 chiffres envoyé à <span className="font-bold underline break-all">{initialEmail || 'votre adresse'}</span>
             </p>
           </div>
 
