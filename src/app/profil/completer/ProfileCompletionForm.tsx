@@ -55,7 +55,21 @@ export default function ProfileCompletionForm({
         setError(d.error || 'Erreur');
         return;
       }
-      router.push('/');
+      const data = await res.json();
+
+      // 2026-09-11: For teachers who just completed profile after OTP,
+      // the server auto-triggers the 5-file verification request.
+      // Redirect them directly to the upload page.
+      if (data.nextStep === 'file_verification') {
+        toast.success(
+          data.emailSent
+            ? '✅ Profil complet ! Email envoyé pour demander les 5 fichiers.'
+            : '✅ Profil complet ! Vous pouvez envoyer vos 5 fichiers.',
+        );
+        router.push('/enseignant/verification');
+      } else {
+        router.push('/');
+      }
       router.refresh();
     } catch (e: any) {
       setError(e.message || 'Erreur');
