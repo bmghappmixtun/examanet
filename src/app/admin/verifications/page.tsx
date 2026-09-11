@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
-import { d1First, d1All } from '@/lib/db-d1';
+import { d1All } from '@/lib/db-d1';
 import VerificationsClient from './VerificationsClient';
 
 export const dynamic = 'force-dynamic';
