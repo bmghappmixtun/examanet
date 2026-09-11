@@ -75,6 +75,7 @@ export default async function AdminDashboard() {
     totalStudentsR,
     totalTeachersR,
     pendingTeachersR,
+    pendingVerificationsR,
     totalResourcesR,
     publishedResourcesR,
     pendingResourcesR,
@@ -88,6 +89,7 @@ export default async function AdminDashboard() {
     safeFirst("SELECT COUNT(*) as c FROM User WHERE role = 'STUDENT'"),
     safeFirst("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER'"),
     safeFirst("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER' AND status = 'PENDING_APPROVAL'"),
+    safeFirst("SELECT COUNT(*) as c FROM User WHERE role = 'TEACHER' AND status = 'PENDING_REVIEW'"),
     safeFirst('SELECT COUNT(*) as c FROM Resource'),
     safeFirst("SELECT COUNT(*) as c FROM Resource WHERE status = 'PUBLISHED'"),
     safeFirst("SELECT COUNT(*) as c FROM Resource WHERE status = 'PENDING_APPROVAL'"),
@@ -117,6 +119,7 @@ export default async function AdminDashboard() {
   const totalStudents = num(totalStudentsR?.c);
   const totalTeachers = num(totalTeachersR?.c);
   const pendingTeachers = num(pendingTeachersR?.c);
+  const pendingVerifications = num(pendingVerificationsR?.c);
   const totalResources = num(totalResourcesR?.c);
   const publishedResources = num(publishedResourcesR?.c);
   const pendingResources = num(pendingResourcesR?.c);
@@ -226,6 +229,20 @@ export default async function AdminDashboard() {
                 <div className="text-sm text-orange-600">Cliquez pour examiner</div>
               </div>
               <FileText className="w-6 h-6 text-orange-500" />
+            </Link>
+          )}
+          {pendingVerifications > 0 && (
+            <Link
+              href="/admin/verifications"
+              className="flex items-center justify-between p-5 bg-violet-50 border border-violet-200 rounded-xl hover:bg-violet-100 transition"
+            >
+              <div>
+                <div className="font-bold text-violet-800">
+                  🛡️ {pendingVerifications} vérification{pendingVerifications > 1 ? 's' : ''} en attente
+                </div>
+                <div className="text-sm text-violet-600">Cliquez pour examiner les fichiers</div>
+              </div>
+              <Shield className="w-6 h-6 text-violet-500" />
             </Link>
           )}
         </div>
