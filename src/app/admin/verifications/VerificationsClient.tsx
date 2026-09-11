@@ -374,6 +374,7 @@ export default function VerificationsClient({ initialTeachers }: Props) {
                 key={teacher.id}
                 teacher={teacher}
                 isOpen={openTeacherId === teacher.id}
+                now={now}
                 onToggle={() =>
                   setOpenTeacherId((id) => (id === teacher.id ? null : teacher.id))
                 }
@@ -434,6 +435,7 @@ function StatPill({
 function TeacherCard({
   teacher,
   isOpen,
+  now,
   onToggle,
   onToggleFileReviewed,
   onApproveReject,
@@ -442,6 +444,7 @@ function TeacherCard({
 }: {
   teacher: Teacher;
   isOpen: boolean;
+  now: number | null;
   onToggle: () => void;
   onToggleFileReviewed: (fileId: string, current: boolean) => void;
   onApproveReject: (action: 'approve' | 'reject') => void;
