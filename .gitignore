@@ -173,3 +173,4 @@ builds/
 cache/
 .gitlab-ci.yml.backup
 next.config.analyze.js
+.audits/
