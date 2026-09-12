@@ -29,6 +29,7 @@ import {
   GraduationCap,
   MapPin,
   Calendar,
+  Trash2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
