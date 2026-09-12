@@ -32,7 +32,10 @@ export async function GET() {
   // Build XML
   const urls = resources.map((r) => {
     const imgUrl = r.thumbnailUrl.startsWith('http') ? r.thumbnailUrl : `${baseUrl}${r.thumbnailUrl}`;
-    const lastMod = r.updatedAt ? new Date(r.updatedAt).toISOString() : new Date().toISOString();
+    // 2026-09-12: Strip milliseconds — Google Search Console rejects W3C Datetime with .ms
+    const _d1 = r.updatedAt ? new Date(r.updatedAt) : new Date();
+    _d1.setMilliseconds(0);
+    const lastMod = _d1.toISOString();
     return `  <url>
     <loc>${baseUrl}/fr/ressources/${r.numericId}/${r.slug}</loc>
     <lastmod>${lastMod}</lastmod>
