@@ -132,9 +132,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const priority = popularity > 1000 ? 0.8 : popularity > 100 ? 0.7 : 0.6;
     const changeFrequency: 'daily' | 'weekly' | 'monthly' =
       popularity > 500 ? 'daily' : popularity > 50 ? 'weekly' : 'monthly';
+    // 2026-09-12: lastModified must be a valid Date for Google sitemaps.
+    // r.updatedAt from D1 can be a number (ms), null, or 0. Always coerce
+    // to a proper Date, falling back to current time if invalid.
+    let lastModified: Date;
+    if (r.updatedAt && typeof r.updatedAt === 'number' && r.updatedAt > 0) {
+      lastModified = new Date(r.updatedAt);
+      if (isNaN(lastModified.getTime())) lastModified = new Date();
+    } else if (r.updatedAt && typeof r.updatedAt === 'string') {
+      lastModified = new Date(r.updatedAt);
+      if (isNaN(lastModified.getTime())) lastModified = new Date();
+    } else {
+      lastModified = new Date();
+    }
     return {
       ...withAlternates(`/ressources/${r.numericId}/${r.slug}`, priority, changeFrequency),
-      lastModified: r.updatedAt,
+      lastModified,
     };
   });
 
