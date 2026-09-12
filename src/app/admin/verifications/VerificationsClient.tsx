@@ -132,6 +132,8 @@ export default function VerificationsClient({ initialTeachers }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | string>('all');
   const [openTeacherId, setOpenTeacherId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDismissLoading, setBulkDismissLoading] = useState(false);
   const [acting, setActing] = useState<Record<string, boolean>>({});
   const [previewFile, setPreviewFile] = useState<VerificationFile | null>(null);
   // 2026-09-12: Avoid hydration mismatch by setting 'now' only on client mount.
@@ -298,6 +300,46 @@ export default function VerificationsClient({ initialTeachers }: Props) {
     }
   }
 
+  // ---------- Bulk dismiss ----------
+  async function bulkDismiss() {
+    if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+    if (!confirm(`Vider ${ids.length} enseignant(s) de la page ?
+
+⚠️ Les comptes restent en base — ils ne seront plus visibles dans cette page.`)) return;
+
+    setBulkDismissLoading(true);
+    try {
+      const res = await fetch('/api/admin/teachers/bulk-dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        toast.error(data.error || 'Erreur lors du dismiss');
+        return;
+      }
+      // Remove dismissed teachers from local state
+      setTeachers((prev) => prev.filter((t) => !selectedIds.has(t.id)));
+      setSelectedIds(new Set());
+      toast.success(`${data.dismissed} enseignant(s) masqué(s) de la page`);
+    } catch (e) {
+      console.error(e);
+      toast.error('Erreur réseau');
+    } finally {
+      setBulkDismissLoading(false);
+    }
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((t) => t.id)));
+    }
+  }
+
   // ---------- Render ----------
 
   return (
@@ -318,6 +360,39 @@ export default function VerificationsClient({ initialTeachers }: Props) {
               </div>
             </div>
           </div>
+
+          {/* Bulk actions */}
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-2 bg-violet-50 border border-violet-200 rounded-xl px-3 py-2">
+              <span className="text-sm font-semibold text-violet-700">
+                {selectedIds.size} sélectionné{selectedIds.size > 1 ? 's' : ''}
+              </span>
+              <button
+                onClick={toggleSelectAll}
+                className="text-xs font-semibold text-violet-700 hover:text-violet-900 underline"
+              >
+                {selectedIds.size === filtered.length ? 'Tout désélectionner' : 'Tout sélectionner'}
+              </button>
+              <button
+                onClick={bulkDismiss}
+                disabled={bulkDismissLoading}
+                className="ml-2 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-400 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5"
+              >
+                {bulkDismissLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                Vider la page
+              </button>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="text-xs font-semibold text-slate-500 hover:text-slate-700 ml-1"
+              >
+                Annuler
+              </button>
+            </div>
+          )}
 
           {/* Stats */}
           <div className="flex gap-2 flex-wrap">
@@ -369,15 +444,49 @@ export default function VerificationsClient({ initialTeachers }: Props) {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Select all bar */}
+            {filtered.length > 0 && (
+              <div className="col-span-full flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-2.5 shadow-sm">
+                <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.size === filtered.length && filtered.length > 0}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                  />
+                  Tout sélectionner ({filtered.length})
+                </label>
+                {selectedIds.size > 0 && (
+                  <span className="text-xs text-violet-700 font-semibold">
+                    {selectedIds.size} sélectionné{selectedIds.size > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+            )}
+
             {filtered.map((teacher) => (
-              <TeacherCard
-                key={teacher.id}
-                teacher={teacher}
-                isOpen={openTeacherId === teacher.id}
-                now={now}
-                onToggle={() =>
-                  setOpenTeacherId((id) => (id === teacher.id ? null : teacher.id))
-                }
+              <div key={teacher.id} className="relative">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(teacher.id)}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    setSelectedIds((prev) => {
+                      const next = new Set(prev);
+                      if (e.target.checked) next.add(teacher.id);
+                      else next.delete(teacher.id);
+                      return next;
+                    });
+                  }}
+                  className="absolute top-3 right-3 z-10 w-5 h-5 rounded border-slate-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+                <TeacherCard
+                  teacher={teacher}
+                  isOpen={openTeacherId === teacher.id}
+                  now={now}
+                  onToggle={() =>
+                    setOpenTeacherId((id) => (id === teacher.id ? null : teacher.id))
+                  }
                 onToggleFileReviewed={(fileId, current) =>
                   toggleFileReviewed(teacher.id, fileId, current)
                 }
@@ -385,6 +494,7 @@ export default function VerificationsClient({ initialTeachers }: Props) {
                 acting={acting}
                 onPreview={(file) => setPreviewFile(file)}
               />
+              </div>
             ))}
           </div>
         )}

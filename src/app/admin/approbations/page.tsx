@@ -49,7 +49,9 @@ export default async function AdminApprovalsPage() {
     -- 2026-09-11: Added PENDING_REVIEW. Was missing — teachers disappeared from the
     -- admin view as soon as they uploaded their first verification file (status
     -- flips PENDING_FILE_VERIFICATION → PENDING_REVIEW, then no longer in this list).
-    WHERE u.role = 'TEACHER' AND u.status IN ('PENDING_APPROVAL', 'PENDING_FILE_VERIFICATION', 'PENDING_OTP', 'PENDING_REVIEW')
+    WHERE u.role = 'TEACHER' 
+      AND u.status IN ('PENDING_APPROVAL', 'PENDING_FILE_VERIFICATION', 'PENDING_OTP', 'PENDING_REVIEW')
+      AND (u.isDismissed IS NULL OR u.isDismissed = 0)
     GROUP BY u.id
     ORDER BY u.createdAt DESC
     LIMIT 50
