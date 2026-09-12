@@ -167,3 +167,9 @@ node_modules/
 secrets/
 _screenshots/
 .d1-id
+
+# Old Vercel build artifacts
+builds/
+cache/
+.gitlab-ci.yml.backup
+next.config.analyze.js
