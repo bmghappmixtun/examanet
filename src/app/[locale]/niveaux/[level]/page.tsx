@@ -25,12 +25,14 @@ export async function generateMetadata({ params }: { params: Promise<{ level: st
   return {
     title: `${getLocalizedName(level, locale)} — Cours et Devoirs gratuits`,
     description: `Ressources pédagogiques gratuites pour ${getLocalizedName(level, locale)} en Tunisie : cours, devoirs, exercices et corrigés.`,
-    alternates: { canonical: `${baseUrl}/niveaux/${level.slug}` },
+    alternates: {
+      canonical: `${baseUrl}${locale === 'ar' ? '/ar' : '/fr'}/niveaux/${level.slug}`,
+    },
     openGraph: {
       title: `${getLocalizedName(level, locale)} — Examanet`,
       description: `Cours et devoirs gratuits pour ${getLocalizedName(level, locale)}.`,
-      url: `${baseUrl}/niveaux/${level.slug}`,
-      locale: 'fr_TN',
+      url: `${baseUrl}${locale === 'ar' ? '/ar' : '/fr'}/niveaux/${level.slug}`,
+      locale: locale === 'ar' ? 'ar_TN' : 'fr_TN',
       type: 'website',
     },
   };

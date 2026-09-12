@@ -12,16 +12,41 @@ import ResourceDetailClient from '@/components/resources/ResourceDetailClient';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Ressource pédagogique — Examanet',
-  description:
-    'Cours, exercices, sujets de bac et corrigés gratuits sur Examanet, la plateforme pédagogique tunisienne.',
-  // 2026-09-07: Allow indexing of resource detail pages.
-  // Was noindex (left over from CF Workers POC). 15,000+ resources were
-  // completely invisible to Google. Now each one can rank for its topic
-  // and appear in Google Images via its thumbnail.
-  robots: { index: true, follow: true },
-};
+// 2026-09-12: Switched from static `metadata` to `generateMetadata` so we can
+// include a locale-aware canonical. Without this, Google flagged 15,000+
+// resource pages as "Autre page avec balise canonique correcte" because
+// they had no canonical link tag at all.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string; slug: string }>;
+}) {
+  const { locale, id, slug } = await params;
+  const numericId = parseInt(id, 10);
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
+  const localePrefix = locale === 'ar' ? '/ar' : '/fr';
+  const decodedSlug = (() => {
+    try { return decodeURIComponent(slug); } catch { return slug; }
+  })();
+  return {
+    title: 'Ressource pédagogique — Examanet',
+    description:
+      'Cours, exercices, sujets de bac et corrigés gratuits sur Examanet, la plateforme pédagogique tunisienne.',
+    robots: { index: true, follow: true },
+    alternates: {
+      // Locale-aware canonical pointing to the actual page URL
+      canonical: Number.isFinite(numericId) && numericId > 0
+        ? `${SITE_URL}${localePrefix}/ressources/${numericId}/${decodedSlug}`
+        : `${SITE_URL}${localePrefix}/ressources`,
+    },
+    openGraph: {
+      title: 'Ressource pédagogique — Examanet',
+      description: 'Cours et exercices gratuits sur Examanet',
+      locale: locale === 'ar' ? 'ar_TN' : 'fr_TN',
+      type: 'article',
+    },
+  };
+}
 
 export default function Page({
   params,
