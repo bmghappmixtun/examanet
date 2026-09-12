@@ -10,6 +10,7 @@ const ALLOWED_PREFIXES = [
   'resources/',
   'thumbnails/',
   'test-',
+  'verification/',  // 2026-09-12: Added for teacher verification files (admin/verifications tab)
 ];
 
 /**
