@@ -11,13 +11,14 @@ async function getD1() {
 
 
 // 2026-09-12: Google Search Console rejects sitemap lastmod with milliseconds.
-// W3C Datetime format only accepts seconds-precision. Strip .ms from all dates.
-function toSitemapDate(d: Date | string | number | null | undefined): Date {
+// W3C Datetime format only accepts seconds-precision. Return a STRING
+// in YYYY-MM-DDThh:mm:ssZ format (no .000) to avoid Next.js auto-serializing
+// Date objects with milliseconds.
+function toSitemapDate(d: Date | string | number | null | undefined): string {
   const date = d == null ? new Date() : new Date(d);
-  if (isNaN(date.getTime())) return new Date();
-  // Drop milliseconds by setting to 0
-  date.setMilliseconds(0);
-  return date;
+  if (isNaN(date.getTime())) return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+  // Format as YYYY-MM-DDThh:mm:ssZ (no milliseconds)
+  return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
 }
 
 export const revalidate = 3600; // Refresh every hour
