@@ -7,7 +7,7 @@ import MesCommentairesClient from '@/components/account/MesCommentairesClient';
 import { MessageSquare, Star } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
-export const metadata = { title: 'Mes commentaires et avis — Examanet' };
+export const metadata = { title: 'Mes commentaires & avis — Espace enseignant | Examanet' };
 
 async function getD1() {
   const { getCloudflareContext } = await import('@opennextjs/cloudflare');
@@ -18,13 +18,6 @@ async function getD1() {
 export default async function MesCommentairesPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
-
-  // 2026-09-12: Redirect teachers/admins to the dedicated teacher-space URL.
-  // The /mon-compte/* path is for student accounts; teachers have their own
-  // sidebar and URL space at /enseignant/*.
-  if (user.role === 'TEACHER' || user.role === 'ADMIN') {
-    redirect('/enseignant/commentaires');
-  }
 
   const db = await getD1();
   if (!db) {
