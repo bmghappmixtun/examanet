@@ -177,7 +177,7 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
     );
   }
 
-  const { main, sameTeacher, byTypeAndClass, newest, topInSubject, otherClassesSameLevel, otherTeachersSameSubj, sameSubjOtherClasses, corriges, otherSubjectsSameLevel, tagList, SITE_URL } = data;
+  const { main, teacherStats, sameTeacher, byTypeAndClass, newest, topInSubject, otherClassesSameLevel, otherTeachersSameSubj, sameSubjOtherClasses, corriges, otherSubjectsSameLevel, tagList, SITE_URL } = data;
 
   const pdfUrl = main.fileKey ? `${SITE_URL}/api/file/${main.fileKey}` : null;
   const resourceUrl = `${SITE_URL}/fr/ressources/${main.numericId}/${main.slug}`;
