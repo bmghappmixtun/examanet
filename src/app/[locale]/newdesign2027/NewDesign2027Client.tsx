@@ -76,6 +76,13 @@ interface RelatedSubject {
 
 interface Payload {
   main: ResourceMain;
+  teacherStats: {
+    resourcesCount: number;
+    totalViews: number;
+    totalDownloads: number;
+    totalFavorites: number;
+    followersCount: number;
+  } | null;
   sameTeacher: RelatedItem[];
   byTypeAndClass: RelatedItem[];
   newest: RelatedItem[];
@@ -202,26 +209,7 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
       </div>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
-        {/* TEACHER CTA */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-6 flex items-center gap-3">
-          <Link href={`/fr/professeurs/${main.teacherNumericId || ''}`} className="flex items-center gap-3 flex-1 group">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold shadow-md">
-              {teacherInitial}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[11px] uppercase tracking-wider text-slate-500 font-bold">Publié par</div>
-              <div className="text-sm font-semibold text-slate-900 flex items-center gap-1 group-hover:text-amber-700">
-                {teacherName}
-                {main.teacherIsVerified ? (
-                  <svg className="w-3.5 h-3.5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L9.91 8.26 3 9.27l5.46 4.73L7 21l5-3 5 3-1.46-6.99L21 9.27l-6.91-1.01L12 2z"/>
-                  </svg>
-                ) : null}
-              </div>
-              {main.teacherSchool ? <div className="text-xs text-slate-500">{main.teacherSchool}</div> : null}
-            </div>
-          </Link>
-        </div>
+        {/* (Teacher card moved under PDF viewer — see below) */}
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-6">
           {/* MAIN COLUMN */}
@@ -295,6 +283,70 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
                   style={{ height: '780px' }}
                   title={main.title}
                 />
+              </div>
+            ) : null}
+
+            {/* TEACHER CARD with stats — directly under PDF viewer */}
+            {teacherStats ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6">
+                <div className="flex items-start gap-4 mb-5">
+                  <Link href={`/fr/professeurs/${main.teacherNumericId || ''}`} className="flex-shrink-0">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-amber-500/30">
+                      {teacherInitial}
+                    </div>
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] uppercase tracking-wider text-slate-500 font-bold mb-1">Publié par</div>
+                    <Link href={`/fr/professeurs/${main.teacherNumericId || ''}`} className="group inline-flex items-center gap-1">
+                      <h3 className="text-lg font-extrabold text-slate-900 group-hover:text-amber-700">
+                        {teacherName}
+                      </h3>
+                      {main.teacherIsVerified ? (
+                        <svg className="w-4 h-4 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2L9.91 8.26 3 9.27l5.46 4.73L7 21l5-3 5 3-1.46-6.99L21 9.27l-6.91-1.01L12 2z"/>
+                        </svg>
+                      ) : null}
+                    </Link>
+                    {main.teacherSchool ? <div className="text-xs text-slate-500 mt-0.5">🏫 {main.teacherSchool}</div> : null}
+                    <Link href={`/fr/professeurs/${main.teacherNumericId || ''}`} className="inline-flex items-center gap-1 mt-2 text-xs font-bold text-amber-700 hover:text-amber-800">
+                      Voir le profil complet
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M9 5l7 7-7 7"/></svg>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Stats grid */}
+                <div className="grid grid-cols-5 gap-2 sm:gap-3 pt-4 border-t border-slate-100">
+                  <div className="text-center px-1">
+                    <div className="text-lg sm:text-xl font-extrabold text-slate-900">{fmtNum(teacherStats.resourcesCount)}</div>
+                    <div className="text-[10px] sm:text-xs text-slate-500 mt-0.5 leading-tight">Ressources</div>
+                  </div>
+                  <div className="text-center px-1 border-l border-slate-100">
+                    <div className="text-lg sm:text-xl font-extrabold text-slate-900">{fmtNum(teacherStats.followersCount)}</div>
+                    <div className="text-[10px] sm:text-xs text-slate-500 mt-0.5 leading-tight">Abonnés</div>
+                  </div>
+                  <div className="text-center px-1 border-l border-slate-100">
+                    <div className="text-lg sm:text-xl font-extrabold text-rose-600 flex items-center justify-center gap-0.5">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                      {fmtNum(teacherStats.totalFavorites)}
+                    </div>
+                    <div className="text-[10px] sm:text-xs text-slate-500 mt-0.5 leading-tight">Favoris</div>
+                  </div>
+                  <div className="text-center px-1 border-l border-slate-100">
+                    <div className="text-lg sm:text-xl font-extrabold text-blue-600 flex items-center justify-center gap-0.5">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      {fmtNum(teacherStats.totalViews)}
+                    </div>
+                    <div className="text-[10px] sm:text-xs text-slate-500 mt-0.5 leading-tight">Vues</div>
+                  </div>
+                  <div className="text-center px-1 border-l border-slate-100">
+                    <div className="text-lg sm:text-xl font-extrabold text-emerald-600 flex items-center justify-center gap-0.5">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      {fmtNum(teacherStats.totalDownloads)}
+                    </div>
+                    <div className="text-[10px] sm:text-xs text-slate-500 mt-0.5 leading-tight">Téléch.</div>
+                  </div>
+                </div>
               </div>
             ) : null}
 

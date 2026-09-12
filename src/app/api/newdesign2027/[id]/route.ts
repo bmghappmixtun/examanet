@@ -23,6 +23,21 @@ export async function GET(
 
     const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
+    // Teacher aggregate stats (only if resource has a teacher)
+    let teacherStats: any = null;
+    if (main.teacherId) {
+      teacherStats = await db.prepare(`
+        SELECT
+          (SELECT COUNT(*) FROM Resource WHERE teacherId = ? AND status = 'PUBLISHED' AND isHidden = 0) as resourcesCount,
+          COALESCE((SELECT SUM(viewsCount) FROM Resource WHERE teacherId = ? AND status = 'PUBLISHED' AND isHidden = 0), 0) as totalViews,
+          COALESCE((SELECT SUM(downloadsCount) FROM Resource WHERE teacherId = ? AND status = 'PUBLISHED' AND isHidden = 0), 0) as totalDownloads,
+          COALESCE((SELECT SUM(favoritesCount) FROM Resource WHERE teacherId = ? AND status = 'PUBLISHED' AND isHidden = 0), 0) as totalFavorites,
+          (SELECT COUNT(*) FROM Follow WHERE followingId = ?) as followersCount
+      `).bind(
+        main.teacherId, main.teacherId, main.teacherId, main.teacherId, main.teacherId
+      ).first().catch(() => null);
+    }
+
     // Main resource
     const main: any = await db.prepare(`
       SELECT
@@ -132,6 +147,7 @@ export async function GET(
 
     return NextResponse.json({
       main,
+      teacherStats,
       sameTeacher: sameTeacherRes.results || [],
       byTypeAndClass: byTypeAndClassRes.results || [],
       newest: newestRes.results || [],
