@@ -19,8 +19,9 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: { params: Promise<{ subject: string }> }) {
-  const { subject: subjectSlug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; subject: string }> }) {
+  const { locale, subject: subjectSlug } = await params;
+  const localePrefix = locale === 'ar' ? '/ar' : '/fr';
   try {
     const { getCloudflareContext } = await import('@opennextjs/cloudflare');
     const ctx = await getCloudflareContext({ async: true });
@@ -58,16 +59,16 @@ export async function generateMetadata({ params }: { params: Promise<{ subject: 
         `${subject.nameFr.toLowerCase()} bac`,
       ],
       alternates: {
-        canonical: `https://examanet.com/matieres/${subjectSlug}`,
+        canonical: `https://examanet.com${localePrefix}/matieres/${subjectSlug}`,
         languages: {
-          'fr-TN': `https://examanet.com/matieres/${subjectSlug}`,
+          'fr-TN': `https://examanet.com/fr/matieres/${subjectSlug}`,
           'ar-TN': `https://examanet.com/ar/matieres/${subjectSlug}`,
         },
       },
       openGraph: {
         title: `${subject.nameFr} — Cours, Devoirs et Exercices gratuits`,
         description,
-        url: `https://examanet.com/matieres/${subjectSlug}`,
+        url: `https://examanet.com${localePrefix}/matieres/${subjectSlug}`,
         siteName: 'Examanet',
         locale: 'fr_TN',
         type: 'website',
@@ -100,7 +101,8 @@ export default async function Page({
 }: {
   params: Promise<{ subject: string }>;
 }) {
-  const { subject: subjectSlug } = await params;
+  const { locale, subject: subjectSlug } = await params;
+  const localePrefix = locale === 'ar' ? '/ar' : '/fr';
   // 2026-09-07: Inject breadcrumb + ItemList JSON-LD for SEO.
   // The subject name and top resources are fetched server-side (D1 direct)
   // so the schema is available on first paint, not after client hydration.

@@ -12,9 +12,9 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ numericId: string; slug: string }>;
+  params: Promise<{ locale: string; numericId: string; slug: string }>;
 }) {
-  const { numericId: numericIdStr } = await params;
+  const { locale, numericId: numericIdStr } = await params;
   const numericId = parseInt(numericIdStr, 10);
   
   // Default metadata for invalid IDs
@@ -22,20 +22,23 @@ export async function generateMetadata({
     return { title: 'Professeur non trouvé' };
   }
   
-  // Simple, fast metadata (no D1 calls in generateMetadata to avoid CPU timeout)
-  // The actual teacher name and details are shown in the client component
+  // 2026-09-12: Use locale-aware canonical. Was hardcoded /professeurs/X
+  // without /fr/ or /ar/ prefix, which caused Google to flag the canonical
+  // as pointing to a "different page with correct canonical".
+  const localePrefix = locale === 'ar' ? '/ar' : '/fr';
+  
   return {
     title: `Professeur #${numericId}`,
     description: `Découvrez le profil de ce professeur sur Examanet : cours, exercices, sujets et corrigés gratuits.`,
     alternates: {
-      canonical: `https://examanet.com/professeurs/${numericId}`,
+      canonical: `${SITE_URL}${localePrefix}/professeurs/${numericId}`,
     },
     openGraph: {
       title: `Professeur #${numericId}`,
       description: `Profil professeur sur Examanet`,
-      url: `https://examanet.com/professeurs/${numericId}`,
+      url: `${SITE_URL}${localePrefix}/professeurs/${numericId}`,
       siteName: 'Examanet',
-      locale: 'fr_TN',
+      locale: locale === 'ar' ? 'ar_TN' : 'fr_TN',
       type: 'profile',
     },
   };

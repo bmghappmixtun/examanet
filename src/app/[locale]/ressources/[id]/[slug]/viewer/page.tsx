@@ -14,6 +14,13 @@ import { ChevronLeft, Download } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
+// 2026-09-12: /viewer is an iframe PDF viewer — it duplicates the main
+// resource page. Mark it noindex to avoid duplicate-content issues in
+// Google Search Console (was inheriting index:true from [locale]/layout.tsx).
+export const metadata = {
+  robots: { index: false, follow: true },
+};
+
 export default async function ResourceViewerPage({
   params,
 }: {
