@@ -34,6 +34,14 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   console.log('[GET verification-files] teacher for id', id, ':', teacher ? `FOUND ${teacher.email}` : 'NULL');
 
+  let debugInfo = '';
+  if (!teacher) {
+    // DEBUG: try the same query again to see if it's a race condition
+    const retry = await d1First('SELECT id FROM User WHERE id = ?', id);
+    const anyUser = await d1First('SELECT id, email FROM User LIMIT 1');
+    debugInfo = ` [DEBUG: retry=${retry ? 'FOUND' : 'NULL'} anyUser=${anyUser ? anyUser.email : 'NONE'}]`;
+  }
+
   const filesResult = await d1All(
     `SELECT id, fileName, originalFormat, fileKey, fileUrl, mimeType, fileSize, type,
             description, year, teacherId, userId, reviewedByAdmin, reviewNote,
@@ -46,7 +54,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   console.log('[GET verification-files] files count:', (filesResult || []).length);
 
   if (!teacher) {
-    return NextResponse.json({ error: 'Enseignant non trouvé' }, { status: 404 });
+    return NextResponse.json({ error: 'Enseignant non trouvé' + debugInfo }, { status: 404 });
   }
 
   return NextResponse.json({
