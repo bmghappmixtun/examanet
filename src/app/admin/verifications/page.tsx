@@ -23,10 +23,12 @@ export default async function VerificationsPage() {
        u.verificationFilesRequestedAt, u.verificationFilesReceivedAt, u.verificationFilesNote,
        u.createdAt
      FROM User u
-     WHERE u.role = 'TEACHER' AND (
-       u.status IN ('PENDING_FILE_VERIFICATION', 'PENDING_REVIEW', 'ACTIVE')
-       OR EXISTS (SELECT 1 FROM TeacherVerificationFile tvf WHERE tvf.userId = u.id)
-     )
+     WHERE u.role = 'TEACHER' 
+       AND (u.isDismissed IS NULL OR u.isDismissed = 0)
+       AND (
+         u.status IN ('PENDING_FILE_VERIFICATION', 'PENDING_REVIEW', 'ACTIVE')
+         OR EXISTS (SELECT 1 FROM TeacherVerificationFile tvf WHERE tvf.userId = u.id)
+       )
      ORDER BY
        CASE u.status
          WHEN 'PENDING_REVIEW' THEN 0

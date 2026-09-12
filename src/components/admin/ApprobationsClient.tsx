@@ -449,6 +449,55 @@ export default function ApprobationsClient({
             {tab === 'teachers' && (
               <button
                 onClick={async () => {
+                  if (
+                    !confirm(
+                      `🚮 VIDER LA PAGE\n\n` +
+                      `Tu vas masquer ${selected.size} prof(s) de cette page admin.\n\n` +
+                      `⚠️ Les comptes restent en base (non supprimés). Ils n'apparaîtront plus dans /admin/approbations ni /admin/verifications.\n\n` +
+                      `Continuer ?`,
+                    )
+                  ) return;
+                  setBulkLoading('dismiss');
+                  try {
+                    const res = await fetch('/api/admin/teachers/bulk-dismiss', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ ids: Array.from(selected) }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) {
+                      toast.error(data.error || 'Erreur');
+                      return;
+                    }
+                    toast.success(`🚮 ${data.dismissed} prof(s) masqué(s) de la page`);
+                    setTeachers((ts) => ts.filter((t) => !selected.has(t.id)));
+                    setDismissedIds((prev) => {
+                      const next = new Set(prev);
+                      for (const id of selected) next.add(id);
+                      return next;
+                    });
+                    setSelected(new Set());
+                  } catch (e) {
+                    toast.error('Erreur réseau');
+                  } finally {
+                    setBulkLoading(null);
+                  }
+                }}
+                disabled={bulkLoading !== null}
+                className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition disabled:opacity-50 flex items-center gap-1.5"
+                title="Masquer de cette page (compte préservé en base)"
+              >
+                {bulkLoading === 'dismiss' ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <EyeOff className="w-4 h-4" />
+                )}
+                Vider la page
+              </button>
+            )}
+            {tab === 'teachers' && (
+              <button
+                onClick={async () => {
                   // Compute file count for the confirmation
                   const teachersToDelete = teachers.filter(
                     (t) => selected.has(t.id) && (t as any).role !== 'ADMIN',
