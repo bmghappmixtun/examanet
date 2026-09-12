@@ -20,7 +20,17 @@ export async function generateMetadata({ params }: { params: Promise<{ level: st
   const locale = await getLocale();
   const db = await getD1();
   const level: any = await db?.prepare("SELECT nameFr, nameAr, slug FROM Level WHERE slug = ?").bind(levelSlug).first();
-  if (!level) return { title: 'Niveau non trouvé' };
+  if (!level) {
+    return {
+      title: 'Niveau non trouvé',
+      // 2026-09-12: Still emit canonical even for non-existent levels so
+      // Google doesn't flag these as having no canonical link tag.
+      alternates: {
+        canonical: `${baseUrl}${locale === 'ar' ? '/ar' : '/fr'}/niveaux/${levelSlug}`,
+      },
+      robots: { index: false, follow: true },
+    };
+  }
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   return {
     title: `${getLocalizedName(level, locale)} — Cours et Devoirs gratuits`,
