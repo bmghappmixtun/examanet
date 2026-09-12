@@ -43,25 +43,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Vous ne pouvez pas vous dismisser vous-même' }, { status: 403 });
     }
 
-    // Build a single UPDATE with the protected-email exclusion
-    const idPlaceholders = ids.map(() => '?').join(',');
-    const protectedPlaceholders = Array.from(PROTECTED_EMAILS).map(() => '?').join(',');
-    const params: any[] = [Date.now(), ...ids, ...Array.from(PROTECTED_EMAILS)];
+    // 2026-09-12: Chunk to avoid SQLite "too many SQL variables" errors with large batches.
+    // SQLite default limit is 999 parameters; we cap at 50 ids per chunk for safety.
+    const CHUNK_SIZE = 50;
+    let totalDismissed = 0;
+    const protectedEmails = Array.from(PROTECTED_EMAILS);
+    const protectedPlaceholders = protectedEmails.map(() => '?').join(',');
+    const now = Date.now();
 
-    const r = await d1Run(
-      `UPDATE User
-       SET isDismissed = 1, updatedAt = ?
-       WHERE id IN (${idPlaceholders})
-         AND role != 'ADMIN'
-         AND email NOT IN (${protectedPlaceholders})`,
-      ...params,
-    );
+    for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+      const chunk = ids.slice(i, i + CHUNK_SIZE);
+      const idPlaceholders = chunk.map(() => '?').join(',');
+      const params: any[] = [now, ...chunk, ...protectedEmails];
+      const r = await d1Run(
+        `UPDATE User
+         SET isDismissed = 1, updatedAt = ?
+         WHERE id IN (${idPlaceholders})
+           AND role != 'ADMIN'
+           AND email NOT IN (${protectedPlaceholders})`,
+        ...params,
+      );
+      totalDismissed += Number((r.meta as any)?.changes || 0);
+    }
 
     try { await invalidateCache('user-counts-v1'); } catch {}
 
     return NextResponse.json({
       ok: true,
-      dismissed: Number((r.meta as any)?.changes || 0),
+      dismissed: totalDismissed,
     });
   } catch (e: any) {
     console.error('[bulk-dismiss] error:', e.message);
