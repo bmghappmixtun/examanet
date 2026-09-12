@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { d1First, d1All, d1Run } from '@/lib/db-d1';
+import { isValidOrigin } from '@/lib/security';
 
 /**
  * GET /api/admin/teacher/[id]/verification-files
@@ -74,33 +75,33 @@ const filesResult = await d1All(
  * Body: { fileId: string, reviewed: boolean, note?: string }
  */
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const admin = await getCurrentUser();
-  if (!admin || admin.role !== 'ADMIN') {
-    return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
-  }
-  if (!isValidOrigin(req)) {
-    return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
-  }
-
-  const { id } = await params;
-  const body = await req.json().catch(() => ({}));
-  const { fileId, reviewed, note } = body as { fileId?: string; reviewed?: boolean; note?: string };
-
-  if (!fileId) {
-    return NextResponse.json({ error: 'fileId requis' }, { status: 400 });
-  }
-
-  // 2026-09-11: Switched to raw SQL (same reason as the GET handler above).
-  const file: any = await d1First(
-    'SELECT id, userId, teacherId FROM TeacherVerificationFile WHERE id = ?',
-    fileId,
-  );
-
-  if (!file || (file.userId !== id && file.teacherId !== id)) {
-    return NextResponse.json({ error: 'Fichier non trouvé' }, { status: 404 });
-  }
-
   try {
+    const admin = await getCurrentUser();
+    if (!admin || admin.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+    }
+    if (!isValidOrigin(req)) {
+      return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
+    }
+
+    const { id } = await params;
+    const body = await req.json().catch(() => ({}));
+    const { fileId, reviewed, note } = body as { fileId?: string; reviewed?: boolean; note?: string };
+
+    if (!fileId) {
+      return NextResponse.json({ error: 'fileId requis' }, { status: 400 });
+    }
+
+    // 2026-09-11: Switched to raw SQL (same reason as the GET handler above).
+    const file: any = await d1First(
+      'SELECT id, userId, teacherId FROM TeacherVerificationFile WHERE id = ?',
+      fileId,
+    );
+
+    if (!file || (file.userId !== id && file.teacherId !== id)) {
+      return NextResponse.json({ error: 'Fichier non trouvé' }, { status: 404 });
+    }
+
     const result = await d1Run(
       `UPDATE TeacherVerificationFile
        SET reviewedByAdmin = ?, reviewedAt = ?, reviewNote = ?
@@ -115,10 +116,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       console.error('[PATCH verification-files] d1Run failed:', result.error);
       return NextResponse.json({ error: result.error || 'Update failed' }, { status: 500 });
     }
-  } catch (e: any) {
-    console.error('[PATCH verification-files] exception:', e.message);
-    return NextResponse.json({ error: e.message }, { status: 500 });
-  }
 
-  return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true });
+  } catch (e: any) {
+    console.error('[PATCH verification-files] OUTER exception:', e.message, e.stack);
+    return NextResponse.json({ error: e.message || 'Unknown error' }, { status: 500 });
+  }
 }
