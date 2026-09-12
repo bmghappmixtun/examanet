@@ -9,6 +9,17 @@ async function getD1() {
   return (ctx as any).env?.DB;
 }
 
+
+// 2026-09-12: Google Search Console rejects sitemap lastmod with milliseconds.
+// W3C Datetime format only accepts seconds-precision. Strip .ms from all dates.
+function toSitemapDate(d: Date | string | number | null | undefined): Date {
+  const date = d == null ? new Date() : new Date(d);
+  if (isNaN(date.getTime())) return new Date();
+  // Drop milliseconds by setting to 0
+  date.setMilliseconds(0);
+  return date;
+}
+
 export const revalidate = 3600; // Refresh every hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -47,7 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Static pages — hand-curated
   const staticPages: MetadataRoute.Sitemap = [
-    { ...withAlternates('/', 1.0, 'daily'), lastModified: new Date() },
+    { ...withAlternates('/', 1.0, 'daily'), lastModified: toSitemapDate(new Date()) },
     withAlternates('/a-propos', 0.5, 'monthly'),
     withAlternates('/contact', 0.5, 'monthly'),
     withAlternates('/cgu', 0.3, 'monthly'),
@@ -135,15 +146,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 2026-09-12: lastModified must be a valid Date for Google sitemaps.
     // r.updatedAt from D1 can be a number (ms), null, or 0. Always coerce
     // to a proper Date, falling back to current time if invalid.
+    // Strip milliseconds — Google Search Console rejects W3C Datetime with .ms
     let lastModified: Date;
     if (r.updatedAt && typeof r.updatedAt === 'number' && r.updatedAt > 0) {
-      lastModified = new Date(r.updatedAt);
-      if (isNaN(lastModified.getTime())) lastModified = new Date();
+      lastModified = toSitemapDate(r.updatedAt);
     } else if (r.updatedAt && typeof r.updatedAt === 'string') {
-      lastModified = new Date(r.updatedAt);
-      if (isNaN(lastModified.getTime())) lastModified = new Date();
+      lastModified = toSitemapDate(r.updatedAt);
     } else {
-      lastModified = new Date();
+      lastModified = toSitemapDate(new Date());
     }
     return {
       ...withAlternates(`/ressources/${r.numericId}/${r.slug}`, priority, changeFrequency),
