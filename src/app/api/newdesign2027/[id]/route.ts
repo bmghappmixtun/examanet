@@ -86,12 +86,13 @@ export async function GET(
     const [
       sameTeacherRes,
       byTypeAndClassRes,
-      newestRes,
-      topInSubjectRes,
       otherClassesSameLevelRes,
       otherTeachersSameSubjRes,
       corrigesRes,
       otherSubjectsSameLevelRes,
+      sidebarTopViewedRes,
+      sidebarTopRatedRes,
+      sidebarTopCommentedRes,
     ] = await Promise.all([
       db.prepare(`
         SELECT numericId, slug, title, type, hasCorrection, viewsCount, avgRating, publishedAt
@@ -114,19 +115,42 @@ export async function GET(
       `).bind(main.subjectId, main.classId, numericId, Date.now() - 90 * 24 * 60 * 60 * 1000).all().catch(() => ({ results: [] })),
 
       db.prepare(`
-        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, cl.nameFr as classNameFr
-        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
-        WHERE r.subjectId = ? AND r.numericId != ? AND r.status = 'PUBLISHED' AND r.isHidden = 0
-        ORDER BY r.viewsCount DESC LIMIT 6
-      `).bind(main.subjectId, numericId).all().catch(() => ({ results: [] })),
-
-      db.prepare(`
         SELECT r.numericId, r.slug, r.title, cl.nameFr as classNameFr, r.type, r.viewsCount
         FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
         WHERE r.levelId = ? AND r.classId != ? AND r.subjectId = ? AND r.numericId != ?
           AND r.status = 'PUBLISHED' AND r.isHidden = 0
         ORDER BY r.viewsCount DESC LIMIT 8
       `).bind(main.levelId, main.classId, main.subjectId, numericId).all().catch(() => ({ results: [] })),
+
+      // SIDEBAR: top viewed in same subject + same level (collège or lycée)
+      db.prepare(`
+        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, cl.nameFr as classNameFr
+        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
+        WHERE r.subjectId = ? AND r.numericId != ?
+          AND cl.levelId = ?
+          AND r.status = 'PUBLISHED' AND r.isHidden = 0
+        ORDER BY r.viewsCount DESC LIMIT 20
+      `).bind(main.subjectId, numericId, main.levelId).all().catch(() => ({ results: [] })),
+
+      // SIDEBAR: top rated in same subject + same level
+      db.prepare(`
+        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, r.ratingsCount, cl.nameFr as classNameFr
+        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
+        WHERE r.subjectId = ? AND r.numericId != ? AND r.ratingsCount > 0
+          AND cl.levelId = ?
+          AND r.status = 'PUBLISHED' AND r.isHidden = 0
+        ORDER BY r.ratingsCount DESC, r.avgRating DESC LIMIT 20
+      `).bind(main.subjectId, numericId, main.levelId).all().catch(() => ({ results: [] })),
+
+      // SIDEBAR: top commented in same subject + same level
+      db.prepare(`
+        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, r.commentsCount, cl.nameFr as classNameFr
+        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
+        WHERE r.subjectId = ? AND r.numericId != ? AND r.commentsCount > 0
+          AND cl.levelId = ?
+          AND r.status = 'PUBLISHED' AND r.isHidden = 0
+        ORDER BY r.commentsCount DESC, r.viewsCount DESC LIMIT 20
+      `).bind(main.subjectId, numericId, main.levelId).all().catch(() => ({ results: [] })),
 
       db.prepare(`
         SELECT u.id, u.firstName, u.lastName, u.avatarUrl, u.numericId, u.slug, u.isVerifiedTeacher, u.schoolName,
@@ -158,13 +182,14 @@ export async function GET(
       teacherStats,
       sameTeacher: sameTeacherRes.results || [],
       byTypeAndClass: byTypeAndClassRes.results || [],
-      newest: newestRes.results || [],
-      topInSubject: topInSubjectRes.results || [],
       otherClassesSameLevel: otherClassesSameLevelRes.results || [],
       otherTeachersSameSubj: otherTeachersSameSubjRes.results || [],
       corriges: corrigesRes.results || [],
       relatedByTags: relatedByTagsRes.results || [],
       otherSubjectsSameLevel: otherSubjectsSameLevelRes.results || [],
+      sidebarTopViewed: sidebarTopViewedRes.results || [],
+      sidebarTopRated: sidebarTopRatedRes.results || [],
+      sidebarTopCommented: sidebarTopCommentedRes.results || [],
       tagList,
       SITE_URL,
     });
