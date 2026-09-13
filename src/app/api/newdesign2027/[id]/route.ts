@@ -94,12 +94,14 @@ export async function GET(
       sidebarTopRatedRes,
       sidebarTopCommentedRes,
     ] = await Promise.all([
+      // 1. sameTeacher (teacherId)
       db.prepare(`
         SELECT numericId, slug, title, type, hasCorrection, viewsCount, avgRating, publishedAt
         FROM Resource WHERE teacherId = ? AND numericId != ? AND status = 'PUBLISHED' AND isHidden = 0
         ORDER BY RANDOM() LIMIT 20
       `).bind(main.teacherId, numericId).all().catch(() => ({ results: [] })),
 
+      // 2. byTypeAndClass (subjectId+classId)
       db.prepare(`
         SELECT numericId, slug, title, type, hasCorrection, viewsCount, avgRating, publishedAt
         FROM Resource WHERE subjectId = ? AND classId = ? AND numericId != ?
@@ -107,13 +109,7 @@ export async function GET(
         ORDER BY RANDOM() LIMIT 20
       `).bind(main.subjectId, main.classId, numericId).all().catch(() => ({ results: [] })),
 
-      db.prepare(`
-        SELECT numericId, slug, title, type, hasCorrection, viewsCount, publishedAt
-        FROM Resource WHERE subjectId = ? AND classId = ? AND numericId != ?
-          AND status = 'PUBLISHED' AND isHidden = 0 AND publishedAt > ?
-        ORDER BY publishedAt DESC LIMIT 8
-      `).bind(main.subjectId, main.classId, numericId, Date.now() - 90 * 24 * 60 * 60 * 1000).all().catch(() => ({ results: [] })),
-
+      // 3. otherClassesSameLevel
       db.prepare(`
         SELECT r.numericId, r.slug, r.title, cl.nameFr as classNameFr, r.type, r.viewsCount
         FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
@@ -122,36 +118,7 @@ export async function GET(
         ORDER BY r.viewsCount DESC LIMIT 8
       `).bind(main.levelId, main.classId, main.subjectId, numericId).all().catch(() => ({ results: [] })),
 
-      // SIDEBAR: top viewed in same subject + same level (collège or lycée)
-      db.prepare(`
-        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, cl.nameFr as classNameFr
-        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
-        WHERE r.subjectId = ? AND r.numericId != ?
-          AND cl.levelId = ?
-          AND r.status = 'PUBLISHED' AND r.isHidden = 0
-        ORDER BY r.viewsCount DESC LIMIT 20
-      `).bind(main.subjectId, numericId, main.levelId).all().catch(() => ({ results: [] })),
-
-      // SIDEBAR: top rated in same subject + same level
-      db.prepare(`
-        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, r.ratingsCount, cl.nameFr as classNameFr
-        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
-        WHERE r.subjectId = ? AND r.numericId != ? AND r.ratingsCount > 0
-          AND cl.levelId = ?
-          AND r.status = 'PUBLISHED' AND r.isHidden = 0
-        ORDER BY r.ratingsCount DESC, r.avgRating DESC LIMIT 20
-      `).bind(main.subjectId, numericId, main.levelId).all().catch(() => ({ results: [] })),
-
-      // SIDEBAR: top commented in same subject + same level
-      db.prepare(`
-        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, r.commentsCount, cl.nameFr as classNameFr
-        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
-        WHERE r.subjectId = ? AND r.numericId != ? AND r.commentsCount > 0
-          AND cl.levelId = ?
-          AND r.status = 'PUBLISHED' AND r.isHidden = 0
-        ORDER BY r.commentsCount DESC, r.viewsCount DESC LIMIT 20
-      `).bind(main.subjectId, numericId, main.levelId).all().catch(() => ({ results: [] })),
-
+      // 4. otherTeachersSameSubj (User table — TEACHER data)
       db.prepare(`
         SELECT u.id, u.firstName, u.lastName, u.avatarUrl, u.numericId, u.slug, u.isVerifiedTeacher, u.schoolName,
                COUNT(r.numericId) as resourceCount
@@ -162,6 +129,7 @@ export async function GET(
         GROUP BY u.id ORDER BY RANDOM() LIMIT 20
       `).bind(main.subjectId, main.classId, main.teacherId).all().catch(() => ({ results: [] })),
 
+      // 5. corriges (hasCorrection = 1)
       db.prepare(`
         SELECT numericId, slug, title, type, viewsCount, avgRating, publishedAt
         FROM Resource WHERE subjectId = ? AND classId = ? AND numericId != ? AND hasCorrection = 1
@@ -169,12 +137,43 @@ export async function GET(
         ORDER BY RANDOM() LIMIT 20
       `).bind(main.subjectId, main.classId, numericId).all().catch(() => ({ results: [] })),
 
+      // 6. otherSubjectsSameLevel (Subject table)
       db.prepare(`
         SELECT s.id, s.slug, s.nameFr, s.color,
                (SELECT COUNT(*) FROM Resource r WHERE r.subjectId = s.id AND r.levelId = ? AND r.status = 'PUBLISHED' AND r.isHidden = 0) as count
         FROM Subject s WHERE s.id != ?
         HAVING count > 0 ORDER BY count DESC LIMIT 10
       `).bind(main.levelId, main.subjectId).all().catch(() => ({ results: [] })),
+
+      // 7. SIDEBAR: top viewed in same subject + same level
+      db.prepare(`
+        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, cl.nameFr as classNameFr
+        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
+        WHERE r.subjectId = ? AND r.numericId != ?
+          AND cl.levelId = ?
+          AND r.status = 'PUBLISHED' AND r.isHidden = 0
+        ORDER BY r.viewsCount DESC LIMIT 20
+      `).bind(main.subjectId, numericId, main.levelId).all().catch(() => ({ results: [] })),
+
+      // 8. SIDEBAR: top rated in same subject + same level
+      db.prepare(`
+        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, r.ratingsCount, cl.nameFr as classNameFr
+        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
+        WHERE r.subjectId = ? AND r.numericId != ? AND r.ratingsCount > 0
+          AND cl.levelId = ?
+          AND r.status = 'PUBLISHED' AND r.isHidden = 0
+        ORDER BY r.ratingsCount DESC, r.avgRating DESC LIMIT 20
+      `).bind(main.subjectId, numericId, main.levelId).all().catch(() => ({ results: [] })),
+
+      // 9. SIDEBAR: top commented in same subject + same level
+      db.prepare(`
+        SELECT r.numericId, r.slug, r.title, r.type, r.viewsCount, r.avgRating, r.commentsCount, cl.nameFr as classNameFr
+        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id
+        WHERE r.subjectId = ? AND r.numericId != ? AND r.commentsCount > 0
+          AND cl.levelId = ?
+          AND r.status = 'PUBLISHED' AND r.isHidden = 0
+        ORDER BY r.commentsCount DESC, r.viewsCount DESC LIMIT 20
+      `).bind(main.subjectId, numericId, main.levelId).all().catch(() => ({ results: [] })),
     ]);
 
     return NextResponse.json({
