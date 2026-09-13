@@ -161,21 +161,24 @@ async function fetchRessourcesData(opts: any) {
   if (hasCorrection) conditions.push("r.hasCorrection = 1");
   // FIX 2026-09-14: the schoolType column only stores 'PILOTE' | 'PUBLIC' | 'LYCEE' | NULL.
   // The "Collège vs Lycée" distinction lives in Class.levelId (via r.classId → cls.levelId).
-  // - Collège pilote   = levelId=base AND schoolType='PILOTE'
-  // - Collège ordinaire = levelId=base AND (schoolType='PUBLIC' OR schoolType IS NULL)
-  // - Lycée pilote    = levelId=lycée AND schoolType='PILOTE'
-  // - Lycée ordinaire  = levelId=lycée AND (schoolType='PUBLIC' OR schoolType='LYCEE' OR schoolType IS NULL)
-  if (collegePilote) {
-    conditions.push("cls.levelId = 'cmqi8nqzg00012n4a7ymw26l1' AND r.schoolType = 'PILOTE'");
-  }
-  if (collegeOrdinaire) {
-    conditions.push("cls.levelId = 'cmqi8nqzg00012n4a7ymw26l1' AND (r.schoolType = 'PUBLIC' OR r.schoolType IS NULL)");
-  }
-  if (lyceePilote) {
-    conditions.push("cls.levelId = 'cmqi8nqzj00022n4ansnot863' AND r.schoolType = 'PILOTE'");
-  }
-  if (lyceeOrdinaire) {
-    conditions.push("cls.levelId = 'cmqi8nqzj00022n4ansnot863' AND (r.schoolType = 'PUBLIC' OR r.schoolType = 'LYCEE' OR r.schoolType IS NULL)");
+  // The 4 filters are mutually-exclusive per (level, schoolType) bucket but combine with OR.
+  // UX intent: Collège pilote + Collège ordinaire = ALL collège (just like combining Type=Devoir+Exercice).
+  // So the 4 flags collapse into a single OR block. When none is set, no condition is added.
+  if (collegePilote || collegeOrdinaire || lyceePilote || lyceeOrdinaire) {
+    const catParts: string[] = [];
+    if (collegePilote) {
+      catParts.push("(cls.levelId = 'cmqi8nqzg00012n4a7ymw26l1' AND r.schoolType = 'PILOTE')");
+    }
+    if (collegeOrdinaire) {
+      catParts.push("(cls.levelId = 'cmqi8nqzg00012n4a7ymw26l1' AND (r.schoolType = 'PUBLIC' OR r.schoolType IS NULL))");
+    }
+    if (lyceePilote) {
+      catParts.push("(cls.levelId = 'cmqi8nqzj00022n4ansnot863' AND r.schoolType = 'PILOTE')");
+    }
+    if (lyceeOrdinaire) {
+      catParts.push("(cls.levelId = 'cmqi8nqzj00022n4ansnot863' AND (r.schoolType = 'PUBLIC' OR r.schoolType = 'LYCEE' OR r.schoolType IS NULL))");
+    }
+    conditions.push(`(${catParts.join(' OR ')})`);
   }
 
   // Always LEFT JOIN `Class` and `Section` for the resource cards
@@ -208,6 +211,9 @@ async function fetchRessourcesData(opts: any) {
                   sort === 'oldest' ? 'r.publishedAt ASC' :
                   'r.publishedAt DESC';
 
+  // FIX 2026-09-14: snapshot conditions BEFORE any category filter is added.
+  // Used by the facets query so toggling one category doesn't zero-out the others.
+  const baseConditions = [...conditions];
   const whereClause = conditions.join(' AND ');
   const offset = (page - 1) * PAGE_SIZE;
 
@@ -236,8 +242,9 @@ async function fetchRessourcesData(opts: any) {
   ].join('\n');
 
   const countSql = "SELECT COUNT(*) as total FROM Resource r LEFT JOIN `Subject` s ON r.subjectId = s.id " + joinClass + " WHERE " + whereClause;
-  // FIX 2026-09-14: include cls.levelId so we can compute the 4 category counts (Collège/Lycée × Pilote/Ordinaire)
-  const facetSql = "SELECT r.classId as r_classId, r.sectionId as r_sectionId, r.subjectId as r_subjectId, r.type, r.trimester, r.year, r.language, r.hasCorrection, r.schoolType, cls.levelId as cls_levelId FROM Resource r LEFT JOIN `Subject` s ON r.subjectId = s.id " + joinClass + " WHERE " + whereClause;
+  // FIX 2026-09-14: use baseConditions (NOT whereClause) so the category filter doesn't affect its own facet count.
+  // Also include cls.levelId so we can compute the 4 category counts (Collège/Lycée × Pilote/Ordinaire).
+  const facetSql = "SELECT r.classId as r_classId, r.sectionId as r_sectionId, r.subjectId as r_subjectId, r.type, r.trimester, r.year, r.language, r.hasCorrection, r.schoolType, cls.levelId as cls_levelId FROM Resource r LEFT JOIN `Subject` s ON r.subjectId = s.id " + joinClass + " WHERE " + baseConditions.join(' AND ');
 
   // 3 queries in parallel + 3 lookup tables (KV cached)
   const [resources, countResult, facetsRaw, allClasses, allSections, allSubjects] = await Promise.all([
