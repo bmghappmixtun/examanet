@@ -214,9 +214,6 @@ async function fetchRessourcesData(opts: any) {
                   sort === 'oldest' ? 'r.publishedAt ASC' :
                   'r.publishedAt DESC';
 
-  // FIX 2026-09-14: snapshot conditions BEFORE any category filter is added.
-  // Used by the facets query so toggling one category doesn't zero-out the others.
-  const baseConditions = [...conditions];
   const whereClause = conditions.join(' AND ');
   const offset = (page - 1) * PAGE_SIZE;
 
