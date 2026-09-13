@@ -1905,6 +1905,7 @@
     "faq5Q": "Mes fichiers Word d'origine sont-ils conservés ?",
     "faq5A": "Oui ! Quand vous activez votre compte, vous retrouvez à la fois les PDF propres et les fichiers Word (.doc/.docx) d'origine que vous aviez partagés.",
     "footerCtaTitle": "Prêt à récupérer vos fichiers ?",
-    "footerCtaSubtitle": "Activez votre compte en 2 minutes."
+    "footerCtaSubtitle": "Activez votre compte en 2 minutes.",
+    "ctaNoInvite": "Je n'ai pas reçu d'invitation"
   }
 }

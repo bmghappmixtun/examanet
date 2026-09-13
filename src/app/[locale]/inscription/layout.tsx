@@ -1,3 +1,4 @@
+// 2026-09-14: Minimal layout for /inscription (no Header/Footer) — overrides [locale] layout
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
