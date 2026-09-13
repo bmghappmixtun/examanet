@@ -89,8 +89,8 @@ interface Payload {
   topInSubject: RelatedItem[];
   otherClassesSameLevel: RelatedItem[];
   otherTeachersSameSubj: RelatedTeacher[];
-  sameSubjOtherClasses: RelatedItem[];
   corriges: RelatedItem[];
+  relatedByTags: RelatedItem[];
   otherSubjectsSameLevel: RelatedSubject[];
   tagList: string[];
   SITE_URL: string;
@@ -177,7 +177,7 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
     );
   }
 
-  const { main, teacherStats, sameTeacher, byTypeAndClass, newest, topInSubject, otherClassesSameLevel, otherTeachersSameSubj, sameSubjOtherClasses, corriges, otherSubjectsSameLevel, tagList, SITE_URL } = data;
+  const { main, teacherStats, sameTeacher, byTypeAndClass, newest, topInSubject, otherClassesSameLevel, otherTeachersSameSubj, corriges, relatedByTags, otherSubjectsSameLevel, tagList, SITE_URL } = data;
 
   const pdfUrl = main.fileKey ? `${SITE_URL}/api/file/${main.fileKey}` : null;
   const resourceUrl = `${SITE_URL}/fr/ressources/${main.numericId}/${main.slug}`;
@@ -362,7 +362,7 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
                   <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">{corriges.length} dispo</span>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {corriges.map((r: RelatedItem) => (
+                  {corriges.slice(0, 4).map((r: RelatedItem) => (
                     <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="group block bg-white border border-emerald-200 hover:border-emerald-500 hover:shadow-md rounded-xl p-3 transition">
                       <div className="flex items-start gap-2">
                         <div className="w-8 h-8 rounded-md flex-shrink-0 flex items-center justify-center text-white text-xs font-bold bg-gradient-to-br from-emerald-500 to-green-600">✓</div>
@@ -376,54 +376,68 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
                     </a>
                   ))}
                 </div>
+                {corriges.length > 4 ? (
+                  <a href={`/fr/ressources?corriges=true&sujet=${encodeURIComponent(main.subjectSlug || '')}&classe=${encodeURIComponent(main.classSlug || '')}`} className="mt-4 flex items-center justify-center gap-1.5 text-sm font-bold text-emerald-700 hover:text-emerald-800 transition group">
+                    Voir tous les corrigés ({main.subjectNameFr} {main.classNameFr})
+                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 5l7 7-7 7"/></svg>
+                  </a>
+                ) : null}
               </div>
             ) : null}
 
-            {/* TABS: Cours / Devoirs / Exercices */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="text-[11px] uppercase tracking-wider font-bold text-slate-400">Cercle 1 — Topical Cluster</div>
-                  <h2 className="text-xl font-extrabold text-slate-900">📚 {main.subjectNameFr} {main.classNameFr}</h2>
-                  <p className="text-sm text-slate-500">Cours, devoirs, exercices et corrigés du même sujet et même classe</p>
+            {/* CERCLE 1 — Topical Cluster (max 4 + see all) */}
+            {byTypeAndClass.length > 0 ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4 gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] uppercase tracking-wider font-bold text-slate-400">Cercle 1 — Topical Cluster</div>
+                    <h2 className="text-xl font-extrabold text-slate-900">📚 {main.subjectNameFr} {main.classNameFr}</h2>
+                    <p className="text-sm text-slate-500">Cours, devoirs, exercices et corrigés du même sujet et même classe</p>
+                  </div>
                 </div>
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {byTypeAndClass.slice(0, 9).map((r: RelatedItem) => (
-                  <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="group block bg-slate-50 hover:bg-white border border-slate-200 hover:border-primary-300 rounded-xl p-3 transition">
-                    <div className="flex items-start gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold bg-gradient-to-br ${typeColor(r.type)}`}>
-                        {typeLabel(r.type).slice(0, 2)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 mb-1">
-                          <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">{typeLabel(r.type)}</span>
-                          {r.hasCorrection ? <span className="text-[10px] text-emerald-600 font-bold">✓</span> : null}
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {byTypeAndClass.slice(0, 4).map((r: RelatedItem) => (
+                    <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="group block bg-slate-50 hover:bg-white border border-slate-200 hover:border-primary-300 rounded-xl p-3 transition">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-xs font-bold bg-gradient-to-br ${typeColor(r.type)}`}>
+                          {typeLabel(r.type).slice(0, 2)}
                         </div>
-                        <div className="text-sm font-semibold text-slate-900 truncate group-hover:text-primary-700">{r.title}</div>
-                        <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-500">
-                          <span>{fmtNum(r.viewsCount)} vues</span>
-                          {r.avgRating && r.avgRating > 0 ? <span>· ⭐ {r.avgRating.toFixed(1)}</span> : null}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 mb-1">
+                            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">{typeLabel(r.type)}</span>
+                            {r.hasCorrection ? <span className="text-[10px] text-emerald-600 font-bold">✓</span> : null}
+                          </div>
+                          <div className="text-sm font-semibold text-slate-900 line-clamp-2 group-hover:text-primary-700">{r.title}</div>
+                          <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-500">
+                            <span>{fmtNum(r.viewsCount)} vues</span>
+                            {r.avgRating && r.avgRating > 0 ? <span>· ⭐ {r.avgRating.toFixed(1)}</span> : null}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </a>
+                  ))}
+                </div>
+                {byTypeAndClass.length > 4 ? (
+                  <a href={`/fr/ressources?sujet=${encodeURIComponent(main.subjectSlug || '')}&classe=${encodeURIComponent(main.classSlug || '')}`} className="mt-4 flex items-center justify-center gap-1.5 text-sm font-bold text-slate-700 hover:text-primary-700 transition group">
+                    Voir tout ({main.subjectNameFr} {main.classNameFr})
+                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 5l7 7-7 7"/></svg>
                   </a>
-                ))}
+                ) : null}
               </div>
-            </div>
+            ) : null}
 
-            {/* SAME TEACHER expanded */}
+            {/* CERCLE 2 — E-E-A-T (max 6 + see all from this teacher) */}
             {sameTeacher.length > 0 ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold">{teacherInitial}</div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <div className="text-[11px] uppercase tracking-wider font-bold text-slate-400">Cercle 2 — E-E-A-T</div>
                     <h2 className="text-xl font-extrabold text-slate-900">👨‍🏫 Plus de ressources par {teacherName}</h2>
                   </div>
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {sameTeacher.slice(0, 9).map((r: RelatedItem) => (
+                  {sameTeacher.slice(0, 6).map((r: RelatedItem) => (
                     <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="group block bg-slate-50 hover:bg-white border border-slate-200 hover:border-amber-300 rounded-xl p-3 transition">
                       <div className="text-sm font-semibold text-slate-900 truncate group-hover:text-amber-700">{r.title}</div>
                       <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
@@ -433,10 +447,16 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
                     </a>
                   ))}
                 </div>
+                {sameTeacher.length > 6 ? (
+                  <a href={`/fr/professeurs/${main.teacherNumericId || ''}`} className="mt-4 flex items-center justify-center gap-1.5 text-sm font-bold text-slate-700 hover:text-amber-700 transition group">
+                    Voir tout de ce prof ({teacherName})
+                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 5l7 7-7 7"/></svg>
+                  </a>
+                ) : null}
               </div>
             ) : null}
 
-            {/* OTHER TEACHERS same subject+class */}
+            {/* CERCLE 2 — Link Diversity (max 6 + see all profs for this matiere/classe) */}
             {otherTeachersSameSubj.length > 0 ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-6">
                 <div className="mb-4">
@@ -444,7 +464,7 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
                   <h2 className="text-xl font-extrabold text-slate-900">👥 Autres profs qui enseignent {main.subjectNameFr} {main.classNameFr}</h2>
                 </div>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {otherTeachersSameSubj.map((t: RelatedTeacher) => {
+                  {otherTeachersSameSubj.slice(0, 6).map((t: RelatedTeacher) => {
                     const init = ((t.firstName?.[0] || '') + (t.lastName?.[0] || '')).toUpperCase();
                     return (
                       <a key={t.id} href={`/fr/professeurs/${t.numericId}`} className="group flex items-center gap-3 bg-slate-50 hover:bg-white border border-slate-200 hover:border-blue-300 rounded-xl p-3 transition">
@@ -465,27 +485,50 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
                     );
                   })}
                 </div>
+                {otherTeachersSameSubj.length > 6 ? (
+                  <a href={`/fr/professeurs?sujet=${encodeURIComponent(main.subjectSlug || '')}&classe=${encodeURIComponent(main.classSlug || '')}`} className="mt-4 flex items-center justify-center gap-1.5 text-sm font-bold text-slate-700 hover:text-blue-700 transition group">
+                    Voir tous les profs ({main.subjectNameFr} {main.classNameFr})
+                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 5l7 7-7 7"/></svg>
+                  </a>
+                ) : null}
               </div>
             ) : null}
 
-            {/* SAME SUBJECT OTHER CLASSES */}
-            {sameSubjOtherClasses.length > 0 ? (
-              <div className="bg-white border border-slate-200 rounded-2xl p-6">
-                <div className="mb-4">
-                  <div className="text-[11px] uppercase tracking-wider font-bold text-slate-400">Cercle 3 — Cross-class</div>
-                  <h2 className="text-xl font-extrabold text-slate-900">📖 {main.subjectNameFr} dans les autres classes</h2>
+            {/* CERCLE 3 — Related by Tags (max 4 + see all for this tag) */}
+            {relatedByTags.length > 0 ? (
+              <div className="bg-gradient-to-br from-violet-50 to-purple-50 border-2 border-violet-200 rounded-2xl p-6 shadow-lg shadow-violet-500/5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white text-lg font-bold">🔗</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] uppercase tracking-wider font-bold text-violet-700">Cercle 3 — Related by tags</div>
+                    <h2 className="text-xl font-extrabold text-slate-900">📚 Ressources similaires</h2>
+                    <p className="text-sm text-slate-500">Basé sur les tags : {tagList.slice(0, 3).map(t => `#${t}`).join(' ')}{tagList.length > 3 ? '…' : ''}</p>
+                  </div>
+                  <span className="text-xs font-bold text-violet-700 bg-violet-100 px-2.5 py-1 rounded-full">{relatedByTags.length} dispo</span>
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {sameSubjOtherClasses.slice(0, 6).map((r: RelatedItem) => (
-                    <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="group block bg-slate-50 hover:bg-white border border-slate-200 hover:border-violet-300 rounded-xl p-3 transition">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-bold text-violet-700">{r.classNameFr}</span>
-                        <span className="text-xs text-slate-400">{fmtNum(r.viewsCount)} v.</span>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {relatedByTags.slice(0, 4).map((r: RelatedItem) => (
+                    <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="group block bg-white border border-violet-200 hover:border-violet-500 hover:shadow-md rounded-xl p-3 transition">
+                      <div className="flex items-start gap-2">
+                        <div className={`w-8 h-8 rounded-md flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold bg-gradient-to-br ${typeColor(r.type)}`}>
+                          {typeLabel(r.type).slice(0, 2)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-slate-900 line-clamp-2 group-hover:text-violet-700">{r.title}</div>
+                          <div className="text-xs text-slate-500 mt-1">
+                            {fmtNum(r.viewsCount)} vues{r.avgRating && r.avgRating > 0 ? ` · ⭐ ${r.avgRating.toFixed(1)}` : ''}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-sm font-semibold text-slate-900 truncate group-hover:text-violet-700">{r.title}</div>
                     </a>
                   ))}
                 </div>
+                {relatedByTags.length > 4 ? (
+                  <a href={`/fr/ressources?q=${encodeURIComponent(tagList[0] || '')}`} className="mt-4 flex items-center justify-center gap-1.5 text-sm font-bold text-slate-700 hover:text-violet-700 transition group">
+                    Voir toutes les ressources similaires
+                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 5l7 7-7 7"/></svg>
+                  </a>
+                ) : null}
               </div>
             ) : null}
 
