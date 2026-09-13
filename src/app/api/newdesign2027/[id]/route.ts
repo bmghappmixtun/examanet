@@ -65,6 +65,23 @@ export async function GET(
       ).first().catch(() => null);
     }
 
+    // Build the tag-based related query dynamically (LIKE %tag% OR ...)
+    const tagList = (main.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean);
+    let relatedByTagsRes: any = { results: [] };
+    if (tagList.length > 0) {
+      const tagConditions = tagList.map(() => "r.tags LIKE ?").join(' OR ');
+      const tagParams = tagList.map((t: string) => `%${t}%`);
+      relatedByTagsRes = await db.prepare(`
+        SELECT r.numericId, r.slug, r.title, r.type, r.hasCorrection, r.viewsCount, r.avgRating
+        FROM Resource r
+        WHERE r.numericId != ?
+          AND r.status = 'PUBLISHED' AND r.isHidden = 0
+          AND r.tags IS NOT NULL AND r.tags != ''
+          AND (${tagConditions})
+        ORDER BY RANDOM() LIMIT 20
+      `).bind(numericId, ...tagParams).all().catch(() => ({ results: [] }));
+    }
+
     // Run all queries in parallel
     const [
       sameTeacherRes,
@@ -73,22 +90,20 @@ export async function GET(
       topInSubjectRes,
       otherClassesSameLevelRes,
       otherTeachersSameSubjRes,
-      sameSubjOtherClassesRes,
       corrigesRes,
       otherSubjectsSameLevelRes,
     ] = await Promise.all([
       db.prepare(`
         SELECT numericId, slug, title, type, hasCorrection, viewsCount, avgRating, publishedAt
         FROM Resource WHERE teacherId = ? AND numericId != ? AND status = 'PUBLISHED' AND isHidden = 0
-        ORDER BY viewsCount DESC, publishedAt DESC LIMIT 10
+        ORDER BY RANDOM() LIMIT 20
       `).bind(main.teacherId, numericId).all().catch(() => ({ results: [] })),
 
       db.prepare(`
         SELECT numericId, slug, title, type, hasCorrection, viewsCount, avgRating, publishedAt
         FROM Resource WHERE subjectId = ? AND classId = ? AND numericId != ?
           AND status = 'PUBLISHED' AND isHidden = 0
-        ORDER BY CASE type WHEN 'COURSE' THEN 1 WHEN 'DEVOIR' THEN 2 WHEN 'EXERCISE' THEN 3 ELSE 4 END, viewsCount DESC
-        LIMIT 30
+        ORDER BY RANDOM() LIMIT 20
       `).bind(main.subjectId, main.classId, numericId).all().catch(() => ({ results: [] })),
 
       db.prepare(`
@@ -120,21 +135,14 @@ export async function GET(
         WHERE r.subjectId = ? AND r.classId = ? AND u.id != ?
           AND r.status = 'PUBLISHED' AND r.isHidden = 0
           AND u.role = 'TEACHER' AND u.status = 'ACTIVE'
-        GROUP BY u.id ORDER BY resourceCount DESC LIMIT 6
+        GROUP BY u.id ORDER BY RANDOM() LIMIT 20
       `).bind(main.subjectId, main.classId, main.teacherId).all().catch(() => ({ results: [] })),
-
-      db.prepare(`
-        SELECT r.numericId, r.slug, r.title, cl.nameFr as classNameFr, lv.nameFr as levelNameFr, r.type, r.viewsCount
-        FROM Resource r LEFT JOIN "Class" cl ON r.classId = cl.id LEFT JOIN Level lv ON cl.levelId = lv.id
-        WHERE r.subjectId = ? AND r.classId != ? AND r.status = 'PUBLISHED' AND r.isHidden = 0
-        ORDER BY r.viewsCount DESC LIMIT 8
-      `).bind(main.subjectId, main.classId).all().catch(() => ({ results: [] })),
 
       db.prepare(`
         SELECT numericId, slug, title, type, viewsCount, avgRating, publishedAt
         FROM Resource WHERE subjectId = ? AND classId = ? AND numericId != ? AND hasCorrection = 1
           AND status = 'PUBLISHED' AND isHidden = 0
-        ORDER BY avgRating DESC, viewsCount DESC LIMIT 6
+        ORDER BY RANDOM() LIMIT 20
       `).bind(main.subjectId, main.classId, numericId).all().catch(() => ({ results: [] })),
 
       db.prepare(`
@@ -154,10 +162,10 @@ export async function GET(
       topInSubject: topInSubjectRes.results || [],
       otherClassesSameLevel: otherClassesSameLevelRes.results || [],
       otherTeachersSameSubj: otherTeachersSameSubjRes.results || [],
-      sameSubjOtherClasses: sameSubjOtherClassesRes.results || [],
       corriges: corrigesRes.results || [],
+      relatedByTags: relatedByTagsRes.results || [],
       otherSubjectsSameLevel: otherSubjectsSameLevelRes.results || [],
-      tagList: (main.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean),
+      tagList,
       SITE_URL,
     });
   } catch (e: any) {
