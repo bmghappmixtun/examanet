@@ -237,6 +237,15 @@ export async function POST(req: NextRequest) {
     emailOk = true; // In dev, we consider it OK
   }
 
+  // 2026-09-13: Track journey event for invited teacher
+  // (the user row was created above with this id)
+  const { trackJourney } = await import('@/lib/teacher-journey');
+  await trackJourney(user.id, 'INVITATION_CREATED', {
+    page: '/admin/invitations',
+    metadata: { source: 'invite-new-teacher', invitationId: invitation.id, emailSent: emailOk },
+    req,
+  });
+
   return NextResponse.json({
     ok: true,
     userId: user.id,

@@ -32,6 +32,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import TeacherJourneyTimeline from '@/components/admin/TeacherJourneyTimeline';
 
 // ---------- Types ----------
 
@@ -495,6 +496,12 @@ export default function VerificationsClient({ initialTeachers }: Props) {
                 acting={acting}
                 onPreview={(file) => setPreviewFile(file)}
               />
+              {/* 2026-09-13: Journey timeline — visible only when card is expanded */}
+              {openTeacherId === teacher.id ? (
+                <div className="mt-3 ml-1">
+                  <TeacherJourneyTimeline teacherId={teacher.id} />
+                </div>
+              ) : null}
               </div>
             ))}
           </div>

@@ -61,6 +61,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
         role: user.role,
       },
     });
+
+    // 2026-09-13: Track journey — invitation accepted, account activated
+    const { trackJourney } = await import('@/lib/teacher-journey');
+    await trackJourney(user.id, 'ACTIVATION_SUBMITTED', {
+      page: `/api/invitation/[token]/accept`,
+      metadata: { invitationId: inv.id, role: user.role },
+      req,
+    });
+    await trackJourney(user.id, 'FIRST_LOGIN', {
+      page: '/onboarding/post-activation',
+      req,
+    });
   } catch (e: any) {
     console.error('accept invitation error:', e);
     return NextResponse.json({ success: false, error: e.message }, { status: 500 });

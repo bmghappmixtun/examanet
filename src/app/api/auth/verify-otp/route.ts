@@ -107,6 +107,19 @@ export async function POST(req: NextRequest) {
       await notifyAdminsTeacherActivated(user.id).catch((e) =>
         console.error('Admin notify error:', e),
       );
+
+      // 2026-09-13: Track OTP verification + first login for teacher journey
+      const { trackJourney } = await import('@/lib/teacher-journey');
+      await trackJourney(user.id, 'SELF_SIGNUP_OTP_VERIFIED', {
+        page: '/verify-otp',
+        metadata: { autoLoggedIn: true },
+        req,
+      });
+      await trackJourney(user.id, 'FIRST_LOGIN', {
+        page: '/verify-otp',
+        req,
+      });
+
       // Return autoLoggedIn so client knows to skip the manual login
       return NextResponse.json({
         success: true,

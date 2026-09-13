@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import LazyPDFViewer from '@/components/resources/LazyPDFViewer';
+import AiDescription from '@/components/resources/AiDescription';
+import RatingSection from '@/components/resources/RatingSection';
+import CommentsSection from '@/components/resources/CommentsSection';
 
 interface ResourceMain {
   numericId: number;
@@ -93,6 +97,14 @@ interface Payload {
   sidebarTopViewed: RelatedItem[];
   sidebarTopRated: RelatedItem[];
   sidebarTopCommented: RelatedItem[];
+  ratingDistribution: { star: number; count: number }[];
+  ratingMaxCount: number;
+  initialComments: Array<{
+    id: string;
+    content: string;
+    createdAt: number;
+    user: { firstName: string; lastName: string; avatarUrl: string | null };
+  }>;
   tagList: string[];
   SITE_URL: string;
 }
@@ -196,7 +208,7 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
     );
   }
 
-  const { main, teacherStats, sameTeacher, byTypeAndClass, otherClassesSameLevel, otherTeachersSameSubj, corriges, relatedByTags, otherSubjectsSameLevel, sidebarTopViewed, sidebarTopRated, sidebarTopCommented, tagList, SITE_URL } = data;
+  const { main, teacherStats, sameTeacher, byTypeAndClass, otherClassesSameLevel, otherTeachersSameSubj, corriges, relatedByTags, otherSubjectsSameLevel, sidebarTopViewed, sidebarTopRated, sidebarTopCommented, ratingDistribution, ratingMaxCount, initialComments, tagList, SITE_URL } = data;
 
   const pdfUrl = main.fileKey ? `${SITE_URL}/api/file/${main.fileKey}` : null;
   const resourceUrl = `${SITE_URL}/fr/ressources/${main.numericId}/${main.slug}`;
@@ -288,21 +300,15 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
           </div>
         </div>
 
-        {/* AI SUMMARY CARD (full width, above PDF) */}
+        {/* AI SUMMARY CARD (full width, above PDF) — same AiDescription as the live site */}
         {main.summary ? (
-          <div className="mb-6 bg-white border border-slate-200 rounded-2xl p-5">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600 flex-shrink-0">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="text-[11px] uppercase tracking-wider font-bold text-slate-500">Résumé IA</div>
-                  <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">Généré automatiquement</span>
-                </div>
-                <p className="text-sm text-slate-700 leading-relaxed">{main.summary}</p>
-              </div>
-            </div>
+          <div className="mb-6">
+            <AiDescription
+              text={main.summary}
+              source="agent-v2-multilingual"
+              language={main.language}
+              hideTitle={false}
+            />
           </div>
         ) : null}
 
@@ -310,14 +316,14 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
           {/* MAIN COLUMN */}
           <div className="min-w-0 space-y-6">
 
-            {/* PDF Viewer */}
+            {/* PDF Viewer — same LazyPDFViewer as the live site (loads PDF.js on click) */}
             {pdfUrl ? (
-              <div className="bg-slate-900 rounded-2xl overflow-hidden shadow-2xl">
-                <iframe
-                  src={pdfUrl}
-                  className="w-full"
-                  style={{ height: '780px' }}
-                  title={main.title}
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <LazyPDFViewer
+                  url={pdfUrl}
+                  fileName={`${main.title}.pdf`}
+                  pageCount={main.pageCount ?? null}
+                  fileSize={main.fileSize ? fmtNum(main.fileSize / 1024) + ' KB' : null}
                 />
               </div>
             ) : null}
@@ -734,6 +740,30 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
             </div>
           </div>
         ) : null}
+
+        {/* RATING SECTION — same as the live site */}
+        <div className="mt-6">
+          <RatingSection
+            resourceId={main.numericId.toString()}
+            avgRating={main.avgRating}
+            ratingCount={main.ratingsCount}
+            distribution={ratingDistribution}
+            maxCount={ratingMaxCount}
+          />
+        </div>
+
+        {/* COMMENTS SECTION — same as the live site */}
+        <div className="mt-6">
+          <CommentsSection
+            resourceId={main.numericId.toString()}
+            initialComments={initialComments.map((c) => ({
+              id: c.id,
+              content: c.content,
+              createdAt: new Date(c.createdAt).toISOString(),
+              user: c.user,
+            }))}
+          />
+        </div>
 
         {/* FOOTER NOTE */}
         <div className="mt-8 text-center text-xs text-slate-400">

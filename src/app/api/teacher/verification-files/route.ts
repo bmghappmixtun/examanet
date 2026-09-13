@@ -144,6 +144,17 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ id: fileId, fileUrl, success: true });
+
+    // 2026-09-13: Track verification file upload
+    // (best-effort, runs after success response)
+    try {
+      const { trackJourney } = await import('@/lib/teacher-journey');
+      await trackJourney(user.id, 'VERIFICATION_FILES_SUBMITTED', {
+        page: '/enseignant/verification',
+        metadata: { fileName: file.name, format, type, totalCount: (countResult?.c || 0) + 1 },
+        req,
+      });
+    } catch {}
   } catch (e: any) {
     console.error('[verification-files POST] error:', e?.message);
     return NextResponse.json({ error: e?.message }, { status: 500 });

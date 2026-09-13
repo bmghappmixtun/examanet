@@ -132,13 +132,18 @@ export default function Page({
 // Async wrapper to await params before passing to client component
 async function ResourceDetailPageAsync({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string; slug: string }>;
-  searchParams: Promise<{ newdesign?: string }>;
 }) {
   const { id, slug } = await params;
-  const searchParamsObj = await searchParams;
+  // 2026-09-13: Read cookie to opt-in to the NEW DESIGN 2027 preview.
+  // We use a cookie (not searchParams) because OpenNext doesn't forward
+  // searchParams to server components in some edge cases.
+  // To enable on dev: set cookie 'preview_newdesign=1' in your browser,
+  // OR run in devtools: document.cookie='preview_newdesign=1'
+  const { cookies } = await import('next/headers');
+  const cookieStore = await cookies();
+  const isNewDesign = cookieStore.get('preview_newdesign')?.value === '1';
   const numericId = parseInt(id, 10);
   if (isNaN(numericId)) {
     return (
@@ -222,10 +227,10 @@ async function ResourceDetailPageAsync({
   }
 
   // 2026-09-13: Added opt-in flag for the NEW DESIGN 2027 preview.
-  // When ?newdesign=1 is in the URL, render the new design via NewDesign2027Client.
+  // When 'preview_newdesign=1' cookie is set, render the new design via NewDesign2027Client.
   // When the flag is not present, fall back to the existing ResourceDetailClient.
   // This lets us A/B test on real resource URLs without breaking anything.
-  if (searchParamsObj?.newdesign === '1') {
+  if (isNewDesign) {
     const NewDesignClient = require('@/app/[locale]/newdesign2027/NewDesign2027Client').default;
     return <NewDesignClient numericId={numericId} />;
   }

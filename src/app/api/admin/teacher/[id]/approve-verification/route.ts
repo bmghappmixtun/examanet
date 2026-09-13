@@ -7,6 +7,7 @@ import { d1First, d1Run, genId } from '@/lib/db-d1';
 import { isValidOrigin } from '@/lib/security';
 import { invalidateCache } from '@/lib/kv-cache';
 import { sendTeacherVerifiedEmail } from '@/lib/email';
+import { trackJourney } from '@/lib/teacher-journey';
 
 /**
  * POST /api/admin/teacher/[id]/approve-verification
@@ -70,6 +71,13 @@ export async function POST(
       now, now, id,
     );
     if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
+
+    // 2026-09-13: Track final approval on the journey timeline
+    await trackJourney(id, 'VERIFICATION_APPROVED', {
+      page: '/admin/verifications',
+      metadata: { adminId: user.id, method },
+      req,
+    });
 
     try {
       await d1Run(

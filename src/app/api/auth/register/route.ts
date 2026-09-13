@@ -142,6 +142,19 @@ export async function POST(req: NextRequest) {
       await notifyAdminsNewStudent(userId).catch((e) => console.error('Admin notify error:', e));
     }
 
+    // 2026-09-13: Track self-signup journey for teachers (also works for any role)
+    const { trackJourney } = await import('@/lib/teacher-journey');
+    await trackJourney(normalizedEmail, 'SELF_SIGNUP_STARTED', {
+      page: '/inscription',
+      metadata: { role, hasName: !!lastName },
+      req,
+    });
+    await trackJourney(normalizedEmail, 'SELF_SIGNUP_OTP_SENT', {
+      page: '/inscription',
+      metadata: { otpSent: otpResult.success, otpId: otpResult.id },
+      req,
+    });
+
     // Build response
     const response: any = {
       success: true,
