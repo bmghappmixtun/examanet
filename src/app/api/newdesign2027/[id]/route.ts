@@ -65,6 +65,35 @@ export async function GET(
       ).first().catch(() => null);
     }
 
+    // Rating distribution + initial comments for live-site parity
+    const ratingDistRes: any = await db.prepare(`
+      SELECT value as star, COUNT(*) as count FROM Rating
+      WHERE resourceId = ? GROUP BY value ORDER BY value DESC
+    `).bind(main.id).all().catch(() => ({ results: [] }));
+    const ratingDistribution = [5, 4, 3, 2, 1].map((star) => {
+      const found = (ratingDistRes.results || []).find((r: any) => r.star === star);
+      return { star, count: found?.count || 0 };
+    });
+    const ratingMaxCount = Math.max(...ratingDistribution.map((d: any) => d.count), 1);
+
+    const commentsRes: any = await db.prepare(`
+      SELECT c.id, c.content, c.createdAt, c.userId,
+             u.firstName, u.lastName, u.avatarUrl
+      FROM Comment c LEFT JOIN User u ON c.userId = u.id
+      WHERE c.resourceId = ? AND c.isHidden = 0
+      ORDER BY c.createdAt DESC LIMIT 20
+    `).bind(main.id).all().catch(() => ({ results: [] }));
+    const initialComments = (commentsRes.results || []).map((c: any) => ({
+      id: c.id,
+      content: c.content,
+      createdAt: c.createdAt,
+      user: {
+        firstName: c.firstName || '',
+        lastName: c.lastName || '',
+        avatarUrl: c.avatarUrl || null,
+      },
+    }));
+
     // Build the tag-based related query dynamically (LIKE %tag% OR ...)
     const tagList = (main.tags || '').split(',').map((t: string) => t.trim()).filter(Boolean);
     let relatedByTagsRes: any = { results: [] };
@@ -189,6 +218,9 @@ export async function GET(
       sidebarTopViewed: sidebarTopViewedRes.results || [],
       sidebarTopRated: sidebarTopRatedRes.results || [],
       sidebarTopCommented: sidebarTopCommentedRes.results || [],
+      ratingDistribution,
+      ratingMaxCount,
+      initialComments,
       tagList,
       SITE_URL,
     });

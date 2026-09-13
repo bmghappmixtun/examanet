@@ -46,6 +46,13 @@ export async function POST(
       );
       if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
       await invalidateCache('user-counts-v1');
+      // 2026-09-13: Track final approval on journey
+      const { trackJourney } = await import('@/lib/teacher-journey');
+      await trackJourney(id, 'VERIFICATION_APPROVED', {
+        page: '/admin/verifications',
+        metadata: { adminId: user.id, invited: true },
+        req,
+      });
       return NextResponse.json({
         success: true,
         status: 'ACTIVE',

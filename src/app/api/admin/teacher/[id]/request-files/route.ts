@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { d1First, d1Run, genId } from '@/lib/db-d1';
 import { isValidOrigin } from '@/lib/security';
+import { trackJourney } from '@/lib/teacher-journey';
 
 /**
  * POST /api/admin/teacher/[id]/request-files — D1 direct
@@ -82,6 +83,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       '/enseignant/verification', now,
     );
   } catch {}
+  // 2026-09-13: Track the journey event so the admin can see "request sent"
+  // on the teacher timeline.
+  await trackJourney(id, 'INVITATION_CREATED', {
+    page: '/admin/verifications',
+    metadata: { source: 'admin_request_files', adminId: admin.id, note: note || null },
+    req,
+  });
   return NextResponse.json({
     success: true,
     emailSent: false,

@@ -136,6 +136,16 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+    // 2026-09-13: Track profile save for teachers
+    if (user.role === 'TEACHER') {
+      const { trackJourney } = await import('@/lib/teacher-journey');
+      await trackJourney(user.id, 'PROFILE_SAVED', {
+        page: '/profil/modifier',
+        metadata: { fields: Object.keys(fields), profileComplete: isTeacherProfileComplete(updated) },
+        req,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       nextStep,
