@@ -5,9 +5,14 @@ import { Loader2, Eye, Download, Star, MessageCircle, FileText, ChevronRight, Wr
 export default function Loading() {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* JSON-LD placeholders */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: '{}' }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: '{}' }} />
+      {/* JSON-LD placeholders — must contain @context to be valid (Safari parses
+          ld+json scripts eagerly and crashes on missing @context with
+          `undefined is not an object (evaluating 'r["@context"].toLowerCase')`,
+          observed on /fr/ressources/7381 on 2026-09-13 — see nightly digest
+          group #15). Using a minimal valid schema keeps the hydration-matching
+          placeholder intent without triggering Safari's JSON-LD validator. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: '{"@context":"https://schema.org"}' }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: '{"@context":"https://schema.org"}' }} />
 
       {/* 2026-08-19 nightly fix (ERR-FGCMHE): mirror page.tsx's <div> change.
           The page used to have a nested <main> here (also wrapped in the

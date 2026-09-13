@@ -79,10 +79,15 @@ export default function Loading() {
       {/* Placeholder for the page's itemList JSON-LD script (rendered as the
           first child of the wrapper when there are resources). React's
           hydration check sees the same <script type="application/ld+json">
-          element type and key on both sides, regardless of innerHTML. */}
+          element type and key on both sides, regardless of innerHTML.
+
+          FIX 2026-09-13 (nightly digest #15): placeholder must contain
+          @context — Safari parses ld+json scripts eagerly and crashes on
+          empty objects with `undefined is not an object (evaluating
+          'r["@context"].toLowerCase')`. Use a minimal valid schema. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: '{}' }}
+        dangerouslySetInnerHTML={{ __html: '{"@context":"https://schema.org"}' }}
       />
 
       <main className="flex-1 pt-24 lg:pt-28">

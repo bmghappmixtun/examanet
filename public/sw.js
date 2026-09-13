@@ -13,7 +13,7 @@
 // Bump this version to force all clients to drop their old caches
 // and re-fetch the new bundles. Each deploy that touches a JS chunk
 // MUST bump this or users on the old bundle won't see the fix.
-const SW_VERSION = 'v1.0.13';
+const SW_VERSION = 'v1.0.14';
 const STATIC_CACHE = `examanet-static-${SW_VERSION}`;
 const PAGES_CACHE = `examanet-pages-${SW_VERSION}`;
 const API_CACHE = `examanet-api-${SW_VERSION}`;
@@ -103,6 +103,23 @@ self.addEventListener('fetch', (event) => {
 
   // Skip non-cacheable routes
   if (NEVER_CACHE_PATTERNS.some((pattern) => pattern.test(url.pathname))) {
+    return;
+  }
+
+  // FIX 2026-09-13 (nightly digest #8): bypass SW for React Server Components
+  // prefetch. Next.js sends an RSC prefetch via fetch() (mode='cors', RSC: 1
+  // header) and expects a streamed text/x-component body. If the SW returns a
+  // cached HTML response (or any response with body=null), React's RSC decoder
+  // crashes with `Cannot read properties of undefined (reading 'getReader')`.
+  // Letting these requests fall through to the network guarantees a fresh
+  // payload with a valid body. The user impact is minor: RSC prefetches are
+  // not cached at the edge, so the very first navigation after install is a
+  // cold fetch.
+  if (
+    request.headers.get('RSC') ||
+    request.headers.get('Next-Router-Prefetch') ||
+    request.headers.get('accept')?.includes('text/x-component')
+  ) {
     return;
   }
 
