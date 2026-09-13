@@ -52,14 +52,19 @@ export default function NotFound() {
       {/* Placeholders for the page's Person + BreadcrumbList JSON-LD scripts
           (rendered as the first two children of the wrapper). Keeps the
           wrapper's child count identical to loading.tsx and page.tsx so
-          React's hydration check passes when the not-found boundary resolves. */}
+          React's hydration check passes when the not-found boundary resolves.
+
+          FIX 2026-09-13 (nightly digest #15): placeholders must contain
+          @context — Safari parses ld+json scripts eagerly and crashes on
+          empty objects with `undefined is not an object (evaluating
+          'r["@context"].toLowerCase')`. Use a minimal valid schema. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: '{}' }}
+        dangerouslySetInnerHTML={{ __html: '{"@context":"https://schema.org"}' }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: '{}' }}
+        dangerouslySetInnerHTML={{ __html: '{"@context":"https://schema.org"}' }}
       />
 
       <div className="flex-1 pt-20">
