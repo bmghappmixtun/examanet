@@ -1,0 +1,68 @@
+// Cloudflare Workers config for examanet-dev (preview/staging)
+// 2026-09-13: Created to test new design changes on real pages
+// before promoting to production (examanet-prod).
+//
+// IMPORTANT: dev worker uses SAME D1 database (examanet-db) and SAME
+// R2 bucket (examanet-pdf-prod) as production. This is intentional for
+// previewing with real data. When testing is done, switch wrangler.prod.jsonc
+// to use the new design and merge to main.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": "worker-with-cache.js",
+  "name": "examanet-dev",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://examanet-dev.examanet-poc.workers.dev"
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "examanet-dev"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  },
+  // Dev worker uses same D1/R2/KV as prod — this is a preview environment
+  // with real data, NOT a separate staging DB.
+  "r2_buckets": [
+    {
+      "binding": "BLOB_BUCKET",
+      "bucket_name": "examanet-pdf-prod"
+    },
+    {
+      "binding": "PDFS_BUCKET",
+      "bucket_name": "examanet-pdf-prod"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "0efd509743664a878558982376fb965e"
+    },
+    {
+      "binding": "NEXT_TAG_CACHE_KV",
+      "id": "c71ef22c749349b0a68266c3f2ecb6b4"
+    },
+    {
+      "binding": "APP_CACHE",
+      "id": "b06e8c86184c45b690594f5fd7aa524f"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "examanet-db",
+      "database_id": "22ad2e7f-1692-486e-9131-d6c4062012e1",
+      "migrations_dir": "drizzle-migrations"
+    }
+  ]
+}
