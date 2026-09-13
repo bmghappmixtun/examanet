@@ -32,7 +32,7 @@ interface ResourceMain {
   levelId: string;
   levelSlug: string;
   levelNameFr: string;
-  teacherId: string;
+  teacherId: string | null;
   teacherFirstName: string;
   teacherLastName: string;
   teacherNumericId: number;
@@ -85,13 +85,14 @@ interface Payload {
   } | null;
   sameTeacher: RelatedItem[];
   byTypeAndClass: RelatedItem[];
-  newest: RelatedItem[];
-  topInSubject: RelatedItem[];
   otherClassesSameLevel: RelatedItem[];
   otherTeachersSameSubj: RelatedTeacher[];
   corriges: RelatedItem[];
   relatedByTags: RelatedItem[];
   otherSubjectsSameLevel: RelatedSubject[];
+  sidebarTopViewed: RelatedItem[];
+  sidebarTopRated: RelatedItem[];
+  sidebarTopCommented: RelatedItem[];
   tagList: string[];
   SITE_URL: string;
 }
@@ -121,12 +122,24 @@ function typeLabel(t: string): string {
 }
 
 function typeColor(t: string): string {
+  // Less colors: 2 main tones (slate / primary), with subtle accent per type
   switch (t) {
-    case 'COURSE': return 'from-blue-500 to-cyan-500';
-    case 'DEVOIR': return 'from-orange-500 to-red-500';
-    case 'EXERCISE': return 'from-emerald-500 to-green-500';
-    case 'EXAMEN': return 'from-violet-500 to-purple-500';
+    case 'COURSE': return 'from-slate-700 to-slate-900';
+    case 'DEVOIR': return 'from-slate-600 to-slate-800';
+    case 'EXERCISE': return 'from-slate-500 to-slate-700';
+    case 'EXAMEN': return 'from-slate-800 to-black';
     default: return 'from-slate-500 to-slate-600';
+  }
+}
+
+function typeColorAccent(t: string): string {
+  // Accent text/icon color for type — also restrained
+  switch (t) {
+    case 'COURSE': return 'text-slate-700';
+    case 'DEVOIR': return 'text-slate-600';
+    case 'EXERCISE': return 'text-slate-500';
+    case 'EXAMEN': return 'text-slate-800';
+    default: return 'text-slate-500';
   }
 }
 
@@ -177,7 +190,7 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
     );
   }
 
-  const { main, teacherStats, sameTeacher, byTypeAndClass, newest, topInSubject, otherClassesSameLevel, otherTeachersSameSubj, corriges, relatedByTags, otherSubjectsSameLevel, tagList, SITE_URL } = data;
+  const { main, teacherStats, sameTeacher, byTypeAndClass, otherClassesSameLevel, otherTeachersSameSubj, corriges, relatedByTags, otherSubjectsSameLevel, sidebarTopViewed, sidebarTopRated, sidebarTopCommented, tagList, SITE_URL } = data;
 
   const pdfUrl = main.fileKey ? `${SITE_URL}/api/file/${main.fileKey}` : null;
   const resourceUrl = `${SITE_URL}/fr/ressources/${main.numericId}/${main.slug}`;
@@ -209,70 +222,87 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
       </div>
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
-        {/* (Teacher card moved under PDF viewer — see below) */}
+
+        {/* TITLE + ACTION BAR (full width, above PDF) */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${typeColor(main.type)}`}>
+              {typeLabel(main.type)}
+            </span>
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+              {main.subjectNameFr || 'Matière'}
+            </span>
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+              {main.classNameFr || 'Classe'}
+            </span>
+            {main.hasCorrection ? (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
+                ✓ Corrigé
+              </span>
+            ) : null}
+            {main.language === 'ar' ? (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">AR</span>
+            ) : null}
+          </div>
+          <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight mb-3">{main.title}</h1>
+          {main.description && (
+            <p className="text-base text-slate-600 leading-relaxed">
+              {main.description.slice(0, 300)}{main.description.length > 300 ? '…' : ''}
+            </p>
+          )}
+          {/* Inline action bar */}
+          <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-3 flex flex-wrap items-center gap-2">
+            {pdfUrl ? (
+              <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Télécharger
+              </a>
+            ) : null}
+            <a href={pdfUrl || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Aperçu
+            </a>
+            <div className="flex items-center gap-3 ml-auto text-xs text-slate-500">
+              <div className="flex items-center gap-1">
+                <svg className="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9.91 8.26 3 9.27l5.46 4.73L7 21l5-3 5 3-1.46-6.99L21 9.27l-6.91-1.01L12 2z"/></svg>
+                <strong className="text-slate-900">{(main.avgRating || 0).toFixed(1)}</strong>
+                <span>({main.ratingsCount || 0})</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <strong className="text-slate-900">{fmtNum(main.viewsCount)}</strong>
+                <span>vues</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <strong className="text-slate-900">{fmtNum(main.downloadsCount)}</strong>
+                <span>téléch.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI SUMMARY CARD (full width, above PDF) */}
+        {main.summary ? (
+          <div className="mb-6 bg-white border border-slate-200 rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 flex-shrink-0">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="text-[11px] uppercase tracking-wider font-bold text-slate-500">Résumé IA</div>
+                  <span className="text-[10px] font-semibold text-slate-400 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded">Généré automatiquement</span>
+                </div>
+                <p className="text-sm text-slate-700 leading-relaxed">{main.summary}</p>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-6">
           {/* MAIN COLUMN */}
           <div className="min-w-0 space-y-6">
-            {/* Title + meta */}
-            <div>
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${typeColor(main.type)}`}>
-                  {typeLabel(main.type)}
-                </span>
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                  {main.subjectNameFr || 'Matière'}
-                </span>
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                  {main.classNameFr || 'Classe'}
-                </span>
-                {main.hasCorrection ? (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
-                    ✓ Corrigé
-                  </span>
-                ) : null}
-                {main.language === 'ar' ? (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">AR</span>
-                ) : null}
-              </div>
-              <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight mb-3">{main.title}</h1>
-              {main.description && (
-                <p className="text-base text-slate-600 leading-relaxed">
-                  {main.description.slice(0, 300)}{main.description.length > 300 ? '…' : ''}
-                </p>
-              )}
-            </div>
-
-            {/* Action bar */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-wrap items-center gap-3">
-              {pdfUrl ? (
-                <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white text-sm font-bold rounded-xl shadow-lg shadow-primary-500/30 transition">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  Télécharger ({fmtNum(main.fileSize ? main.fileSize / 1024 : null)} KB)
-                </a>
-              ) : null}
-              <a href={pdfUrl || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                Aperçu
-              </a>
-              <div className="flex items-center gap-3 ml-auto text-xs text-slate-500">
-                <div className="flex items-center gap-1">
-                  <svg className="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9.91 8.26 3 9.27l5.46 4.73L7 21l5-3 5 3-1.46-6.99L21 9.27l-6.91-1.01L12 2z"/></svg>
-                  <strong className="text-slate-900">{(main.avgRating || 0).toFixed(1)}</strong>
-                  <span>({main.ratingsCount || 0})</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  <strong className="text-slate-900">{fmtNum(main.viewsCount)}</strong>
-                  <span>vues</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                  <strong className="text-slate-900">{fmtNum(main.downloadsCount)}</strong>
-                  <span>téléch.</span>
-                </div>
-              </div>
-            </div>
 
             {/* PDF Viewer */}
             {pdfUrl ? (
@@ -547,25 +577,28 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
             ) : null}
           </div>
 
-          {/* SIDEBAR (RIGHT) */}
-          <div className="space-y-4 lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
-            {/* Newest in same subject+class */}
-            {newest.length > 0 ? (
+          {/* SIDEBAR (RIGHT) — starts at PDF level */}
+          <div className="space-y-4">
+            {/* 1) Plus vues (most viewed) */}
+            {sidebarTopViewed.length > 0 ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">N</div>
-                  <h3 className="text-sm font-extrabold text-slate-900">🆕 Nouveautés</h3>
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </div>
+                  <h3 className="text-sm font-extrabold text-slate-900">Plus vues en {main.subjectNameFr}</h3>
                 </div>
-                <p className="text-xs text-slate-500 mb-3">Dernières ressources publiées en {main.subjectNameFr} {main.classNameFr}</p>
                 <div className="space-y-2.5">
-                  {newest.map((r: RelatedItem) => (
+                  {sidebarTopViewed.slice(0, 4).map((r: RelatedItem) => (
                     <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="group flex items-start gap-2">
                       <div className={`w-8 h-8 rounded-md flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold bg-gradient-to-br ${typeColor(r.type)}`}>
                         {typeLabel(r.type).slice(0, 2)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-semibold text-slate-900 line-clamp-2 group-hover:text-cyan-700">{r.title}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">{fmtDate(r.publishedAt)}</div>
+                        <div className="text-xs font-semibold text-slate-900 line-clamp-2 group-hover:text-slate-700">{r.title}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                          <span>{fmtNum(r.viewsCount)} vues</span>
+                        </div>
                       </div>
                     </a>
                   ))}
@@ -573,24 +606,54 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
               </div>
             ) : null}
 
-            {/* Top viewed in same subject */}
-            {topInSubject.length > 0 ? (
+            {/* 2) Mieux notés (most rated) */}
+            {sidebarTopRated.length > 0 ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-xs font-bold">🔥</div>
-                  <h3 className="text-sm font-extrabold text-slate-900">Plus populaires en {main.subjectNameFr}</h3>
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9.91 8.26 3 9.27l5.46 4.73L7 21l5-3 5 3-1.46-6.99L21 9.27l-6.91-1.01L12 2z"/></svg>
+                  </div>
+                  <h3 className="text-sm font-extrabold text-slate-900">Mieux notés en {main.subjectNameFr}</h3>
                 </div>
                 <div className="space-y-2.5">
-                  {topInSubject.map((r: RelatedItem) => (
+                  {sidebarTopRated.slice(0, 4).map((r: RelatedItem) => (
                     <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="group flex items-start gap-2">
                       <div className={`w-8 h-8 rounded-md flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold bg-gradient-to-br ${typeColor(r.type)}`}>
                         {typeLabel(r.type).slice(0, 2)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-semibold text-slate-900 line-clamp-2 group-hover:text-amber-700">{r.title}</div>
+                        <div className="text-xs font-semibold text-slate-900 line-clamp-2 group-hover:text-slate-700">{r.title}</div>
                         <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
-                          <span>{fmtNum(r.viewsCount)} vues</span>
-                          {r.avgRating && r.avgRating > 0 ? <span>· ⭐ {r.avgRating.toFixed(1)}</span> : null}
+                          <span>⭐ {r.avgRating?.toFixed(1) || '0'}</span>
+                          <span>· {fmtNum((r as any).ratingsCount)} avis</span>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {/* 3) Plus commentés (most commented) */}
+            {sidebarTopCommented.length > 0 ? (
+              <div className="bg-white border border-slate-200 rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </div>
+                  <h3 className="text-sm font-extrabold text-slate-900">Plus commentés en {main.subjectNameFr}</h3>
+                </div>
+                <div className="space-y-2.5">
+                  {sidebarTopCommented.slice(0, 4).map((r: RelatedItem) => (
+                    <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="group flex items-start gap-2">
+                      <div className={`w-8 h-8 rounded-md flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold bg-gradient-to-br ${typeColor(r.type)}`}>
+                        {typeLabel(r.type).slice(0, 2)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-slate-900 line-clamp-2 group-hover:text-slate-700">{r.title}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                          <span>{fmtNum((r as any).commentsCount)} avis</span>
                         </div>
                       </div>
                     </a>
@@ -603,14 +666,14 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
             {otherClassesSameLevel.length > 0 ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">↗</div>
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 text-sm">↗</div>
                   <h3 className="text-sm font-extrabold text-slate-900">{main.subjectNameFr} dans d'autres classes</h3>
                 </div>
                 <div className="space-y-2">
                   {otherClassesSameLevel.slice(0, 5).map((r: RelatedItem) => (
                     <a key={r.numericId} href={`/fr/ressources/${r.numericId}/${r.slug}`} className="block group">
-                      <div className="text-xs font-bold text-violet-700">{r.classNameFr}</div>
-                      <div className="text-xs text-slate-700 truncate group-hover:text-violet-700">{r.title}</div>
+                      <div className="text-xs font-bold text-slate-700">{r.classNameFr}</div>
+                      <div className="text-xs text-slate-700 truncate group-hover:text-slate-900">{r.title}</div>
                     </a>
                   ))}
                 </div>
@@ -621,12 +684,12 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
             {otherSubjectsSameLevel.length > 0 ? (
               <div className="bg-white border border-slate-200 rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-white text-xs font-bold">↔</div>
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-700 text-sm">↔</div>
                   <h3 className="text-sm font-extrabold text-slate-900">Autres matières en {main.levelNameFr || main.classNameFr}</h3>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {otherSubjectsSameLevel.slice(0, 6).map((s: RelatedSubject) => (
-                    <a key={s.id} href={`/fr/matieres/${s.slug}`} className="block bg-slate-50 hover:bg-pink-50 rounded-lg p-2 transition text-center">
+                    <a key={s.id} href={`/fr/matieres/${s.slug}`} className="block bg-slate-50 hover:bg-slate-100 rounded-lg p-2 transition text-center">
                       <div className="text-xs font-semibold text-slate-700">{s.nameFr}</div>
                       <div className="text-[10px] text-slate-400">{s.count} ress.</div>
                     </a>
