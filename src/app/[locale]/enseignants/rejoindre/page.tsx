@@ -100,6 +100,11 @@ export default async function TeacherLandingPage() {
 
             {/* CTAs */}
             <div className="flex flex-wrap gap-4">
+              {/* 2026-09-14: plain <a> instead of <Link> because /connexion is OUTSIDE
+                  the [locale] tree, so the i18n Link wrapper would add /fr/ prefix
+                  and break the link. After MR 2 (moving /connexion under [locale]/),
+                  this can go back to <Link>. */}
+              {/* 2026-09-14: <Link> now works because /connexion is under [locale]/ */}
               <Link
                 href="/connexion"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:scale-[1.02] transition shadow-lg"
@@ -113,6 +118,14 @@ export default async function TeacherLandingPage() {
               >
                 {t('landingTeachers.cta2')}
               </a>
+              {/* 2026-09-14: 3rd CTA for users WITHOUT an invitation (new flow) */}
+              <Link
+                href="/inscription"
+                className="inline-flex items-center gap-2 bg-white text-violet-700 px-8 py-4 rounded-xl font-bold text-lg hover:bg-violet-50 transition border-2 border-violet-300"
+              >
+                {t('landingTeachers.ctaNoInvite')}
+                <ArrowRight className="w-5 h-5" />
+              </Link>
             </div>
 
             {/* Trust indicators */}
@@ -326,6 +339,7 @@ export default async function TeacherLandingPage() {
               {t('landingTeachers.footerCtaTitle')}
             </h2>
             <p className="text-slate-600 mb-8 text-lg">{t('landingTeachers.footerCtaSubtitle')}</p>
+            {/* 2026-09-14: <Link> now works because /connexion is under [locale]/ */}
             <Link
               href="/connexion"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white px-10 py-5 rounded-xl font-bold text-lg hover:shadow-2xl hover:scale-[1.02] transition shadow-lg"
