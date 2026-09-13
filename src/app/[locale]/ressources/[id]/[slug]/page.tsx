@@ -132,10 +132,13 @@ export default function Page({
 // Async wrapper to await params before passing to client component
 async function ResourceDetailPageAsync({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; slug: string }>;
+  searchParams: Promise<{ newdesign?: string }>;
 }) {
   const { id, slug } = await params;
+  const searchParamsObj = await searchParams;
   const numericId = parseInt(id, 10);
   if (isNaN(numericId)) {
     return (
@@ -216,6 +219,15 @@ async function ResourceDetailPageAsync({
     } catch (e) {
       // Silent fallback
     }
+  }
+
+  // 2026-09-13: Added opt-in flag for the NEW DESIGN 2027 preview.
+  // When ?newdesign=1 is in the URL, render the new design via NewDesign2027Client.
+  // When the flag is not present, fall back to the existing ResourceDetailClient.
+  // This lets us A/B test on real resource URLs without breaking anything.
+  if (searchParamsObj?.newdesign === '1') {
+    const NewDesignClient = require('@/app/[locale]/newdesign2027/NewDesign2027Client').default;
+    return <NewDesignClient numericId={numericId} />;
   }
 
   return (
