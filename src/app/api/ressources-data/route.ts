@@ -159,10 +159,24 @@ async function fetchRessourcesData(opts: any) {
     params.push(...subject);
   }
   if (hasCorrection) conditions.push("r.hasCorrection = 1");
-  if (collegePilote) conditions.push("r.schoolType = 'COLLEGE_PILOTE'");
-  if (collegeOrdinaire) conditions.push("r.schoolType = 'COLLEGE_ORDINAIRE'");
-  if (lyceePilote) conditions.push("r.schoolType = 'LYCEE_PILOTE'");
-  if (lyceeOrdinaire) conditions.push("r.schoolType = 'LYCEE_ORDINAIRE'");
+  // FIX 2026-09-14: the schoolType column only stores 'PILOTE' | 'PUBLIC' | 'LYCEE' | NULL.
+  // The "Collège vs Lycée" distinction lives in Class.levelId (via r.classId → cls.levelId).
+  // - Collège pilote   = levelId=base AND schoolType='PILOTE'
+  // - Collège ordinaire = levelId=base AND (schoolType='PUBLIC' OR schoolType IS NULL)
+  // - Lycée pilote    = levelId=lycée AND schoolType='PILOTE'
+  // - Lycée ordinaire  = levelId=lycée AND (schoolType='PUBLIC' OR schoolType='LYCEE' OR schoolType IS NULL)
+  if (collegePilote) {
+    conditions.push("cls.levelId = 'cmqi8nqzg00012n4a7ymw26l1' AND r.schoolType = 'PILOTE'");
+  }
+  if (collegeOrdinaire) {
+    conditions.push("cls.levelId = 'cmqi8nqzg00012n4a7ymw26l1' AND (r.schoolType = 'PUBLIC' OR r.schoolType IS NULL)");
+  }
+  if (lyceePilote) {
+    conditions.push("cls.levelId = 'cmqi8nqzj00022n4ansnot863' AND r.schoolType = 'PILOTE'");
+  }
+  if (lyceeOrdinaire) {
+    conditions.push("cls.levelId = 'cmqi8nqzj00022n4ansnot863' AND (r.schoolType = 'PUBLIC' OR r.schoolType = 'LYCEE' OR r.schoolType IS NULL)");
+  }
 
   // Always LEFT JOIN `Class` and `Section` for the resource cards
   const joinClass = 'LEFT JOIN `Class` cls ON r.classId = cls.id LEFT JOIN `Section` sec ON r.sectionId = sec.id';
@@ -222,7 +236,8 @@ async function fetchRessourcesData(opts: any) {
   ].join('\n');
 
   const countSql = "SELECT COUNT(*) as total FROM Resource r LEFT JOIN `Subject` s ON r.subjectId = s.id " + joinClass + " WHERE " + whereClause;
-  const facetSql = "SELECT r.classId as r_classId, r.sectionId as r_sectionId, r.subjectId as r_subjectId, r.type, r.trimester, r.year, r.language, r.hasCorrection, r.schoolType FROM Resource r LEFT JOIN `Subject` s ON r.subjectId = s.id " + joinClass + " WHERE " + whereClause;
+  // FIX 2026-09-14: include cls.levelId so we can compute the 4 category counts (Collège/Lycée × Pilote/Ordinaire)
+  const facetSql = "SELECT r.classId as r_classId, r.sectionId as r_sectionId, r.subjectId as r_subjectId, r.type, r.trimester, r.year, r.language, r.hasCorrection, r.schoolType, cls.levelId as cls_levelId FROM Resource r LEFT JOIN `Subject` s ON r.subjectId = s.id " + joinClass + " WHERE " + whereClause;
 
   // 3 queries in parallel + 3 lookup tables (KV cached)
   const [resources, countResult, facetsRaw, allClasses, allSections, allSubjects] = await Promise.all([
@@ -287,6 +302,26 @@ async function fetchRessourcesData(opts: any) {
     }
   }
 
+  // FIX 2026-09-14: aggregate the 4 category counts (Collège/Lycée × Pilote/Ordinaire)
+  // using the cls.levelId from the joined Class row.
+  const COLLEGE_LEVEL_ID = 'cmqi8nqzg00012n4a7ymw26l1';
+  const LYCEE_LEVEL_ID = 'cmqi8nqzj00022n4ansnot863';
+  let collegePiloteCount = 0;
+  let collegeOrdinaireCount = 0;
+  let lyceePiloteCount = 0;
+  let lyceeOrdinaireCount = 0;
+  for (const r of facets) {
+    const lvl = r.cls_levelId;
+    const st = r.schoolType;
+    if (lvl === COLLEGE_LEVEL_ID) {
+      if (st === 'PILOTE') collegePiloteCount++;
+      else if (st === 'PUBLIC' || st == null) collegeOrdinaireCount++;
+    } else if (lvl === LYCEE_LEVEL_ID) {
+      if (st === 'PILOTE') lyceePiloteCount++;
+      else if (st === 'PUBLIC' || st === 'LYCEE' || st == null) lyceeOrdinaireCount++;
+    }
+  }
+
   // Format resources with joined data
   const resourcesList = resources?.results || resources || [];
   const formattedResources = resourcesList.map((r: any) => ({
@@ -340,6 +375,11 @@ async function fetchRessourcesData(opts: any) {
       byClass: Object.fromEntries(classCounts),
       bySection: Object.fromEntries(sectionCounts),
       bySubject: Object.fromEntries(subjectCounts),
+      // FIX 2026-09-14: 4 category counts (Collège/Lycée × Pilote/Ordinaire)
+      collegePilote: collegePiloteCount,
+      collegeOrdinaire: collegeOrdinaireCount,
+      lyceePilote: lyceePiloteCount,
+      lyceeOrdinaire: lyceeOrdinaireCount,
     },
     nameMaps: {
       class: Object.fromEntries((allClasses?.results || []).map((c: any) => [c.slug, c.nameFr])),
