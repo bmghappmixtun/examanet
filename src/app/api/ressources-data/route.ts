@@ -159,6 +159,9 @@ async function fetchRessourcesData(opts: any) {
     params.push(...subject);
   }
   if (hasCorrection) conditions.push("r.hasCorrection = 1");
+  // FIX 2026-09-14: snapshot conditions BEFORE adding the category filter.
+  // Used by the facets query so toggling one category doesn't zero-out the others.
+  const baseConditions = [...conditions];
   // FIX 2026-09-14: the schoolType column only stores 'PILOTE' | 'PUBLIC' | 'LYCEE' | NULL.
   // The "Collège vs Lycée" distinction lives in Class.levelId (via r.classId → cls.levelId).
   // The 4 filters are mutually-exclusive per (level, schoolType) bucket but combine with OR.
