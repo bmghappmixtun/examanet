@@ -78,7 +78,8 @@ function mapClassSlug(jotformClasse: string | null | undefined): string {
 function mapResourceType(jotformType: string | null | undefined, filename: string): string {
   const t = (jotformType || '').toLowerCase();
   const f = filename.toLowerCase();
-  if (/corrig[eé]/.test(t) || /corrig[eé]/.test(f) || /avec correction/.test(t)) return 'CORRECTION';
+  // 2026-09-14: a corrigé IS a devoir (per migration 0024 reclassification)
+  if (/corrig[eé]/.test(t) || /corrig[eé]/.test(f) || /avec correction/.test(t)) return 'DEVOIR';
   if (/devoir.*contr[oô]le|^\s*dc| dc\b|controle/.test(t) || /contr[oô]le/.test(f)) return 'DEVOIR';
   if (/synth[èe]se|\bds\b|devoir.*synth/.test(t) || /synth[èe]se/.test(f)) return 'EXAM';
   if (/s[ée]rie.*exercice|exercice|^\s*se\b/.test(t) || /s[ée]rie/.test(f)) return 'EXERCISE';
@@ -368,7 +369,6 @@ async function processFile(
       CORRECTION: 'Corrigé',
       SUMMARY: 'Résumé',
       CARD: 'Fiche',
-      BAC_SUBJECT: 'Sujet Bac',
     };
     const baseType = baseTypeFr[resType] || 'Document';
     const baseClasse = classObj?.nameFr || sub.classe || 'Classe';

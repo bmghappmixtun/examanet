@@ -71,10 +71,10 @@ const RESOURCE_TYPE_CHIPS: { value: string; label: string; color: string }[] = [
   { value: 'COURSE', label: 'Cours', color: 'bg-blue-100 text-blue-700' },
   { value: 'EXERCISE', label: 'Exercices', color: 'bg-green-100 text-green-700' },
   { value: 'DEVOIR', label: 'Devoirs', color: 'bg-amber-100 text-amber-700' },
-  { value: 'BAC_SUBJECT', label: 'Sujets Bac', color: 'bg-pink-100 text-pink-700' },
-  { value: 'CORRECTION', label: 'Corrigés', color: 'bg-emerald-100 text-emerald-700' },
-  { value: 'EXAM', label: 'Examens', color: 'bg-red-100 text-red-700' },
   { value: 'SUMMARY', label: 'Résumés', color: 'bg-indigo-100 text-indigo-700' },
+  { value: 'REVISION', label: 'Révisions', color: 'bg-purple-100 text-purple-700' },
+  { value: 'OTHER', label: 'Autres', color: 'bg-slate-100 text-slate-700' },
+  // 2026-09-14: removed BAC_SUBJECT/CORRECTION/EXAM (migration 0024 reclassified)
 ];
 
 const TYPE_LABELS: Record<string, { fr: string; color: string }> = {

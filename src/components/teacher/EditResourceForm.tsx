@@ -38,10 +38,9 @@ const TYPES = [
   { v: 'DEVOIR', l: '📝 Devoir' },
   { v: 'EXERCISE', l: '✏️ Exercice' },
   { v: 'SERIES', l: '📚 Série' },
-  { v: 'BAC_SUBJECT', l: '🎓 Sujet Bac' },
-  { v: 'CORRECTION', l: '✅ Corrigé' },
   { v: 'SUMMARY', l: '📄 Résumé' },
   { v: 'CARD', l: '🗂️ Fiche' },
+  // 2026-09-14: removed BAC_SUBJECT/CORRECTION/EXAM (migration 0024 reclassified)
 ];
 
 const TRIMESTERS = [

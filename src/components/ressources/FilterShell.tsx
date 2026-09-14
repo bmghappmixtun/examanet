@@ -90,17 +90,6 @@ const TYPE_META: Record<string, { label: string; emoji: string; color: string }>
     emoji: '🔄',
     color: 'bg-purple-100 text-purple-700 border-purple-200',
   },
-  EXAM: { label: 'Examen', emoji: '📃', color: 'bg-red-100 text-red-700 border-red-200' },
-  BAC_SUBJECT: {
-    label: 'Sujet Bac',
-    emoji: '🎯',
-    color: 'bg-pink-100 text-pink-700 border-pink-200',
-  },
-  CORRECTION: {
-    label: 'Corrigé',
-    emoji: '✅',
-    color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  },
   SUMMARY: {
     label: 'Résumé',
     emoji: '📋',

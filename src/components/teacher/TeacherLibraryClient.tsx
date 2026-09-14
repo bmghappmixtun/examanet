@@ -45,8 +45,8 @@ const FILE_TYPES = [
   { value: 'DEVOIR', label: 'Devoir', icon: '📝', color: 'amber' },
   { value: 'EXERCISE', label: 'Exercice', icon: '✏️', color: 'emerald' },
   { value: 'SERIES', label: 'Série', icon: '📋', color: 'violet' },
-  { value: 'EXAM', label: 'Examen', icon: '📊', color: 'red' },
   { value: 'SUMMARY', label: 'Résumé', icon: '📄', color: 'blue' },
+  // 2026-09-14: removed EXAM (migration 0024 reclassified)
   { value: 'LESSON_PLAN', label: 'Fiche pédagogique', icon: '🎯', color: 'orange' },
 ];
 

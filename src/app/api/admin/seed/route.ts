@@ -416,7 +416,7 @@ export async function POST(req: NextRequest) {
       {
         title: 'Corrigé officiel — Bac Sciences 2024',
         desc: "Corrigé complet de l'épreuve de SVT du Baccalauréat 2024.",
-        type: 'CORRECTION',
+        type: 'DEVOIR',
         subject: 'svt',
         class: '4eme-secondaire',
         section: 'sciences',
@@ -438,7 +438,7 @@ export async function POST(req: NextRequest) {
       {
         title: 'English Bac Mock Exam 2024',
         desc: 'Full mock exam with listening, reading, writing.',
-        type: 'EXAM',
+        type: 'DEVOIR',
         subject: 'anglais',
         class: '4eme-secondaire',
         section: 'sciences',
@@ -471,7 +471,7 @@ export async function POST(req: NextRequest) {
       {
         title: 'Devoir surveillé — Mathématiques 9ème',
         desc: 'DS complet pour la 9ème année de base.',
-        type: 'EXAM',
+        type: 'DEVOIR',
         subject: 'mathematiques',
         class: '9eme',
         teacherIdx: 7,
@@ -492,7 +492,7 @@ export async function POST(req: NextRequest) {
       {
         title: 'Sujet Bac — Physique 2023',
         desc: 'Sujet officiel du Bac Physique 2023 avec barème.',
-        type: 'BAC_SUBJECT',
+        type: 'EXERCISE',
         subject: 'physique',
         class: '4eme-secondaire',
         section: 'sciences',
@@ -514,7 +514,7 @@ export async function POST(req: NextRequest) {
       {
         title: 'Contrôle continu — Arabe 8ème',
         desc: "Contrôle de compréhension et d'expression écrite.",
-        type: 'EXAM',
+        type: 'DEVOIR',
         subject: 'arabe',
         class: '8eme',
         teacherIdx: 3,
@@ -557,7 +557,7 @@ export async function POST(req: NextRequest) {
       {
         title: 'Sujets Bac — Maths 2020-2024',
         desc: 'Compilation des 5 dernières sessions du Bac Maths.',
-        type: 'BAC_SUBJECT',
+        type: 'EXERCISE',
         subject: 'mathematiques',
         class: '4eme-secondaire',
         section: 'maths',
@@ -623,7 +623,7 @@ export async function POST(req: NextRequest) {
       {
         title: 'Bac Blanc — Mathématiques 2024',
         desc: 'Sujet de Bac blanc avec tous les thèmes.',
-        type: 'EXAM',
+        type: 'DEVOIR',
         subject: 'mathematiques',
         class: '4eme-secondaire',
         section: 'sciences',
