@@ -250,16 +250,16 @@ function MatiereView({ data, locale, currentSort }: { data: PageData; locale: st
             sections={sections.map(s => ({ id: s.id, name: s.nameFr || '', slug: s.slug, class: { nameFr: '' } }))}
             teachers={teachers.map(t => ({ id: t.id, firstName: t.firstName, lastName: t.lastName, firstNameAr: t.firstNameAr, lastNameAr: t.lastNameAr, avatarUrl: t.avatarUrl, schoolName: t.schoolName }))}
             resourceTypes={[
-              { slug: 'COURS', label: 'Cours' },
+              // 2026-09-14: removed COURS/EXERCICE/HOMEWORK aliases (migration 0023 normalized them)
               { slug: 'COURSE', label: 'Cours' },
               { slug: 'EXERCISE', label: 'Exercices' },
-              { slug: 'EXERCICE', label: 'Exercices' },
-              { slug: 'HOMEWORK', label: 'Devoirs' },
               { slug: 'DEVOIR', label: 'Devoirs' },
               { slug: 'BAC_SUBJECT', label: 'Sujets BAC' },
-              { slug: 'EXAMEN', label: 'Examens' },
+              { slug: 'EXAM', label: 'Examens' },
               { slug: 'REVISION', label: 'Révisions' },
-              { slug: 'RESUME', label: 'Résumés' },
+              { slug: 'SUMMARY', label: 'Résumés' },
+              { slug: 'CORRECTION', label: 'Corrigés' },
+              { slug: 'OTHER', label: 'Autres' },
             ]}
             trimesters={[
               { slug: '1', label: 'Trimestre 1' },
