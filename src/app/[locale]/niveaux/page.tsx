@@ -139,7 +139,10 @@ export default async function NiveauxPage() {
     db.prepare('SELECT * FROM "Level" ORDER BY "order" ASC').all(),
     db.prepare('SELECT * FROM "Class" ORDER BY "order" ASC').all(),
     db.prepare('SELECT * FROM "Section" ORDER BY "nameFr" ASC').all(),
-    db.prepare("SELECT id, slug, title, type, trimester, year, pageCount, fileSize, viewsCount, downloadsCount, classId, sectionId, subjectId, teacherId FROM Resource WHERE status = ? ORDER BY publishedAt DESC LIMIT 8").bind("PUBLISHED").all(),
+    // 2026-09-14: BUGFIX — added `numericId` to SELECT. ClassAccordion links use
+    // `/ressources/${r.numericId}/${r.slug}` — without numericId here, every
+    // link was `/ressources/undefined/...` and resources couldn't open.
+    db.prepare("SELECT numericId, id, slug, title, type, trimester, year, pageCount, fileSize, viewsCount, downloadsCount, classId, sectionId, subjectId, teacherId FROM Resource WHERE status = ? ORDER BY publishedAt DESC LIMIT 8").bind("PUBLISHED").all(),
     db.prepare('SELECT id, slug, nameFr, color FROM "Subject"').all(),
   ]);
 
@@ -179,6 +182,7 @@ export default async function NiveauxPage() {
       nameAr: s.nameAr,
       _count: { resources: sectionCounts.get(s.id) || 0 },
       resources: (resourcesRaw.results || []).slice(0, 8).map((r: any) => ({
+        numericId: r.numericId,
         id: r.id,
         slug: r.slug,
         title: r.title,
@@ -448,6 +452,7 @@ export default async function NiveauxPage() {
                             tint: sStyle.tint,
                             _count: s._count,
                             resources: s.resources.map((r) => ({
+                              numericId: r.numericId,
                               id: r.id,
                               slug: r.slug,
                               title: r.title,
