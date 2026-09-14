@@ -464,7 +464,16 @@ export default function FilterShell({ initialData, userId, initialFavorites }: F
                 .sort(([, a], [, b]) => b - a)
                 .map(([value, count]) => ({
                   value,
-                  label: TYPE_META[value]?.label || value,
+                  // FIX 2026-09-14: fallback to a friendly label for unknown types
+                  // (after migration 0023, no duplicates should appear here).
+                  // If a new unknown type ever shows up, log it once so we can investigate.
+                  label: TYPE_META[value]?.label || (() => {
+                    if (typeof window !== 'undefined' && !(window as any).__unknownTypeLogged?.[value]) {
+                      (window as any).__unknownTypeLogged = { ...((window as any).__unknownTypeLogged || {}), [value]: true };
+                      console.warn(`[ressources] Unknown Resource.type: ${value} (count=${count}). Add to TYPE_META or migrate to canonical value.`);
+                    }
+                    return value; // show raw value so admins can identify it
+                  })(),
                   emoji: TYPE_META[value]?.emoji,
                   color: TYPE_META[value]?.color,
                   count,

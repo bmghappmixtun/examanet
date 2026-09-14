@@ -152,7 +152,7 @@ Retourne UNIQUEMENT ce JSON:
 {
   "school_name_ar": "...",
   "profNames": [{"name_ar": "..."}],
-  "file_type": "DEVOIR_SYNTHESE|DEVOIR_CONTROLE|DEVOIR_MAISON|COURS|EXERCICE|REVISION|EXAMEN|AUTRE",
+  "file_type": "DEVOIR_SYNTHESE|DEVOIR_CONTROLE|DEVOIR_MAISON|COURSE|EXERCISE|REVISION|EXAM|OTHER"  // 2026-09-14: fixed to canonical English values (was COURS/EXERCICE/EXAMEN/AUTRE) — migration 0023 normalized DB",
   "year": "2018-2019",
   "general_subject": "3-6 mots EN ARABE",
   "summary": "3 lignes (\\n) EN ARABE, 30-50 mots"
@@ -165,7 +165,7 @@ Retourne UNIQUEMENT ce JSON:
 {
   "school_name": "...",
   "profNames": ["Mr. X"],
-  "file_type": "DEVOIR_SYNTHESE|DEVOIR_CONTROLE|DEVOIR_MAISON|COURS|EXERCICE|REVISION|EXAMEN|AUTRE",
+  "file_type": "DEVOIR_SYNTHESE|DEVOIR_CONTROLE|DEVOIR_MAISON|COURSE|EXERCISE|REVISION|EXAM|OTHER"  // 2026-09-14: fixed to canonical English values (was COURS/EXERCICE/EXAMEN/AUTRE) — migration 0023 normalized DB",
   "year": "2018-2019",
   "general_subject": "3-6 mots",
   "summary": "3 lignes (\\n), 30-50 mots"
