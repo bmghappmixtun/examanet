@@ -249,11 +249,17 @@ export default function FilterShell({ initialData, userId, initialFavorites }: F
         f.trimestre.forEach((v) => params.append('trimestre', v));
         f.year.forEach((v) => params.append('year', v));
         f.language.forEach((v) => params.append('language', v));
-        if (f.hasCorrection) params.set('hasCorrection', '1');
-        if (f.collegePilote) params.set('collegePilote', '1');
-        if (f.collegeOrdinaire) params.set('collegeOrdinaire', '1');
-        if (f.lyceePilote) params.set('lyceePilote', '1');
-        if (f.lyceeOrdinaire) params.set('lyceeOrdinaire', '1');
+        // 2026-09-14: use 'true' (not '1') to match what nuqs parseAsBoolean
+        // produces when reading the URL. Using '1' here caused the API filter
+        // to mismatch the URL filter when the page was loaded directly with
+        // an external link like ?hasCorrection=1 (nuqs returned false → no
+        // filter applied → all 15 421 resources shown instead of 934).
+        // The API now accepts both 'true' and '1' for backward compat.
+        if (f.hasCorrection) params.set('hasCorrection', 'true');
+        if (f.collegePilote) params.set('collegePilote', 'true');
+        if (f.collegeOrdinaire) params.set('collegeOrdinaire', 'true');
+        if (f.lyceePilote) params.set('lyceePilote', 'true');
+        if (f.lyceeOrdinaire) params.set('lyceeOrdinaire', 'true');
         if (f.teacherId) params.set('teacherId', f.teacherId);
         params.set('sort', f.sort);
         params.set('page', String(f.page));

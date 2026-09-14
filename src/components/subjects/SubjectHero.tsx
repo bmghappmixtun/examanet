@@ -195,7 +195,7 @@ function QuickAccessTags({ slug, color }: { slug: string; color: string }) {
     { label: '4ème BAC', qs: 'annee=4AS' },
     { label: '3ème', qs: 'annee=3AS' },
     { label: 'BAC sujets', qs: 'type=BAC_SUBJECT' },
-    { label: 'Corrigés', qs: 'hasCorrection=1' },
+    { label: 'Corrigés', qs: 'hasCorrection=true' },
     { label: 'Devoirs', qs: 'type=DEVOIR' },
     { label: 'Cours', qs: 'type=COURSE' },
   ];
