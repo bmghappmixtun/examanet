@@ -44,11 +44,16 @@ export async function GET(request: NextRequest) {
     const trimestre = sp.getAll('trimestre').sort();
     const year = sp.getAll('year').sort();
     const language = sp.getAll('language').sort();
-    const hasCorrection = sp.get('hasCorrection') === '1';
-    const collegePilote = sp.get('collegePilote') === '1';
-    const collegeOrdinaire = sp.get('collegeOrdinaire') === '1';
-    const lyceePilote = sp.get('lyceePilote') === '1';
-    const lyceeOrdinaire = sp.get('lyceeOrdinaire') === '1';
+    // 2026-09-14: accept both 'true' (nuqs default) and '1' (legacy) for
+    // backward compat with existing links. nuqs parseAsBoolean writes
+    // 'true' on toggle, but old external links / sitemap entries may
+    // still use '1'.
+    const truthy = (v: string | null) => v === 'true' || v === '1';
+    const hasCorrection = truthy(sp.get('hasCorrection'));
+    const collegePilote = truthy(sp.get('collegePilote'));
+    const collegeOrdinaire = truthy(sp.get('collegeOrdinaire'));
+    const lyceePilote = truthy(sp.get('lyceePilote'));
+    const lyceeOrdinaire = truthy(sp.get('lyceeOrdinaire'));
     const teacherIdNumeric = sp.get('teacherId') || '';
     const sort = sp.get('sort') || 'recent';
     const page = Math.max(1, parseInt(sp.get('page') || '1'));

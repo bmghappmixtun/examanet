@@ -128,7 +128,7 @@ export default async function Footer() {
               </li>
               <li>
                 <Link
-                  href="/ressources?hasCorrection=1"
+                  href="/ressources?hasCorrection=true"
                   className="hover:text-primary-400 transition"
                 >
                   {t('footer.corrections')}
