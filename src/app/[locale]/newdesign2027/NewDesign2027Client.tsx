@@ -127,7 +127,7 @@ function typeLabel(t: string): string {
     case 'COURSE': return 'Cours';
     case 'DEVOIR': return 'Devoir';
     case 'EXERCISE': return 'Exercice';
-    case 'EXAMEN': return 'Examen';
+    // 2026-09-14: removed EXAM/EXAMEN/BAC_SUBJECT/CORRECTION (migration 0024 reclassified)
     case 'FICHE': return 'Fiche';
     default: return t;
   }
@@ -139,7 +139,6 @@ function typeColor(t: string): string {
     case 'COURSE': return 'from-sky-400 to-blue-500';
     case 'DEVOIR': return 'from-slate-300 to-slate-400';
     case 'EXERCISE': return 'from-sky-300 to-sky-400';
-    case 'EXAMEN': return 'from-slate-400 to-slate-500';
     default: return 'from-slate-300 to-slate-400';
   }
 }
@@ -150,7 +149,6 @@ function typeColorSolid(t: string): string {
     case 'COURSE': return 'bg-sky-100 text-sky-700';
     case 'DEVOIR': return 'bg-slate-100 text-slate-600';
     case 'EXERCISE': return 'bg-blue-100 text-blue-600';
-    case 'EXAMEN': return 'bg-slate-200 text-slate-700';
     default: return 'bg-slate-100 text-slate-600';
   }
 }

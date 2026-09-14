@@ -254,7 +254,8 @@ export async function POST(req: NextRequest) {
         slug,
         title,
         description,
-        type,
+        // 2026-09-14: normalize type before INSERT (BAC_SUBJECT→EXERCISE, CORRECTION/EXAM→DEVOIR)
+        (type === 'BAC_SUBJECT' ? 'EXERCISE' : (type === 'CORRECTION' || type === 'EXAM' ? 'DEVOIR' : type)),
         finalFileKey,
         finalFileUrl,
         finalFileSize,

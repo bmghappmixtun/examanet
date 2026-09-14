@@ -75,6 +75,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }
     }
 
+    // 2026-09-14: normalize type before UPDATE (BAC_SUBJECT→EXERCISE, CORRECTION/EXAM→DEVOIR)
+    if ('type' in allowedFields) {
+      const t = allowedFields.type;
+      allowedFields.type = t === 'BAC_SUBJECT' ? 'EXERCISE' : (t === 'CORRECTION' || t === 'EXAM' ? 'DEVOIR' : t);
+    }
+
     // Resolve subject/class/section slugs → IDs
     if ('subject' in body) {
       const slug = body.subject;

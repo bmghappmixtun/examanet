@@ -89,9 +89,6 @@ const FILE_TYPES: Record<string, string> = {
   DEVOIR: '📝 Devoir',
   EXERCISE: '✏️ Série',
   REVISION: '🔄 Révision',
-  EXAM: '📋 Examen',
-  BAC_SUBJECT: '🎓 Sujet Bac',
-  CORRECTION: '✅ Corrigé',
   OTHER: '📁 Autre',
 };
 
