@@ -1,3 +1,0 @@
-#!/bin/bash
-# Auto-installed by scripts/security/install.sh
-exec "$(dirname "$0")/../check-no-tokens.sh"
