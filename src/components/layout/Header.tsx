@@ -1,5 +1,4 @@
 import { Link } from '@/i18n/navigation';
-import NextLink from 'next/link';
 import Image from 'next/image';
 import { getCurrentUser } from '@/lib/auth';
 // 2026-09-03: Migrated to D1 direct
@@ -102,15 +101,15 @@ export default async function Header() {
               <UserMenu user={user} unreadCount={unreadNotifications} />
             ) : (
               <>
-                <NextLink
+                <Link
                   href="/connexion"
                   className="hidden sm:block text-sm font-semibold text-slate-700 hover:text-primary-600 px-3 py-2 transition"
                 >
                   {t('nav.login')}
-                </NextLink>
-                <NextLink href="/inscription" className="btn-primary text-sm">
+                </Link>
+                <Link href="/inscription" className="btn-primary text-sm">
                   {t('nav.signup')}
-                </NextLink>
+                </Link>
               </>
             )}
             <MobileMenu user={user} />

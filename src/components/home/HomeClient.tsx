@@ -1,6 +1,5 @@
 'use client';
 import { Link } from '@/i18n/navigation';
-import NextLink from 'next/link';
 import {
   Search,
   BookOpen,
@@ -142,9 +141,9 @@ export default function HomeClient({
                 <Link href="/ressources" className="btn-primary text-base px-7 py-3.5">
                   <BookOpen className="w-5 h-5" /> {t('home.exploreResources')}
                 </Link>
-                <NextLink href="/inscription" className="btn-accent text-base px-7 py-3.5">
+                <Link href="/inscription" className="btn-accent text-base px-7 py-3.5">
                   <Upload className="w-5 h-5" /> {t('home.becomeTeacher')}
-                </NextLink>
+                </Link>
               </div>
             </div>
 
@@ -450,9 +449,9 @@ export default function HomeClient({
                   </div>
                 </div>
               ))}
-              <NextLink href="/inscription" className="btn-accent mt-4">
+              <Link href="/inscription" className="btn-accent mt-4">
                 {t('home.becomeTeacher')} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
-              </NextLink>
+              </Link>
             </div>
           </div>
         </div>
@@ -545,12 +544,12 @@ export default function HomeClient({
                 </h2>
                 <p className="text-primary-100 text-lg mb-6">{t('home.sections.ctaTeacherDesc')}</p>
                 <div className="flex flex-wrap gap-3">
-                  <NextLink
+                  <Link
                     href="/inscription"
                     className="bg-white text-primary-700 font-bold px-7 py-3.5 rounded-full shadow-xl hover:scale-105 transition-all inline-flex items-center gap-2"
                   >
                     <Upload className="w-5 h-5" /> {t('home.becomeTeacher')}
-                  </NextLink>
+                  </Link>
                   <Link
                     href="/professeurs"
                     className="bg-white/10 backdrop-blur border border-white/30 text-white font-bold px-7 py-3.5 rounded-full hover:bg-white/20 transition inline-flex items-center gap-2"
