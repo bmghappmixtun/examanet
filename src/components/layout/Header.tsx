@@ -33,7 +33,7 @@ export default async function Header() {
   }
 
   return (
-    <header className="fixed top-0 start-0 end-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/50">
+    <header data-default-header className="fixed top-0 start-0 end-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-[62px] lg:h-[73px] gap-4">
           {/* LEFT: Logo */}
@@ -70,27 +70,43 @@ export default async function Header() {
           <nav className="hidden lg:flex items-center gap-7 shrink-0">
             <Link
               href="/ressources"
-              className="text-sm font-medium text-slate-700 hover:text-primary-600 transition"
+              className="group relative text-base font-semibold text-slate-700 hover:text-primary-600 transition-colors"
             >
               {t('nav.resources')}
+              <span
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-[4px] bg-[#f08f45] rounded-full
+                           w-0 group-hover:w-3/4 transition-all duration-500 ease-out"
+              />
             </Link>
             <Link
               href="/niveaux"
-              className="text-sm font-medium text-slate-700 hover:text-primary-600 transition"
+              className="group relative text-base font-semibold text-slate-700 hover:text-primary-600 transition-colors"
             >
               {t('nav.levels')}
+              <span
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-[4px] bg-[#f08f45] rounded-full
+                           w-0 group-hover:w-3/4 transition-all duration-500 ease-out"
+              />
             </Link>
             <Link
               href="/matieres"
-              className="text-sm font-medium text-slate-700 hover:text-primary-600 transition"
+              className="group relative text-base font-semibold text-slate-700 hover:text-primary-600 transition-colors"
             >
               {t('nav.subjects')}
+              <span
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-[4px] bg-[#f08f45] rounded-full
+                           w-0 group-hover:w-3/4 transition-all duration-500 ease-out"
+              />
             </Link>
             <Link
               href="/professeurs"
-              className="text-sm font-medium text-slate-700 hover:text-primary-600 transition"
+              className="group relative text-base font-semibold text-slate-700 hover:text-primary-600 transition-colors"
             >
               {t('nav.teachers')}
+              <span
+                className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-[4px] bg-[#f08f45] rounded-full
+                           w-0 group-hover:w-3/4 transition-all duration-500 ease-out"
+              />
             </Link>
           </nav>
 
