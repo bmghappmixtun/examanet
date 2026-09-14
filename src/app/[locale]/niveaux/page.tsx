@@ -147,11 +147,25 @@ export default async function NiveauxPage() {
   const subjectMap = new Map<string, any>();
   for (const s of (subjectsRaw.results || [])) subjectMap.set(s.id, s);
 
-  // Resource data has classId=null due to FK mismatch
-  // For now, count per class proportionally
-  const totalResCount = (resourcesRaw.results || []).length * 1900; // rough multiplier (15K / 8 = 1900)
-  const totalClassesInDb = (classesRaw.results || []).length;
-  const perClassCount = totalClassesInDb > 0 ? Math.floor(totalResCount / totalClassesInDb) : 0;
+  // 2026-09-14: REAL counts via SQL aggregation (was fake "1900 multiplier")
+  const classCountsRaw = await db.prepare(
+    "SELECT classId, COUNT(*) as c FROM Resource WHERE status = 'PUBLISHED' AND isHidden = 0 AND classId IS NOT NULL GROUP BY classId"
+  ).all();
+  const classCounts = new Map<string, number>();
+  let totalResources = 0;
+  for (const row of (classCountsRaw.results || [])) {
+    classCounts.set(row.classId, row.c || 0);
+    totalResources += row.c || 0;
+  }
+
+  // 2026-09-14: REAL section counts
+  const sectionCountsRaw = await db.prepare(
+    "SELECT sectionId, COUNT(*) as c FROM Resource WHERE status = 'PUBLISHED' AND isHidden = 0 AND sectionId IS NOT NULL GROUP BY sectionId"
+  ).all();
+  const sectionCounts = new Map<string, number>();
+  for (const row of (sectionCountsRaw.results || [])) {
+    sectionCounts.set(row.sectionId, row.c || 0);
+  }
 
   // Group sections by classId
   const sectionsByClass = new Map<string, any[]>();
@@ -163,7 +177,7 @@ export default async function NiveauxPage() {
       slug: s.slug,
       nameFr: s.nameFr,
       nameAr: s.nameAr,
-      _count: { resources: perClassCount },
+      _count: { resources: sectionCounts.get(s.id) || 0 },
       resources: (resourcesRaw.results || []).slice(0, 8).map((r: any) => ({
         id: r.id,
         slug: r.slug,
@@ -191,7 +205,7 @@ export default async function NiveauxPage() {
       slug: c.slug,
       nameFr: c.nameFr,
       nameAr: c.nameAr,
-      _count: { resources: perClassCount },
+      _count: { resources: classCounts.get(c.id) || 0 },
       sections: sectionsByClass.get(c.id) || [],
     });
   }
@@ -205,7 +219,7 @@ export default async function NiveauxPage() {
     classes: classesByLevel.get(l.id) || [],
   }));
 
-  const totalResources = totalResCount;
+  // totalResources is now computed from real classCounts aggregation (see above)
   const totalClasses = levels.reduce((s, lvl) => s + lvl.classes.length, 0);
 
   // JSON-LD: ItemList of all classes
