@@ -1,6 +1,7 @@
 // @ts-nocheck
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 import FilterShell from '@/components/ressources/FilterShell';
 import { breadcrumbSchema } from '@/lib/structured-data';
 
@@ -100,11 +101,19 @@ export default async function ResourcesPage(props: {
             <div className="mt-4 w-72 h-1.5 rounded-full overflow-hidden" aria-hidden="true" />
           </div>
 
-          {/* FilterShell fetches data client-side via /api/ressources-data */}
-          <FilterShell
-            userId={null}
-            initialFavorites={[]}
-          />
+          {/* FilterShell fetches data client-side via /api/ressources-data.
+              Wrapped in <Suspense> so nuqs can defer rendering until the URL
+              is read on the client. Without Suspense, useQueryStates returns
+              defaults during SSR and the first useEffect fires BEFORE nuqs
+              has a chance to sync the URL → state, so filters like
+              ?hasCorrection=1 are ignored on direct load (counter shows
+              15 421 instead of 934, toggle appears OFF). */}
+          <Suspense fallback={null}>
+            <FilterShell
+              userId={null}
+              initialFavorites={[]}
+            />
+          </Suspense>
         </div>
       </main>
     </div>
