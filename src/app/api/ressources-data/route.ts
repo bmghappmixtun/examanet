@@ -159,9 +159,11 @@ async function fetchRessourcesData(opts: any) {
     params.push(...subject);
   }
   if (hasCorrection) conditions.push("r.hasCorrection = 1");
-  // FIX 2026-09-14: snapshot conditions BEFORE adding the category filter.
-  // Used by the facets query so toggling one category doesn't zero-out the others.
+  // FIX 2026-09-14: snapshot conditions AND params BEFORE adding any filter that has params.
+  // Used by the facets query so toggling one filter doesn't zero-out the others.
+  // The facets query (facetSql) uses baseConditions with baseParams.
   const baseConditions = [...conditions];
+  const baseParams = [...params];
   // FIX 2026-09-14: the schoolType column only stores 'PILOTE' | 'PUBLIC' | 'LYCEE' | NULL.
   // The "Collège vs Lycée" distinction lives in Class.levelId (via r.classId → cls.levelId).
   // The 4 filters are mutually-exclusive per (level, schoolType) bucket but combine with OR.
@@ -250,7 +252,7 @@ async function fetchRessourcesData(opts: any) {
   const [resources, countResult, facetsRaw, allClasses, allSections, allSubjects] = await Promise.all([
     db.prepare(resourcesSql).bind(...params, PAGE_SIZE, offset).all(),
     db.prepare(countSql).bind(...params).first(),
-    db.prepare(facetSql).bind(...params).all(),
+    db.prepare(facetSql).bind(...baseParams).all(),
     cachedD1Query({
       key: 'all-classes-v1',
       ttl: 3600,
