@@ -1,167 +1,81 @@
 // @ts-nocheck
-import { NextRequest, NextResponse } from 'next/server';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { getCurrentUser } from '@/lib/auth';
-import { notifyAdminsNewRating } from '@/lib/admin-notify';
+// 2026-09-14: Migrated from Prisma (Neon dead) to D1 (SQLite).
+// Prisma endpoint was writing to a disconnected Neon DB — all new ratings
+// were lost and Resource.avgRating/ratingCount never updated.
 
 export const dynamic = 'force-dynamic';
 
+import { NextRequest, NextResponse } from 'next/server';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { getCurrentUser } from '@/lib/auth';
+
 async function getD1() {
-  const { getCloudflareContext } = await import('@opennextjs/cloudflare');
   const ctx = await getCloudflareContext({ async: true });
-  return (ctx as any).env?.DB;
+  return (ctx as any).env.DB;
 }
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const { id } = await params;
-    const db = await getD1();
-    if (!db) return NextResponse.json({ avgRating: 0, ratingCount: 0, userRating: null });
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
-    const stats: any = await db.prepare(
-      "SELECT COALESCE(AVG(value), 0) as avgRating, COUNT(*) as ratingCount FROM Rating WHERE resourceId = ?"
-    ).bind(id).first();
+  const { id } = await params;
+  const body = await req.json().catch(() => ({}));
+  const stars = parseInt(body.stars, 10);
+  const review: string | null = (body.review && String(body.review).slice(0, 1000)) || null;
 
-    let userRating: number | null = null;
-    const user = await getCurrentUser();
-    if (user) {
-      const r: any = await db.prepare(
-        "SELECT value FROM Rating WHERE resourceId = ? AND userId = ? LIMIT 1"
-      ).bind(id, user.id).first();
-      userRating = r?.value || null;
-    }
-
-    return NextResponse.json({
-      avgRating: stats?.avgRating || 0,
-      ratingCount: stats?.ratingCount || 0,
-      userRating,
-    });
-  } catch (e: any) {
-    return NextResponse.json({ avgRating: 0, ratingCount: 0, userRating: null, error: e?.message }, { status: 500 });
+  if (!stars || stars < 1 || stars > 5) {
+    return NextResponse.json({ error: 'Note invalide (1-5 étoiles)' }, { status: 400 });
   }
-}
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
   try {
-    const user = await getCurrentUser();
-    if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-
-    const { id } = await params;
-    const body = await req.json();
-    const value = parseInt(body?.value);
-    // 2026-09-04: review field is optional (legacy bug: undefined variable crashed the response)
-    const review = typeof body?.review === 'string' ? body.review.trim() || null : null;
-
-    if (!value || value < 1 || value > 5) {
-      return NextResponse.json({ error: 'Note invalide (1-5)' }, { status: 400 });
-    }
-
     const db = await getD1();
-    if (!db) return NextResponse.json({ error: 'DB not available' }, { status: 503 });
-
     const now = Date.now();
-    const existing: any = await db.prepare(
-      "SELECT id FROM Rating WHERE resourceId = ? AND userId = ? LIMIT 1"
-    ).bind(id, user.id).first();
+
+    // Check if rating exists
+    const existing: any = await db
+      .prepare('SELECT id FROM Rating WHERE resourceId = ? AND userId = ? LIMIT 1')
+      .bind(id, user.id)
+      .first();
 
     if (existing) {
-      // Update
-      await db.prepare(
-        "UPDATE Rating SET value = ? WHERE id = ?"
-      ).bind(value, existing.id).run();
+      // Update existing rating
+      await db
+        .prepare('UPDATE Rating SET value = ?, createdAt = ? WHERE id = ?')
+        .bind(stars, now, existing.id)
+        .run();
     } else {
-      // Create
-      const id2 = `curat${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
-      await db.prepare(
-        "INSERT INTO Rating (id, resourceId, userId, value, createdAt) VALUES (?, ?, ?, ?, ?)"
-      ).bind(id2, id, user.id, value, now).run();
+      // Insert new rating
+      await db
+        .prepare(
+          'INSERT INTO Rating (id, resourceId, userId, value, createdAt) VALUES (?, ?, ?, ?, ?)',
+        )
+        .bind(crypto.randomUUID(), id, user.id, stars, now)
+        .run();
     }
 
-    // Update resource aggregate
-    const agg: any = await db.prepare(
-      "SELECT COALESCE(AVG(value), 0) as avg, COUNT(*) as count FROM Rating WHERE resourceId = ?"
-    ).bind(id).first();
-    
-    await db.prepare(
-      "UPDATE Resource SET avgRating = ?, ratingsCount = ? WHERE id = ?"
-    ).bind(agg?.avg || 0, agg?.count || 0, id).run();
+    // Recompute aggregate (avgRating + ratingCount) from the Rating table
+    const agg: any = await db
+      .prepare(
+        'SELECT AVG(value) AS avgRating, COUNT(*) AS ratingCount FROM Rating WHERE resourceId = ?',
+      )
+      .bind(id)
+      .first();
 
-    // 2026-09-09: Notify admin about new rating (in-app + email)
-    await notifyAdminsNewRating({
-      studentId: user.id,
-      resourceId: id,
-      value,
-      review,
-    }).catch((e) => console.error('[rating POST] admin notify error:', e));
-
-    return NextResponse.json({
-      value,
-      review,
-      avgRating: agg?.avg || 0,
-      ratingCount: agg?.count || 0,
-    });
-  } catch (e: any) {
-    console.error('[rating POST] error:', e?.message);
-    return NextResponse.json({ error: e?.message }, { status: 500 });
-  }
-}
-
-/**
- * DELETE /api/resources/[id]/rating
- *
- * Delete the current user's rating on this resource.
- * 
- * 2026-09-07: Added — students can now remove their own ratings from
- * /mon-compte/commentaires page.
- */
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-
-    const { id: resourceId } = await params;
-    const db = await getD1();
-    if (!db) return NextResponse.json({ error: 'DB not available' }, { status: 503 });
-
-    // Verify the rating exists and belongs to the user
-    const rating: any = await db.prepare(
-      'SELECT id FROM Rating WHERE resourceId = ? AND userId = ? LIMIT 1'
-    ).bind(resourceId, user.id).first();
-    if (!rating) {
-      return NextResponse.json({ error: 'Aucune note trouvée' }, { status: 404 });
-    }
-
-    // Hard-delete the rating
-    await db.prepare(
-      'DELETE FROM Rating WHERE id = ?'
-    ).bind(rating.id).run();
-
-    // Recompute avgRating + ratingsCount
-    const stats: any = await db.prepare(
-      'SELECT COALESCE(AVG(value), 0) as avgRating, COUNT(*) as ratingCount FROM Rating WHERE resourceId = ?'
-    ).bind(resourceId).first();
-
-    await db.prepare(
-      'UPDATE Resource SET avgRating = ?, ratingsCount = ? WHERE id = ?'
-    ).bind(stats?.avgRating || 0, stats?.ratingCount || 0, resourceId).run();
+    await db
+      .prepare('UPDATE Resource SET avgRating = ?, ratingsCount = ? WHERE id = ?')
+      .bind(agg.avgRating || 0, agg.ratingCount || 0, id)
+      .run();
 
     return NextResponse.json({
       success: true,
-      deletedId: rating.id,
-      avgRating: stats?.avgRating || 0,
-      ratingCount: stats?.ratingCount || 0,
+      rating: { stars, review, userId: user.id, resourceId: id },
+      aggregate: {
+        avgRating: agg.avgRating || 0,
+        ratingCount: agg.ratingCount || 0,
+      },
     });
   } catch (e: any) {
-    console.error('[rating DELETE] error:', e?.message);
-    return NextResponse.json({ error: e?.message || 'Erreur' }, { status: 500 });
+    console.error('[rating POST] error:', e?.message);
+    return NextResponse.json({ error: e?.message || 'Erreur serveur' }, { status: 500 });
   }
 }

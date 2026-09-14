@@ -33,63 +33,28 @@ function buildFilename(
 }
 
 /**
- * Stream a file from R2 (or fallback to URL) to the client.
+ * Stream a file from a URL (Vercel Blob) to the client.
  * Sets Content-Disposition so the browser downloads with the right filename.
- *
- * 2026-09-04: Rewritten to stream directly from R2 using fileKey/r2Key
- * (was: fetch the relative fileUrl which fails because fetch needs an absolute URL).
- * Falls back to fetching fileUrl only if the R2 lookup fails.
  */
 async function streamFileToClient(
   sourceUrl: string,
   filename: string,
-  r2Key: string | null | undefined,
-  fileKey: string | null | undefined,
   contentType = 'application/pdf',
 ): Promise<NextResponse> {
   const safeName = sanitizeFilename(filename);
-
-  // Primary path: stream from R2. Prefer r2Key, fall back to fileKey (which IS the R2 key
-  // for resources uploaded before the r2Key field was added in 2026-08-27).
-  const r2LookupKey = r2Key || fileKey;
-  if (r2LookupKey) {
-    try {
-      const { getCloudflareContext } = await import('@opennextjs/cloudflare');
-      const ctx = await getCloudflareContext({ async: true });
-      const bucket = (ctx as any).env?.PDFS_BUCKET as R2Bucket | undefined;
-      if (bucket) {
-        const obj = await bucket.get(r2LookupKey);
-        if (obj) {
-          return new Response(obj.body, {
-            status: 200,
-            headers: {
-              'Content-Type': obj.httpMetadata?.contentType || contentType,
-              'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
-              'Cache-Control': 'public, max-age=3600, must-revalidate',
-              'X-Content-Type-Options': 'nosniff',
-              'X-Storage-Backend': 'r2',
-            },
-          });
-        }
-      }
-    } catch (e: any) {
-      console.warn('[download] R2 stream failed, falling back to URL:', e?.message);
-    }
-  }
-
-  // Fallback: fetch from sourceUrl (only works if it's an absolute URL)
+  
   try {
     const upstream = await fetch(sourceUrl, {
       headers: { 'User-Agent': 'Examanet-Proxy/1.0' },
     });
-
+    
     if (!upstream.ok) {
       return new NextResponse(
         `Upstream fetch failed: ${upstream.status} for ${sourceUrl}`,
         { status: 502 }
       );
     }
-
+    
     return new NextResponse(upstream.body, {
       status: 200,
       headers: {
@@ -97,7 +62,7 @@ async function streamFileToClient(
         'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
         'Cache-Control': 'public, max-age=3600, must-revalidate',
         'X-Content-Type-Options': 'nosniff',
-        'X-Storage-Backend': 'r2-fallback',
+        'X-Storage-Backend': 'vercel-blob',
       },
     });
   } catch (e: any) {
@@ -110,7 +75,7 @@ async function streamFileToClient(
 
 async function getResourceByNumericId(db: any, numericId: number) {
   return await db.prepare(`
-    SELECT id, numericId, slug, title, type, status, isHidden, fileKey, fileUrl, r2Key,
+    SELECT id, numericId, slug, title, type, status, fileKey, fileUrl, r2Key,
            fileSize
     FROM Resource
     WHERE numericId = ?
@@ -118,12 +83,39 @@ async function getResourceByNumericId(db: any, numericId: number) {
   `).bind(numericId).first();
 }
 
-async function incrementViewsAndDownloads(db: any, resourceId: string) {
-  // Update views count (fire and forget)
+async function incrementViewsAndDownloads(db: any, resourceId: string, request: NextRequest) {
+  // Update views/downloads counters (fire and forget)
   db.prepare('UPDATE Resource SET viewsCount = viewsCount + 1 WHERE id = ?')
     .bind(resourceId)
     .run()
     .catch(() => {});
+  db.prepare('UPDATE Resource SET downloadsCount = downloadsCount + 1 WHERE id = ?')
+    .bind(resourceId)
+    .run()
+    .catch(() => {});
+
+  // 2026-09-14: Record the download per-user in the Download table for student analytics.
+  // Without this, /admin/utilisateurs student stats show 0 for downloads.
+  // Anonymous downloads still increment the counter but don't create a userId row.
+  try {
+    const { getCurrentUser } = await import('@/lib/auth');
+    const currentUser = await getCurrentUser();
+    const ipAddress = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || null;
+    const userAgent = request.headers.get('user-agent') || null;
+    await db.prepare(
+      'INSERT INTO Download (id, resourceId, userId, ipAddress, userAgent, original, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(
+      crypto.randomUUID(),
+      resourceId,
+      currentUser?.id || null,
+      ipAddress,
+      userAgent?.slice(0, 500) || null,
+      false,
+      Date.now()
+    ).run();
+  } catch (e) {
+    // Don't fail the request if download tracking fails
+  }
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -142,12 +134,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!resource) {
       return NextResponse.json({ error: 'Non trouvé' }, { status: 404 });
     }
-
-    // 2026-09-05: Hide resources that are not PUBLISHED or that are admin/teacher-hidden.
-    // The teacher can "unpublish" their own resource from /enseignant/ressources
-    // (sets status=DRAFT + isHidden=1), but the download endpoint was still serving
-    // the file because the check only looked at status. Now we also require isHidden=0.
-    if (resource.status !== 'PUBLISHED' || (resource as any).isHidden === 1) {
+    
+    if (resource.status !== 'PUBLISHED' && resource.status !== 'ARCHIVED') {
       return NextResponse.json({ error: 'Non disponible' }, { status: 403 });
     }
     
@@ -170,14 +158,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
     
     // Track the view/download
-    await incrementViewsAndDownloads(db, resource.id);
-
+    await incrementViewsAndDownloads(db, resource.id, req);
+    
     return streamFileToClient(
       resource.fileUrl,
       buildFilename(resource, false),
-      resource.r2Key, // 2026-09-04: stream from R2 directly (fixes 502)
-      resource.fileKey, // fallback for legacy resources
-      'application/pdf',
+      'application/pdf'
     );
   } catch (e: any) {
     const elapsed = Date.now() - reqStart;

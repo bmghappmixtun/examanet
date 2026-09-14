@@ -28,6 +28,8 @@ import {
   Download,
   Star,
   Heart,
+  MessageSquare,
+  Activity,
 } from 'lucide-react';
 import { timeAgo, formatNumber } from '@/lib/utils';
 import DeleteUserButton from './DeleteUserButton';
@@ -556,7 +558,11 @@ export default function UsersManagementClient({
                 </th>
                 <th className="text-left px-3 py-2.5 font-semibold text-slate-600">Utilisateur</th>
                 <th className="text-left px-3 py-2.5 font-semibold text-slate-600">
-                  {activeTab === 'TEACHER' ? 'Fichiers' : ''}
+                  {activeTab === 'TEACHER'
+                    ? 'Fichiers'
+                    : activeTab === 'STUDENT'
+                      ? 'Activité'
+                      : ''}
                 </th>
                 <th className="text-left px-3 py-2.5 font-semibold text-slate-600">Statut</th>
                 <th className="text-left px-3 py-2.5 font-semibold text-slate-600 hidden xl:table-cell">
@@ -672,6 +678,93 @@ export default function UsersManagementClient({
                             </div>
                           )}
                         </div>
+                      </td>
+                    ) : activeTab === 'STUDENT' ? (
+                      <td className="px-3 py-2.5">
+                        {(u as any).stats && (
+                          <div className="flex flex-col gap-1 min-w-[180px]">
+                            {/* Top line: engagement score */}
+                            {(() => {
+                              const s = (u as any).stats;
+                              const score =
+                                (s.totalViews || 0) +
+                                (s.totalDownloads || 0) * 3 +
+                                (s.totalComments || 0) * 2 +
+                                (s.ratingCount || 0) * 2 +
+                                (s.totalFavorites || 0);
+                              return (
+                                <span
+                                  className={`inline-flex items-center justify-center min-w-[2.5rem] px-2 py-1 text-sm font-extrabold rounded-lg ${
+                                    score > 100
+                                      ? 'bg-emerald-100 text-emerald-700'
+                                      : score > 20
+                                        ? 'bg-sky-100 text-sky-700'
+                                        : score > 0
+                                          ? 'bg-slate-100 text-slate-700'
+                                          : 'bg-slate-50 text-slate-400'
+                                  }`}
+                                  title={`Score d'engagement: ${score} (vues×1 + DL×3 + commentaires×2 + notes×2 + favoris)`}
+                                >
+                                  {score}
+                                </span>
+                              );
+                            })()}
+                            {/* Detail line: vues / DL / commentaires */}
+                            <div className="text-xs text-slate-500 flex items-center gap-1.5 flex-wrap">
+                              <span
+                                className="flex items-center gap-0.5"
+                                title="Fichiers consultés"
+                              >
+                                <Eye className="w-3 h-3" />{' '}
+                                {formatNumber((u as any).stats.totalViews || 0)}
+                              </span>
+                              <span
+                                className="flex items-center gap-0.5"
+                                title="Fichiers téléchargés"
+                              >
+                                <Download className="w-3 h-3" />{' '}
+                                {formatNumber((u as any).stats.totalDownloads || 0)}
+                              </span>
+                              <span
+                                className="flex items-center gap-0.5"
+                                title="Commentaires écrits"
+                              >
+                                <MessageSquare className="w-3 h-3" />{' '}
+                                {formatNumber((u as any).stats.totalComments || 0)}
+                              </span>
+                            </div>
+                            {/* Bottom line: notes / favoris / dernière activité */}
+                            <div className="text-xs text-slate-500 flex items-center gap-1.5 flex-wrap">
+                              {(u as any).stats.ratingCount > 0 && (
+                                <span
+                                  className="flex items-center gap-0.5"
+                                  title="Notes données"
+                                >
+                                  <Star className="w-3 h-3 text-amber-500" />{' '}
+                                  {(u as any).stats.ratingCount}
+                                </span>
+                              )}
+                              {(u as any).stats.totalFavorites > 0 && (
+                                <span
+                                  className="flex items-center gap-0.5"
+                                  title="Favoris ajoutés"
+                                >
+                                  <Heart className="w-3 h-3" />{' '}
+                                  {formatNumber((u as any).stats.totalFavorites)}
+                                </span>
+                              )}
+                              {(u as any).stats.lastActivityAt && (
+                                <span
+                                  className="text-slate-400"
+                                  title="Dernière activité"
+                                  suppressHydrationWarning
+                                >
+                                  · {timeAgo((u as any).stats.lastActivityAt)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </td>
                     ) : (
                       <td className="px-3 py-2.5"></td>
