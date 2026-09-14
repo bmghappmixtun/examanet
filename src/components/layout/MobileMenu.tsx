@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from '@/i18n/navigation';
-import NextLink from 'next/link';
 import { Menu, X, LogIn, UserPlus } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 
@@ -71,20 +70,20 @@ export default function MobileMenu({ user }: { user: any }) {
           </div>
         ) : (
           <div className="p-4 grid grid-cols-2 gap-2 border-b border-slate-100 flex-shrink-0">
-            <NextLink
+            <Link
               href="/connexion"
               onClick={() => setOpen(false)}
               className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 transition"
             >
               <LogIn className="w-4 h-4" /> {t('nav.login')}
-            </NextLink>
-            <NextLink
+            </Link>
+            <Link
               href="/inscription"
               onClick={() => setOpen(false)}
               className="flex items-center justify-center gap-2 py-2.5 bg-primary-500 text-white rounded-xl text-sm font-semibold hover:bg-primary-600 transition"
             >
               <UserPlus className="w-4 h-4" /> {t('nav.signup')}
-            </NextLink>
+            </Link>
           </div>
         )}
 
@@ -142,37 +141,37 @@ export default function MobileMenu({ user }: { user: any }) {
           {user && (
             <>
               <div className="border-t border-slate-100 my-2"></div>
-              <NextLink
+              <Link
                 href="/mon-compte"
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
               >
                 {t('nav.myAccount')}
-              </NextLink>
-              <NextLink
+              </Link>
+              <Link
                 href={favorisHref}
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
               >
                 {t('nav.favorites')}
-              </NextLink>
+              </Link>
               {(isTeacher || isAdmin) && (
-                <NextLink
+                <Link
                   href="/enseignant"
                   onClick={() => setOpen(false)}
                   className="block px-4 py-3 hover:bg-amber-50 text-amber-700 rounded-lg font-medium"
                 >
                   {t('nav.teacherSpace')}
-                </NextLink>
+                </Link>
               )}
               {isAdmin && (
-                <NextLink
+                <Link
                   href="/admin"
                   onClick={() => setOpen(false)}
                   className="block px-4 py-3 hover:bg-red-50 text-red-600 rounded-lg font-medium"
                 >
                   {t('nav.adminPanel')}
-                </NextLink>
+                </Link>
               )}
               <form action="/api/auth/logout" method="POST">
                 <button
