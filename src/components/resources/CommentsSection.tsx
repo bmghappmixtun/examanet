@@ -71,9 +71,12 @@ export default function CommentsSection({
         ]);
         setContent('');
         toast.success('Commentaire publié 💬');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || 'Erreur lors de la publication');
       }
     } catch {
-      toast.error('Erreur');
+      toast.error('Erreur réseau');
     } finally {
       setSubmitting(false);
     }

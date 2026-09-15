@@ -39,13 +39,21 @@ export default function RatingSection({
         return;
       }
       if (res.ok) {
+        const data = await res.json();
         toast.success('Merci pour votre avis ! ⭐');
         setMyRating(selected);
         setSelected(0);
         setReview('');
+        if (data?.aggregate) {
+          // Trigger a refresh so the new avg/count appear
+          window.dispatchEvent(new CustomEvent('rating:updated'));
+        }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.error || 'Erreur lors de la publication');
       }
     } catch {
-      toast.error('Erreur');
+      toast.error('Erreur réseau');
     } finally {
       setSubmitting(false);
     }
