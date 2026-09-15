@@ -66,7 +66,10 @@ export default function OAuthButtons({
     }
   }
 
-  const showGoogle = availableProviders?.providers.includes('google') ?? false;
+  // 2026-09-15: Temporarily hide Google OAuth buttons until Google validation is obtained.
+  // The provider is still configured in the API; we just hide the UI entry point.
+  // To re-enable: replace `false` with `availableProviders?.providers.includes('google') ?? false`
+  const showGoogle = false;
   const showFacebook = availableProviders?.providers.includes('facebook') ?? false;
   const showApple = availableProviders?.providers.includes('apple') ?? false;
   const hasOAuth = showGoogle || showFacebook || showApple;

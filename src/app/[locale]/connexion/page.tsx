@@ -2,10 +2,11 @@
 import { useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useRouter } from 'next/navigation';
-import { GraduationCap, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslations } from 'next-intl';
 import OAuthButtons from '@/components/auth/OAuthButtons';
+import AuthPageIcon from '@/components/auth/AuthPageIcon';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -57,9 +58,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg">
-              <GraduationCap className="w-7 h-7 text-white" />
-            </div>
+            <AuthPageIcon />
           </Link>
           <h1 className="text-2xl font-extrabold">{t('loginTitle')}</h1>
           <p className="text-slate-500 mt-1">{t('loginSubtitle')}</p>
