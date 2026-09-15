@@ -25,7 +25,7 @@ function VerifyOtpForm() {
     : 'fr';
 
   const initialEmail = searchParams.get('email') || '';
-  const redirectTo = searchParams.get('redirect') || `/${locale}/mon-compte`;
+  const redirectTo = searchParams.get('redirect') || `/mon-compte`;
   const devCode = searchParams.get('devCode') || '';
 
   const [email, setEmail] = useState(initialEmail);
@@ -134,15 +134,17 @@ function VerifyOtpForm() {
 
       // Redirect based on status
       // 2026-09-11: For teachers after auto-login, force profile completion first
+      // 2026-09-15: profil/completer, en-attente, mon-compte live at ROOT level (no [locale] prefix)
+      // The /admin, /enseignant, /profil, /en-attente, /mon-compte routes are legacy non-i18n.
       setTimeout(() => {
         if (data.status === 'ACTIVE') {
           router.push(redirectTo);
         } else if (data.status === 'PENDING_APPROVAL') {
           // Teacher verified email: go to profile completion (en-attente will be shown after)
           if (data.nextStep === 'profile_completion') {
-            router.push(`/${locale}/profil/completer?welcome=1&from=otp`);
+            router.push(`/profil/completer?welcome=1&from=otp`);
           } else {
-            router.push(`/${locale}/en-attente`);
+            router.push(`/en-attente`);
           }
         } else {
           router.push(`/${locale}/connexion`);

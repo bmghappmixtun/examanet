@@ -41,16 +41,18 @@ export default function LoginPage() {
         }
         if (data.code === 'PENDING_APPROVAL') {
           toast.error(data.error || t('invalidCredentials'));
-          router.push(`/${locale}/en-attente`);
+          // /en-attente, /admin, /enseignant, /mon-compte are at ROOT level (no [locale] prefix)
+          router.push(`/en-attente`);
           return;
         }
         toast.error(data.error || t('invalidCredentials'));
         return;
       }
       toast.success('Bienvenue ! 🎉');
-      if (data.user.role === 'ADMIN') router.push(`/${locale}/admin`);
-      else if (data.user.role === 'TEACHER') router.push(`/${locale}/enseignant`);
-      else router.push(`/${locale}/mon-compte`);
+      // /admin, /enseignant, /mon-compte are at ROOT level (no [locale] prefix)
+      if (data.user.role === 'ADMIN') router.push(`/admin`);
+      else if (data.user.role === 'TEACHER') router.push(`/enseignant`);
+      else router.push(`/mon-compte`);
     } catch {
       toast.error(tCommon('error'));
     } finally {

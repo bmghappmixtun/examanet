@@ -89,7 +89,8 @@ export default function AcceptInvitationClient({ token }: { token: string }) {
       }
 
       // Success: server has set session cookie, just redirect
-      router.push(`/${locale}/enseignant?welcome=1`);
+      // /enseignant is at ROOT level (no [locale] prefix)
+      router.push(`/enseignant?welcome=1`);
     } catch (e: any) {
       setError(e?.message || 'Erreur réseau');
       setSubmitting(false);
