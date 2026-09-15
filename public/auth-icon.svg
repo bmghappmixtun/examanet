@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="capTop" x1="30" y1="20" x2="170" y2="80">
+      <stop offset="0%" stop-color="#FFB370"/>
+      <stop offset="50%" stop-color="#f08f45"/>
+      <stop offset="100%" stop-color="#d9711c"/>
+    </linearGradient>
+    <linearGradient id="bodyGrad" x1="0" y1="100" x2="0" y2="200">
+      <stop offset="0%" stop-color="#2BB1D6"/>
+      <stop offset="100%" stop-color="#0E7B9E"/>
+    </linearGradient>
+    <radialGradient id="headGrad" cx="40%" cy="35%">
+      <stop offset="0%" stop-color="#3FBFE2"/>
+      <stop offset="100%" stop-color="#0E7B9E"/>
+    </radialGradient>
+    <radialGradient id="plusGrad" cx="30%" cy="30%">
+      <stop offset="0%" stop-color="#FFB070"/>
+      <stop offset="70%" stop-color="#f08f45"/>
+      <stop offset="100%" stop-color="#d9711c"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Body (rounded trapezoid) -->
+  <path d="M28 180 C28 142 60 112 100 112 C140 112 172 142 172 180 L172 186 C172 190 168 194 164 194 L36 194 C32 194 28 190 28 186 Z" 
+        fill="url(#bodyGrad)"/>
+  <!-- Body left highlight -->
+  <path d="M50 194 C52 160 75 130 100 125 C100 132 92 134 88 138 C75 148 60 170 55 194 Z" 
+        fill="#0A6680" opacity="0.35"/>
+  
+  <!-- Head (circle) -->
+  <circle cx="100" cy="70" r="38" fill="url(#headGrad)"/>
+  <path d="M62 70 C62 50 80 32 100 32 C92 35 84 42 78 50 C70 60 65 72 64 84 C62 78 62 74 62 70 Z" 
+        fill="#0A6680" opacity="0.3"/>
+  
+  <!-- Graduation cap - FLAT MORTARBOARD -->
+  <!-- Cap top board (flat diamond/parallelogram, wider/longer than tall) -->
+  <path d="M25 55 L100 30 L175 55 L100 80 Z" fill="url(#capTop)"/>
+  <!-- Cap top shine -->
+  <path d="M40 53 L100 33 L155 53 L100 73 Z" fill="#FFB070" opacity="0.5"/>
+  <!-- Cap underside -->
+  <path d="M62 70 C62 76 78 82 100 82 C122 82 138 76 138 70 L138 82 C138 88 122 92 100 92 C78 92 62 88 62 82 Z" 
+        fill="#c8651c" opacity="0.7"/>
+  
+  <!-- Tassel button -->
+  <circle cx="65" cy="55" r="4" fill="#1A1A1A"/>
+  <!-- Tassel cord -->
+  <path d="M65 55 Q58 65 55 80 Q52 95 53 105 Q54 110 56 112 Q58 110 58 105 Q58 95 60 80 Q62 70 65 60 Z" 
+        fill="#2A2A2A"/>
+  <!-- Tassel strands -->
+  <path d="M55 60 L53 100" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M58 62 L57 110" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M61 60 L62 105" stroke="#1A1A1A" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  
+  <!-- Orange + button at bottom right -->
+  <circle cx="148" cy="156" r="38" fill="url(#plusGrad)"/>
+  <!-- Highlight on button -->
+  <ellipse cx="138" cy="142" rx="14" ry="10" fill="#FFD8A8" opacity="0.5"/>
+  <!-- White + inside -->
+  <rect x="142" y="130" width="12" height="52" rx="3" fill="white"/>
+  <rect x="122" y="150" width="52" height="12" rx="3" fill="white"/>
+</svg>
