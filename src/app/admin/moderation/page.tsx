@@ -1,6 +1,9 @@
 // @ts-nocheck
+// 2026-09-15: Rewrote with raw SQL because db.report.findMany({include:...}) doesn't
+// support joins — the proxy returns raw rows without nested user/resource objects.
+// Also fixed: rep.description → rep.details (the Report table column is `details`).
 import { redirect } from 'next/navigation';
-import { db } from '@/lib/d1-admin';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getCurrentUser } from '@/lib/auth';
 import { Flag, AlertTriangle, CheckCircle, FileText, Clock } from 'lucide-react';
 import { timeAgo } from '@/lib/utils';
@@ -12,6 +15,7 @@ const REASON_LABELS: Record<string, string> = {
   COPYRIGHT: "Violation de droits d'auteur",
   SPAM: 'Spam / Publicité',
   WRONG_CONTENT: 'Contenu erroné',
+  BROKEN_FILE: 'Fichier cassé',
   OTHER: 'Autre',
 };
 
@@ -20,33 +24,86 @@ const REASON_COLORS: Record<string, string> = {
   COPYRIGHT: 'bg-purple-100 text-purple-700',
   SPAM: 'bg-orange-100 text-orange-700',
   WRONG_CONTENT: 'bg-amber-100 text-amber-700',
+  BROKEN_FILE: 'bg-yellow-100 text-yellow-700',
   OTHER: 'bg-slate-100 text-slate-700',
 };
+
+async function getD1() {
+  const ctx = await getCloudflareContext({ async: true });
+  return (ctx as any).env?.DB || null;
+}
+
+interface ReportRow {
+  id: string;
+  resourceId: string;
+  userId: string | null;
+  reason: string;
+  details: string | null;
+  status: string;
+  reviewedById: string | null;
+  reviewedAt: number | null;
+  createdAt: number;
+  // Joined fields
+  resourceTitle: string | null;
+  resourceSubject: string | null;
+  reporterFirstName: string | null;
+  reporterLastName: string | null;
+  reporterEmail: string | null;
+}
+
+async function fetchReports(statusFilter: 'PENDING' | 'ALL_NON_PENDING', limit = 10): Promise<ReportRow[]> {
+  const db = await getD1();
+  if (!db) return [];
+  const whereSql =
+    statusFilter === 'PENDING'
+      ? "WHERE r.status = 'PENDING'"
+      : "WHERE r.status != 'PENDING'";
+  try {
+    const res: any = await db
+      .prepare(
+        `SELECT
+          r.id, r.resourceId, r.userId, r.reason, r.details, r.status,
+          r.reviewedById, r.reviewedAt, r.createdAt,
+          res.title AS resourceTitle,
+          s.nameFr AS resourceSubject,
+          u.firstName AS reporterFirstName,
+          u.lastName AS reporterLastName,
+          u.email AS reporterEmail
+        FROM Report r
+        LEFT JOIN Resource res ON res.id = r.resourceId
+        LEFT JOIN Subject s ON s.id = res.subjectId
+        LEFT JOIN User u ON u.id = r.userId
+        ${whereSql}
+        ORDER BY r.createdAt DESC
+        LIMIT ?`,
+      )
+      .bind(limit)
+      .all();
+    return (res?.results || []) as ReportRow[];
+  } catch (e: any) {
+    console.error('[moderation] fetchReports error:', e?.message);
+    return [];
+  }
+}
 
 export default async function AdminModerationPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/connexion');
 
-  const [pendingReports, resolvedReports, totalReports] = await Promise.all([
-    db.report.findMany({
-      where: { status: 'PENDING' },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        resource: { include: { subject: true } },
-        user: { select: { firstName: true, lastName: true, email: true } },
-      },
-    }),
-    db.report.findMany({
-      where: { status: { not: 'PENDING' } },
-      take: 10,
-      orderBy: { resolvedAt: 'desc' },
-      include: {
-        resource: { include: { subject: true } },
-        user: { select: { firstName: true, lastName: true, email: true } },
-      },
-    }),
-    db.report.count(),
+  const [pendingReports, resolvedReports, totalResult] = await Promise.all([
+    fetchReports('PENDING', 100),
+    fetchReports('ALL_NON_PENDING', 10),
+    (async () => {
+      const db = await getD1();
+      if (!db) return { c: 0 };
+      try {
+        return await db.prepare('SELECT COUNT(*) as c FROM Report').first();
+      } catch {
+        return { c: 0 };
+      }
+    })(),
   ]);
+  const totalReports = Number(totalResult?.c || 0);
 
   return (
     <div>
@@ -96,7 +153,7 @@ export default async function AdminModerationPage() {
               <div key={rep.id} className="bg-white rounded-2xl border border-amber-200 p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span
                         className={`px-2 py-1 text-xs font-bold rounded ${REASON_COLORS[rep.reason] || 'bg-slate-100 text-slate-700'}`}
                       >
@@ -104,30 +161,34 @@ export default async function AdminModerationPage() {
                       </span>
                       <span className="text-xs text-slate-500">{timeAgo(rep.createdAt)}</span>
                     </div>
-                    {rep.resource && (
+                    {rep.resourceTitle && (
                       <div className="flex items-center gap-3 mb-2">
                         <div className="w-8 h-10 bg-slate-100 rounded flex items-center justify-center flex-shrink-0">
                           <FileText className="w-4 h-4 text-slate-400" />
                         </div>
                         <div className="min-w-0">
-                          <div className="font-semibold text-sm truncate">{rep.resource.title}</div>
-                          <div className="text-xs text-slate-500">
-                            {rep.resource.subject?.nameFr}
-                          </div>
+                          <div className="font-semibold text-sm truncate">{rep.resourceTitle}</div>
+                          <div className="text-xs text-slate-500">{rep.resourceSubject}</div>
                         </div>
                       </div>
                     )}
-                    {rep.description && (
-                      <p className="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 mb-2">
-                        « {rep.description} »
+                    {rep.details && (
+                      <p className="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 mb-2 whitespace-pre-wrap">
+                        « {rep.details} »
                       </p>
                     )}
                     <div className="text-xs text-slate-500">
                       Signalé par{' '}
-                      <span className="font-semibold">
-                        {rep.user?.firstName} {rep.user?.lastName}
-                      </span>{' '}
-                      ({rep.user?.email})
+                      {rep.reporterFirstName || rep.reporterLastName ? (
+                        <span className="font-semibold">
+                          {rep.reporterFirstName || ''} {rep.reporterLastName || ''}
+                        </span>
+                      ) : (
+                        <span className="font-semibold italic text-slate-400">Utilisateur supprimé</span>
+                      )}
+                      {rep.reporterEmail && (
+                        <span className="text-slate-400"> ({rep.reporterEmail})</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -166,12 +227,12 @@ export default async function AdminModerationPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm font-medium truncate max-w-xs">
-                      {rep.resource?.title || (
+                      {rep.resourceTitle || (
                         <span className="text-slate-400 italic">Ressource supprimée</span>
                       )}
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell text-xs text-slate-500">
-                      {rep.user?.firstName} {rep.user?.lastName}
+                      {rep.reporterFirstName} {rep.reporterLastName}
                     </td>
                     <td className="px-4 py-3">
                       <span className="px-2 py-1 text-xs font-bold rounded bg-emerald-100 text-emerald-700">

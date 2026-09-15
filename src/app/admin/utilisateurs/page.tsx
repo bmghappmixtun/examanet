@@ -136,8 +136,8 @@ export default async function AdminUsersPage(props: {
         COALESCE(SUM(downloadsCount), 0) AS total_downloads,
         COALESCE(SUM(favoritesCount), 0) AS total_favorites,
         COALESCE(SUM(commentsCount), 0) AS total_comments,
-        CASE WHEN SUM(ratingCount) > 0
-          THEN SUM(avgRating * ratingCount) / SUM(ratingCount)
+        CASE WHEN SUM(ratingsCount) > 0
+          THEN SUM(avgRating * ratingsCount) / SUM(ratingsCount)
           ELSE 0
         END AS weighted_rating
       FROM Resource
@@ -214,6 +214,8 @@ export default async function AdminUsersPage(props: {
     WHERE ${whereSql}`;
 
   // Stats-based sort requires aggregation
+  // 2026-09-15: Skip the WITH clause entirely for ADMIN (no CTE needed)
+  // to avoid generating `WITH  SELECT` (invalid SQL).
   if (isStatsSort) {
     const STATS_COLS: Record<string, string> = {
       // TEACHER columns
@@ -243,9 +245,10 @@ export default async function AdminUsersPage(props: {
     const orderCol = STATS_COLS[sort];
 
     const cte = role === 'TEACHER' ? teacherStatsCte : role === 'STUDENT' ? studentStatsCte : '';
+    const withClause = cte ? `WITH ${cte}` : '';
     const r = await db
       .prepare(
-        `WITH ${cte}
+        `${withClause}
         ${baseSelect}
         ${baseFrom}
         ORDER BY ${orderCol} DESC, u.createdAt DESC
@@ -259,9 +262,10 @@ export default async function AdminUsersPage(props: {
     // Normal sort
     const orderBy = SORT_MAP[sort] || SORT_MAP.recent;
     const cte = role === 'TEACHER' ? teacherStatsCte : role === 'STUDENT' ? studentStatsCte : '';
+    const withClause = cte ? `WITH ${cte}` : '';
     const r = await db
       .prepare(
-        `WITH ${cte}
+        `${withClause}
         ${baseSelect}
         ${baseFrom}
         ORDER BY ${orderBy.col} ${orderBy.dir}
