@@ -43,15 +43,15 @@ export default async function Header() {
               className="flex items-center group shrink-0"
               aria-label="Examanet - accueil"
             >
-              {/* Mobile: icon only — WebP with PNG fallback (lossless, same pixels) */}
+              {/* Mobile: icon only — display-sized PNG (98% smaller than original 1024x1024) */}
               <picture className="sm:hidden">
                 <source
-                  type="image/webp"
-                  srcSet="/icon-transparent-62x62.webp 1x, /icon-transparent-124x124.webp 2x"
+                  type="image/png"
+                  srcSet="/icon-transparent-62x62.png 1x, /icon-transparent-124x124.png 2x"
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/icon-transparent.png"
+                  src="/icon-transparent-62x62.png"
                   alt=""
                   width={62}
                   height={62}
@@ -60,15 +60,15 @@ export default async function Header() {
                   decoding="async"
                 />
               </picture>
-              {/* Desktop: full logo (icon + wordmark) — WebP + PNG fallback */}
+              {/* Desktop: full logo (icon + wordmark) — display-sized PNG */}
               <picture className="hidden sm:block">
                 <source
-                  type="image/webp"
-                  srcSet="/logo-transparent-269x73.webp 1x, /logo-transparent-538x146.webp 2x"
+                  type="image/png"
+                  srcSet="/logo-transparent-269x73.png 1x, /logo-transparent-538x146.png 2x"
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/logo-transparent.png"
+                  src="/logo-transparent-269x73.png"
                   alt="Examanet"
                   width={269}
                   height={73}
