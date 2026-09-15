@@ -32,6 +32,10 @@ type InvitationInfo = {
 
 export default function AcceptInvitationClient({ token }: { token: string }) {
   const router = useRouter();
+  // Determine current locale from URL prefix (fr or ar)
+  const locale = typeof window !== 'undefined'
+    ? window.location.pathname.match(/^\/(fr|ar)/)?.[1] || 'fr'
+    : 'fr';
   const [info, setInfo] = useState<InvitationInfo | null>(null);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -85,7 +89,7 @@ export default function AcceptInvitationClient({ token }: { token: string }) {
       }
 
       // Success: server has set session cookie, just redirect
-      router.push('/enseignant?welcome=1');
+      router.push(`/${locale}/enseignant?welcome=1`);
     } catch (e: any) {
       setError(e?.message || 'Erreur réseau');
       setSubmitting(false);

@@ -24,6 +24,11 @@ export default function ForgotPasswordPage() {
   const searchParams = useSearchParams();
   const t = useTranslations();
 
+  // Determine current locale from URL prefix (fr or ar)
+  const locale = typeof window !== 'undefined'
+    ? window.location.pathname.match(/^\/(fr|ar)/)?.[1] || 'fr'
+    : 'fr';
+
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState(searchParams.get('email') || '');
   const [code, setCode] = useState('');
@@ -130,7 +135,7 @@ export default function ForgotPasswordPage() {
       }
       toast.success(t('auth.passwordReset') || 'Mot de passe réinitialisé !');
       setStep('done');
-      setTimeout(() => router.push('/connexion'), 2000);
+      setTimeout(() => router.push(`/${locale}/connexion`), 2000);
     } catch {
       toast.error(t('common.error'));
     } finally {

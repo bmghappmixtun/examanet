@@ -19,8 +19,13 @@ function VerifyOtpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialEmail = searchParams.get('email') || '';
-  const redirectTo = searchParams.get('redirect') || '/mon-compte';
+  const redirectTo = searchParams.get('redirect') || `/${locale}/mon-compte`;
   const devCode = searchParams.get('devCode') || '';
+
+  // Determine current locale from URL prefix (fr or ar)
+  const locale = typeof window !== 'undefined'
+    ? window.location.pathname.match(/^\/(fr|ar)/)?.[1] || 'fr'
+    : 'fr';
 
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState(['', '', '', '', '', '']);
@@ -134,12 +139,12 @@ function VerifyOtpForm() {
         } else if (data.status === 'PENDING_APPROVAL') {
           // Teacher verified email: go to profile completion (en-attente will be shown after)
           if (data.nextStep === 'profile_completion') {
-            router.push('/profil/completer?welcome=1&from=otp');
+            router.push(`/${locale}/profil/completer?welcome=1&from=otp`);
           } else {
-            router.push('/en-attente');
+            router.push(`/${locale}/en-attente`);
           }
         } else {
-          router.push('/connexion');
+          router.push(`/${locale}/connexion`);
         }
       }, 800);
     } catch {

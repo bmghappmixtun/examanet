@@ -17,6 +17,11 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Determine current locale from URL prefix (fr or ar)
+  const locale = typeof window !== 'undefined'
+    ? window.location.pathname.match(/^\/(fr|ar)/)?.[1] || 'fr'
+    : 'fr';
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -31,21 +36,21 @@ export default function LoginPage() {
         // Special handling: redirect to OTP verification if account is pending
         if (data.code === 'PENDING_OTP' && data.email) {
           toast.error(data.error || t('invalidCredentials'));
-          router.push(`/verifier?email=${encodeURIComponent(data.email)}`);
+          router.push(`/${locale}/verifier?email=${encodeURIComponent(data.email)}`);
           return;
         }
         if (data.code === 'PENDING_APPROVAL') {
           toast.error(data.error || t('invalidCredentials'));
-          router.push('/en-attente');
+          router.push(`/${locale}/en-attente`);
           return;
         }
         toast.error(data.error || t('invalidCredentials'));
         return;
       }
       toast.success('Bienvenue ! 🎉');
-      if (data.user.role === 'ADMIN') router.push('/admin');
-      else if (data.user.role === 'TEACHER') router.push('/enseignant');
-      else router.push('/mon-compte');
+      if (data.user.role === 'ADMIN') router.push(`/${locale}/admin`);
+      else if (data.user.role === 'TEACHER') router.push(`/${locale}/enseignant`);
+      else router.push(`/${locale}/mon-compte`);
     } catch {
       toast.error(tCommon('error'));
     } finally {

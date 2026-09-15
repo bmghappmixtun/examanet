@@ -47,9 +47,16 @@ export default function RegisterPage() {
         // Pass devCode in URL if available (so verifier page can show it)
         const params = new URLSearchParams({ email: form.email });
         if (data.devCode) params.set('devCode', data.devCode);
-        router.push(`/verifier?${params.toString()}`);
+        // Determine current locale from URL prefix (fr or ar)
+        const locale = typeof window !== 'undefined' 
+          ? window.location.pathname.match(/^\/(fr|ar)/)?.[1] || 'fr'
+          : 'fr';
+        router.push(`/${locale}/verifier?${params.toString()}`);
       } else {
-        router.push('/connexion');
+        const locale = typeof window !== 'undefined' 
+          ? window.location.pathname.match(/^\/(fr|ar)/)?.[1] || 'fr'
+          : 'fr';
+        router.push(`/${locale}/connexion`);
       }
     } catch {
       toast.error('Erreur');
@@ -95,7 +102,7 @@ export default function RegisterPage() {
           </div>
           <div className="mb-4">
             <label htmlFor="email" className="label">Email *</label>
-            <input id="confirmPassword"
+            <input id="email"
               type="email"
               required
               value={form.email}
@@ -107,7 +114,7 @@ export default function RegisterPage() {
           <div className="mb-4">
             <label htmlFor="password" className="label">Mot de passe *</label>
             <div className="relative">
-              <input id="confirmPassword"
+              <input id="password"
                 type={showPw ? 'text' : 'password'}
                 required
                 value={form.password}
