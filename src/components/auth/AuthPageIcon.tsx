@@ -1,21 +1,22 @@
 // 2026 AuthPage icon — uses the official "user + graduation cap" logo.
 // Wrapped in a soft sunset glow halo for visual cohesion with the
 // InscriptionV2 button gradient.
-// 2026-09-15: Switched to <picture> with lossless WebP (734KB → 4KB) + PNG fallback
+// 2026-09-15: Switched to display-sized PNG variants (734KB → 5.7KB on mobile).
+// PNG kept (not WebP) to preserve exact same logo rendering on all browsers.
 export default function AuthPageIcon() {
   return (
     <div className="relative inline-block">
       {/* Soft glow halo behind the icon */}
       <div className="absolute inset-0 -m-3 rounded-3xl bg-gradient-to-br from-orange-400/30 via-pink-400/30 to-purple-500/30 blur-2xl" />
-      {/* Logo — WebP with PNG fallback (lossless, identical pixels) */}
+      {/* Logo — display-sized PNG (98% smaller than the 1254x1254 master) */}
       <picture>
         <source
-          type="image/webp"
-          srcSet="/auth-icon-64x64.webp 1x, /auth-icon-128x128.webp 2x"
+          type="image/png"
+          srcSet="/auth-icon-64x64.png 1x, /auth-icon-128x128.png 2x"
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/auth-icon.png"
+          src="/auth-icon-64x64.png"
           alt="Examanet"
           width={64}
           height={64}

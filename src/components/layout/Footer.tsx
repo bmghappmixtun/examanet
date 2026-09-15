@@ -22,12 +22,12 @@ export default async function Footer() {
               {/* Logo: WebP with PNG fallback (lossless, same pixels) */}
               <picture>
                 <source
-                  type="image/webp"
-                  srcSet="/logo-cream-on-dark-159x60.webp 1x, /logo-cream-on-dark-318x120.webp 2x"
+                  type="image/png"
+                  srcSet="/logo-cream-on-dark-159x60.png 1x, /logo-cream-on-dark-318x120.png 2x"
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/logo-cream-on-dark.png"
+                  src="/logo-cream-on-dark-159x60.png"
                   alt="Examanet - Plateforme pédagogique tunisienne"
                   width={159}
                   height={60}
