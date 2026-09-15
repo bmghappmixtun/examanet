@@ -137,11 +137,25 @@ export async function PATCH(req: NextRequest) {
     }
 
     // 2026-09-13: Track profile save for teachers
+    // 2026-09-15: BUG FIX — `fields` was a ReferenceError. Use `allowedFields` (the
+    // actual variable name in scope) and filter to the ones actually submitted.
+    // Also: `updated` is only declared inside the PENDING_APPROVAL branch above,
+    // so re-fetch the user here to be safe regardless of status.
     if (user.role === 'TEACHER') {
       const { trackJourney } = await import('@/lib/teacher-journey');
+      const submittedFields = allowedFields.filter(
+        (f) => body[f] !== undefined && body[f] !== null && body[f] !== '',
+      );
+      const fresh: any = await db
+        .prepare(
+          `SELECT firstName, lastName, schoolName, governorate, email, status
+           FROM User WHERE id = ?`,
+        )
+        .bind(user.id)
+        .first();
       await trackJourney(user.id, 'PROFILE_SAVED', {
         page: '/profil/modifier',
-        metadata: { fields: Object.keys(fields), profileComplete: isTeacherProfileComplete(updated) },
+        metadata: { fields: submittedFields, profileComplete: isTeacherProfileComplete(fresh) },
         req,
       });
     }
