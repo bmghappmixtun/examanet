@@ -2,10 +2,13 @@
 // 2026-09-15: Rewrote with raw SQL because db.report.findMany({include:...}) doesn't
 // support joins — the proxy returns raw rows without nested user/resource objects.
 // Also fixed: rep.description → rep.details (the Report table column is `details`).
+// 2026-09-15: Added numericId + slug to the SELECT so the resource title can link
+// to /fr/ressources/[numericId]/[slug].
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getCurrentUser } from '@/lib/auth';
-import { Flag, AlertTriangle, CheckCircle, FileText, Clock } from 'lucide-react';
+import { Flag, AlertTriangle, CheckCircle, FileText, Clock, ExternalLink } from 'lucide-react';
 import { timeAgo } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +48,8 @@ interface ReportRow {
   createdAt: number;
   // Joined fields
   resourceTitle: string | null;
+  resourceNumericId: number | null;
+  resourceSlug: string | null;
   resourceSubject: string | null;
   reporterFirstName: string | null;
   reporterLastName: string | null;
@@ -65,6 +70,8 @@ async function fetchReports(statusFilter: 'PENDING' | 'ALL_NON_PENDING', limit =
           r.id, r.resourceId, r.userId, r.reason, r.details, r.status,
           r.reviewedById, r.reviewedAt, r.createdAt,
           res.title AS resourceTitle,
+          res.numericId AS resourceNumericId,
+          res.slug AS resourceSlug,
           s.nameFr AS resourceSubject,
           u.firstName AS reporterFirstName,
           u.lastName AS reporterLastName,
@@ -162,15 +169,35 @@ export default async function AdminModerationPage() {
                       <span className="text-xs text-slate-500">{timeAgo(rep.createdAt)}</span>
                     </div>
                     {rep.resourceTitle && (
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-8 h-10 bg-slate-100 rounded flex items-center justify-center flex-shrink-0">
-                          <FileText className="w-4 h-4 text-slate-400" />
+                      rep.resourceNumericId && rep.resourceSlug ? (
+                        <Link
+                          href={`/fr/ressources/${rep.resourceNumericId}/${rep.resourceSlug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 mb-2 p-2 -m-2 rounded-lg hover:bg-sky-50 hover:ring-1 hover:ring-sky-200 transition group"
+                        >
+                          <div className="w-8 h-10 bg-slate-100 rounded flex items-center justify-center flex-shrink-0 group-hover:bg-sky-100 transition">
+                            <FileText className="w-4 h-4 text-slate-400 group-hover:text-sky-600 transition" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-semibold text-sm truncate text-sky-700 group-hover:text-sky-900 group-hover:underline">
+                              {rep.resourceTitle}
+                            </div>
+                            <div className="text-xs text-slate-500">{rep.resourceSubject}</div>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-sky-600 transition flex-shrink-0" />
+                        </Link>
+                      ) : (
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-8 h-10 bg-slate-100 rounded flex items-center justify-center flex-shrink-0">
+                            <FileText className="w-4 h-4 text-slate-400" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-semibold text-sm truncate">{rep.resourceTitle}</div>
+                            <div className="text-xs text-slate-500">{rep.resourceSubject}</div>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <div className="font-semibold text-sm truncate">{rep.resourceTitle}</div>
-                          <div className="text-xs text-slate-500">{rep.resourceSubject}</div>
-                        </div>
-                      </div>
+                      )
                     )}
                     {rep.details && (
                       <p className="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 mb-2 whitespace-pre-wrap">
@@ -227,7 +254,21 @@ export default async function AdminModerationPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm font-medium truncate max-w-xs">
-                      {rep.resourceTitle || (
+                      {rep.resourceTitle ? (
+                        rep.resourceNumericId && rep.resourceSlug ? (
+                          <Link
+                            href={`/fr/ressources/${rep.resourceNumericId}/${rep.resourceSlug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sky-700 hover:text-sky-900 hover:underline inline-flex items-center gap-1"
+                          >
+                            <span className="truncate">{rep.resourceTitle}</span>
+                            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                          </Link>
+                        ) : (
+                          <span>{rep.resourceTitle}</span>
+                        )
+                      ) : (
                         <span className="text-slate-400 italic">Ressource supprimée</span>
                       )}
                     </td>
