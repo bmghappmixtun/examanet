@@ -7,6 +7,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { d1All, d1First, d1Run, genId } from '@/lib/db-d1';
 import { properSlugify } from '@/lib/slugify';
 import { autoGenerateTags } from '@/lib/auto-tagger';
+import { checkTeacherCanPublish } from '@/lib/teacher-eligibility';
 
 export const maxDuration = 60;
 
@@ -26,19 +27,12 @@ export async function POST(req: NextRequest) {
     if (user.role !== 'TEACHER' && user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Réservé aux enseignants' }, { status: 403 });
     }
-    if (user.role === 'TEACHER' && user.status === 'PENDING_FILE_VERIFICATION') {
+    // 2026-09-15: shared eligibility check (catches PENDING_APPROVAL,
+    // PENDING_FILE_VERIFICATION, PENDING_REVIEW in one place)
+    const eligibility = checkTeacherCanPublish(user);
+    if (!eligibility.ok) {
       return NextResponse.json(
-        {
-          error:
-            "Vous devez d'abord soumettre vos 5 fichiers de vérification avant de pouvoir publier des ressources.",
-          code: 'PENDING_FILE_VERIFICATION',
-        },
-        { status: 403 },
-      );
-    }
-    if (user.role === 'TEACHER' && user.status === 'PENDING_APPROVAL') {
-      return NextResponse.json(
-        { error: "Votre compte est en attente d'approbation par l'administrateur." },
+        { error: eligibility.error, code: eligibility.code },
         { status: 403 },
       );
     }

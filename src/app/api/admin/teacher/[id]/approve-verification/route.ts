@@ -72,10 +72,13 @@ export async function POST(
     );
     if (!r.success) return NextResponse.json({ error: r.error }, { status: 500 });
 
-    // 2026-09-13: Track final approval on the journey timeline
+    // 2026-09-15 BUG FIX: previous code referenced `user.id` and `method`
+    // which were undefined (variable is `admin`, `method` was never declared).
+    // This caused a ReferenceError that the try/catch turned into "Erreur réseau"
+    // for the admin trying to approve a teacher's verification files.
     await trackJourney(id, 'VERIFICATION_APPROVED', {
       page: '/admin/verifications',
-      metadata: { adminId: user.id, method },
+      metadata: { adminId: admin.id, action: 'approve' },
       req,
     });
 

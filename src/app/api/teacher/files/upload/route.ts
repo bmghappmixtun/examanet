@@ -25,6 +25,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
 import { getCurrentUser } from '@/lib/auth';
 import { d1Run, genId } from '@/lib/db-d1';
+import { checkTeacherCanPublish } from '@/lib/teacher-eligibility';
 
 export const maxDuration = 60;
 
@@ -69,6 +70,15 @@ export async function POST(req: NextRequest) {
     if (user.role !== 'TEACHER' && user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Seuls les enseignants peuvent uploader des fichiers' },
+        { status: 403 },
+      );
+    }
+    // 2026-09-15 BUG FIX: also block teachers in non-publishing statuses
+    // (PENDING_APPROVAL, PENDING_FILE_VERIFICATION, PENDING_REVIEW)
+    const eligibility = checkTeacherCanPublish(user);
+    if (!eligibility.ok) {
+      return NextResponse.json(
+        { error: eligibility.error, code: eligibility.code },
         { status: 403 },
       );
     }

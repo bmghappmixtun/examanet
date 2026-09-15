@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { uploadFile } from '@/lib/storage';
 import { sendNewEditPendingEmail } from '@/lib/email';
+import { checkTeacherCanPublish } from '@/lib/teacher-eligibility';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -21,6 +22,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     if (user.role !== 'TEACHER' && user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Réservé aux enseignants' }, { status: 403 });
+    }
+    // 2026-09-15 BUG FIX: also block teachers in non-publishing statuses
+    const eligibility = checkTeacherCanPublish(user);
+    if (!eligibility.ok) {
+      return NextResponse.json(
+        { error: eligibility.error, code: eligibility.code },
+        { status: 403 },
+      );
     }
 
     const { id } = await params;
