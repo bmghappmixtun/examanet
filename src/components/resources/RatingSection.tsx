@@ -32,7 +32,7 @@ export default function RatingSection({
       const res = await fetch(`/api/resources/${resourceId}/rating`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value: selected, review: review || null }),
+        body: JSON.stringify({ stars: selected, review: review || null }),
       });
       if (res.status === 401) {
         toast.error('Connectez-vous pour noter');
