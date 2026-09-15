@@ -10,6 +10,7 @@ async function getD1() {
 import UserMenu from './UserMenu';
 import MobileMenu from './MobileMenu';
 import SearchModalTrigger from '@/components/search/SearchModalTrigger';
+import { ConnexionV2, InscriptionV2 } from './buttons/ButtonV2Aurora';
 import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
@@ -117,15 +118,8 @@ export default async function Header() {
               <UserMenu user={user} unreadCount={unreadNotifications} />
             ) : (
               <>
-                <Link
-                  href="/connexion"
-                  className="hidden sm:block text-sm font-semibold text-slate-700 hover:text-primary-600 px-3 py-2 transition"
-                >
-                  {t('nav.login')}
-                </Link>
-                <Link href="/inscription" className="btn-primary text-sm">
-                  {t('nav.signup')}
-                </Link>
+                <ConnexionV2 />
+                <InscriptionV2 />
               </>
             )}
             <MobileMenu user={user} />
