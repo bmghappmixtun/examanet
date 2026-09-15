@@ -1,59 +1,16 @@
 // @ts-nocheck
-// 2026-09-15: Rewrote with raw SQL because db.report.findMany({include:...}) doesn't
-// support joins — the proxy returns raw rows without nested user/resource objects.
-// Also fixed: rep.description → rep.details (the Report table column is `details`).
-// 2026-09-15: Added numericId + slug to the SELECT so the resource title can link
-// to /fr/ressources/[numericId]/[slug].
+// 2026-09-15: Server component fetches reports via raw SQL (the proxy doesn't
+// support joins), then hands off to ModerationClient for interactive state.
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getCurrentUser } from '@/lib/auth';
-import { Flag, AlertTriangle, CheckCircle, FileText, Clock, ExternalLink } from 'lucide-react';
-import { timeAgo } from '@/lib/utils';
+import ModerationClient, { type ReportRow } from '@/components/admin/ModerationClient';
 
 export const dynamic = 'force-dynamic';
-
-const REASON_LABELS: Record<string, string> = {
-  INAPPROPRIATE: 'Contenu inapproprié',
-  COPYRIGHT: "Violation de droits d'auteur",
-  SPAM: 'Spam / Publicité',
-  WRONG_CONTENT: 'Contenu erroné',
-  BROKEN_FILE: 'Fichier cassé',
-  OTHER: 'Autre',
-};
-
-const REASON_COLORS: Record<string, string> = {
-  INAPPROPRIATE: 'bg-red-100 text-red-700',
-  COPYRIGHT: 'bg-purple-100 text-purple-700',
-  SPAM: 'bg-orange-100 text-orange-700',
-  WRONG_CONTENT: 'bg-amber-100 text-amber-700',
-  BROKEN_FILE: 'bg-yellow-100 text-yellow-700',
-  OTHER: 'bg-slate-100 text-slate-700',
-};
 
 async function getD1() {
   const ctx = await getCloudflareContext({ async: true });
   return (ctx as any).env?.DB || null;
-}
-
-interface ReportRow {
-  id: string;
-  resourceId: string;
-  userId: string | null;
-  reason: string;
-  details: string | null;
-  status: string;
-  reviewedById: string | null;
-  reviewedAt: number | null;
-  createdAt: number;
-  // Joined fields
-  resourceTitle: string | null;
-  resourceNumericId: number | null;
-  resourceSlug: string | null;
-  resourceSubject: string | null;
-  reporterFirstName: string | null;
-  reporterLastName: string | null;
-  reporterEmail: string | null;
 }
 
 async function fetchReports(statusFilter: 'PENDING' | 'ALL_NON_PENDING', limit = 10): Promise<ReportRow[]> {
@@ -113,180 +70,10 @@ export default async function AdminModerationPage() {
   const totalReports = Number(totalResult?.c || 0);
 
   return (
-    <div>
-      <h1 className="text-2xl font-extrabold mb-6 flex items-center gap-2">
-        <Flag className="w-6 h-6 text-red-500" /> Modération
-      </h1>
-
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-5 border border-slate-100">
-          <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-3">
-            <Clock className="w-5 h-5 text-amber-600" />
-          </div>
-          <div className="text-2xl font-extrabold">{pendingReports.length}</div>
-          <div className="text-sm font-semibold text-slate-700">Signalements en attente</div>
-        </div>
-        <div className="bg-white rounded-xl p-5 border border-slate-100">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center mb-3">
-            <CheckCircle className="w-5 h-5 text-emerald-600" />
-          </div>
-          <div className="text-2xl font-extrabold">{resolvedReports.length}+</div>
-          <div className="text-sm font-semibold text-slate-700">Traités récemment</div>
-        </div>
-        <div className="bg-white rounded-xl p-5 border border-slate-100 col-span-2 lg:col-span-1">
-          <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center mb-3">
-            <Flag className="w-5 h-5 text-slate-600" />
-          </div>
-          <div className="text-2xl font-extrabold">{totalReports}</div>
-          <div className="text-sm font-semibold text-slate-700">Total historique</div>
-        </div>
-      </div>
-
-      {/* Pending reports */}
-      <div className="mb-10">
-        <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-amber-500" /> En attente ({pendingReports.length})
-        </h2>
-        {pendingReports.length === 0 ? (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-8 text-center">
-            <CheckCircle className="w-12 h-12 mx-auto mb-3 text-emerald-500" />
-            <h3 className="font-bold text-lg text-emerald-800 mb-1">Tout est propre !</h3>
-            <p className="text-emerald-600 text-sm">Aucun signalement en attente.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {pendingReports.map((rep) => (
-              <div key={rep.id} className="bg-white rounded-2xl border border-amber-200 p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-bold rounded ${REASON_COLORS[rep.reason] || 'bg-slate-100 text-slate-700'}`}
-                      >
-                        {REASON_LABELS[rep.reason] || rep.reason}
-                      </span>
-                      <span className="text-xs text-slate-500">{timeAgo(rep.createdAt)}</span>
-                    </div>
-                    {rep.resourceTitle && (
-                      rep.resourceNumericId && rep.resourceSlug ? (
-                        <Link
-                          href={`/fr/ressources/${rep.resourceNumericId}/${rep.resourceSlug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 mb-2 p-2 -m-2 rounded-lg hover:bg-sky-50 hover:ring-1 hover:ring-sky-200 transition group"
-                        >
-                          <div className="w-8 h-10 bg-slate-100 rounded flex items-center justify-center flex-shrink-0 group-hover:bg-sky-100 transition">
-                            <FileText className="w-4 h-4 text-slate-400 group-hover:text-sky-600 transition" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="font-semibold text-sm truncate text-sky-700 group-hover:text-sky-900 group-hover:underline">
-                              {rep.resourceTitle}
-                            </div>
-                            <div className="text-xs text-slate-500">{rep.resourceSubject}</div>
-                          </div>
-                          <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-sky-600 transition flex-shrink-0" />
-                        </Link>
-                      ) : (
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-8 h-10 bg-slate-100 rounded flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-4 h-4 text-slate-400" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-semibold text-sm truncate">{rep.resourceTitle}</div>
-                            <div className="text-xs text-slate-500">{rep.resourceSubject}</div>
-                          </div>
-                        </div>
-                      )
-                    )}
-                    {rep.details && (
-                      <p className="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 mb-2 whitespace-pre-wrap">
-                        « {rep.details} »
-                      </p>
-                    )}
-                    <div className="text-xs text-slate-500">
-                      Signalé par{' '}
-                      {rep.reporterFirstName || rep.reporterLastName ? (
-                        <span className="font-semibold">
-                          {rep.reporterFirstName || ''} {rep.reporterLastName || ''}
-                        </span>
-                      ) : (
-                        <span className="font-semibold italic text-slate-400">Utilisateur supprimé</span>
-                      )}
-                      {rep.reporterEmail && (
-                        <span className="text-slate-400"> ({rep.reporterEmail})</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Resolved reports */}
-      {resolvedReports.length > 0 && (
-        <div>
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-emerald-500" /> Traités récemment
-          </h2>
-          <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600">Raison</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600">Ressource</th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">
-                    Signalé par
-                  </th>
-                  <th className="text-left px-4 py-3 font-semibold text-slate-600">Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resolvedReports.map((rep) => (
-                  <tr key={rep.id} className="border-t border-slate-50">
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-2 py-1 text-xs font-bold rounded ${REASON_COLORS[rep.reason] || 'bg-slate-100 text-slate-700'}`}
-                      >
-                        {REASON_LABELS[rep.reason] || rep.reason}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium truncate max-w-xs">
-                      {rep.resourceTitle ? (
-                        rep.resourceNumericId && rep.resourceSlug ? (
-                          <Link
-                            href={`/fr/ressources/${rep.resourceNumericId}/${rep.resourceSlug}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sky-700 hover:text-sky-900 hover:underline inline-flex items-center gap-1"
-                          >
-                            <span className="truncate">{rep.resourceTitle}</span>
-                            <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                          </Link>
-                        ) : (
-                          <span>{rep.resourceTitle}</span>
-                        )
-                      ) : (
-                        <span className="text-slate-400 italic">Ressource supprimée</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 hidden sm:table-cell text-xs text-slate-500">
-                      {rep.reporterFirstName} {rep.reporterLastName}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-1 text-xs font-bold rounded bg-emerald-100 text-emerald-700">
-                        {rep.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-    </div>
+    <ModerationClient
+      initialPending={pendingReports}
+      initialResolved={resolvedReports}
+      totalReports={totalReports}
+    />
   );
 }
