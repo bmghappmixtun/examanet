@@ -1,5 +1,4 @@
 import { Link } from '@/i18n/navigation';
-import Image from 'next/image';
 import { getCurrentUser } from '@/lib/auth';
 // 2026-09-03: Migrated to D1 direct
 async function getD1() {
@@ -44,26 +43,40 @@ export default async function Header() {
               className="flex items-center group shrink-0"
               aria-label="Examanet - accueil"
             >
-              {/* Mobile: icon only */}
-              <Image
-                src="/icon-transparent.png"
-                alt=""
-                width={62}
-                height={62}
-                sizes="62px"
-                className="sm:hidden w-[62px] h-[62px] group-hover:scale-105 transition"
-                priority
-              />
-              {/* Desktop: full logo (icon + wordmark) — single SVG master */}
-              <Image
-                src="/logo-transparent.png"
-                alt="Examanet"
-                width={269}
-                height={73}
-                sizes="(min-width: 1024px) 269px, (min-width: 640px) 200px, 0px"
-                className="hidden sm:block h-[62px] lg:h-[73px] w-auto group-hover:scale-[1.02] transition-transform"
-                priority
-              />
+              {/* Mobile: icon only — WebP with PNG fallback (lossless, same pixels) */}
+              <picture className="sm:hidden">
+                <source
+                  type="image/webp"
+                  srcSet="/icon-transparent-62x62.webp 1x, /icon-transparent-124x124.webp 2x"
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/icon-transparent.png"
+                  alt=""
+                  width={62}
+                  height={62}
+                  className="w-[62px] h-[62px] group-hover:scale-105 transition"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </picture>
+              {/* Desktop: full logo (icon + wordmark) — WebP + PNG fallback */}
+              <picture className="hidden sm:block">
+                <source
+                  type="image/webp"
+                  srcSet="/logo-transparent-269x73.webp 1x, /logo-transparent-538x146.webp 2x"
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo-transparent.png"
+                  alt="Examanet"
+                  width={269}
+                  height={73}
+                  className="h-[62px] lg:h-[73px] w-auto group-hover:scale-[1.02] transition-transform"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </picture>
             </Link>
           </div>
 

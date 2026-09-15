@@ -1,5 +1,4 @@
 import { Link } from '@/i18n/navigation';
-import Image from 'next/image';
 import { Facebook, Twitter, Instagram, Youtube, GraduationCap } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import LanguagePicker from './LanguagePicker';
@@ -20,14 +19,23 @@ export default async function Footer() {
           {/* Logo + description + socials */}
           <div className="md:col-span-2 lg:col-span-2">
             <Link href="/" className="inline-block mb-4 group" aria-label="Examanet - accueil">
-              <Image
-                src="/logo-cream-on-dark.png"
-                alt="Examanet - Plateforme pédagogique tunisienne"
-                width={159}
-                height={60}
-                className="h-[60px] w-auto opacity-95 group-hover:opacity-100 transition"
-                priority={false}
-              />
+              {/* Logo: WebP with PNG fallback (lossless, same pixels) */}
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet="/logo-cream-on-dark-159x60.webp 1x, /logo-cream-on-dark-318x120.webp 2x"
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo-cream-on-dark.png"
+                  alt="Examanet - Plateforme pédagogique tunisienne"
+                  width={159}
+                  height={60}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-[60px] w-auto opacity-95 group-hover:opacity-100 transition"
+                />
+              </picture>
             </Link>
             <p className="text-sm text-slate-400 mb-4 max-w-sm">{t('footer.madeWith')}</p>
             <div className="flex gap-2">
