@@ -18,14 +18,15 @@ import {
 function VerifyOtpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialEmail = searchParams.get('email') || '';
-  const redirectTo = searchParams.get('redirect') || `/${locale}/mon-compte`;
-  const devCode = searchParams.get('devCode') || '';
 
   // Determine current locale from URL prefix (fr or ar)
   const locale = typeof window !== 'undefined'
     ? window.location.pathname.match(/^\/(fr|ar)/)?.[1] || 'fr'
     : 'fr';
+
+  const initialEmail = searchParams.get('email') || '';
+  const redirectTo = searchParams.get('redirect') || `/${locale}/mon-compte`;
+  const devCode = searchParams.get('devCode') || '';
 
   const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState(['', '', '', '', '', '']);
