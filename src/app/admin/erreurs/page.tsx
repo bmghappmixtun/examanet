@@ -409,7 +409,7 @@ export default function AdminErrorsPage() {
             </div>
             {lastUpdated && (
               <div>
-                Dernière màj: {lastUpdated.toLocaleTimeString('fr-FR')}
+                {`Dernière màj: ${lastUpdated.toLocaleTimeString('fr-FR')}`}
               </div>
             )}
           </div>

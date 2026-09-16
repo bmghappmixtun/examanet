@@ -759,7 +759,7 @@ export default function UsersManagementClient({
                                   title="Dernière activité"
                                   suppressHydrationWarning
                                 >
-                                  · {timeAgo((u as any).stats.lastActivityAt)}
+                                  {`· ${timeAgo((u as any).stats.lastActivityAt)}`}
                                 </span>
                               )}
                             </div>
@@ -786,7 +786,7 @@ export default function UsersManagementClient({
                           </span>
                           {u.invitationSentAt && (
                             <span className="text-xs text-slate-400" suppressHydrationWarning>
-                              Envoyé {timeAgo(u.invitationSentAt)}
+                              {`Envoyé ${timeAgo(u.invitationSentAt)}`}
                             </span>
                           )}
                         </div>

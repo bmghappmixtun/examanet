@@ -60,7 +60,7 @@ export default function ErrorDisplay({
         <p className="text-sm text-slate-600 mb-4 max-w-md">{message}</p>
         {reference && (
           <code className="text-xs font-mono text-slate-500 mb-4">
-            Réf: {reference}
+            {`Réf: ${reference}`}
           </code>
         )}
         <div className="flex gap-2">

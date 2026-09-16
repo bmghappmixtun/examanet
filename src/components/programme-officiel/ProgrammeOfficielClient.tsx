@@ -206,7 +206,7 @@ export default function ProgrammeOfficielClient() {
               <span className="text-emerald-300">✓</span> {t('badge.official')}
             </span>
             <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-sm font-bold border border-white/20">
-              📚 7 {t('badge.levels')}
+              {`📚 7 ${t('badge.levels')}`}
             </span>
             <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-sm font-bold border border-white/20">
               🎓 {totalSubjects} {t('badge.subjects')}
@@ -327,7 +327,7 @@ export default function ProgrammeOfficielClient() {
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
-                      ✨ {t('sectionTabs.all')}
+                      {`✨ ${t('sectionTabs.all')}`}
                     </button>
                     {level.sections.map((sec) => (
                       <button
@@ -523,7 +523,7 @@ function TrimestreBlock({ label, lessons, useAR, isAr }: { label: string; lesson
         dir={useAR ? 'rtl' : 'ltr'}
         style={useAR ? { fontFamily: 'var(--font-noto-arabic), "Noto Sans Arabic", sans-serif' } : undefined}
       >
-        📌 {labels[parseInt(label) - 1]}
+        {`📌 ${labels[parseInt(label) - 1]}`}
       </div>
       <ul
         className={`themes space-y-1 text-sm text-slate-700 ${useAR ? 'font-arabic text-right' : 'text-left'}`}

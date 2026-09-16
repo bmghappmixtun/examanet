@@ -161,7 +161,7 @@ export function ServiceCard({
           </div>
           {u.periodStart && (
             <p className="text-xs text-slate-400 mt-2">
-              Période : {formatPeriod(u.periodStart, u.periodEnd)}
+              {`Période : ${formatPeriod(u.periodStart, u.periodEnd)}`}
             </p>
           )}
         </div>

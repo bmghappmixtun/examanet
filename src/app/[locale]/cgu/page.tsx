@@ -67,7 +67,7 @@ export default async function CGUPage() {
                   href={`#${s.id}`}
                   className="text-primary-600 hover:text-primary-700 hover:underline py-1"
                 >
-                  → {s.title}
+                  {`→ ${s.title}`}
                 </a>
               ))}
             </div>

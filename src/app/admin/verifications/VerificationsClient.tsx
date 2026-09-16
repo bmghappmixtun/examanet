@@ -667,18 +667,18 @@ function TeacherCard({
             {t.verificationFilesRequestedAt && (
               <div className="flex items-center gap-2 text-slate-500">
                 <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                Demande envoyée {formatRelative(t.verificationFilesRequestedAt, now)}
+                {`Demande envoyée ${formatRelative(t.verificationFilesRequestedAt, now)}`}
               </div>
             )}
             {t.verificationFilesReceivedAt && (
               <div className="flex items-center gap-2 text-slate-500">
                 <Mail className="w-3.5 h-3.5 text-slate-400" />
-                Premier fichier reçu {formatRelative(t.verificationFilesReceivedAt, now)}
+                {`Premier fichier reçu ${formatRelative(t.verificationFilesReceivedAt, now)}`}
               </div>
             )}
             {t.verificationFilesNote && (
               <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-900">
-                📝 {t.verificationFilesNote}
+                {`📝 ${t.verificationFilesNote}`}
               </div>
             )}
           </div>

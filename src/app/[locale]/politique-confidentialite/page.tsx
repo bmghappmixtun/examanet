@@ -86,7 +86,7 @@ export default async function PrivacyPage() {
                   href={`#${s.id}`}
                   className="text-emerald-600 hover:text-emerald-700 hover:underline py-1"
                 >
-                  → {s.title}
+                  {`→ ${s.title}`}
                 </a>
               ))}
             </div>
