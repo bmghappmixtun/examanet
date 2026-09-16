@@ -92,7 +92,7 @@ export default function HomeClient({
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.05] mb-6">
-                {t('home.heroTitle')}{' '}
+                {`${t('home.heroTitle')} `}
                 <span className="gradient-text">{t('home.heroHighlight')}</span>
               </h1>
 
@@ -227,7 +227,7 @@ export default function HomeClient({
                   <s.icon className={`w-6 h-6 ${s.text}`} />
                 </div>
                 <div className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-1">
-                  {formatNumber(s.value)}+
+                  {`${formatNumber(s.value)}+`}
                 </div>
                 <div className="text-sm text-slate-500">{s.label}</div>
               </div>
