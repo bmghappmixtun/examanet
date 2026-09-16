@@ -41,11 +41,11 @@ export default async function AccountLayout({ children }: { children: React.Reac
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
-      <div className="flex-1 pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid lg:grid-cols-[260px_1fr] gap-8">
+      <div className="flex-1 pt-20 min-w-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 min-w-0">
+          <div className="grid lg:grid-cols-[260px_1fr] gap-8 min-w-0">
             {/* Sidebar */}
-            <aside className="hidden lg:block">
+            <aside className="hidden lg:block min-w-0">
               <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden sticky top-24">
                 <div className="p-6 bg-gradient-to-br from-primary-500 to-primary-700 text-center">
                   <div className="w-16 h-16 mx-auto rounded-full bg-white/20 flex items-center justify-center text-white font-extrabold text-2xl mb-2">
@@ -76,7 +76,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
                 </nav>
               </div>
             </aside>
-            <main>{children}</main>
+            <main className="min-w-0">{children}</main>
           </div>
         </div>
       </div>
