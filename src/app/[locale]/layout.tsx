@@ -177,7 +177,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <>
       <NextIntlClientProvider locale={locale} messages={messages}>
-        <SyncLocaleAttrs />
+        {/* <SyncLocaleAttrs /> */}
         <Header />
         <main className="min-h-screen">
           {children}
