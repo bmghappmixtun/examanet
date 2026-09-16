@@ -9,20 +9,47 @@
  * 2026-08-29: Converted to D1-direct (was prisma, doesn't work on CF Workers).
  * 2026-08-29: Fix locale-preservation in redirect URL (was using absolute path
  * which dropped the /fr/ or /ar/ prefix).
+ *
+ * 2026-09-17 SEO FIX: Accept CUID IDs (e.g. cmr8w1hv70028stsg31b470xh or
+ * 4662aab2-c37f-46da-8aeb-82d5411dc562) in addition to numeric IDs.
+ * Google indexed 13 /professeurs/<cuid> URLs from the pre-numericId era,
+ * all returning 404. We now look up the CUID in D1 to find the numericId
+ * and slug, then redirect.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export const dynamic = 'force-dynamic';
 
+const CUID_RE = /^(cm[a-z0-9]{20,}|[a-f0-9-]{30,})$/i;
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ numericId: string }> }
 ) {
-  const { numericId: numericIdStr } = await params;
-  const numericId = parseInt(numericIdStr, 10);
-  if (isNaN(numericId) || numericId <= 0) {
-    return new NextResponse('Invalid ID', { status: 400 });
+  const { numericId: idStr } = await params;
+  let numericId: number | null = null;
+
+  if (/^\d+$/.test(idStr)) {
+    numericId = parseInt(idStr, 10);
+  } else if (CUID_RE.test(idStr)) {
+    // 2026-09-17: ID is a CUID. Look it up in DB to get numericId.
+    try {
+      const ctx = await getCloudflareContext({ async: true });
+      const db = (ctx as any).env.DB;
+      const row: any = await db.prepare(
+        `SELECT numericId FROM User WHERE id = ? AND role = 'TEACHER' LIMIT 1`
+      ).bind(idStr).first();
+      if (row?.numericId) {
+        numericId = row.numericId;
+      }
+    } catch (e: any) {
+      console.error('[teacher CUID lookup] error:', e?.message);
+    }
+  }
+
+  if (numericId === null || numericId <= 0) {
+    return new NextResponse('Not found', { status: 404 });
   }
 
   try {

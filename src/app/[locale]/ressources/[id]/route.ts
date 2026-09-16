@@ -1,11 +1,18 @@
 // @ts-nocheck
 /**
- * Short URL for resources: /ressources/{numericId} (without slug)
- * → real 308 redirect to /ressources/{numericId}/{slug}
+ * Short URL for resources: /{locale}/ressources/{numericId} (without slug)
+ * → real 308 redirect to /{locale}/ressources/{numericId}/{slug}
  *
  * 2026-09-02: Migrated from prisma-compat to D1 direct.
  * D1 returns proper data; prisma-compat stub was returning null slug
  * causing redirect to /fr/ressources/{id}/undefined.
+ *
+ * 2026-09-17 SEO FIX: Preserve the locale prefix in the redirect target.
+ * Previously the redirect dropped /fr/ or /ar/, sending users (and
+ * Googlebot) to /ressources/... which then hit the catch-all 301 in
+ * next.config.js → /fr/ressources/..., creating a 2-hop redirect chain.
+ * GSC coverage drilldown flagged /ressources/{id}/ URLs as broken because
+ * Googlebot doesn't always follow chained redirects cleanly.
  */
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -20,6 +27,10 @@ export async function GET(
   if (isNaN(numericId) || numericId <= 0) {
     return new NextResponse('Invalid ID', { status: 400 });
   }
+
+  // Detect locale from URL: /fr/ressources/X or /ar/ressources/X
+  const localeMatch = req.url.match(/\/(fr|ar)\/ressources\//);
+  const localePrefix = localeMatch ? `/${localeMatch[1]}` : '/fr';
 
   try {
     const { getCloudflareContext } = await import('@opennextjs/cloudflare');
@@ -39,8 +50,11 @@ export async function GET(
     }
 
     // 308 = Permanent redirect (preserves method, SEO-friendly)
+    // Locale-aware: /fr/ressources/{id} → /fr/ressources/{id}/{slug}
+    // (not /ressources/{id}/{slug} which would create a redirect chain
+    //  via the catch-all in next.config.js)
     return NextResponse.redirect(
-      new URL(`/ressources/${numericId}/${r.slug}`, req.url),
+      new URL(`${localePrefix}/ressources/${numericId}/${r.slug}`, req.url),
       308
     );
   } catch (e) {
