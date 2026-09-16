@@ -14,6 +14,15 @@ export const dynamic = 'force-dynamic';
 const STATIC_OG_URL = '/og-image.png';
 
 export async function GET() {
-  // 308 permanent redirect to the static asset
-  return NextResponse.redirect(new URL(STATIC_OG_URL, 'https://examanet.com'), 308);
+  // 308 permanent redirect to the static asset.
+  // SEO (2026-09-17): add X-Robots-Tag: noindex on the redirect itself
+  // to prevent Google from indexing /api/og/resource/xxx URLs that
+  // were leaking into the search index. 165 such URLs were indexed
+  // per GSC coverage drilldown.
+  return NextResponse.redirect(new URL(STATIC_OG_URL, 'https://examanet.com'), 308, {
+    headers: {
+      'X-Robots-Tag': 'noindex, nofollow',
+      'Cache-Control': 'public, max-age=86400',
+    },
+  });
 }
