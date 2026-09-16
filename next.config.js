@@ -85,6 +85,23 @@ const nextConfig = {
         destination: '/ressources/3038/devoir-de-synthese-n-1-physique-9eme',
         permanent: true,
       },
+      // SEO (2026-09-17): redirect old no-locale URL format to /fr/...
+      // GSC coverage drilldown showed 369 ressources + 17 profs indexed
+      // under /ressources/ and /professeurs/ (without /fr/ prefix).
+      // These were the pre-i18n URLs. Now redirect them to the FR locale.
+      // Preserve query string and hash via Next.js wildcard.
+      {
+        source: '/ressources/:path*',
+        destination: '/fr/ressources/:path*',
+        permanent: true,
+      },
+      {
+        source: '/professeurs/:path*',
+        destination: '/fr/professeurs/:path*',
+        permanent: true,
+      },
+      // Also handle the api/og and api/resources/download with noindex
+      // (these are handled via X-Robots-Tag headers, not redirects)
     ];
   },
   async headers() {

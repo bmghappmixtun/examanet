@@ -62,6 +62,7 @@ async function streamFileToClient(
         'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
         'Cache-Control': 'public, max-age=3600, must-revalidate',
         'X-Content-Type-Options': 'nosniff',
+        'X-Robots-Tag': 'noindex, nofollow',
         'X-Storage-Backend': 'vercel-blob',
       },
     });
