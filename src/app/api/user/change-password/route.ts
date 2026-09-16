@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
-import { isProduction, getClientIp } from '@/lib/security';
+import { isProduction, isValidOrigin, getClientIp } from '@/lib/security';
 import { sendPasswordChangedEmail } from '@/lib/email';
 
 const SESSION_COOKIE =
@@ -41,6 +41,11 @@ async function getD1() {
 }
 
 export async function POST(req: NextRequest) {
+  // SECURITY: CSRF origin check (production only)
+  if (isProduction() && !isValidOrigin(req)) {
+    return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
+  }
+
   const session = await getCurrentUser();
   if (!session) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });

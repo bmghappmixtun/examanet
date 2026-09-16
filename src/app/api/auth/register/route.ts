@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { isValidOrigin, isProduction } from '@/lib/security';
+import { isValidOrigin, isProduction, rateLimit, getClientIp } from '@/lib/security';
 import { hashPassword, generateOTP } from '@/lib/auth';
 import { sendOTPEmail, sendWelcomeEmail } from '@/lib/email';
 import { notifyAdminsNewTeacher, notifyAdminsNewStudent } from '@/lib/admin-notify';
@@ -23,6 +23,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // SECURITY: rate limit per IP (5 registrations per hour to prevent spam account creation)
+    const ip = getClientIp(req);
+    const rl = rateLimit(ip, 'register', 5, 60 * 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: `Trop de tentatives. Réessayez dans ${Math.ceil(rl.resetIn / 60000)} minutes.` },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } },
+      );
+    }
+
     const { email, password, firstName, lastName, role = 'STUDENT' } = await req.json();
 
     if (!email || !password || !firstName) {

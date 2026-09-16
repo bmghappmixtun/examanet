@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
+import { isProduction, isValidOrigin, rateLimit, getClientIp } from '@/lib/security';
 
 async function getD1() {
   const { getCloudflareContext } = await import('@opennextjs/cloudflare');
@@ -12,10 +13,25 @@ async function getD1() {
 }
 
 export async function POST(req: NextRequest) {
+  // SECURITY: CSRF origin check (production only)
+  if (isProduction() && !isValidOrigin(req)) {
+    return NextResponse.json({ error: 'Origine non autorisée' }, { status: 403 });
+  }
+
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
   try {
+    // SECURITY: rate limit per IP (5 change-email attempts per hour)
+    const ip = getClientIp(req);
+    const rl = rateLimit(ip, 'change-email', 5, 60 * 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: `Trop de tentatives. Réessayez dans ${Math.ceil(rl.resetIn / 60000)} minutes.` },
+        { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } },
+      );
+    }
+
     const { newEmail, password } = await req.json();
     if (!newEmail || !password) {
       return NextResponse.json({ error: 'Email et mot de passe requis' }, { status: 400 });
