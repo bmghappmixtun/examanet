@@ -120,8 +120,9 @@ export default function HomeClient({
                     className="flex-1 bg-transparent outline-none text-slate-700 placeholder-slate-400 text-sm"
                   />
                 </div>
-                <button type="submit" className="btn-primary">
-                  <Search className="w-4 h-4" /> {` ${t('common.search')}`}
+                <button type="submit" className="btn-primary flex items-center gap-2">
+                  <Search className="w-4 h-4" />
+                  {t('common.search')}
                 </button>
               </form>
 
@@ -138,11 +139,13 @@ export default function HomeClient({
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Link href="/ressources" className="btn-primary text-base px-7 py-3.5">
-                  <BookOpen className="w-5 h-5" /> {` ${t('home.exploreResources')}`}
+                <Link href="/ressources" className="btn-primary text-base px-7 py-3.5 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  {t('home.exploreResources')}
                 </Link>
-                <Link href="/inscription" className="btn-accent text-base px-7 py-3.5">
-                  <Upload className="w-5 h-5" /> {` ${t('home.becomeTeacher')}`}
+                <Link href="/inscription" className="btn-accent text-base px-7 py-3.5 flex items-center gap-2">
+                  <Upload className="w-5 h-5" />
+                  {t('home.becomeTeacher')}
                 </Link>
               </div>
             </div>
@@ -353,7 +356,8 @@ export default function HomeClient({
               href="/ressources"
               className="mt-4 md:mt-0 inline-flex items-center gap-2 text-primary-600 font-semibold hover:gap-3 transition-all"
             >
-              {t('common.seeMore')} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+              {t('common.seeMore')}
+              <ArrowRight className="w-4 h-4 rtl:rotate-180" />
             </Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -382,7 +386,8 @@ export default function HomeClient({
               href="/ressources?sort=recent"
               className="mt-4 md:mt-0 inline-flex items-center gap-2 text-primary-600 font-semibold hover:gap-3 transition-all"
             >
-              {t('common.seeMore')} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+              {t('common.seeMore')}
+              <ArrowRight className="w-4 h-4 rtl:rotate-180" />
             </Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -450,7 +455,8 @@ export default function HomeClient({
                 </div>
               ))}
               <Link href="/inscription" className="btn-accent mt-4">
-                {t('home.becomeTeacher')} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                {t('home.becomeTeacher')}
+                <ArrowRight className="w-4 h-4 rtl:rotate-180" />
               </Link>
             </div>
           </div>
@@ -548,13 +554,15 @@ export default function HomeClient({
                     href="/inscription"
                     className="bg-white text-primary-700 font-bold px-7 py-3.5 rounded-full shadow-xl hover:scale-105 transition-all inline-flex items-center gap-2"
                   >
-                    <Upload className="w-5 h-5" /> {t('home.becomeTeacher')}
+                    <Upload className="w-5 h-5" />
+                    {t('home.becomeTeacher')}
                   </Link>
                   <Link
                     href="/professeurs"
                     className="bg-white/10 backdrop-blur border border-white/30 text-white font-bold px-7 py-3.5 rounded-full hover:bg-white/20 transition inline-flex items-center gap-2"
                   >
-                    {t('nav.teachers')} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                    {t('nav.teachers')}
+                    <ArrowRight className="w-4 h-4 rtl:rotate-180" />
                   </Link>
                 </div>
               </div>
