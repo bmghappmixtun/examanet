@@ -71,20 +71,20 @@ export default function MobileMenu({ user }: { user: any }) {
           </div>
         ) : (
           <div className="p-4 grid grid-cols-2 gap-2 border-b border-slate-100 flex-shrink-0">
-            <NextLink
+            <Link
               href="/connexion"
               onClick={() => setOpen(false)}
               className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 transition"
             >
               <LogIn className="w-4 h-4" /> {t('nav.login')}
-            </NextLink>
-            <NextLink
+            </Link>
+            <Link
               href="/inscription"
               onClick={() => setOpen(false)}
               className="flex items-center justify-center gap-2 py-2.5 bg-primary-500 text-white rounded-xl text-sm font-semibold hover:bg-primary-600 transition"
             >
               <UserPlus className="w-4 h-4" /> {t('nav.signup')}
-            </NextLink>
+            </Link>
           </div>
         )}
 
