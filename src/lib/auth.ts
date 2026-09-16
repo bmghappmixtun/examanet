@@ -145,7 +145,13 @@ export async function clearSessionCookie() {
 }
 
 export function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  // SECURITY (2026-09-16): use crypto.getRandomValues() instead of Math.random()
+  // Math.random() is not cryptographically secure and produces predictable OTPs.
+  // crypto.getRandomValues() is part of Web Crypto API and provides CSPRNG output.
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  // Reduce modulo 1000000 to get a 6-digit number (0-999999), then ensure it's in [100000, 999999]
+  return ((buf[0] % 900000) + 100000).toString();
 }
 
 /**
