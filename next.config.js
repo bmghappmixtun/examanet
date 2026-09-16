@@ -207,7 +207,8 @@ const nextConfig = {
   // SECURITY: Disable powered-by header (already done above)
   // TEMP DEBUG (2026-09-16): enable source maps to diagnose React hydration errors
   // REMOVE after fix is confirmed - source maps expose source code publicly
-  productionBrowserSourceMaps: true,
+  // SECURITY: Block source maps from being served in production
+  productionBrowserSourceMaps: false,
   // PERF: skip ESLint during build (run via 'npm run lint' instead)
   // The new ESLint config catches hundreds of pre-existing issues that
   // would block deploys. Incremental fix in progress.
