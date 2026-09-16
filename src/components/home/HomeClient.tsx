@@ -121,7 +121,7 @@ export default function HomeClient({
                   />
                 </div>
                 <button type="submit" className="btn-primary">
-                  <Search className="w-4 h-4" /> {t('common.search')}
+                  <Search className="w-4 h-4" /> {` ${t('common.search')}`}
                 </button>
               </form>
 
@@ -139,10 +139,10 @@ export default function HomeClient({
 
               <div className="flex flex-wrap gap-3">
                 <Link href="/ressources" className="btn-primary text-base px-7 py-3.5">
-                  <BookOpen className="w-5 h-5" /> {t('home.exploreResources')}
+                  <BookOpen className="w-5 h-5" /> {` ${t('home.exploreResources')}`}
                 </Link>
                 <Link href="/inscription" className="btn-accent text-base px-7 py-3.5">
-                  <Upload className="w-5 h-5" /> {t('home.becomeTeacher')}
+                  <Upload className="w-5 h-5" /> {` ${t('home.becomeTeacher')}`}
                 </Link>
               </div>
             </div>
