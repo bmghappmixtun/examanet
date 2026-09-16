@@ -251,7 +251,7 @@ export default async function TeacherResourcesPage(props: {
                         <Download className="w-3.5 h-3.5" /> {formatNumber(r.downloadsCount || 0)}
                       </span>
                       <span className="flex items-center gap-1">
-                        ⭐ {(r.avgRating || 0).toFixed(1)}
+                        {`⭐ ${(r.avgRating || 0).toFixed(1)}`}
                       </span>
                       <span className={`px-2 py-0.5 text-xs font-bold rounded ${
                         r.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-700' :

@@ -171,7 +171,7 @@ export default function MesCommentairesClient({ initialComments, initialRatings,
                     </div>
                     <p className="text-sm text-slate-800 whitespace-pre-wrap mb-2">{c.content}</p>
                     <div className="text-xs text-slate-400">
-                      Posté {formatDate(c.createdAt)}
+                      {`Posté ${formatDate(c.createdAt)}`}
                       {c.updatedAt > c.createdAt && ` • Modifié ${formatDate(c.updatedAt)}`}
                     </div>
                   </div>
@@ -259,7 +259,7 @@ export default function MesCommentairesClient({ initialComments, initialRatings,
                       </span>
                     </div>
                     <div className="text-xs text-slate-400">
-                      Noté {formatDate(r.createdAt)}
+                      {`Noté ${formatDate(r.createdAt)}`}
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">

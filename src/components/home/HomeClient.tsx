@@ -374,7 +374,7 @@ export default function HomeClient({
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10">
             <div>
               <div className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold mb-3">
-                🆕 {t('common.newest').toUpperCase()}
+                {`🆕 ${t('common.newest').toUpperCase()}`}
               </div>
               <h2 className="text-3xl lg:text-5xl font-extrabold mb-2">
                 {t('home.sections.recentTitle')}{' '}

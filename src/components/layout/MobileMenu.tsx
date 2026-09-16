@@ -94,42 +94,42 @@ export default function MobileMenu({ user }: { user: any }) {
             onClick={() => setOpen(false)}
             className="block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
           >
-            📚 {t('nav.resources')}
+            {`📚 ${t('nav.resources')}`}
           </Link>
           <Link
             href="/college"
             onClick={() => setOpen(false)}
             className="block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
           >
-            🏫 {t('nav.college')}
+            {`🏫 ${t('nav.college')}`}
           </Link>
           <Link
             href="/concours-9eme-tunisie"
             onClick={() => setOpen(false)}
             className="block px-4 py-3 hover:bg-amber-50 rounded-lg font-medium bg-amber-50/50 border-r-4 border-amber-400"
           >
-            🎯 {t('nav.concours')}
+            {`🎯 ${t('nav.concours')}`}
           </Link>
           <Link
             href="/niveaux"
             onClick={() => setOpen(false)}
             className="block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
           >
-            📊 {t('nav.levels')}
+            {`📊 ${t('nav.levels')}`}
           </Link>
           <Link
             href="/matieres"
             onClick={() => setOpen(false)}
             className="block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
           >
-            📖 {t('nav.subjects')}
+            {`📖 ${t('nav.subjects')}`}
           </Link>
           <Link
             href="/professeurs"
             onClick={() => setOpen(false)}
             className="block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
           >
-            👨‍🏫 {t('nav.teachers')}
+            {`👨‍🏫 ${t('nav.teachers')}`}
           </Link>
           <Link
             href="/faq"

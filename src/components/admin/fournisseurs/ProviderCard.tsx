@@ -243,7 +243,7 @@ export function ProviderCard({
           </div>
           {liveQ?.error && (
             <div className="mt-2 text-xs text-amber-700 bg-amber-50 rounded p-2">
-              ⚠ {liveQ.error}
+              {`⚠ ${liveQ.error}`}
             </div>
           )}
         </div>

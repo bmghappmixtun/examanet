@@ -407,7 +407,7 @@ export default function VerificationUploader({
                   </span>
                   {f.year && <span>📅 {f.year}</span>}
                   <span>
-                    Envoyé le {new Date(f.uploadedAt).toLocaleDateString('fr-FR')}
+                    {`Envoyé le ${new Date(f.uploadedAt).toLocaleDateString('fr-FR')}`}
                   </span>
                   {f.reviewedByAdmin && (
                     <span className="text-emerald-600 font-semibold">
@@ -612,7 +612,7 @@ function PendingFileCard({
 
           {isError && item.errorMessage && (
             <div className="mt-2 text-xs text-red-700 bg-red-100 border border-red-200 rounded-lg px-2 py-1">
-              ⚠️ {item.errorMessage}
+              {`⚠️ ${item.errorMessage}`}
             </div>
           )}
           {isSuccess && (

@@ -475,7 +475,7 @@ function SectionResourceView({
                           par {teacherName}
                           {arName && arName !== teacherName && (
                             <span className="text-slate-400 ms-1" dir="rtl" lang="ar">
-                              · {arName}
+                              {`· ${arName}`}
                             </span>
                           )}
                         </span>

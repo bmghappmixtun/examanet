@@ -205,7 +205,7 @@ export default function PendingEditsClient({
                             color: edit.subjectColor || '#0EA5E9',
                           }}
                         >
-                          📄 {edit.subjectNameFr}
+                          {`📄 ${edit.subjectNameFr}`}
                         </span>
                       )}
                       <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider rounded-full inline-flex items-center gap-1">

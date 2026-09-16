@@ -700,7 +700,7 @@ export default function ApprobationsClient({
                             )}
                             {t.governorate && (
                               <div className="bg-slate-50 px-2 py-1 rounded">
-                                📍 {t.governorate}
+                                {`📍 ${t.governorate}`}
                               </div>
                             )}
                             {t.diploma && (
@@ -708,14 +708,14 @@ export default function ApprobationsClient({
                             )}
                             {t.teachingSubjects && (
                               <div className="bg-slate-50 px-2 py-1 rounded col-span-2 sm:col-span-3">
-                                📚 {t.teachingSubjects}
+                                {`📚 ${t.teachingSubjects}`}
                               </div>
                             )}
                             <div className="text-slate-400 px-2">⏱️ {t.createdAtLabel}</div>
                             {t.verificationFilesRequestedAt && (
                               <div className="text-violet-600 px-2 col-span-2 sm:col-span-3 flex items-center gap-2 flex-wrap">
                                 <span>
-                                  📁 Demande envoyée {t.verificationFilesRequestedAtLabel ?? t.verificationFilesRequestedAt}
+                                  {`📁 Demande envoyée ${t.verificationFilesRequestedAtLabel ?? t.verificationFilesRequestedAt}`}
                                   {t.verificationFilesCount
                                     ? ` • ${t.verificationFilesCount} fichier(s) reçu(s)`
                                     : ' • en attente'}

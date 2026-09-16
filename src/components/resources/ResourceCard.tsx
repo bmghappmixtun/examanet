@@ -191,7 +191,7 @@ export default function ResourceCard({ resource }: { resource: ResourceCardData 
         <div className="flex items-center gap-1.5 mb-3 flex-wrap">
           {resource.year && (
             <span className="text-[11px] text-slate-500 bg-slate-50 px-2 py-0.5 rounded">
-              📅 {resource.year}
+              {`📅 ${resource.year}`}
             </span>
           )}
           {resource.pageCount != null && resource.pageCount > 0 && (
@@ -201,7 +201,7 @@ export default function ResourceCard({ resource }: { resource: ResourceCardData 
           )}
           {resource.fileSize && (
             <span className="text-[11px] text-slate-500 bg-slate-50 px-2 py-0.5 rounded">
-              💾 {formatSize(resource.fileSize)}
+              {`💾 ${formatSize(resource.fileSize)}`}
             </span>
           )}
           <span className="text-[11px] text-slate-500 bg-slate-50 px-2 py-0.5 rounded">
@@ -216,7 +216,7 @@ export default function ResourceCard({ resource }: { resource: ResourceCardData 
             <span className="font-semibold text-slate-700">{teacherName}</span>
             {arName && !isAr && (
               <span className="text-slate-400" dir="rtl" lang="ar">
-                · {arName}
+                {`· ${arName}`}
               </span>
             )}
             {resource.schoolType === 'PILOTE' && (
