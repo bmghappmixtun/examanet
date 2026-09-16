@@ -219,7 +219,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
       </head>
-      <body className="font-sans">
+      <body className="font-sans" suppressHydrationWarning>
         {/* PERF 2026-08-16: removed `messages={await getMessages()}`. The
             root layout now provides the NextIntlClientProvider with just
             the default FR locale — no async call needed. Localized pages
