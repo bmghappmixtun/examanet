@@ -23,7 +23,7 @@ export default async function Footer() {
               <picture>
                 <source
                   type="image/png"
-                  srcSet="/logo-cream-on-dark-159x60.png 1x, /logo-cream-on-dark-318x120.png 2x"
+                  srcset="/logo-cream-on-dark-159x60.png 1x, /logo-cream-on-dark-318x120.png 2x"
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

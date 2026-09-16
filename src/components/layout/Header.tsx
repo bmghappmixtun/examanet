@@ -47,7 +47,7 @@ export default async function Header() {
               <picture className="sm:hidden">
                 <source
                   type="image/png"
-                  srcSet="/icon-transparent-62x62.png 1x, /icon-transparent-124x124.png 2x"
+                  srcset="/icon-transparent-62x62.png 1x, /icon-transparent-124x124.png 2x"
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -56,7 +56,7 @@ export default async function Header() {
                   width={62}
                   height={62}
                   className="w-[62px] h-[62px] group-hover:scale-105 transition"
-                  fetchPriority="high"
+                  fetchpriority="high"
                   decoding="async"
                 />
               </picture>
@@ -64,7 +64,7 @@ export default async function Header() {
               <picture className="hidden sm:block">
                 <source
                   type="image/png"
-                  srcSet="/logo-transparent-269x73.png 1x, /logo-transparent-538x146.png 2x"
+                  srcset="/logo-transparent-269x73.png 1x, /logo-transparent-538x146.png 2x"
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -73,7 +73,7 @@ export default async function Header() {
                   width={269}
                   height={73}
                   className="h-[62px] lg:h-[73px] w-auto group-hover:scale-[1.02] transition-transform"
-                  fetchPriority="high"
+                  fetchpriority="high"
                   decoding="async"
                 />
               </picture>
