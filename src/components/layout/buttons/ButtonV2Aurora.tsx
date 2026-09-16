@@ -20,7 +20,7 @@ export function ConnexionV2() {
       >
         Connexion
       </Link>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @property --angle {
           syntax: '<angle>';
           initial-value: 0deg;
@@ -29,7 +29,7 @@ export function ConnexionV2() {
         @keyframes spin {
           to { --angle: 360deg; }
         }
-      `}</style>
+      ` }} />
     </div>
   );
 }
@@ -54,7 +54,7 @@ export function InscriptionV2() {
       >
         Inscription
       </Link>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @property --angle {
           syntax: '<angle>';
           initial-value: 0deg;
@@ -63,7 +63,7 @@ export function InscriptionV2() {
         @keyframes spin {
           to { --angle: 360deg; }
         }
-      `}</style>
+      ` }} />
     </div>
   );
 }
