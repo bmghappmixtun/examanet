@@ -36,7 +36,7 @@ export function ConnexionV2() {
 
 export function InscriptionV2() {
   return (
-    <div className="relative group p-[2px] rounded-full overflow-hidden">
+    <div className="relative group p-[2px] rounded-full overflow-hidden hidden sm:block">
       <div
         className="absolute inset-0 rounded-full"
         style={{
