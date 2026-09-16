@@ -19,7 +19,8 @@ export async function GET() {
   // to prevent Google from indexing /api/og/resource/xxx URLs that
   // were leaking into the search index. 165 such URLs were indexed
   // per GSC coverage drilldown.
-  return NextResponse.redirect(new URL(STATIC_OG_URL, 'https://examanet.com'), 308, {
+  return NextResponse.redirect(new URL(STATIC_OG_URL, 'https://examanet.com'), {
+    status: 308,
     headers: {
       'X-Robots-Tag': 'noindex, nofollow',
       'Cache-Control': 'public, max-age=86400',
