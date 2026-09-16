@@ -12,7 +12,7 @@ export default function AuthPageIcon() {
       <picture>
         <source
           type="image/png"
-          srcset="/auth-icon-64x64.png 1x, /auth-icon-128x128.png 2x"
+          srcSet="/auth-icon-64x64.png 1x, /auth-icon-128x128.png 2x"
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -21,7 +21,7 @@ export default function AuthPageIcon() {
           width={64}
           height={64}
           className="relative w-16 h-16 drop-shadow-[0_8px_16px_rgba(240,143,69,0.25)]"
-          fetchpriority="high"
+          fetchPriority="high"
           decoding="async"
         />
       </picture>
