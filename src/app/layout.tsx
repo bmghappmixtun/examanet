@@ -238,14 +238,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             style: { borderRadius: '12px', background: '#0F172A', color: '#fff' },
           }}
         />
-        {/* TEMP DEBUG 2026-09-16: JSON-LD disabled to test hydration hypothesis */}
-        {/* {organizationSchema().map((schema, i) => (
+        {/* Organization + WebSite + SearchAction JSON-LD — enables Google knowledge panel + sitelinks searchbox */}
+        {organizationSchema().map((schema, i) => (
           <script
             key={`org-schema-${i}`}
             type="application/ld+json"
             dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
           />
-        ))} */}
+        ))}
         <ServiceWorkerRegister />
         <ErrorHandlerInit />
       </body>

@@ -177,8 +177,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <>
       <NextIntlClientProvider locale={locale} messages={messages}>
-        {/* TEMP DEBUG 2026-09-16: SyncLocaleAttrs disabled to test hydration hypothesis */}
-        {/* <SyncLocaleAttrs /> */}
+        <SyncLocaleAttrs />
         <Header />
         <main className="min-h-screen">
           {children}

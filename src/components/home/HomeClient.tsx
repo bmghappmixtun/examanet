@@ -87,7 +87,7 @@ export default function HomeClient({
               <div className="inline-flex items-center gap-2 bg-white border border-primary-200 rounded-full px-4 py-2 mb-6 shadow-sm">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 <span className="text-xs font-semibold text-slate-700">
-                  +{formatNumber(resourceCount)} {t('home.sections.popularTitle').toLowerCase()}
+                  {`+${formatNumber(resourceCount)} ${t('home.sections.popularTitle').toLowerCase()}`}
                 </span>
               </div>
 
