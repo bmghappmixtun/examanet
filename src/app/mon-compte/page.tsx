@@ -143,7 +143,7 @@ export default async function AccountDashboard() {
               <a
                 key={f.id}
                 href={`/ressources/${f.resource.numericId}/${f.resource.slug}`}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition"
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition min-w-0"
               >
                 <div className="w-10 h-12 bg-slate-100 rounded flex items-center justify-center flex-shrink-0">
                   <FileText className="w-5 h-5 text-slate-400" />
