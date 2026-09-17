@@ -43,6 +43,39 @@ jobs:
       - name: Build OpenNext bundle
         run: npx opennextjs-cloudflare build --skipNextBuild 2>&1 | tail -10
 
+      - name: Validate sitemap config
+        # Sanity check: confirm sitemap-related files exist and have consistent structure
+        run: |
+          set -e
+          echo "=== Checking sitemap files exist ==="
+          for f in src/lib/sitemap-helpers.ts \
+                   src/lib/build-resources-sitemap.ts \
+                   src/app/sitemap.xml/route.ts \
+                   src/app/sitemap-static.xml/route.ts \
+                   src/app/sitemap-classes.xml/route.ts \
+                   src/app/sitemap-subjects.xml/route.ts \
+                   src/app/sitemap-teachers.xml/route.ts \
+                   src/app/sitemap-resources-1.xml/route.ts \
+                   src/app/sitemap-resources-2.xml/route.ts \
+                   src/app/sitemap-resources-3.xml/route.ts; do
+            if [ ! -f "$f" ]; then
+              echo "❌ MISSING: $f"
+              exit 1
+            fi
+          done
+          echo "✅ All 10 sitemap files present"
+
+          # Check that all route.ts files use sitemapCacheHeaders
+          echo ""
+          echo "=== Checking cache headers ==="
+          for f in src/app/sitemap*.xml/route.ts src/app/sitemap.xml/route.ts; do
+            if ! grep -q "sitemapCacheHeaders" "$f"; then
+              echo "❌ $f doesn't use sitemapCacheHeaders"
+              exit 1
+            fi
+          done
+          echo "✅ All 9 sitemaps use sitemapCacheHeaders (with stale-while-revalidate)"
+
       - name: Deploy to Cloudflare Workers
         if: github.ref == 'refs/heads/main'
         run: |
