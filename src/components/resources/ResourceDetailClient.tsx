@@ -178,15 +178,33 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
     { name: resource.title || 'Ressource', url: resourceUrl },
   ]);
 
+  // 2026-09-15 nightly: wrap JSON.stringify in a try/catch with a minimal valid
+  // fallback. Safari parses ld+json scripts eagerly and crashes with
+  // `undefined is not an object (evaluating 'r["@context"].toLowerCase')`
+  // when the script body is empty, malformed, or contains a circular ref.
+  const safeJsonLd = (obj: unknown): string => {
+    try {
+      const json = JSON.stringify(obj);
+      // Safari requires @context on the root object. If the schema is missing
+      // it OR the string is empty, fall back to a minimal valid placeholder.
+      if (!json || json === '{}' || !json.includes('"@context"')) {
+        return '{"@context":"https://schema.org"}';
+      }
+      return json;
+    } catch {
+      return '{"@context":"https://schema.org"}';
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(courseJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       {/* 2026-08-19 nightly fix (ERR-FGCMHE 1× React #419 on /ar/ressources/3740/...):
           use a <div> instead of <main> because the [locale]/layout.tsx already

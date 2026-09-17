@@ -206,7 +206,25 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
     );
   }
 
-  const { main, teacherStats, sameTeacher, byTypeAndClass, otherClassesSameLevel, otherTeachersSameSubj, corriges, relatedByTags, otherSubjectsSameLevel, sidebarTopViewed, sidebarTopRated, sidebarTopCommented, ratingDistribution, ratingMaxCount, initialComments, tagList, SITE_URL } = data;
+  // 2026-09-15 nightly: defensive defaults so .slice()/.length never throws
+  // when the API returns a partial payload (e.g. corgi cache miss, edge timeout).
+  const { main } = data;
+  const teacherStats = data.teacherStats ?? null;
+  const sameTeacher: RelatedItem[] = data.sameTeacher ?? [];
+  const byTypeAndClass: RelatedItem[] = data.byTypeAndClass ?? [];
+  const otherClassesSameLevel: RelatedItem[] = data.otherClassesSameLevel ?? [];
+  const otherTeachersSameSubj: RelatedTeacher[] = data.otherTeachersSameSubj ?? [];
+  const corriges: RelatedItem[] = data.corriges ?? [];
+  const relatedByTags: RelatedItem[] = data.relatedByTags ?? [];
+  const otherSubjectsSameLevel: RelatedSubject[] = data.otherSubjectsSameLevel ?? [];
+  const sidebarTopViewed: RelatedItem[] = data.sidebarTopViewed ?? [];
+  const sidebarTopRated: RelatedItem[] = data.sidebarTopRated ?? [];
+  const sidebarTopCommented: RelatedItem[] = data.sidebarTopCommented ?? [];
+  const ratingDistribution = data.ratingDistribution ?? [];
+  const ratingMaxCount = data.ratingMaxCount ?? 1;
+  const initialComments = data.initialComments ?? [];
+  const tagList: string[] = data.tagList ?? [];
+  const SITE_URL = data.SITE_URL ?? 'https://examanet.com';
 
   const pdfUrl = main.fileKey ? `${SITE_URL}/api/file/${main.fileKey}` : null;
   const resourceUrl = `${SITE_URL}/fr/ressources/${main.numericId}/${main.slug}`;
