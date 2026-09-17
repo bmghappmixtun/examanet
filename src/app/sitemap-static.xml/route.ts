@@ -1,7 +1,7 @@
 // 2026-09-17: Static pages sub-sitemap (14 hand-curated URLs).
 // Refresh: daily (homepage), weekly/monthly for the rest.
 // Served at: https://examanet.com/sitemap-static.xml
-import { getStaticPageEntries, xmlEscape } from '@/lib/sitemap-helpers';
+import { getStaticPageEntries, sitemapCacheHeaders, xmlEscape } from '@/lib/sitemap-helpers';
 
 export const revalidate = 3600; // Refresh hourly
 
@@ -25,9 +25,6 @@ ${e.lastModified ? `    <lastmod>${e.lastModified}</lastmod>\n` : ''}${e.changeF
 </urlset>`;
 
   return new Response(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, must-revalidate',
-    },
+    headers: sitemapCacheHeaders(3600),
   });
 }

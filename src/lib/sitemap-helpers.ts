@@ -9,6 +9,24 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
+/**
+ * Standard cache headers for sitemap responses.
+ *
+ * - `public`: CDN-friendly (Cloudflare Workers can cache)
+ * - `max-age=N`: TTL before revalidation
+ * - `stale-while-revalidate=M`: serve stale copy for up to M seconds while
+ *   a fresh copy is generated in the background. This prevents users (and
+ *   Googlebot) from ever seeing a slow or 503 response during regeneration.
+ *
+ * Recommended by multiple Next.js sitemap guides (commentcoder, yiminyang).
+ */
+export function sitemapCacheHeaders(maxAge: number): Record<string, string> {
+  return {
+    'Content-Type': 'application/xml; charset=utf-8',
+    'Cache-Control': `public, max-age=${maxAge}, stale-while-revalidate=86400`,
+  };
+}
+
 export type SitemapPriority = number;
 export type ChangeFreq = 'daily' | 'weekly' | 'monthly' | 'yearly';
 

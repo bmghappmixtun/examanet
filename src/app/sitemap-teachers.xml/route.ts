@@ -1,7 +1,7 @@
 // 2026-09-17: Teachers sub-sitemap.
 // Lists /professeurs/<numericId>/<slug> for top 200 teachers by resource count.
 // Refresh: weekly (teachers list changes infrequently).
-import { getD1, withAlternates, xmlEscape } from '@/lib/sitemap-helpers';
+import { getD1, sitemapCacheHeaders, withAlternates, xmlEscape } from '@/lib/sitemap-helpers';
 
 export const revalidate = 86400; // Refresh daily
 
@@ -48,9 +48,6 @@ ${entries
 </urlset>`;
 
   return new Response(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=86400, must-revalidate',
-    },
+    headers: sitemapCacheHeaders(86400),
   });
 }

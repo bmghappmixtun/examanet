@@ -3,6 +3,7 @@
 // new popular content gets indexed fast.
 // Served at: https://examanet.com/sitemap-resources-1.xml
 import { buildResourcesSitemap } from '@/lib/build-resources-sitemap';
+import { sitemapCacheHeaders } from '@/lib/sitemap-helpers';
 
 export const revalidate = 3600; // Refresh hourly
 
