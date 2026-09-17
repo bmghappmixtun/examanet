@@ -48,10 +48,14 @@ export const maxDuration = 300; // 5 min — bulk import
 export const runtime = 'nodejs';
 
 // SECURITY: JOTFORM_API_KEY must be set via environment (wrangler secret).
-// Never hardcode fallback. Process will throw at request time if missing.
-const JOTFORM_KEY = process.env.JOTFORM_API_KEY;
-if (!JOTFORM_KEY) {
-  throw new Error('JOTFORM_API_KEY env var is required. Set it via: wrangler secret put JOTFORM_API_KEY');
+// Never hardcode fallback. Lazy-checked at request time so Next.js build
+// (which loads modules to analyze them) doesn't trip the guard.
+function getJotformKey(): string {
+  const k = process.env.JOTFORM_API_KEY;
+  if (!k) {
+    throw new Error('JOTFORM_API_KEY env var is required. Set it via: wrangler secret put JOTFORM_API_KEY');
+  }
+  return k;
 }
 
 function detectFormat(filename: string): string {
