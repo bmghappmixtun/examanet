@@ -47,7 +47,12 @@ import { convertDocxToPdf } from '@/lib/document-converter';
 export const maxDuration = 300; // 5 min — bulk import
 export const runtime = 'nodejs';
 
-const JOTFORM_KEY = process.env.JOTFORM_API_KEY || '7312267369dbfc1c06dab2cf7cba4dc1';
+// SECURITY: JOTFORM_API_KEY must be set via environment (wrangler secret).
+// Never hardcode fallback. Process will throw at request time if missing.
+const JOTFORM_KEY = process.env.JOTFORM_API_KEY;
+if (!JOTFORM_KEY) {
+  throw new Error('JOTFORM_API_KEY env var is required. Set it via: wrangler secret put JOTFORM_API_KEY');
+}
 
 function detectFormat(filename: string): string {
   const ext = filename.split('.').pop()?.toLowerCase() || '';
