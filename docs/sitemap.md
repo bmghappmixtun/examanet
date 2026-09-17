@@ -1,7 +1,7 @@
 # Sitemap Architecture
 
 **Last updated** : 2026-09-17  
-**Total URLs indexed** : ~15,351 (split across 8 sub-sitemaps + 1 image-sitemap)
+**Total URLs indexed** : ~17,584 (split across 8 sub-sitemaps + 1 image-sitemap)
 
 ---
 
@@ -42,12 +42,12 @@ scripts/
 | `/sitemap-static.xml` | `<urlset>` | hourly | 14 |
 | `/sitemap-classes.xml` | `<urlset>` | daily | 7 |
 | `/sitemap-subjects.xml` | `<urlset>` | daily | 30 |
-| `/sitemap-teachers.xml` | `<urlset>` | daily | 200 |
+| `/sitemap-teachers.xml` | `<urlset>` | daily | 2,433 |
 | `/sitemap-resources-1.xml` | `<urlset>` | hourly | 5,000 |
 | `/sitemap-resources-2.xml` | `<urlset>` | daily | 5,000 |
 | `/sitemap-resources-3.xml` | `<urlset>` | weekly | 5,000 |
 | `/image-sitemap.xml` | `<urlset>` | daily | 100 |
-| **TOTAL** | | | **~15,351** |
+| **TOTAL** | | | **~17,584** |
 
 ## 🛠️ Why this architecture (vs. `generateSitemaps()`)
 
