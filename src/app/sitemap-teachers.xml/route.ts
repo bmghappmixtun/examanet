@@ -1,6 +1,16 @@
 // 2026-09-17: Teachers sub-sitemap.
-// Lists /professeurs/<numericId>/<slug> for top 200 teachers by resource count.
-// Refresh: weekly (teachers list changes infrequently).
+// Lists /professeurs/<numericId>/<slug> for ALL teachers with at least 1
+// published resource.
+//
+// 2026-09-17 update: removed LIMIT 200. Now we have a dedicated sub-sitemap
+// for teachers, so we include them all (currently ~2,400 teachers).
+// Google's limit is 50,000 URLs per sitemap file, so we're well under.
+//
+// 2026-09-17 update: removed restriction on u.status = 'ACTIVE'. Teachers
+// that were deactivated but still have published content are also indexed
+// — their content is still valuable and should remain findable.
+//
+// Refresh: daily (cache TTL = 1 day). Teachers list changes infrequently.
 import { getD1, sitemapCacheHeaders, withAlternates, xmlEscape } from '@/lib/sitemap-helpers';
 
 export const revalidate = 86400; // Refresh daily
@@ -15,12 +25,16 @@ export async function GET() {
           [
             'SELECT u.id, u.numericId, u.slug',
             "FROM User u",
-            "WHERE u.role = 'TEACHER' AND u.status = 'ACTIVE'",
+            "WHERE u.role = 'TEACHER'",
+            // Only include teachers with at least one PUBLISHED resource —
+            // otherwise their /professeurs/<id> page would be empty/bad UX.
             'AND EXISTS (SELECT 1 FROM Resource r WHERE r.teacherId = u.id AND r.status = ?)',
-            'ORDER BY (SELECT COUNT(*) FROM Resource r WHERE r.teacherId = u.id) DESC LIMIT 200',
+            // Order by resource count DESC: most prolific teachers get higher
+            // sitemap priority for crawl efficiency.
+            'ORDER BY (SELECT COUNT(*) FROM Resource r WHERE r.teacherId = u.id AND r.status = ?) DESC',
           ].join(' ')
         )
-        .bind('PUBLISHED')
+        .bind('PUBLISHED', 'PUBLISHED')
         .all();
       teachers = (r?.results || []) as any[];
     } catch (e) {
