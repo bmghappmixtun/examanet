@@ -218,7 +218,9 @@ export default function MenuSideDrawer() {
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="p-2 hover:bg-slate-100 rounded-lg transition"
+                // 2026-09-18: tap target bumped to 44x44 (was p-2 = 36x36)
+                // to meet Apple HIG / WCAG 2.5.5 minimum for touch.
+                className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-slate-100 rounded-lg transition flex items-center justify-center"
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
               >
                 <X className="w-5 h-5 text-slate-500" strokeWidth={2} />
@@ -340,9 +342,11 @@ function NiveauRow({
         {niveau.sections.length > 0 && (
           <button
             onClick={onToggle}
-            className="px-3 hover:bg-slate-50 border-s border-slate-200 transition"
+            // 2026-09-18: tap target bumped to 44x44 (was px-3 = 41x60).
+            // Width was the issue — height was already 60px from the row.
+            className="min-w-[44px] hover:bg-slate-50 border-s border-slate-200 transition flex items-center justify-center"
             aria-expanded={isExpanded}
-            aria-label={isExpanded ? 'Replier' : 'Déplier'}
+            aria-label={isExpanded ? (isAr ? 'طي' : 'Replier') : (isAr ? 'بسط' : 'Déplier')}
           >
             {isExpanded ? (
               <ChevronDown className="w-4 h-4 text-slate-500" strokeWidth={2} />
