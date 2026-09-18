@@ -121,6 +121,15 @@ interface PDFViewerProps {
   initialPage?: number;
   onDownload?: () => void;
   className?: string;
+  /**
+   * 2026-09-18: auto-request browser fullscreen once the PDF finishes
+   * loading. Used by `/ressources/[id]/[slug]/viewer?fullscreen=1` so the
+   * "Voir plein écran" button on the resource page takes the user
+   * directly into reading mode without a second click on the toolbar.
+   * Browsers may reject programmatic fullscreen if it isn't tied to a
+   * user gesture — we catch and silently no-op in that case.
+   */
+  autoFullscreen?: boolean;
 }
 
 export default function PDFViewer({
@@ -129,6 +138,7 @@ export default function PDFViewer({
   initialPage = 1,
   onDownload,
   className = '',
+  autoFullscreen = false,
 }: PDFViewerProps) {
   // ==========================================================================
   // State
@@ -390,6 +400,21 @@ export default function PDFViewer({
     document.addEventListener('fullscreenchange', onChange);
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
+
+  // 2026-09-18: auto-enter fullscreen once the PDF is ready, when the
+  // viewer is mounted with ?fullscreen=1 in the URL. Some browsers
+  // (notably Safari and Firefox without user-activation) reject
+  // programmatic fullscreen — we silently no-op in that case.
+  useEffect(() => {
+    if (!autoFullscreen) return;
+    if (loading || !numPages) return;
+    // Wait one frame so the shell has its final size, then request fullscreen.
+    const id = requestAnimationFrame(() => {
+      toggleFullscreen().catch(() => {});
+    });
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFullscreen, loading, numPages]);
 
   // ==========================================================================
   // Keyboard navigation

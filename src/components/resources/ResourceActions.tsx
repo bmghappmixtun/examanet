@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import {
   Eye,
+  Maximize2,
   Download,
   Printer,
   Share2,
@@ -224,10 +225,13 @@ export default function ResourceActions({
           </button>
         )}
         <button
-          onClick={() => (window.location.href = `/ressources/${numericId}/${slug}/viewer`)}
+          // 2026-09-18: "Voir plein écran" → opens the viewer page with
+          // ?fullscreen=1 so the PDF auto-enters browser fullscreen mode.
+          onClick={() => (window.location.href = `/ressources/${numericId}/${slug}/viewer?fullscreen=1`)}
           className="btn-secondary justify-center text-sm"
+          title="Ouvrir le PDF en mode lecture plein écran"
         >
-          <Eye className="w-4 h-4" /> Lire en ligne
+          <Maximize2 className="w-4 h-4" /> Voir plein écran
         </button>
         <button
           onClick={handlePrint}

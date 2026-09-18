@@ -134,7 +134,7 @@ export default function Loading() {
 
               {/* ResourceActions skeleton — added 2026-08-18 to match the page's
                   always-rendered <ResourceActions> wrapper (mt-4 div). 6 button
-                  placeholders for Télécharger / Lire en ligne / Imprimer /
+                  placeholders for Télécharger / Voir plein écran / Imprimer /
                   Favoris / Partager / Signaler. */}
               <div className="mt-4">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

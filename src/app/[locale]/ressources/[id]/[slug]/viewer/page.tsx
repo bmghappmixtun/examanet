@@ -23,10 +23,17 @@ export const metadata = {
 
 export default async function ResourceViewerPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string; slug: string }>;
+  // 2026-09-18: ?fullscreen=1 — makes the PDF viewer auto-enter browser
+  // fullscreen mode (used by the "Voir plein écran" button on the
+  // resource page so the user lands directly in reading mode).
+  searchParams: Promise<{ fullscreen?: string }>;
 }) {
   const { id: rawId, slug: rawSlug } = await params;
+  const sp = await searchParams;
+  const autoFullscreen = sp.fullscreen === '1';
   const numericId = parseInt(rawId, 10);
   if (isNaN(numericId)) notFound();
   // Same URL-decode fix as the page (Next.js doesn't auto-decode non-ASCII slugs)
@@ -106,6 +113,7 @@ export default async function ResourceViewerPage({
           <PDFViewer
             url={`/api/resources/${resource.numericId}/download`}
             fileName={`${resource.title}.pdf`}
+            autoFullscreen={autoFullscreen}
           />
           <div className="mt-3 text-center text-xs text-slate-500">
             💡 Astuces : ← → pour naviguer, +/- pour zoomer, Échap pour quitter le plein écran
