@@ -43,17 +43,30 @@ interface LazyPDFViewerProps {
   /** File size in bytes, formatted */
   fileSize?: string | null;
   /**
-   * 2026-09-18: controlled activation. When true, the PDFViewer mounts
-   * immediately (skips the placeholder). The parent should toggle this
-   * to true when the user wants to view the PDF without leaving the page
-   * (e.g. from the "Voir plein écran" button).
+   * 2026-09-18 (v3): parent override. When true, the PDFViewer mounts
+   * immediately regardless of whether the internal placeholder button
+   * was clicked. Used by the "Voir plein écran" button to activate the
+   * viewer + request fullscreen without leaving the page.
+   *
+   * IMPORTANT: previously named `activated`, but that broke the
+   * internal "Afficher le document" button because passing
+   * `activated={false}` from the parent (its initial state) overrode
+   * the internal state via `??`. Renamed to `forceActivated` to make
+   * the OR-with-internal semantics explicit and bug-free.
    */
-  activated?: boolean;
+  forceActivated?: boolean;
   /**
    * Forwarded to PDFViewer so it can auto-request browser fullscreen
-   * once the document has loaded. Paired with `activated` from above.
+   * once the document has loaded. Paired with `forceActivated`.
    */
   autoFullscreen?: boolean;
+  /**
+   * Increment to re-trigger the fullscreen request. Each click of
+   * "Voir plein écran" bumps this counter; the PDFViewer effect
+   * depends on it so the request fires again even after the user
+   * exited fullscreen with Échap.
+   */
+  fullscreenRequestId?: number;
 }
 
 export default function LazyPDFViewer({
@@ -61,21 +74,29 @@ export default function LazyPDFViewer({
   fileName,
   pageCount,
   fileSize,
-  activated: activatedProp,
+  forceActivated = false,
   autoFullscreen,
+  fullscreenRequestId,
 }: LazyPDFViewerProps) {
-  // Internal state so clicking the placeholder button still works even
-  // when the component is uncontrolled (no `activated` prop supplied).
+  // Internal state for the placeholder button (still works when parent
+  // hasn't forced activation). forceActivated ORs with this — either
+  // path mounts the PDFViewer.
   const [internalActivated, setInternalActivated] = useState(false);
-  // External prop wins when provided — parent owns the state.
-  const shouldLoad = activatedProp ?? internalActivated;
+  const shouldLoad = forceActivated || internalActivated;
   // Defer the import slightly so it never blocks initial render. Browsers
   // will fetch the chunk in parallel with the rest of the page once the
   // user opts in. If they never click, the chunk is never downloaded.
   const handleActivate = () => setInternalActivated(true);
 
   if (shouldLoad) {
-    return <PDFViewer url={url} fileName={fileName} autoFullscreen={autoFullscreen} />;
+    return (
+      <PDFViewer
+        url={url}
+        fileName={fileName}
+        autoFullscreen={autoFullscreen}
+        fullscreenRequestId={fullscreenRequestId}
+      />
+    );
   }
 
   return (

@@ -55,15 +55,19 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFoundState, setNotFoundState] = useState(false);
-  // 2026-09-18: "Voir plein écran" needs to (1) activate the LazyPDFViewer
-  // if it isn't already mounted, then (2) ask the PDFViewer to request
-  // browser fullscreen once the PDF is loaded. Both flags live here so
-  // they reset only on remount (e.g. when the user navigates away).
-  const [viewerActivated, setViewerActivated] = useState(false);
+  // 2026-09-18 (v3): "Voir plein écran" needs to (1) force-activate the
+  // LazyPDFViewer if it isn't already mounted, then (2) ask the PDFViewer
+  // to request browser fullscreen once the PDF is loaded. The
+  // fullscreenRequestId counter is bumped on every click so the
+  // PDFViewer's effect re-fires even after the user exits fullscreen
+  // with Échap (otherwise React skips the re-render).
+  const [forceViewerActivation, setForceViewerActivation] = useState(false);
   const [autoFullscreen, setAutoFullscreen] = useState(false);
+  const [fullscreenRequestId, setFullscreenRequestId] = useState(0);
   const handleFullscreenRequest = () => {
-    setViewerActivated(true);
+    setForceViewerActivation(true);
     setAutoFullscreen(true);
+    setFullscreenRequestId((id) => id + 1);
   };
   
   useEffect(() => {
@@ -471,11 +475,13 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
                     fileName={`${resource.title}.pdf`}
                     pageCount={resource.pageCount ?? null}
                     fileSize={resource.fileSize ? humanFileSize(resource.fileSize) : null}
-                    // 2026-09-18 (v2): controlled activation so the
-                    // "Voir plein écran" button below can mount the
-                    // PDFViewer AND auto-fullscreen on the same page.
-                    activated={viewerActivated}
+                    // 2026-09-18 (v3): parent-forced activation. The
+                    // internal placeholder button still works because
+                    // LazyPDFViewer ORs `forceActivated` with its own
+                    // internal state (was buggy in v2 with `??`).
+                    forceActivated={forceViewerActivation}
                     autoFullscreen={autoFullscreen}
+                    fullscreenRequestId={fullscreenRequestId}
                   />
                 </div>
               </div>

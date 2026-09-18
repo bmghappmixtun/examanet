@@ -130,6 +130,15 @@ interface PDFViewerProps {
    * user gesture — we catch and silently no-op in that case.
    */
   autoFullscreen?: boolean;
+  /**
+   * 2026-09-18 (v3): increment this counter (any number) to re-trigger
+   * the fullscreen request. Necessary because React skips re-renders
+   * when state doesn't change, so flipping autoFullscreen true→true
+   * wouldn't re-fire the effect. The "Voir plein écran" button in
+   * ResourceActions bumps this on each click so the button keeps
+   * responding after the user exits fullscreen with Échap.
+   */
+  fullscreenRequestId?: number;
 }
 
 export default function PDFViewer({
@@ -139,6 +148,7 @@ export default function PDFViewer({
   onDownload,
   className = '',
   autoFullscreen = false,
+  fullscreenRequestId,
 }: PDFViewerProps) {
   // ==========================================================================
   // State
@@ -405,6 +415,11 @@ export default function PDFViewer({
   // viewer is mounted with ?fullscreen=1 in the URL. Some browsers
   // (notably Safari and Firefox without user-activation) reject
   // programmatic fullscreen — we silently no-op in that case.
+  //
+  // 2026-09-18 (v3): depend on `fullscreenRequestId` so the parent can
+  // re-trigger fullscreen after the user exits via Échap (without this,
+  // a second click on "Voir plein écran" wouldn't re-fire the effect
+  // because autoFullscreen is already true).
   useEffect(() => {
     if (!autoFullscreen) return;
     if (loading || !numPages) return;
@@ -414,7 +429,7 @@ export default function PDFViewer({
     });
     return () => cancelAnimationFrame(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoFullscreen, loading, numPages]);
+  }, [autoFullscreen, loading, numPages, fullscreenRequestId]);
 
   // ==========================================================================
   // Keyboard navigation
