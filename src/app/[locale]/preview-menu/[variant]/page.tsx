@@ -80,6 +80,7 @@ export default async function PreviewMenuPage({
   const v = VARIANTS[id - 1];
   const MenuComponent = v.Component;
   const allLinks = flattenMegaMenuLinks();
+  const otherLocale = locale === 'fr' ? 'ar' : 'fr';
 
   // Determine hint message based on variant
   const hint =
@@ -119,6 +120,25 @@ export default async function PreviewMenuPage({
                 Suivant <ChevronRight className="w-4 h-4" />
               </Link>
             )}
+          </div>
+          {/* Language switcher (FR/AR) — 2026-09-18: bilingual menu */}
+          <div className="inline-flex items-center bg-white border border-slate-200 rounded-lg p-0.5">
+            <Link
+              href={`/fr/preview-menu/${id}`}
+              className={`px-3 py-1 rounded-md text-xs font-bold transition ${
+                locale === 'fr' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              🇫🇷 FR
+            </Link>
+            <Link
+              href={`/ar/preview-menu/${id}`}
+              className={`px-3 py-1 rounded-md text-xs font-bold transition ${
+                locale === 'ar' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              🇹🇳 AR
+            </Link>
           </div>
           <div className="text-sm text-slate-600">
             Proposition <strong className="text-slate-900">{id}/5</strong> ·{' '}
