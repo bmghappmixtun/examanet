@@ -95,6 +95,43 @@ const SECTION_ICONS: Record<string, typeof Atom> = {
   // 4AS lettres alias (same slug, same icon)
 };
 
+// ============== PLURALIZATION HELPERS (Arabic) ==============
+//
+// 2026-09-18: User clarified that "section" in Tunisian Arabic education
+// terminology is:
+//   - شعبة (singular, one section)
+//   - شعب (plural, multiple sections)
+//
+// We also handle Arabic number agreement:
+//   - 0 → "0 شعبة"
+//   - 1 → "شعبة واحدة" (or just "شعبة")
+//   - 2 → "شعبتان" (dual form)
+//   - 3-10 → "X شعب" (plural with count)
+//   - 11+ → "X شعبة" (singular noun with count, like French "11 sections")
+function arSectionsCount(n: number): string {
+  if (n === 0) return '٠ شعبة';
+  if (n === 1) return 'شعبة واحدة';
+  if (n === 2) return 'شعبتان';
+  if (n >= 3 && n <= 10) return `${toArabicNum(n)} شعب`;
+  return `${toArabicNum(n)} شعبة`;
+}
+
+// Same rule for "niveau" in Arabic:
+//   - 0 → "٠ مستوى", 1 → "مستوى واحد", 2 → "مستويان", 3-10 → "X مستويات", 11+ → "X مستوى"
+function arNiveauxCount(n: number): string {
+  if (n === 0) return '٠ مستوى';
+  if (n === 1) return 'مستوى واحد';
+  if (n === 2) return 'مستويان';
+  if (n >= 3 && n <= 10) return `${toArabicNum(n)} مستويات`;
+  return `${toArabicNum(n)} مستوى`;
+}
+
+// Convert 0-99 to Eastern Arabic numerals (٠-٩) — optional but nicer in RTL UI.
+function toArabicNum(n: number): string {
+  const ar = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  return String(n).replace(/[0-9]/g, (d) => ar[parseInt(d, 10)]);
+}
+
 // ============== COMPONENT ==============
 
 export default function MenuSideDrawer() {
@@ -145,12 +182,20 @@ export default function MenuSideDrawer() {
           onClick={() => setOpen(false)}
         >
           <aside
-            // 2026-09-18 v2: LEFT drawer (was right-0). The drawer stays on
-            // the LEFT in both FR and AR per user preference. The `dir`
-            // attribute inside the drawer mirrors the page locale so Arabic
-            // text and icons flow RTL within the panel.
+            // 2026-09-18 v3: Drawer position depends on locale.
+            //   - FR: slides in from the LEFT (slideInLeft)
+            //   - AR: slides in from the RIGHT (slideInRight) — user pref
+            //     to follow the natural reading direction in RTL.
+            // The `dir` attribute inside the drawer mirrors the page locale
+            // so Arabic text and icons flow RTL within the panel.
             dir={isAr ? 'rtl' : 'ltr'}
-            className="absolute top-0 left-0 h-full w-[420px] max-w-[92vw] bg-white shadow-2xl overflow-y-auto animate-[slideInLeft_300ms_ease-out] flex flex-col"
+            className={[
+              'absolute top-0 h-full w-[420px] max-w-[92vw] bg-white shadow-2xl',
+              'overflow-y-auto flex flex-col',
+              isAr
+                ? 'right-0 animate-[slideInRight_300ms_ease-out]'
+                : 'left-0 animate-[slideInLeft_300ms_ease-out]',
+            ].join(' ')}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -198,7 +243,7 @@ export default function MenuSideDrawer() {
                         </div>
                         <div className="text-[11px] text-slate-500 mt-0.5">
                           {isAr
-                            ? `${cycle.niveaux.length} مستويات · ${sectionsCount} أقسام`
+                            ? `${arNiveauxCount(cycle.niveaux.length)} · ${arSectionsCount(sectionsCount)}`
                             : `${cycle.niveaux.length} niveaux · ${sectionsCount} sections`}
                         </div>
                       </div>
@@ -269,7 +314,7 @@ function NiveauRow({
           </span>
           {niveau.sections.length > 0 && (
             <span className="text-[10px] text-slate-400 tabular-nums">
-              {isAr ? `${niveau.sections.length} أقسام` : `${niveau.sections.length} sections`}
+              {isAr ? arSectionsCount(niveau.sections.length) : `${niveau.sections.length} sections`}
             </span>
           )}
         </Link>
