@@ -30,9 +30,15 @@ const VARIANTS = [
   },
   {
     id: 3,
-    name: 'Side Drawer',
-    description: 'Tiroir latéral droit, liste verticale collapsible.',
-    pros: ['Mobile-friendly', 'Scroll vertical pour beaucoup de sections'],
+    name: 'Side Drawer (gauche + monochrome)',
+    description:
+      'Tiroir latéral **gauche**, liste verticale collapsible. Icônes lucide monochrome gris/blanc.',
+    pros: [
+      'Mobile-friendly',
+      'Scroll vertical pour beaucoup de sections',
+      'Look pro et minimaliste (gris/blanc)',
+      'Icônes lucide grandes et claires',
+    ],
     cons: ['Mono-colonne', 'Plus de clics pour atteindre une section'],
     Component: MenuSideDrawer,
     variant: 'click-drawer',
