@@ -55,6 +55,16 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFoundState, setNotFoundState] = useState(false);
+  // 2026-09-18: "Voir plein écran" needs to (1) activate the LazyPDFViewer
+  // if it isn't already mounted, then (2) ask the PDFViewer to request
+  // browser fullscreen once the PDF is loaded. Both flags live here so
+  // they reset only on remount (e.g. when the user navigates away).
+  const [viewerActivated, setViewerActivated] = useState(false);
+  const [autoFullscreen, setAutoFullscreen] = useState(false);
+  const handleFullscreenRequest = () => {
+    setViewerActivated(true);
+    setAutoFullscreen(true);
+  };
   
   useEffect(() => {
     let cancelled = false;
@@ -461,6 +471,11 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
                     fileName={`${resource.title}.pdf`}
                     pageCount={resource.pageCount ?? null}
                     fileSize={resource.fileSize ? humanFileSize(resource.fileSize) : null}
+                    // 2026-09-18 (v2): controlled activation so the
+                    // "Voir plein écran" button below can mount the
+                    // PDFViewer AND auto-fullscreen on the same page.
+                    activated={viewerActivated}
+                    autoFullscreen={autoFullscreen}
                   />
                 </div>
               </div>
@@ -469,8 +484,8 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
               {/* Action buttons (ResourceActions) — moved here 2026-08-17
                   from its old position (above the PDF viewer, in the title
                   card). User wanted the action button grid (Télécharger,
-                  Lire en ligne, Imprimer, Favoris, Partager, Signaler) to
-                  be right under the PDF viewer for quick access. */}
+                  Voir plein écran, Imprimer, Favoris, Partager, Signaler)
+                  to be right under the PDF viewer for quick access. */}
               {canViewBody && (
                 <ResourceActions
                   resourceId={resource.id} numericId={resource.numericId}
@@ -482,6 +497,9 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
                   originalFormat={resource.originalFormat}
                   isTeacher={userSession?.role === 'TEACHER' || userSession?.role === 'ADMIN'}
                   isOwner={userSession?.id === resource.teacherId}
+                  // 2026-09-18 (v2): same-page fullscreen instead of
+                  // redirecting to /viewer.
+                  onFullscreenRequest={handleFullscreenRequest}
                 />
               )}
 

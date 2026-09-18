@@ -30,6 +30,14 @@ type Props = {
   originalFormat?: string | null;
   isTeacher?: boolean;
   isOwner?: boolean;
+  /**
+   * 2026-09-18: parent callback that activates the in-page LazyPDFViewer
+   * AND triggers browser fullscreen on the PDF. Preferred over the old
+   * `/viewer` redirect — the user stays on the resource page and gets
+   * the same one-click fullscreen experience they'd get from pressing F
+   * in a desktop PDF reader.
+   */
+  onFullscreenRequest?: () => void;
 };
 
 export default function ResourceActions({
@@ -43,6 +51,7 @@ export default function ResourceActions({
   originalFormat,
   isTeacher,
   isOwner,
+  onFullscreenRequest,
 }: Props) {
   const [favorited, setFavorited] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -225,11 +234,21 @@ export default function ResourceActions({
           </button>
         )}
         <button
-          // 2026-09-18: "Voir plein écran" → opens the viewer page with
-          // ?fullscreen=1 so the PDF auto-enters browser fullscreen mode.
-          onClick={() => (window.location.href = `/ressources/${numericId}/${slug}/viewer?fullscreen=1`)}
+          // 2026-09-18 (v2): "Voir plein écran" now stays on the resource
+          // page. The parent activates the LazyPDFViewer (loads PDF.js if
+          // not yet loaded) and requests browser fullscreen on the
+          // PDFViewer shell. Same UX as pressing F in a desktop reader.
+          onClick={() => {
+            if (onFullscreenRequest) {
+              onFullscreenRequest();
+            } else {
+              // Fallback if the parent forgot to wire the callback:
+              // open the dedicated viewer page (still works, no fullscreen).
+              window.location.href = `/ressources/${numericId}/${slug}/viewer`;
+            }
+          }}
           className="btn-secondary justify-center text-sm"
-          title="Ouvrir le PDF en mode lecture plein écran"
+          title="Afficher le PDF en plein écran sur cette page"
         >
           <Maximize2 className="w-4 h-4" /> Voir plein écran
         </button>

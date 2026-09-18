@@ -13,6 +13,10 @@
  *
  * Server-side: the placeholder is server-rendered (no PDF.js on the wire).
  * Client-side: the actual <PDFViewer /> is dynamically imported on click.
+ *
+ * 2026-09-18: supports controlled activation via `activated` prop so the
+ * "Voir plein écran" button in ResourceActions can both activate the
+ * viewer AND request browser fullscreen without leaving the page.
  */
 
 import { useState, useEffect } from 'react';
@@ -38,17 +42,40 @@ interface LazyPDFViewerProps {
   pageCount?: number | null;
   /** File size in bytes, formatted */
   fileSize?: string | null;
+  /**
+   * 2026-09-18: controlled activation. When true, the PDFViewer mounts
+   * immediately (skips the placeholder). The parent should toggle this
+   * to true when the user wants to view the PDF without leaving the page
+   * (e.g. from the "Voir plein écran" button).
+   */
+  activated?: boolean;
+  /**
+   * Forwarded to PDFViewer so it can auto-request browser fullscreen
+   * once the document has loaded. Paired with `activated` from above.
+   */
+  autoFullscreen?: boolean;
 }
 
-export default function LazyPDFViewer({ url, fileName, pageCount, fileSize }: LazyPDFViewerProps) {
-  const [shouldLoad, setShouldLoad] = useState(false);
+export default function LazyPDFViewer({
+  url,
+  fileName,
+  pageCount,
+  fileSize,
+  activated: activatedProp,
+  autoFullscreen,
+}: LazyPDFViewerProps) {
+  // Internal state so clicking the placeholder button still works even
+  // when the component is uncontrolled (no `activated` prop supplied).
+  const [internalActivated, setInternalActivated] = useState(false);
+  // External prop wins when provided — parent owns the state.
+  const shouldLoad = activatedProp ?? internalActivated;
   // Defer the import slightly so it never blocks initial render. Browsers
   // will fetch the chunk in parallel with the rest of the page once the
   // user opts in. If they never click, the chunk is never downloaded.
-  const handleActivate = () => setShouldLoad(true);
+  const handleActivate = () => setInternalActivated(true);
 
   if (shouldLoad) {
-    return <PDFViewer url={url} fileName={fileName} />;
+    return <PDFViewer url={url} fileName={fileName} autoFullscreen={autoFullscreen} />;
   }
 
   return (
