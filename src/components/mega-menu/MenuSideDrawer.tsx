@@ -108,28 +108,31 @@ const SECTION_ICONS: Record<string, typeof Atom> = {
 //   - 2 → "شعبتان" (dual form)
 //   - 3-10 → "X شعب" (plural with count)
 //   - 11+ → "X شعبة" (singular noun with count, like French "11 sections")
+//
+// 2026-09-18 v2: User wants Latin digits (1, 2, 3) instead of
+// Eastern Arabic numerals (٠١٢٣). The number AGREEMENT still follows
+// Arabic rules (dual, plural), but the digits themselves stay ASCII.
+//
+// 2026-09-18 v2: User asked to NOT display the word "sections" at all
+// in the Collège section of the menu (Collège has 0 sections by
+// design — it's "tronc commun"). So when count === 0 we return '' and
+// the caller omits the badge entirely.
 function arSectionsCount(n: number): string {
-  if (n === 0) return '٠ شعبة';
+  if (n === 0) return ''; // Collège has no sections — caller hides badge
   if (n === 1) return 'شعبة واحدة';
   if (n === 2) return 'شعبتان';
-  if (n >= 3 && n <= 10) return `${toArabicNum(n)} شعب`;
-  return `${toArabicNum(n)} شعبة`;
+  if (n >= 3 && n <= 10) return `${n} شعب`;
+  return `${n} شعبة`;
 }
 
 // Same rule for "niveau" in Arabic:
-//   - 0 → "٠ مستوى", 1 → "مستوى واحد", 2 → "مستويان", 3-10 → "X مستويات", 11+ → "X مستوى"
+//   - 0 → "0 مستوى", 1 → "مستوى واحد", 2 → "مستويان", 3-10 → "X مستويات", 11+ → "X مستوى"
 function arNiveauxCount(n: number): string {
-  if (n === 0) return '٠ مستوى';
+  if (n === 0) return '0 مستوى';
   if (n === 1) return 'مستوى واحد';
   if (n === 2) return 'مستويان';
-  if (n >= 3 && n <= 10) return `${toArabicNum(n)} مستويات`;
-  return `${toArabicNum(n)} مستوى`;
-}
-
-// Convert 0-99 to Eastern Arabic numerals (٠-٩) — optional but nicer in RTL UI.
-function toArabicNum(n: number): string {
-  const ar = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  return String(n).replace(/[0-9]/g, (d) => ar[parseInt(d, 10)]);
+  if (n >= 3 && n <= 10) return `${n} مستويات`;
+  return `${n} مستوى`;
 }
 
 // ============== COMPONENT ==============
@@ -241,10 +244,26 @@ export default function MenuSideDrawer() {
                         <div className="font-extrabold text-base text-slate-900 tracking-wide">
                           {pickLabel(cycle.label, locale)}
                         </div>
+                        {/* 2026-09-18 v2: only show the cycle subtitle when
+                            there's something useful to say. For Collège
+                            (0 sections), we skip the entire subtitle —
+                            user asked to not show the word "sections"
+                            when the count is zero. We always show the
+                            "X niveaux" part because it's always useful. */}
                         <div className="text-[11px] text-slate-500 mt-0.5">
-                          {isAr
-                            ? `${arNiveauxCount(cycle.niveaux.length)} · ${arSectionsCount(sectionsCount)}`
-                            : `${cycle.niveaux.length} niveaux · ${sectionsCount} sections`}
+                          {(() => {
+                            const niveauxPart = isAr
+                              ? arNiveauxCount(cycle.niveaux.length)
+                              : `${cycle.niveaux.length} niveaux`;
+                            const sectionsPart = isAr
+                              ? arSectionsCount(sectionsCount)
+                              : `${sectionsCount} sections`;
+                            // Collège (sections === 0) → only show niveaux
+                            if (sectionsCount === 0) return niveauxPart;
+                            return isAr
+                              ? `${niveauxPart} · ${sectionsPart}`
+                              : `${niveauxPart} · ${sectionsPart}`;
+                          })()}
                         </div>
                       </div>
                     </div>
