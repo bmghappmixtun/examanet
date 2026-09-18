@@ -24,6 +24,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from '@/i18n/navigation';
+import { useLocale } from 'next-intl';
 import {
   X,
   ChevronRight,
@@ -53,6 +54,15 @@ import {
   ScrollText,
 } from 'lucide-react';
 import { MEGA_MENU_DATA, type MegaMenuNiveau, type MegaMenuSection } from '@/lib/mega-menu-data';
+
+/**
+ * Pick the right localized label based on current locale.
+ * Falls back to French if the locale is anything else (defensive).
+ */
+type Localized = { fr: string; ar: string };
+function pickLabel(localized: Localized, locale: string): string {
+  return locale === 'ar' ? localized.ar : localized.fr;
+}
 
 // ============== ICON MAPPING (lucide, monochrome) ==============
 
@@ -88,6 +98,8 @@ const SECTION_ICONS: Record<string, typeof Atom> = {
 // ============== COMPONENT ==============
 
 export default function MenuSideDrawer() {
+  const locale = useLocale(); // 'fr' | 'ar' — drives label + RTL
+  const isAr = locale === 'ar';
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -124,7 +136,7 @@ export default function MenuSideDrawer() {
         className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold text-base text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition"
       >
         <CycleIcon className="w-5 h-5 text-slate-500" strokeWidth={1.75} />
-        Niveaux
+        {isAr ? 'المستويات' : 'Niveaux'}
       </button>
 
       {open && (
@@ -133,7 +145,11 @@ export default function MenuSideDrawer() {
           onClick={() => setOpen(false)}
         >
           <aside
-            // LEFT drawer (was right-0)
+            // 2026-09-18 v2: LEFT drawer (was right-0). The drawer stays on
+            // the LEFT in both FR and AR per user preference. The `dir`
+            // attribute inside the drawer mirrors the page locale so Arabic
+            // text and icons flow RTL within the panel.
+            dir={isAr ? 'rtl' : 'ltr'}
             className="absolute top-0 left-0 h-full w-[420px] max-w-[92vw] bg-white shadow-2xl overflow-y-auto animate-[slideInLeft_300ms_ease-out] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
@@ -144,14 +160,18 @@ export default function MenuSideDrawer() {
                   <CycleIcon className="w-5 h-5 text-slate-700" strokeWidth={1.75} />
                 </div>
                 <div>
-                  <h2 className="font-extrabold text-lg text-slate-900">Niveaux</h2>
-                  <p className="text-xs text-slate-500">Programme officiel tunisien</p>
+                  <h2 className="font-extrabold text-lg text-slate-900">
+                    {isAr ? 'المستويات' : 'Niveaux'}
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    {isAr ? 'البرنامج الرسمي التونسي' : 'Programme officiel tunisien'}
+                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setOpen(false)}
                 className="p-2 hover:bg-slate-100 rounded-lg transition"
-                aria-label="Fermer"
+                aria-label={isAr ? 'إغلاق' : 'Fermer'}
               >
                 <X className="w-5 h-5 text-slate-500" strokeWidth={2} />
               </button>
@@ -161,6 +181,10 @@ export default function MenuSideDrawer() {
             <div className="p-5 space-y-7 flex-1">
               {MEGA_MENU_DATA.map((cycle) => {
                 const Icon = CYCLE_ICONS[cycle.slug] ?? School;
+                const sectionsCount = cycle.niveaux.reduce(
+                  (acc, n) => acc + n.sections.length,
+                  0,
+                );
                 return (
                   <section key={cycle.slug}>
                     {/* Cycle header — monochrome */}
@@ -169,11 +193,13 @@ export default function MenuSideDrawer() {
                         <Icon className="w-6 h-6 text-slate-700" strokeWidth={1.5} />
                       </div>
                       <div>
-                        <div className="font-extrabold text-sm text-slate-900 tracking-wide">
-                          {cycle.label.fr}
+                        <div className="font-extrabold text-base text-slate-900 tracking-wide">
+                          {pickLabel(cycle.label, locale)}
                         </div>
                         <div className="text-[11px] text-slate-500 mt-0.5">
-                          {cycle.label.ar} · {cycle.niveaux.length} niveaux
+                          {isAr
+                            ? `${cycle.niveaux.length} مستويات · ${sectionsCount} أقسام`
+                            : `${cycle.niveaux.length} niveaux · ${sectionsCount} sections`}
                         </div>
                       </div>
                     </div>
@@ -187,6 +213,7 @@ export default function MenuSideDrawer() {
                           isExpanded={expanded.has(n.slug)}
                           onToggle={() => toggle(n.slug)}
                           onNavigate={() => setOpen(false)}
+                          locale={locale}
                         />
                       ))}
                     </div>
@@ -198,7 +225,7 @@ export default function MenuSideDrawer() {
             {/* Footer */}
             <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-6 py-3 text-center">
               <p className="text-[11px] text-slate-500">
-                Échap pour fermer · © Examanet
+                {isAr ? 'إسكيب للإغلاق · © إكسامانت' : 'Échap pour fermer · © Examanet'}
               </p>
             </div>
           </aside>
@@ -215,13 +242,16 @@ function NiveauRow({
   isExpanded,
   onToggle,
   onNavigate,
+  locale,
 }: {
   niveau: MegaMenuNiveau;
   isExpanded: boolean;
   onToggle: () => void;
   onNavigate: () => void;
+  locale: string;
 }) {
   const Icon = NIVEAU_ICONS[niveau.slug] ?? BookOpen;
+  const isAr = locale === 'ar';
 
   return (
     <div className="rounded-xl overflow-hidden border border-slate-200 bg-white">
@@ -235,16 +265,18 @@ function NiveauRow({
             <Icon className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
           </div>
           <span className="flex-1 font-semibold text-sm text-slate-800">
-            {niveau.label.fr}
+            {pickLabel(niveau.label, locale)}
           </span>
-          <span className="text-[10px] text-slate-400">
-            {niveau.label.ar}
-          </span>
+          {niveau.sections.length > 0 && (
+            <span className="text-[10px] text-slate-400 tabular-nums">
+              {isAr ? `${niveau.sections.length} أقسام` : `${niveau.sections.length} sections`}
+            </span>
+          )}
         </Link>
         {niveau.sections.length > 0 && (
           <button
             onClick={onToggle}
-            className="px-3 hover:bg-slate-50 border-l border-slate-200 transition"
+            className="px-3 hover:bg-slate-50 border-s border-slate-200 transition"
             aria-expanded={isExpanded}
             aria-label={isExpanded ? 'Replier' : 'Déplier'}
           >
@@ -259,7 +291,7 @@ function NiveauRow({
       {isExpanded && niveau.sections.length > 0 && (
         <div className="bg-slate-50 border-t border-slate-200 px-3 py-2 space-y-0.5">
           {niveau.sections.map((s) => (
-            <SectionRow key={s.slug} section={s} onNavigate={onNavigate} />
+            <SectionRow key={s.slug} section={s} onNavigate={onNavigate} locale={locale} />
           ))}
         </div>
       )}
@@ -272,9 +304,11 @@ function NiveauRow({
 function SectionRow({
   section,
   onNavigate,
+  locale,
 }: {
   section: MegaMenuSection;
   onNavigate: () => void;
+  locale: string;
 }) {
   const Icon = SECTION_ICONS[section.slug] ?? BookOpen;
 
@@ -284,9 +318,15 @@ function SectionRow({
       onClick={onNavigate}
       className="flex items-center gap-2.5 py-2 px-2 rounded-md text-xs text-slate-700 hover:bg-white hover:text-slate-900 transition group"
     >
-      <Icon className="w-4 h-4 text-slate-500 group-hover:text-slate-700 shrink-0" strokeWidth={1.5} />
-      <span className="flex-1 truncate font-medium">{section.label.fr}</span>
-      <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 shrink-0" strokeWidth={2} />
+      <Icon
+        className="w-4 h-4 text-slate-500 group-hover:text-slate-700 shrink-0"
+        strokeWidth={1.5}
+      />
+      <span className="flex-1 truncate font-medium">{pickLabel(section.label, locale)}</span>
+      <ChevronRight
+        className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 shrink-0 rtl:rotate-180"
+        strokeWidth={2}
+      />
     </Link>
   );
 }
