@@ -23,6 +23,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from '@/i18n/navigation';
 import { useLocale } from 'next-intl';
 import {
@@ -151,10 +152,18 @@ export default function MenuSideDrawer({
   const isAr = locale === 'ar';
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // 2026-09-19: Track mount state so we can avoid SSR hydration issues
+  // when rendering via Portal (the portal target doesn't exist on the
+  // server). The trigger button itself is always rendered server-side.
+  const [mounted, setMounted] = useState(false);
 
   // Default trigger text (localized based on current locale)
   const DEFAULT_TRIGGER: { fr: string; ar: string } = { fr: 'Classes', ar: 'الأقسام' };
   const trigger = triggerLabel ?? DEFAULT_TRIGGER;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -195,11 +204,18 @@ export default function MenuSideDrawer({
         {isAr ? trigger.ar : trigger.fr}
       </button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm animate-[fadeIn_200ms]"
-          onClick={() => setOpen(false)}
-        >
+      {/* Drawer + backdrop rendered via Portal so they escape the
+          Header's stacking context. The Header has backdrop-blur-xl
+          which creates a containing block — a fixed-position child
+          would otherwise be sized to the Header (73px tall) instead
+          of the viewport (720px+). Rendering via Portal to
+          document.body restores the expected full-viewport sizing. */}
+      {open && mounted && typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm animate-[fadeIn_200ms]"
+            onClick={() => setOpen(false)}
+          >
           <aside
             // 2026-09-18 v3: Drawer position depends on locale.
             //   - FR: slides in from the LEFT (slideInLeft)
@@ -311,8 +327,10 @@ export default function MenuSideDrawer({
               </p>
             </div>
           </aside>
-        </div>
-      )}
+        </div>,
+          document.body
+        )
+      }
     </>
   );
 }
