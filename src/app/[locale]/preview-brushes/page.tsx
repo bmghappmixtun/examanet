@@ -72,7 +72,7 @@ export default async function PreviewBrushesPage() {
                   </div>
                   <div>
                     <div className="font-bold text-sm text-slate-900">
-                      {v.colorLabel} · {v.positionLabel}
+                      {v.colorLabel} · {v.shapeLabel}
                     </div>
                   </div>
                 </div>

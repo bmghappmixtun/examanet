@@ -376,11 +376,10 @@ function NiveauRow({
 
   return (
     <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-white">
-      {/* 2026-09-19: pastel brush stroke decoration (optional).
+      {/* 2026-09-19 v2: watercolor brush stroke (replaces abstract shapes).
           Renders behind the row content via absolute positioning.
-          The `relative` on the wrapper + `pointer-events-none` on
-          the brush keeps the row clickable. */}
-      {brushColor && brushVariant?.renderBrush(brushColor)}
+          `pointer-events-none` keeps the row clickable. */}
+      {brushColor && brushVariant?.renderBrush(brushColor, niveau.slug, niveauIndex)}
       <div className="relative flex items-stretch">
         <Link
           href={niveau.url}
