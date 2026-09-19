@@ -140,6 +140,7 @@ function arNiveauxCount(n: number): string {
 
 export default function MenuSideDrawer({
   triggerLabel,
+  brushVariant,
 }: {
   /**
    * Optional override for the trigger button text. Defaults to
@@ -147,6 +148,13 @@ export default function MenuSideDrawer({
    * embedded in a context with a different visual label.
    */
   triggerLabel?: { fr: string; ar: string };
+  /**
+   * 2026-09-19: Optional pastel brush stroke variant. Each niveau
+   * card can have a soft color splash behind it for decoration.
+   * Undefined = no brush stroke (default monochrome look).
+   * See src/components/mega-menu/brush-config.ts for all 9 variants.
+   */
+  brushVariant?: import('./brush-config').BrushVariant;
 } = {}) {
   const locale = useLocale(); // 'fr' | 'ar' — drives label + RTL
   const isAr = locale === 'ar';
@@ -304,14 +312,17 @@ export default function MenuSideDrawer({
 
                     {/* Niveaux list */}
                     <div className="space-y-1.5">
-                      {cycle.niveaux.map((n) => (
+                      {cycle.niveaux.map((n, nIdx) => (
                         <NiveauRow
                           key={n.slug}
                           niveau={n}
+                          niveauIndex={nIdx}
+                          cycleSlug={cycle.slug}
                           isExpanded={expanded.has(n.slug)}
                           onToggle={() => toggle(n.slug)}
                           onNavigate={() => setOpen(false)}
                           locale={locale}
+                          brushVariant={brushVariant}
                         />
                       ))}
                     </div>
@@ -339,23 +350,38 @@ export default function MenuSideDrawer({
 
 function NiveauRow({
   niveau,
+  niveauIndex,
+  cycleSlug,
   isExpanded,
   onToggle,
   onNavigate,
   locale,
+  brushVariant,
 }: {
   niveau: MegaMenuNiveau;
+  niveauIndex: number;
+  cycleSlug: 'college' | 'lycee';
   isExpanded: boolean;
   onToggle: () => void;
   onNavigate: () => void;
   locale: string;
+  brushVariant?: import('./brush-config').BrushVariant;
 }) {
   const Icon = NIVEAU_ICONS[niveau.slug] ?? BookOpen;
   const isAr = locale === 'ar';
+  // Compute the brush stroke color for this niveau
+  const brushColor = brushVariant
+    ? brushVariant.getColor(niveau.slug, cycleSlug, niveauIndex)
+    : null;
 
   return (
-    <div className="rounded-xl overflow-hidden border border-slate-200 bg-white">
-      <div className="flex items-stretch">
+    <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-white">
+      {/* 2026-09-19: pastel brush stroke decoration (optional).
+          Renders behind the row content via absolute positioning.
+          The `relative` on the wrapper + `pointer-events-none` on
+          the brush keeps the row clickable. */}
+      {brushColor && brushVariant?.renderBrush(brushColor)}
+      <div className="relative flex items-stretch">
         <Link
           href={niveau.url}
           onClick={onNavigate}
@@ -391,7 +417,7 @@ function NiveauRow({
         )}
       </div>
       {isExpanded && niveau.sections.length > 0 && (
-        <div className="bg-slate-50 border-t border-slate-200 px-3 py-2 space-y-0.5">
+        <div className="relative bg-slate-50 border-t border-slate-200 px-3 py-2 space-y-0.5">
           {niveau.sections.map((s) => (
             <SectionRow key={s.slug} section={s} onNavigate={onNavigate} locale={locale} />
           ))}
