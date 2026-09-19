@@ -10,6 +10,9 @@ import UserMenu from './UserMenu';
 import MobileMenu from './MobileMenu';
 import SearchModalTrigger from '@/components/search/SearchModalTrigger';
 import { ConnexionV2, InscriptionV2 } from './buttons/ButtonV2Aurora';
+// 2026-09-19: New "Classes" mega-menu (Side Drawer) replaces the old
+// /niveaux link. Trigger label is localized internally via useLocale().
+import MenuSideDrawer from '@/components/mega-menu/MenuSideDrawer';
 import { getTranslations } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
@@ -92,6 +95,15 @@ export default async function Header() {
                            w-0 group-hover:w-3/4 transition-all duration-500 ease-out"
               />
             </Link>
+            {/* 2026-09-19: NEW "Classes" mega-menu (Side Drawer). Sits right
+                after the Explorer link. Shows Collège/Lycée cycles with
+                each niveau and its sections, and links to
+                /fr/ressources?class=X&section=Y with the filters applied.
+                Drawer slides from the LEFT (FR) / RIGHT (AR). The existing
+                /niveaux link below is KEPT — they serve different needs:
+                - "Classes" drawer = quick filter access to resources
+                - "Niveaux" link = full curriculum overview page */}
+            <MenuSideDrawer />
             <Link
               href="/niveaux"
               className="group relative text-base font-semibold text-slate-700 hover:text-primary-600 transition-colors"
