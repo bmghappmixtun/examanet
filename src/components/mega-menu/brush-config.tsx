@@ -1,26 +1,19 @@
 /**
  * Brush stroke mapping for the Classes mega-menu.
  *
- * 2026-09-19 v3: User asked for a REAL watercolor brush stroke, not a
- * geometric SVG. Generated via scripts/generate_brushes.py using PIL:
- *   - 70+ horizontal directional stripes (the brush fibers)
- *   - Tapered ends (sin envelope)
- *   - Asymmetric body, dry-brush fibres at tips
- *   - Pastel colors with ~70% alpha at center
- *   - 3x retina (1260x285 px for 420x95 logical)
+ * 2026-09-19 v4: User-provided SVG brushes (real hand-painted
+ * watercolor strokes, not algorithmic). Each brush is a 300x90 SVG
+ * with multiple overlapping Bezier paths and varying opacities.
+ * The shapes differ slightly between colors (per spec: "Les formes
+ * peuvent être légèrement différentes entre elles. NE PAS simplement
+ * changer la couleur d'un même rectangle.")
  *
- * Each niveau gets its own PNG brush — user spec says:
- *   "Les formes peuvent être légèrement différentes entre elles.
- *    NE PAS simplement changer la couleur d'un même rectangle."
- * Different per-couleur seeds in the generator give different shapes.
- *
- * Hover state uses CSS transitions (opacity + slight scale).
+ * Files live in public/brushes/brush-{color}.svg.
  */
 
 export type BrushColor = 'blue' | 'green' | 'yellow' | 'pink' | 'purple' | 'peach' | 'turquoise';
 
-/** Map niveau slug -> brush color. Matches the colors used in the original
- * watercolor wash preview (and matches user spec for 7ème→4ème). */
+/** Map niveau slug -> brush color. Matches user spec for 7ème→4ème. */
 export const BRUSH_BY_NIVEAU_SLUG: Record<string, BrushColor> = {
   '7eme': 'blue',
   '8eme': 'green',
@@ -31,16 +24,15 @@ export const BRUSH_BY_NIVEAU_SLUG: Record<string, BrushColor> = {
   '4eme-secondaire': 'turquoise',
 };
 
-export const BRUSH_PUBLIC_PATH = (color: BrushColor): string => `/brushes/brush-${color}.png`;
+export const BRUSH_PUBLIC_PATH = (color: BrushColor): string => `/brushes/brush-${color}.svg`;
 
 /**
  * The brush is placed via <img> with absolute positioning so it scales
  * to the text width. We don't fix the dimensions here — let the parent
- * <BrushUnderLabel> wrapper handle it (see MenuSideDrawer.tsx).
+ * wrapper handle it (see MenuSideDrawer.tsx).
  *
- * IMPORTANT: We intentionally do NOT set a width/height in pixels here.
- * The user's spec uses `width: calc(100% + 32px)` on the wrapping element
- * so the brush auto-adapts to the label text length. The PNG is rendered
- * at its native 1260x285 retina ratio (≈4.42:1) and the browser will
- * letterbox-fit to the container's actual size.
+ * IMPORTANT: The SVG is 300x90 viewBox (≈3.33:1 aspect ratio). The
+ * user's spec uses `width: calc(100% + 32px)` on the wrapping element
+ * with `height: auto` so the brush auto-adapts to the label text length
+ * while preserving the aspect ratio.
  */
