@@ -1,365 +1,46 @@
-'use client';
 /**
- * Brush stroke variants for the Classes mega-menu.
+ * Brush stroke mapping for the Classes mega-menu.
  *
- * 2026-09-19 v2: User changed the design direction. Instead of
- * abstract geometric shapes (circles, diagonal bands, halos), they
- * want WATERCOLOR WASH style brush strokes — soft, organic, slightly
- * irregular edges, sitting behind the niveau label.
+ * 2026-09-19 v3: User asked for a REAL watercolor brush stroke, not a
+ * geometric SVG. Generated via scripts/generate_brushes.py using PIL:
+ *   - 70+ horizontal directional stripes (the brush fibers)
+ *   - Tapered ends (sin envelope)
+ *   - Asymmetric body, dry-brush fibres at tips
+ *   - Pastel colors with ~70% alpha at center
+ *   - 3x retina (1260x285 px for 420x95 logical)
  *
- * 9 combinations = 3 color strategies × 3 brush shapes:
- *   A. Per cycle   (Collège = mint, Lycée = lavender)
- *   B. Per niveau  (each level has its own pastel)
- *   C. Harmonized  (rotation of pastels, no level repeats)
+ * Each niveau gets its own PNG brush — user spec says:
+ *   "Les formes peuvent être légèrement différentes entre elles.
+ *    NE PAS simplement changer la couleur d'un même rectangle."
+ * Different per-couleur seeds in the generator give different shapes.
  *
- *   1. Wide horizontal stroke   (single elongated wash behind label)
- *   2. Layered strokes         (2 overlapping washes for depth)
- *   3. Diagonal stroke         (tilted watercolor wash)
- *
- * Reference colors observed in user's attached mockup:
- *   7ème  = sky blue
- *   8ème  = mint/green
- *   9ème  = yellow
- *   1AS   = pink
- *   2AS   = purple
- *   3AS   = peach/orange
- *   Bac   = teal/mint
+ * Hover state uses CSS transitions (opacity + slight scale).
  */
 
-// Pastel palette mapped to niveau slugs (matches user's mockup intent)
-const PASTELS = {
-  sky: '#bae6fd',     // sky-300 — 7ème
-  mint: '#bbf7d0',    // green-200 — 8ème / Bac
-  yellow: '#fef08a',  // yellow-200 — 9ème
-  pink: '#fbcfe8',    // pink-200 — 1ère
-  purple: '#ddd6fe',  // violet-200 — 2ème
-  peach: '#fed7aa',   // orange-200 — 3ème
-  teal: '#99f6e4',    // teal-200 — Bac alt
-  lavender: '#e9d5ff', // purple-100 — Lycée cycle
-} as const;
+export type BrushColor = 'blue' | 'green' | 'yellow' | 'pink' | 'purple' | 'peach' | 'turquoise';
 
-// A. Per cycle: Collège → mint, Lycée → lavender
-const COLORS_BY_CYCLE = {
-  college: PASTELS.mint,
-  lycee: PASTELS.lavender,
+/** Map niveau slug -> brush color. Matches the colors used in the original
+ * watercolor wash preview (and matches user spec for 7ème→4ème). */
+export const BRUSH_BY_NIVEAU_SLUG: Record<string, BrushColor> = {
+  '7eme': 'blue',
+  '8eme': 'green',
+  '9eme': 'yellow',
+  '1ere-secondaire': 'pink',
+  '2eme-secondaire': 'purple',
+  '3eme-secondaire': 'peach',
+  '4eme-secondaire': 'turquoise',
 };
 
-// B. Per niveau: each niveau gets a distinct pastel (matches mockup)
-const COLORS_BY_NIVEAU: Record<string, string> = {
-  '7eme': PASTELS.sky,
-  '8eme': PASTELS.mint,
-  '9eme': PASTELS.yellow,
-  '1ere-secondaire': PASTELS.pink,
-  '2eme-secondaire': PASTELS.purple,
-  '3eme-secondaire': PASTELS.peach,
-  '4eme-secondaire': PASTELS.teal,
-};
-
-// C. Harmonized: rotation of pastels, cycle-agnostic
-const COLORS_HARMONIZED = [
-  PASTELS.sky,     // 7eme
-  PASTELS.mint,    // 8eme
-  PASTELS.yellow,  // 9eme
-  PASTELS.teal,    // 1AS
-  PASTELS.pink,    // 2AS
-  PASTELS.lavender, // 3AS
-  PASTELS.peach,   // Bac
-];
-
-export type ColorStrategy = 'A' | 'B' | 'C';
-export type BrushShape = '1' | '2' | '3';
-
-export type BrushVariant = {
-  code: `${ColorStrategy}${BrushShape}`;
-  colorLabel: string;
-  shapeLabel: string;
-  description: string;
-  /** Returns the hex color for a given niveau + cycle */
-  getColor: (niveauSlug: string, cycleSlug: 'college' | 'lycee', niveauIndex: number) => string;
-  /** Returns the JSX to render (positioned absolutely inside the niveau card) */
-  renderBrush: (colorHex: string, niveauSlug?: string, niveauIndex?: number) => React.ReactNode;
-};
-
-// ===========================================================================
-// SVG path generator for watercolor wash shapes
-// ===========================================================================
+export const BRUSH_PUBLIC_PATH = (color: BrushColor): string => `/brushes/brush-${color}.png`;
 
 /**
- * Generate a slightly irregular horizontal "watercolor wash" path.
- * The path has a soft top edge, soft bottom edge, and is wider in the middle
- * to mimic how watercolor actually spreads on paper. We use multiple control
- * points with slight randomization to avoid a perfect geometric look.
+ * The brush is placed via <img> with absolute positioning so it scales
+ * to the text width. We don't fix the dimensions here — let the parent
+ * <BrushUnderLabel> wrapper handle it (see MenuSideDrawer.tsx).
+ *
+ * IMPORTANT: We intentionally do NOT set a width/height in pixels here.
+ * The user's spec uses `width: calc(100% + 32px)` on the wrapping element
+ * so the brush auto-adapts to the label text length. The PNG is rendered
+ * at its native 1260x285 retina ratio (≈4.42:1) and the browser will
+ * letterbox-fit to the container's actual size.
  */
-function watercolorWashPath(width: number, height: number, seed = 0): string {
-  // Deterministic pseudo-random for stable rendering between SSR/CSR
-  const rand = (i: number) => {
-    const x = Math.sin(seed * 9301 + i * 49297) * 233280;
-    return x - Math.floor(x);
-  };
-
-  // Top edge (slightly wavy, going right-to-left to make it a closed shape)
-  const topY = height * 0.35;
-  const botY = height * 0.65;
-  const midX = width / 2;
-  const midY = height / 2;
-
-  // Build a wavy top edge
-  const topPoints: string[] = [];
-  for (let i = 0; i <= 8; i++) {
-    const x = (i / 8) * width;
-    const wobble = (rand(i + 1) - 0.5) * height * 0.15;
-    topPoints.push(`${x.toFixed(1)},${(topY + wobble).toFixed(1)}`);
-  }
-
-  // Build a wavy bottom edge (reverse direction)
-  const botPoints: string[] = [];
-  for (let i = 8; i >= 0; i--) {
-    const x = (i / 8) * width;
-    const wobble = (rand(i + 100) - 0.5) * height * 0.18;
-    botPoints.push(`${x.toFixed(1)},${(botY + wobble).toFixed(1)}`);
-  }
-
-  // Smooth path using S (cubic Bezier) commands between points
-  let path = `M${topPoints[0]}`;
-  for (let i = 1; i < topPoints.length; i++) {
-    const [x1, y1] = topPoints[i].split(',');
-    const [x0, y0] = topPoints[i - 1].split(',');
-    const cx1 = (parseFloat(x0) + parseFloat(x1)) / 2;
-    path += ` Q${cx1.toFixed(1)},${y0} ${x1},${y1}`;
-  }
-  // Connect top to bottom
-  path += ` L${botPoints[0]}`;
-  for (let i = 1; i < botPoints.length; i++) {
-    const [x1, y1] = botPoints[i].split(',');
-    const [x0, y0] = botPoints[i - 1].split(',');
-    const cx1 = (parseFloat(x0) + parseFloat(x1)) / 2;
-    path += ` Q${cx1.toFixed(1)},${y0} ${x1},${y1}`;
-  }
-  path += ' Z';
-
-  return path;
-}
-
-/**
- * Generate a tilted (rotated) watercolor wash path.
- */
-function tiltedWashPath(width: number, height: number, seed = 0): string {
-  const base = watercolorWashPath(width, height, seed);
-  return base; // tilt is applied via CSS transform
-}
-
-/**
- * Generate a smaller secondary wash for layered strokes.
- */
-function secondaryWashPath(width: number, height: number, seed = 0): string {
-  const rand = (i: number) => {
-    const x = Math.sin(seed * 7919 + i * 31337) * 233280;
-    return x - Math.floor(x);
-  };
-
-  // Smaller, offset blob
-  const topY = height * 0.4;
-  const botY = height * 0.7;
-  const topPoints: string[] = [];
-  for (let i = 0; i <= 6; i++) {
-    const x = (i / 6) * width * 0.8 + width * 0.15;
-    const wobble = (rand(i + 5) - 0.5) * height * 0.12;
-    topPoints.push(`${x.toFixed(1)},${(topY + wobble).toFixed(1)}`);
-  }
-  const botPoints: string[] = [];
-  for (let i = 6; i >= 0; i--) {
-    const x = (i / 6) * width * 0.8 + width * 0.15;
-    const wobble = (rand(i + 200) - 0.5) * height * 0.15;
-    botPoints.push(`${x.toFixed(1)},${(botY + wobble).toFixed(1)}`);
-  }
-
-  let path = `M${topPoints[0]}`;
-  for (let i = 1; i < topPoints.length; i++) {
-    const [x1, y1] = topPoints[i].split(',');
-    const [x0, y0] = topPoints[i - 1].split(',');
-    const cx1 = (parseFloat(x0) + parseFloat(x1)) / 2;
-    path += ` Q${cx1.toFixed(1)},${y0} ${x1},${y1}`;
-  }
-  path += ` L${botPoints[0]}`;
-  for (let i = 1; i < botPoints.length; i++) {
-    const [x1, y1] = botPoints[i].split(',');
-    const [x0, y0] = botPoints[i - 1].split(',');
-    const cx1 = (parseFloat(x0) + parseFloat(x1)) / 2;
-    path += ` Q${cx1.toFixed(1)},${y0} ${x1},${y1}`;
-  }
-  path += ' Z';
-
-  return path;
-}
-
-// ===========================================================================
-// Brush shape renderers
-// ===========================================================================
-
-function WatercolorStroke1({ color, seed = 0 }: { color: string; seed?: number }) {
-  // 1. Small horizontal stroke — single elongated wash just under the text
-  // 2026-09-19 v3: user wants "just a small brush stroke just under the
-  // text" (referencing attached mockup). Reduced from full-card wash
-  // (280×80) to a small underline-style stroke (120×22) that sits
-  // beneath the bold label "7ème année".
-  const path = watercolorWashPath(120, 22, seed);
-  return (
-    <svg
-      viewBox="0 0 120 22"
-      preserveAspectRatio="none"
-      // Positioned just below the text (~middle of the row, slightly
-      // offset). Width is ~70% of the row width so it stays subtle.
-      className="absolute left-3 top-[58%] w-[70%] h-[22px] pointer-events-none"
-      style={{ transform: 'translateY(-2px)' }}
-      aria-hidden
-    >
-      <path
-        d={path}
-        fill={color}
-        fillOpacity="0.65"
-      />
-    </svg>
-  );
-}
-
-function WatercolorStroke2({ color, seed = 0 }: { color: string; seed?: number }) {
-  // 2. Layered small strokes — 2 overlapping washes for depth
-  const mainPath = watercolorWashPath(120, 22, seed);
-  const subPath = secondaryWashPath(120, 22, seed + 99);
-  return (
-    <>
-      <svg
-        viewBox="0 0 120 22"
-        preserveAspectRatio="none"
-        className="absolute left-3 top-[58%] w-[70%] h-[22px] pointer-events-none"
-        style={{ transform: 'translateY(-2px)' }}
-        aria-hidden
-      >
-        <path
-          d={mainPath}
-          fill={color}
-          fillOpacity="0.55"
-        />
-      </svg>
-      <svg
-        viewBox="0 0 120 22"
-        preserveAspectRatio="none"
-        className="absolute left-4 top-[58%] w-[65%] h-[20px] pointer-events-none mix-blend-multiply"
-        style={{ transform: 'translateY(2px)' }}
-        aria-hidden
-      >
-        <path
-          d={subPath}
-          fill={color}
-          fillOpacity="0.45"
-        />
-      </svg>
-    </>
-  );
-}
-
-function WatercolorStroke3({ color, seed = 0 }: { color: string; seed?: number }) {
-  // 3. Diagonal small stroke — tilted wash just under the text
-  const path = tiltedWashPath(120, 22, seed);
-  return (
-    <svg
-      viewBox="0 0 120 22"
-      preserveAspectRatio="none"
-      className="absolute left-3 top-[58%] w-[70%] h-[22px] pointer-events-none"
-      style={{ transform: 'translateY(-2px) rotate(-3deg)' }}
-      aria-hidden
-    >
-      <path
-        d={path}
-        fill={color}
-        fillOpacity="0.7"
-      />
-    </svg>
-  );
-}
-
-// ===========================================================================
-// Variant registry
-// ===========================================================================
-
-export const BRUSH_VARIANTS: BrushVariant[] = [
-  // ===== A. Per cycle =====
-  {
-    code: 'A1',
-    colorLabel: 'Par cycle',
-    shapeLabel: 'Watercolor horizontal',
-    description: 'Tous les niveaux Collège = mint, Lycée = lavender. Trait horizontal aquarelle derrière le label.',
-    getColor: (_slug, cycle) => COLORS_BY_CYCLE[cycle],
-    renderBrush: (c) => <WatercolorStroke1 color={c} seed={1} />,
-  },
-  {
-    code: 'A2',
-    colorLabel: 'Par cycle',
-    shapeLabel: 'Watercolor superposé',
-    description: 'B. Per cycle — 2 traits aquarelle superposés pour effet de profondeur.',
-    getColor: (_slug, cycle) => COLORS_BY_CYCLE[cycle],
-    renderBrush: (c) => <WatercolorStroke2 color={c} seed={2} />,
-  },
-  {
-    code: 'A3',
-    colorLabel: 'Par cycle',
-    shapeLabel: 'Watercolor incliné',
-    description: 'B. Per cycle — trait aquarelle incliné (-4°) pour effet dynamique.',
-    getColor: (_slug, cycle) => COLORS_BY_CYCLE[cycle],
-    renderBrush: (c) => <WatercolorStroke3 color={c} seed={3} />,
-  },
-  // ===== B. Per niveau =====
-  {
-    code: 'B1',
-    colorLabel: 'Par niveau',
-    shapeLabel: 'Watercolor horizontal',
-    description: 'Chaque niveau a sa propre couleur (sky/mint/yellow/pink/purple/peach/teal). Trait horizontal.',
-    getColor: (slug) => COLORS_BY_NIVEAU[slug] ?? PASTELS.mint,
-    renderBrush: (c, _slug = "", idx = 0) => <WatercolorStroke1 color={c} seed={idx + 10} />,
-  },
-  {
-    code: 'B2',
-    colorLabel: 'Par niveau',
-    shapeLabel: 'Watercolor superposé',
-    description: 'B. Per niveau — 2 traits aquarelle superposés, chaque niveau sa couleur.',
-    getColor: (slug) => COLORS_BY_NIVEAU[slug] ?? PASTELS.mint,
-    renderBrush: (c, _slug = "", idx = 0) => <WatercolorStroke2 color={c} seed={idx + 20} />,
-  },
-  {
-    code: 'B3',
-    colorLabel: 'Par niveau',
-    shapeLabel: 'Watercolor incliné',
-    description: 'B. Per niveau — trait aquarelle incliné, chaque niveau sa couleur.',
-    getColor: (slug) => COLORS_BY_NIVEAU[slug] ?? PASTELS.mint,
-    renderBrush: (c, _slug = "", idx = 0) => <WatercolorStroke3 color={c} seed={idx + 30} />,
-  },
-  // ===== C. Harmonized rotation =====
-  {
-    code: 'C1',
-    colorLabel: 'Harmonisée',
-    shapeLabel: 'Watercolor horizontal',
-    description: 'Rotation de 7 pastels (chaque niveau une couleur différente). Trait horizontal.',
-    getColor: (_slug, _cycle, idx) => COLORS_HARMONIZED[idx % COLORS_HARMONIZED.length],
-    renderBrush: (c, _slug = "", idx = 0) => <WatercolorStroke1 color={c} seed={idx + 100} />,
-  },
-  {
-    code: 'C2',
-    colorLabel: 'Harmonisée',
-    shapeLabel: 'Watercolor superposé',
-    description: 'Rotation de pastels + traits superposés pour effet riche.',
-    getColor: (_slug, _cycle, idx) => COLORS_HARMONIZED[idx % COLORS_HARMONIZED.length],
-    renderBrush: (c, _slug = "", idx = 0) => <WatercolorStroke2 color={c} seed={idx + 200} />,
-  },
-  {
-    code: 'C3',
-    colorLabel: 'Harmonisée',
-    shapeLabel: 'Watercolor incliné',
-    description: 'Rotation de pastels + trait incliné — effet le plus vivant.',
-    getColor: (_slug, _cycle, idx) => COLORS_HARMONIZED[idx % COLORS_HARMONIZED.length],
-    renderBrush: (c, _slug = "", idx = 0) => <WatercolorStroke3 color={c} seed={idx + 300} />,
-  },
-];
-
-export function getBrushVariant(code: string): BrushVariant | undefined {
-  return BRUSH_VARIANTS.find((v) => v.code === code);
-}

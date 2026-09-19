@@ -55,6 +55,7 @@ import {
   ScrollText,
 } from 'lucide-react';
 import { MEGA_MENU_DATA, type MegaMenuNiveau, type MegaMenuSection } from '@/lib/mega-menu-data';
+import { BRUSH_BY_NIVEAU_SLUG, BRUSH_PUBLIC_PATH } from './brush-config';
 
 /**
  * Pick the right localized label based on current locale.
@@ -140,7 +141,6 @@ function arNiveauxCount(n: number): string {
 
 export default function MenuSideDrawer({
   triggerLabel,
-  brushVariant,
 }: {
   /**
    * Optional override for the trigger button text. Defaults to
@@ -148,13 +148,6 @@ export default function MenuSideDrawer({
    * embedded in a context with a different visual label.
    */
   triggerLabel?: { fr: string; ar: string };
-  /**
-   * 2026-09-19: Optional pastel brush stroke variant. Each niveau
-   * card can have a soft color splash behind it for decoration.
-   * Undefined = no brush stroke (default monochrome look).
-   * See src/components/mega-menu/brush-config.ts for all 9 variants.
-   */
-  brushVariant?: import('./brush-config').BrushVariant;
 } = {}) {
   const locale = useLocale(); // 'fr' | 'ar' — drives label + RTL
   const isAr = locale === 'ar';
@@ -322,7 +315,6 @@ export default function MenuSideDrawer({
                           onToggle={() => toggle(n.slug)}
                           onNavigate={() => setOpen(false)}
                           locale={locale}
-                          brushVariant={brushVariant}
                         />
                       ))}
                     </div>
@@ -356,7 +348,7 @@ function NiveauRow({
   onToggle,
   onNavigate,
   locale,
-  brushVariant,
+  showBrush = true,
 }: {
   niveau: MegaMenuNiveau;
   niveauIndex: number;
@@ -365,32 +357,45 @@ function NiveauRow({
   onToggle: () => void;
   onNavigate: () => void;
   locale: string;
-  brushVariant?: import('./brush-config').BrushVariant;
+  /**
+   * 2026-09-19 v3: Show real watercolor PNG brush behind the label.
+   * When true, the brush is rendered behind the label text and
+   * scales to its width via the user's `width: calc(100% + 32px)`
+   * spec. Default true (cleaner look, opt-out for monochrome).
+   */
+  showBrush?: boolean;
 }) {
   const Icon = NIVEAU_ICONS[niveau.slug] ?? BookOpen;
   const isAr = locale === 'ar';
-  // Compute the brush stroke color for this niveau
-  const brushColor = brushVariant
-    ? brushVariant.getColor(niveau.slug, cycleSlug, niveauIndex)
-    : null;
+  const brushColor = BRUSH_BY_NIVEAU_SLUG[niveau.slug];
 
   return (
     <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-white">
-      {/* 2026-09-19 v2: watercolor brush stroke (replaces abstract shapes).
-          Renders behind the row content via absolute positioning.
-          `pointer-events-none` keeps the row clickable. */}
-      {brushColor && brushVariant?.renderBrush(brushColor, niveau.slug, niveauIndex)}
       <div className="relative flex items-stretch">
         <Link
           href={niveau.url}
           onClick={onNavigate}
-          className="flex-1 flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition"
+          className="group flex-1 flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition"
         >
           <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
             <Icon className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
           </div>
-          <span className="flex-1 font-semibold text-sm text-slate-800">
-            {pickLabel(niveau.label, locale)}
+          {/* 2026-09-19 v3: Real watercolor brush behind label.
+              Structure per user spec: <div class="class-label">
+              <img class="brush"> + <span>label</span></div> */}
+          <span className="class-label relative inline-flex items-center justify-center flex-1 font-semibold text-sm text-slate-800">
+            {showBrush && brushColor && (
+              <img
+                src={BRUSH_PUBLIC_PATH(brushColor)}
+                alt=""
+                aria-hidden="true"
+                className="brush absolute left-1/2 top-1/2 w-[calc(100%+32px)] h-auto -translate-x-1/2 -translate-y-1/2 z-0 pointer-events-none select-none"
+                draggable={false}
+              />
+            )}
+            <span className="relative z-10">
+              {pickLabel(niveau.label, locale)}
+            </span>
           </span>
           {niveau.sections.length > 0 && (
             <span className="text-[10px] text-slate-400 tabular-nums">
@@ -401,8 +406,6 @@ function NiveauRow({
         {niveau.sections.length > 0 && (
           <button
             onClick={onToggle}
-            // 2026-09-18: tap target bumped to 44x44 (was px-3 = 41x60).
-            // Width was the issue — height was already 60px from the row.
             className="min-w-[44px] hover:bg-slate-50 border-s border-slate-200 transition flex items-center justify-center"
             aria-expanded={isExpanded}
             aria-label={isExpanded ? (isAr ? 'طي' : 'Replier') : (isAr ? 'بسط' : 'Déplier')}
