@@ -7,7 +7,7 @@
  *   - 2AS section slugs: sciences, technologies-informatique, eco-services, lettres, sport
  *   - 3AS/4AS section slugs: maths, sciences-experimentales, technique, sciences-informatique, eco-gestion, lettres, sport
  *
- * Filter URL format: /fr/ressources?class=<slug>&section=<slug>
+ * Filter URL format: /ressources?class=<slug>&section=<slug>
  * (multi-select supported by appending: ?class=a&class=b&section=x&section=y)
  *
  * 2026-09-18: Created for the 5 mega menu proposals preview.
@@ -49,21 +49,21 @@ export const MEGA_MENU_DATA: MegaMenuCycle[] = [
       {
         slug: '7eme',
         label: { fr: '7ème année', ar: 'السابعة أساسي' },
-        url: '/fr/ressources?class=7eme',
+        url: '/ressources?class=7eme',
         emoji: '📗',
         sections: [],
       },
       {
         slug: '8eme',
         label: { fr: '8ème année', ar: 'الثامنة أساسي' },
-        url: '/fr/ressources?class=8eme',
+        url: '/ressources?class=8eme',
         emoji: '📘',
         sections: [],
       },
       {
         slug: '9eme',
         label: { fr: '9ème année', ar: 'التاسعة أساسي' },
-        url: '/fr/ressources?class=9eme',
+        url: '/ressources?class=9eme',
         emoji: '📙',
         sections: [],
       },
@@ -78,7 +78,7 @@ export const MEGA_MENU_DATA: MegaMenuCycle[] = [
       {
         slug: '1ere-secondaire',
         label: { fr: '1ère année', ar: 'الأولى ثانوي' },
-        url: '/fr/ressources?class=1ere-secondaire',
+        url: '/ressources?class=1ere-secondaire',
         emoji: '📓',
         // Tronc commun — no sections per official program (réforme 2017)
         sections: [],
@@ -86,41 +86,41 @@ export const MEGA_MENU_DATA: MegaMenuCycle[] = [
       {
         slug: '2eme-secondaire',
         label: { fr: '2ème année', ar: 'الثانية ثانوي' },
-        url: '/fr/ressources?class=2eme-secondaire',
+        url: '/ressources?class=2eme-secondaire',
         emoji: '📔',
         sections: [
           {
             slug: 'sciences',
             label: { fr: 'Sciences', ar: 'علوم' },
-            url: '/fr/ressources?class=2eme-secondaire&section=sciences',
+            url: '/ressources?class=2eme-secondaire&section=sciences',
             emoji: '🔬',
             desc: { fr: 'Math, Physique, SVT', ar: 'رياضيات، فيزياء، علوم' },
           },
           {
             slug: 'technologies-informatique',
             label: { fr: 'Tech. Informatique', ar: 'تكنولوجيا الإعلامية' },
-            url: '/fr/ressources?class=2eme-secondaire&section=technologies-informatique',
+            url: '/ressources?class=2eme-secondaire&section=technologies-informatique',
             emoji: '💻',
             desc: { fr: 'Spécialité Informatique', ar: 'تخصص إعلامية' },
           },
           {
             slug: 'eco-services',
             label: { fr: 'Économie & Services', ar: 'اقتصاد وتصرف' },
-            url: '/fr/ressources?class=2eme-secondaire&section=eco-services',
+            url: '/ressources?class=2eme-secondaire&section=eco-services',
             emoji: '📊',
             desc: { fr: 'Gestion, Économie', ar: 'تصرف، اقتصاد' },
           },
           {
             slug: 'lettres',
             label: { fr: 'Lettres', ar: 'آداب' },
-            url: '/fr/ressources?class=2eme-secondaire&section=lettres',
+            url: '/ressources?class=2eme-secondaire&section=lettres',
             emoji: '📚',
             desc: { fr: 'Langues, Philo', ar: 'لغات، فلسفة' },
           },
           {
             slug: 'sport',
             label: { fr: 'Sport', ar: 'رياضة' },
-            url: '/fr/ressources?class=2eme-secondaire&section=sport',
+            url: '/ressources?class=2eme-secondaire&section=sport',
             emoji: '⚽',
             desc: { fr: 'EPS + matières', ar: 'تربية بدنية + مواد' },
           },
@@ -129,55 +129,55 @@ export const MEGA_MENU_DATA: MegaMenuCycle[] = [
       {
         slug: '3eme-secondaire',
         label: { fr: '3ème année', ar: 'الثالثة ثانوي' },
-        url: '/fr/ressources?class=3eme-secondaire',
+        url: '/ressources?class=3eme-secondaire',
         emoji: '📒',
         sections: [
           {
             slug: 'maths',
             label: { fr: 'Mathématiques', ar: 'رياضيات' },
-            url: '/fr/ressources?class=3eme-secondaire&section=maths',
+            url: '/ressources?class=3eme-secondaire&section=maths',
             emoji: '📐',
             desc: { fr: 'Math (7h/sem)', ar: 'رياضيات (7ح/أسبوع)' },
           },
           {
             slug: 'sciences-experimentales',
             label: { fr: 'Sciences Exp.', ar: 'علوم تجريبية' },
-            url: '/fr/ressources?class=3eme-secondaire&section=sciences-experimentales',
+            url: '/ressources?class=3eme-secondaire&section=sciences-experimentales',
             emoji: '🧪',
             desc: { fr: 'Math, Physique, SVT', ar: 'رياضيات، فيزياء، علوم' },
           },
           {
             slug: 'technique',
             label: { fr: 'Sciences Techniques', ar: 'تقني علمي' },
-            url: '/fr/ressources?class=3eme-secondaire&section=technique',
+            url: '/ressources?class=3eme-secondaire&section=technique',
             emoji: '⚙️',
             desc: { fr: 'Math, Génie méca/élec', ar: 'رياضيات، هندسة' },
           },
           {
             slug: 'sciences-informatique',
             label: { fr: 'Sc. Informatique', ar: 'علوم إعلامية' },
-            url: '/fr/ressources?class=3eme-secondaire&section=sciences-informatique',
+            url: '/ressources?class=3eme-secondaire&section=sciences-informatique',
             emoji: '💾',
             desc: { fr: 'Algo, Prog, TIC, SE', ar: 'برمجة، خوارزميات' },
           },
           {
             slug: 'eco-gestion',
             label: { fr: 'Éco-Gestion', ar: 'اقتصاد وتصرف' },
-            url: '/fr/ressources?class=3eme-secondaire&section=eco-gestion',
+            url: '/ressources?class=3eme-secondaire&section=eco-gestion',
             emoji: '💼',
             desc: { fr: 'Économie, Gestion', ar: 'اقتصاد، تصرف' },
           },
           {
             slug: 'lettres',
             label: { fr: 'Lettres', ar: 'آداب' },
-            url: '/fr/ressources?class=3eme-secondaire&section=lettres',
+            url: '/ressources?class=3eme-secondaire&section=lettres',
             emoji: '📚',
             desc: { fr: 'Philo, Langues', ar: 'فلسفة، لغات' },
           },
           {
             slug: 'sport',
             label: { fr: 'Sport', ar: 'رياضة' },
-            url: '/fr/ressources?class=3eme-secondaire&section=sport',
+            url: '/ressources?class=3eme-secondaire&section=sport',
             emoji: '⚽',
             desc: { fr: 'EPS + matières', ar: 'تربية بدنية' },
           },
@@ -186,55 +186,55 @@ export const MEGA_MENU_DATA: MegaMenuCycle[] = [
       {
         slug: '4eme-secondaire',
         label: { fr: 'Baccalauréat', ar: 'الباكالوريا' },
-        url: '/fr/ressources?class=4eme-secondaire',
+        url: '/ressources?class=4eme-secondaire',
         emoji: '🎯',
         sections: [
           {
             slug: 'maths',
             label: { fr: 'Bac Mathématiques', ar: 'باك رياضيات' },
-            url: '/fr/ressources?class=4eme-secondaire&section=maths',
+            url: '/ressources?class=4eme-secondaire&section=maths',
             emoji: '📐',
             desc: { fr: 'Math (9h/sem)', ar: 'رياضيات (9ح/أسبوع)' },
           },
           {
             slug: 'sciences-experimentales',
             label: { fr: 'Bac Sciences Exp.', ar: 'باك علوم تجريبية' },
-            url: '/fr/ressources?class=4eme-secondaire&section=sciences-experimentales',
+            url: '/ressources?class=4eme-secondaire&section=sciences-experimentales',
             emoji: '🧪',
             desc: { fr: 'Math, Physique, SVT', ar: 'رياضيات، فيزياء، علوم' },
           },
           {
             slug: 'technique',
             label: { fr: 'Bac Technique', ar: 'باك تقني' },
-            url: '/fr/ressources?class=4eme-secondaire&section=technique',
+            url: '/ressources?class=4eme-secondaire&section=technique',
             emoji: '⚙️',
             desc: { fr: 'Math, Génie', ar: 'رياضيات، هندسة' },
           },
           {
             slug: 'sciences-informatique',
             label: { fr: 'Bac Sciences Info', ar: 'باك علوم إعلامية' },
-            url: '/fr/ressources?class=4eme-secondaire&section=sciences-informatique',
+            url: '/ressources?class=4eme-secondaire&section=sciences-informatique',
             emoji: '💾',
             desc: { fr: 'Algo, BD, TIC', ar: 'برمجة، قواعد بيانات' },
           },
           {
             slug: 'eco-gestion',
             label: { fr: 'Bac Éco-Gestion', ar: 'باك اقتصاد وتصرف' },
-            url: '/fr/ressources?class=4eme-secondaire&section=eco-gestion',
+            url: '/ressources?class=4eme-secondaire&section=eco-gestion',
             emoji: '💼',
             desc: { fr: 'Économie, Gestion', ar: 'اقتصاد، تصرف' },
           },
           {
             slug: 'lettres',
             label: { fr: 'Bac Lettres', ar: 'باك آداب' },
-            url: '/fr/ressources?class=4eme-secondaire&section=lettres',
+            url: '/ressources?class=4eme-secondaire&section=lettres',
             emoji: '📚',
             desc: { fr: 'Philo, Histoire', ar: 'فلسفة، تاريخ' },
           },
           {
             slug: 'sport',
             label: { fr: 'Bac Sport', ar: 'باك رياضة' },
-            url: '/fr/ressources?class=4eme-secondaire&section=sport',
+            url: '/ressources?class=4eme-secondaire&section=sport',
             emoji: '⚽',
             desc: { fr: 'EPS + matières', ar: 'تربية بدنية' },
           },
