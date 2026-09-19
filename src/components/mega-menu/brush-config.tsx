@@ -197,53 +197,61 @@ function secondaryWashPath(width: number, height: number, seed = 0): string {
 // ===========================================================================
 
 function WatercolorStroke1({ color, seed = 0 }: { color: string; seed?: number }) {
-  // 1. Wide horizontal stroke — single elongated wash behind label
-  const path = watercolorWashPath(280, 80, seed);
+  // 1. Small horizontal stroke — single elongated wash just under the text
+  // 2026-09-19 v3: user wants "just a small brush stroke just under the
+  // text" (referencing attached mockup). Reduced from full-card wash
+  // (280×80) to a small underline-style stroke (120×22) that sits
+  // beneath the bold label "7ème année".
+  const path = watercolorWashPath(120, 22, seed);
   return (
     <svg
-      viewBox="0 0 280 80"
+      viewBox="0 0 120 22"
       preserveAspectRatio="none"
-      className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-24 pointer-events-none"
+      // Positioned just below the text (~middle of the row, slightly
+      // offset). Width is ~70% of the row width so it stays subtle.
+      className="absolute left-3 top-[58%] w-[70%] h-[22px] pointer-events-none"
+      style={{ transform: 'translateY(-2px)' }}
       aria-hidden
     >
       <path
         d={path}
         fill={color}
-        fillOpacity="0.55"
+        fillOpacity="0.65"
       />
     </svg>
   );
 }
 
 function WatercolorStroke2({ color, seed = 0 }: { color: string; seed?: number }) {
-  // 2. Layered strokes — 2 overlapping washes (one big, one smaller offset)
-  const mainPath = watercolorWashPath(280, 80, seed);
-  const subPath = secondaryWashPath(280, 80, seed + 99);
+  // 2. Layered small strokes — 2 overlapping washes for depth
+  const mainPath = watercolorWashPath(120, 22, seed);
+  const subPath = secondaryWashPath(120, 22, seed + 99);
   return (
     <>
       <svg
-        viewBox="0 0 280 80"
+        viewBox="0 0 120 22"
         preserveAspectRatio="none"
-        className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-24 pointer-events-none"
+        className="absolute left-3 top-[58%] w-[70%] h-[22px] pointer-events-none"
+        style={{ transform: 'translateY(-2px)' }}
         aria-hidden
       >
         <path
           d={mainPath}
           fill={color}
-          fillOpacity="0.5"
+          fillOpacity="0.55"
         />
       </svg>
       <svg
-        viewBox="0 0 280 80"
+        viewBox="0 0 120 22"
         preserveAspectRatio="none"
-        className="absolute inset-x-0 top-1/2 -translate-y-1/3 w-full h-20 pointer-events-none mix-blend-multiply"
+        className="absolute left-4 top-[58%] w-[65%] h-[20px] pointer-events-none mix-blend-multiply"
+        style={{ transform: 'translateY(2px)' }}
         aria-hidden
       >
         <path
           d={subPath}
           fill={color}
-          fillOpacity="0.4"
-          transform="translate(20 0)"
+          fillOpacity="0.45"
         />
       </svg>
     </>
@@ -251,20 +259,20 @@ function WatercolorStroke2({ color, seed = 0 }: { color: string; seed?: number }
 }
 
 function WatercolorStroke3({ color, seed = 0 }: { color: string; seed?: number }) {
-  // 3. Diagonal stroke — tilted watercolor wash (more dynamic feel)
-  const path = tiltedWashPath(280, 80, seed);
+  // 3. Diagonal small stroke — tilted wash just under the text
+  const path = tiltedWashPath(120, 22, seed);
   return (
     <svg
-      viewBox="0 0 280 80"
+      viewBox="0 0 120 22"
       preserveAspectRatio="none"
-      className="absolute inset-x-0 top-1/2 -translate-y-1/2 w-full h-24 pointer-events-none"
-      style={{ transform: 'translateY(-50%) rotate(-4deg)' }}
+      className="absolute left-3 top-[58%] w-[70%] h-[22px] pointer-events-none"
+      style={{ transform: 'translateY(-2px) rotate(-3deg)' }}
       aria-hidden
     >
       <path
         d={path}
         fill={color}
-        fillOpacity="0.6"
+        fillOpacity="0.7"
       />
     </svg>
   );
