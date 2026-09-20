@@ -9,7 +9,7 @@
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 const SITE_NAME = 'Examanet';
 const SITE_DESCRIPTION =
-  'Cours, devoirs, séries, révisions, sujets bac et corrigés — 100% gratuits pour les élèves du Primaire, Collège et Lycée en Tunisie.';
+  'Cours, devoirs, séries, révisions, sujets bac et corrigés — 100% gratuits pour les élèves du Collège et Lycée en Tunisie.';
 
 export type BreadcrumbItem = {
   name: string;

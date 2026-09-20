@@ -143,7 +143,7 @@ export const metadata: Metadata = {
   // 2026-09-07: Added explicit title. Was relying on inherited root title
   // (which now uses `template: '%s | Examanet'` since we removed noindex).
   title: 'Examanet — La plateforme pédagogique #1 en Tunisie',
-  description: 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés pour le Primaire, Collège et Lycée. Gratuit.',
+  description: 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés pour le Collège et le Lycée. Gratuit.',
   alternates: {
     canonical: '/fr',
   },

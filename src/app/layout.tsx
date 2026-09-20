@@ -38,13 +38,13 @@ const LOCALE_DEFAULTS = {
     // Google's 60-char SERP limit.
     title: 'Examanet — Plateforme pédagogique tunisienne',
     description:
-      'Cours, devoirs, exercices, sujets de bac et corrigés pour le Primaire, Collège et Lycée en Tunisie. Gratuit.',
+      'Cours, devoirs, exercices, sujets de bac et corrigés pour le Collège et Lycée en Tunisie. Gratuit.',
     ogTitle: 'Examanet — Plateforme pédagogique tunisienne',
     ogDescription:
-      'Cours, devoirs, exercices, sujets de bac et corrigés pour le Primaire, Collège et Lycée en Tunisie. Gratuit.',
+      'Cours, devoirs, exercices, sujets de bac et corrigés pour le Collège et Lycée en Tunisie. Gratuit.',
     twitterTitle: 'Examanet — Plateforme pédagogique tunisienne',
     twitterDescription:
-      'Cours, devoirs, exercices, sujets de bac et corrigés pour le Primaire, Collège et Lycée en Tunisie. Gratuit.',
+      'Cours, devoirs, exercices, sujets de bac et corrigés pour le Collège et Lycée en Tunisie. Gratuit.',
   },
   ar: {
     title: 'إكسامانت — المنصة التربوية #1 في تونس',
@@ -85,7 +85,6 @@ export function generateMetadata(): Metadata {
       'bac',
       'collège',
       'lycée',
-      'primaire',
       'exercices',
       'révisions',
     ],
