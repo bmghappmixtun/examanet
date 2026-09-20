@@ -75,7 +75,7 @@ export default function PreviewBrushesPage() {
                     <div className="text-xs text-slate-500" dir="rtl">{label.ar}</div>
                   </div>
                   <code className="text-[10px] text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded">
-                    brush-{color}.png
+                    brush-{color}.svg
                   </code>
                 </div>
               </div>
