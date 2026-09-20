@@ -34,6 +34,17 @@ import {
   // Cycle icons (kept — "Collège" / "Lycée" headers)
   School,
   GraduationCap,
+  // Section icons (per user 2026-09-20: doit être GARDÉ)
+  Atom,
+  Code2,
+  BarChart3,
+  Feather,
+  Dumbbell,
+  Sigma,
+  FlaskConical,
+  Wrench,
+  Cpu,
+  Briefcase,
 } from 'lucide-react';
 import { MEGA_MENU_DATA, type MegaMenuNiveau, type MegaMenuSection } from '@/lib/mega-menu-data';
 import { BRUSH_BY_NIVEAU_SLUG, BRUSH_PUBLIC_PATH } from './brush-config';
@@ -47,11 +58,25 @@ function pickLabel(localized: Localized, locale: string): string {
   return locale === 'ar' ? localized.ar : localized.fr;
 }
 
-// ============== ICON MAPPING (cycle headers only — niveau + section icons removed per user 2026-09-20) ==============
+// ============== ICON MAPPING (cycle + section icons; niveau icons removed per user 2026-09-20) ==============
 
 const CYCLE_ICONS: Record<string, typeof School> = {
   college: School,
   lycee: GraduationCap,
+};
+
+const SECTION_ICONS: Record<string, typeof Atom> = {
+  sciences: Atom,
+  'technologies-informatique': Code2,
+  'eco-services': BarChart3,
+  lettres: Feather,
+  sport: Dumbbell,
+  maths: Sigma,
+  'sciences-experimentales': FlaskConical,
+  technique: Wrench,
+  'sciences-informatique': Cpu,
+  'eco-gestion': Briefcase,
+  // 4AS lettres alias (same slug, same icon)
 };
 
 // ============== PLURALIZATION HELPERS (Arabic) ==============
@@ -137,11 +162,17 @@ export default function MenuSideDrawer({
     };
   }, [open]);
 
+  // 2026-09-20: Accordion behavior — opening one niveau closes any
+  // other expanded niveau (across both cycles). User asked for this
+  // because seeing both expanded at once was visually noisy.
   const toggle = (slug: string) => {
     setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(slug)) next.delete(slug);
-      else next.add(slug);
+      const next = new Set<string>();
+      // If the clicked niveau was already open → close it (empty set).
+      // Otherwise → open only this one, closing everything else.
+      if (!prev.has(slug)) {
+        next.add(slug);
+      }
       return next;
     });
   };
@@ -197,14 +228,11 @@ export default function MenuSideDrawer({
                 <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
                   <CycleIcon className="w-5 h-5 text-slate-700" strokeWidth={1.75} />
                 </div>
-                <div>
-                  <h2 className="font-extrabold text-lg text-slate-900">
-                    {isAr ? trigger.ar : trigger.fr}
-                  </h2>
-                  <p className="text-xs text-slate-500">
-                    {isAr ? 'البرنامج الرسمي التونسي' : 'Programme officiel tunisien'}
-                  </p>
-                </div>
+                {/* 2026-09-20: User asked to drop the subtitle "Programme
+                    officiel tunisien" — kept only the "Classes" title. */}
+                <h2 className="font-extrabold text-lg text-slate-900">
+                  {isAr ? trigger.ar : trigger.fr}
+                </h2>
               </div>
               <button
                 onClick={() => setOpen(false)}
@@ -388,13 +416,20 @@ function SectionRow({
   onNavigate: () => void;
   locale: string;
 }) {
+  // 2026-09-20: User asked to KEEP the section icons (Atom, Code2, etc.)
+  // — they were wrongly removed in the previous commit. Restored.
+  const Icon = SECTION_ICONS[section.slug] ?? Atom;
+
   return (
     <Link
       href={section.url}
       onClick={onNavigate}
       className="flex items-center gap-2.5 py-2 px-2 rounded-md text-xs text-slate-700 hover:bg-white hover:text-slate-900 transition group"
     >
-      {/* 2026-09-20: Removed section icon per user request. */}
+      <Icon
+        className="w-4 h-4 text-slate-500 group-hover:text-slate-700 shrink-0"
+        strokeWidth={1.5}
+      />
       <span className="flex-1 truncate font-medium">{pickLabel(section.label, locale)}</span>
       <ChevronRight
         className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 shrink-0 rtl:rotate-180"
