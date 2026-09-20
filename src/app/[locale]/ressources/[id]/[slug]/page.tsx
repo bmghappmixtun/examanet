@@ -217,8 +217,26 @@ async function ResourceDetailPageAsync({
               { '@type': 'ListItem', position: 4, name: r.title, item: resourceUrl },
             ],
           };
-          
-          jsonLdScript = JSON.stringify([jsonLd, breadcrumbJsonLd]);
+
+          // 2026-09-20 nightly (digest group "TypeError ... r['@context'].toLowerCase"
+          // observed on /fr/ressources/7381 with Safari 17.6): wrap the
+          // serialization in a try/catch + ensure the script body always
+          // contains "@context". Safari's JSON-LD parser crashes when the
+          // script body is empty `{}` or missing the @context key. Mirror
+          // of the same defensive helper already in
+          // components/resources/ResourceDetailClient.tsx.
+          const safeJsonLd = (obj: unknown): string => {
+            try {
+              const json = JSON.stringify(obj);
+              if (!json || !json.includes('"@context"')) {
+                return '{"@context":"https://schema.org"}';
+              }
+              return json;
+            } catch {
+              return '{"@context":"https://schema.org"}';
+            }
+          };
+          jsonLdScript = safeJsonLd([jsonLd, breadcrumbJsonLd]);
         }
       }
     } catch (e) {
