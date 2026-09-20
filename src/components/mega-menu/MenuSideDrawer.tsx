@@ -31,28 +31,9 @@ import {
   ChevronRight,
   ChevronDown,
   Layers,
-  // Cycle icons
+  // Cycle icons (kept — "Collège" / "Lycée" headers)
   School,
   GraduationCap,
-  // Niveau icons (moderne, monochrome)
-  Hash,
-  BookOpen,
-  Library,
-  BookText,
-  BookMarked,
-  Award,
-  // Section icons
-  Atom,
-  Code2,
-  BarChart3,
-  Feather,
-  Dumbbell,
-  Sigma,
-  FlaskConical,
-  Wrench,
-  Cpu,
-  Briefcase,
-  ScrollText,
 } from 'lucide-react';
 import { MEGA_MENU_DATA, type MegaMenuNiveau, type MegaMenuSection } from '@/lib/mega-menu-data';
 import { BRUSH_BY_NIVEAU_SLUG, BRUSH_PUBLIC_PATH } from './brush-config';
@@ -66,35 +47,11 @@ function pickLabel(localized: Localized, locale: string): string {
   return locale === 'ar' ? localized.ar : localized.fr;
 }
 
-// ============== ICON MAPPING (lucide, monochrome) ==============
+// ============== ICON MAPPING (cycle headers only — niveau + section icons removed per user 2026-09-20) ==============
 
 const CYCLE_ICONS: Record<string, typeof School> = {
   college: School,
   lycee: GraduationCap,
-};
-
-const NIVEAU_ICONS: Record<string, typeof Hash> = {
-  '7eme': Hash,
-  '8eme': Hash,
-  '9eme': Hash,
-  '1ere-secondaire': BookOpen,
-  '2eme-secondaire': BookText,
-  '3eme-secondaire': BookMarked,
-  '4eme-secondaire': Award,
-};
-
-const SECTION_ICONS: Record<string, typeof Atom> = {
-  sciences: Atom,
-  'technologies-informatique': Code2,
-  'eco-services': BarChart3,
-  lettres: Feather,
-  sport: Dumbbell,
-  maths: Sigma,
-  'sciences-experimentales': FlaskConical,
-  technique: Wrench,
-  'sciences-informatique': Cpu,
-  'eco-gestion': Briefcase,
-  // 4AS lettres alias (same slug, same icon)
 };
 
 // ============== PLURALIZATION HELPERS (Arabic) ==============
@@ -365,7 +322,6 @@ function NiveauRow({
    */
   showBrush?: boolean;
 }) {
-  const Icon = NIVEAU_ICONS[niveau.slug] ?? BookOpen;
   const isAr = locale === 'ar';
   const brushColor = BRUSH_BY_NIVEAU_SLUG[niveau.slug];
 
@@ -377,12 +333,9 @@ function NiveauRow({
           onClick={onNavigate}
           className="group flex-1 flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition"
         >
-          <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-            <Icon className="w-5 h-5 text-slate-600" strokeWidth={1.5} />
-          </div>
           {/* 2026-09-19 v3: Real watercolor brush behind label.
-              Structure per user spec: <div class="class-label">
-              <img class="brush"> + <span>label</span></div> */}
+              2026-09-20: Removed niveau icon (the w-9 h-9 box) and
+              section count display per user request. */}
           <span className="class-label relative inline-flex items-center justify-center flex-1 font-semibold text-sm text-slate-800">
             {showBrush && brushColor && (
               <img
@@ -397,11 +350,6 @@ function NiveauRow({
               {pickLabel(niveau.label, locale)}
             </span>
           </span>
-          {niveau.sections.length > 0 && (
-            <span className="text-[10px] text-slate-400 tabular-nums">
-              {isAr ? arSectionsCount(niveau.sections.length) : `${niveau.sections.length} sections`}
-            </span>
-          )}
         </Link>
         {niveau.sections.length > 0 && (
           <button
@@ -440,18 +388,13 @@ function SectionRow({
   onNavigate: () => void;
   locale: string;
 }) {
-  const Icon = SECTION_ICONS[section.slug] ?? BookOpen;
-
   return (
     <Link
       href={section.url}
       onClick={onNavigate}
       className="flex items-center gap-2.5 py-2 px-2 rounded-md text-xs text-slate-700 hover:bg-white hover:text-slate-900 transition group"
     >
-      <Icon
-        className="w-4 h-4 text-slate-500 group-hover:text-slate-700 shrink-0"
-        strokeWidth={1.5}
-      />
+      {/* 2026-09-20: Removed section icon per user request. */}
       <span className="flex-1 truncate font-medium">{pickLabel(section.label, locale)}</span>
       <ChevronRight
         className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 shrink-0 rtl:rotate-180"
