@@ -359,12 +359,14 @@ function NiveauRow({
         <Link
           href={niveau.url}
           onClick={onNavigate}
-          className="group flex-1 flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition"
+          className="group flex-1 flex items-center gap-3 px-4 py-4 hover:bg-slate-50 transition"
         >
           {/* 2026-09-19 v3: Real watercolor brush behind label.
-              2026-09-20: Removed niveau icon (the w-9 h-9 box) and
-              section count display per user request. */}
-          <span className="class-label relative inline-flex items-center justify-center flex-1 font-semibold text-sm text-slate-800">
+              2026-09-20: Removed niveau icon + section count.
+              2026-09-20 v2: User asked for "much bigger" text — bumped
+              from text-sm (14px) to text-xl (20px) and increased
+              vertical padding (py-3 → py-4) to keep proportions. */}
+          <span className="class-label relative inline-flex items-center justify-center flex-1 font-bold text-xl text-slate-900">
             {showBrush && brushColor && (
               <img
                 src={BRUSH_PUBLIC_PATH(brushColor)}
@@ -395,7 +397,7 @@ function NiveauRow({
         )}
       </div>
       {isExpanded && niveau.sections.length > 0 && (
-        <div className="relative bg-slate-50 border-t border-slate-200 px-3 py-2 space-y-0.5">
+        <div className="relative bg-slate-50 border-t border-slate-200 px-3 py-3 space-y-1">
           {niveau.sections.map((s) => (
             <SectionRow key={s.slug} section={s} onNavigate={onNavigate} locale={locale} />
           ))}
@@ -424,15 +426,17 @@ function SectionRow({
     <Link
       href={section.url}
       onClick={onNavigate}
-      className="flex items-center gap-2.5 py-2 px-2 rounded-md text-xs text-slate-700 hover:bg-white hover:text-slate-900 transition group"
+      // 2026-09-20 v2: Bumped section text from text-xs (12px) to
+      // text-sm (14px) for the "much bigger text" request.
+      className="flex items-center gap-3 py-3 px-3 rounded-md text-sm text-slate-700 hover:bg-white hover:text-slate-900 transition group"
     >
       <Icon
-        className="w-4 h-4 text-slate-500 group-hover:text-slate-700 shrink-0"
+        className="w-5 h-5 text-slate-500 group-hover:text-slate-700 shrink-0"
         strokeWidth={1.5}
       />
       <span className="flex-1 truncate font-medium">{pickLabel(section.label, locale)}</span>
       <ChevronRight
-        className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 shrink-0 rtl:rotate-180"
+        className="w-4 h-4 text-slate-400 group-hover:text-slate-700 shrink-0 rtl:rotate-180"
         strokeWidth={2}
       />
     </Link>
