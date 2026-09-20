@@ -22,7 +22,7 @@ const LOCALE_META = {
   fr: {
     title: 'Examanet — La plateforme pédagogique #1 en Tunisie',
     description:
-      'Plateforme pédagogique tunisienne #1 : cours, devoirs, exercices, sujets de bac et corrigés pour le Primaire, Collège et Lycée. 100% gratuit.',
+      'Plateforme pédagogique tunisienne #1 : cours, devoirs, exercices, sujets de bac et corrigés pour le Collège et Lycée. 100% gratuit.',
     ogLocale: 'fr_TN' as const,
   },
   ar: {
