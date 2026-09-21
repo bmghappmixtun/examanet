@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from '@/i18n/navigation';
 import NextLink from 'next/link';
-import { Menu, X, LogIn, UserPlus, Layers } from 'lucide-react';
+import { Menu, X, LogIn, UserPlus } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 // 2026-09-21: Mega-menu drawer accessible from mobile.
 // When user taps "Classes" here, mobile menu closes and the
@@ -98,17 +98,18 @@ export default function MobileMenu({ user }: { user: any }) {
         <nav className="p-2 flex-1">
           {/* 2026-09-21: "Classes" entry — opens the mega-menu drawer
               (same component as desktop). Tap closes mobile menu,
-              then opens the drawer via controlled state. */}
+              then opens the drawer via controlled state.
+              2026-09-21 v2: User asked for same appearance as the
+              other entries (emoji prefix, no lucide icon). */}
           <button
             type="button"
             onClick={() => {
               setOpen(false);             // close mobile menu
               setClassesOpen(true);        // open mega-menu drawer
             }}
-            className="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
+            className="w-full text-left block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
           >
-            <Layers className="w-5 h-5 text-slate-500 shrink-0" strokeWidth={1.75} />
-            <span>{isAr ? 'الأقسام' : 'Classes'}</span>
+            {`🎓 ${isAr ? 'الأقسام' : 'Classes'}`}
           </button>
           <Link
             href="/ressources"
