@@ -89,12 +89,12 @@ export default {
       // causing all filtered pages to return the same HTML as the unfiltered one.
       // 2026-09-10 17:30: Include v17 prefix in cache key to INVALIDATE old
       // 500 responses cached during the 14:34-14:51 deploy window.
-      const cacheKey = new Request('https://cache.v17/' + url.pathname + url.search, { method: 'GET' });
+      const cacheKey = new Request('https://cache.v18/' + url.pathname + url.search, { method: 'GET' });
       const cached = await cache.match(cacheKey);
       if (cached) {
         const headers = new Headers(cached.headers);
         headers.set('cf-cache-status', 'HIT');
-        headers.set('x-cache-wrapper', 'v17-HIT');
+        headers.set('x-cache-wrapper', 'v18-HIT');
         // Record metric for cache hit
         if (recordMetricEnabled) {
           recordMetric(env, ctx, url.pathname, cached.status, Date.now() - startTime);
@@ -112,7 +112,7 @@ export default {
     if (cacheable && response.ok && !response.headers.has('set-cookie')) {
       const cache = caches.default;
       // 2026-09-10 17:30: Same v17-prefixed key (see above for invalidation).
-      const cacheKey = new Request('https://cache.v17/' + url.pathname + url.search, { method: 'GET' });
+      const cacheKey = new Request('https://cache.v18/' + url.pathname + url.search, { method: 'GET' });
       ctx.waitUntil(cache.put(cacheKey, response.clone()));
     }
     
@@ -122,7 +122,7 @@ export default {
     }
     
     const headers = new Headers(response.headers);
-    headers.set('x-cache-wrapper', cacheable ? 'v17-MISS' : 'v17-bypass');
+    headers.set('x-cache-wrapper', 'v18-bypass');
     
     return new Response(response.body, {
       status: response.status,

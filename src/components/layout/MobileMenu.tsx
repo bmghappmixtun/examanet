@@ -3,12 +3,19 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from '@/i18n/navigation';
 import NextLink from 'next/link';
-import { Menu, X, LogIn, UserPlus } from 'lucide-react';
+import { Menu, X, LogIn, UserPlus, Layers } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
+// 2026-09-21: Mega-menu drawer accessible from mobile.
+// When user taps "Classes" here, mobile menu closes and the
+// mega-menu drawer opens (same drawer as desktop, controlled mode).
+import MenuSideDrawer from '@/components/mega-menu/MenuSideDrawer';
 
 export default function MobileMenu({ user }: { user: any }) {
   const t = useTranslations();
+  const locale = useLocale();
+  const isAr = locale === 'ar';
   const [open, setOpen] = useState(false);
+  const [classesOpen, setClassesOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const isTeacher = user?.role === 'TEACHER';
   const isAdmin = user?.role === 'ADMIN';
@@ -89,6 +96,20 @@ export default function MobileMenu({ user }: { user: any }) {
         )}
 
         <nav className="p-2 flex-1">
+          {/* 2026-09-21: "Classes" entry — opens the mega-menu drawer
+              (same component as desktop). Tap closes mobile menu,
+              then opens the drawer via controlled state. */}
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);             // close mobile menu
+              setClassesOpen(true);        // open mega-menu drawer
+            }}
+            className="w-full text-left flex items-center gap-3 px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
+          >
+            <Layers className="w-5 h-5 text-slate-500 shrink-0" strokeWidth={1.75} />
+            <span>{isAr ? 'الأقسام' : 'Classes'}</span>
+          </button>
           <Link
             href="/ressources"
             onClick={() => setOpen(false)}
@@ -212,6 +233,17 @@ export default function MobileMenu({ user }: { user: any }) {
       {/* Render modal at document.body level via portal to escape any ancestor
           containing block (e.g., parent's backdrop-filter, transform, etc.) */}
       {mounted && menuContent && createPortal(menuContent, document.body)}
+
+      {/* 2026-09-21: Mega-menu drawer (driven by state, no trigger rendered
+          here — `showTrigger={false}` to skip the default button). Lives
+          alongside the MobileMenu in this component so they share state. */}
+      {mounted && (
+        <MenuSideDrawer
+          open={classesOpen}
+          onOpenChange={setClassesOpen}
+          showTrigger={false}
+        />
+      )}
     </>
   );
 }

@@ -100,17 +100,39 @@ const SECTION_ICONS: Record<string, typeof Atom> = {
 
 export default function MenuSideDrawer({
   triggerLabel,
-}: {
+  // 2026-09-21: Controlled mode so MobileMenu can drive the drawer.
+  // When `open` is provided, the component is controlled — internal
+  // state is skipped. `onOpenChange` is called when the user closes
+  // the drawer (X, Escape, backdrop). When both are undefined we fall
+  // back to fully uncontrolled behavior with an internal trigger.
+  open: controlledOpen,
+  onOpenChange,
   /**
-   * Optional override for the trigger button text. Defaults to
-   * 'Classes' (FR) / 'الأقسام' (AR). Useful when the menu is
-   * embedded in a context with a different visual label.
+   * When true, render the default trigger button ("Classes" /
+   * "الأقسام" with Layers icon) at the natural anchor point.
+   * When false, the drawer is controlled externally and the caller
+   * decides how to open it (typical case: button in MobileMenu).
+   * Default: true (preserves existing desktop usage).
    */
+  showTrigger = true,
+}: {
   triggerLabel?: { fr: string; ar: string };
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  showTrigger?: boolean;
 } = {}) {
   const locale = useLocale(); // 'fr' | 'ar' — drives label + RTL
   const isAr = locale === 'ar';
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen! : internalOpen;
+  const setOpen = (next: boolean) => {
+    if (isControlled) {
+      onOpenChange?.(next);
+    } else {
+      setInternalOpen(next);
+    }
+  };
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   // 2026-09-19: Track mount state so we can avoid SSR hydration issues
   // when rendering via Portal (the portal target doesn't exist on the
@@ -158,17 +180,23 @@ export default function MenuSideDrawer({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold text-base text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition"
-      >
-        <CycleIcon className="w-5 h-5 text-slate-500" strokeWidth={1.75} />
-        {/* 2026-09-19: trigger label now 'Classes' / 'الأقسام' by default
-            (was 'Niveaux' / 'المستويات'). The drawer CONTENT still uses
-            'Niveaux' internally (it lists the niveau rows). */}
-        {isAr ? trigger.ar : trigger.fr}
-      </button>
+      {/* 2026-09-21: Only render the default trigger when not in
+          controlled mode (i.e. when the caller didn't pass `open`).
+          When MobileMenu drives the drawer via props, the trigger
+          lives there so it can match mobile nav item styling. */}
+      {showTrigger && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold text-base text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition"
+        >
+          <CycleIcon className="w-5 h-5 text-slate-500" strokeWidth={1.75} />
+          {/* 2026-09-19: trigger label now 'Classes' / 'الأقسام' by default
+              (was 'Niveaux' / 'المستويات'). The drawer CONTENT still uses
+              'Niveaux' internally (it lists the niveau rows). */}
+          {isAr ? trigger.ar : trigger.fr}
+        </button>
+      )}
 
       {/* Drawer + backdrop rendered via Portal so they escape the
           Header's stacking context. The Header has backdrop-blur-xl
