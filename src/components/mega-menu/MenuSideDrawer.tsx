@@ -30,11 +30,10 @@ import {
   X,
   ChevronRight,
   ChevronDown,
+  // 2026-09-21: Removed cycle icons (Collège / Lycée) from drawer
+  // per user request. Just kept Layers for the trigger button.
   Layers,
-  // Cycle icons (kept — "Collège" / "Lycée" headers)
-  School,
-  GraduationCap,
-  // Section icons (per user 2026-09-20: doit être GARDÉ)
+  // Section icons (kept — these ARE wanted next to each section row)
   Atom,
   Code2,
   BarChart3,
@@ -58,12 +57,9 @@ function pickLabel(localized: Localized, locale: string): string {
   return locale === 'ar' ? localized.ar : localized.fr;
 }
 
-// ============== ICON MAPPING (cycle + section icons; niveau icons removed per user 2026-09-20) ==============
-
-const CYCLE_ICONS: Record<string, typeof School> = {
-  college: School,
-  lycee: GraduationCap,
-};
+// ============== SECTION ICONS ==============
+// 2026-09-21: Cycle icons (Collège/Lycée) were removed from drawer
+// per user request — only section icons below remain.
 
 const SECTION_ICONS: Record<string, typeof Atom> = {
   sciences: Atom,
@@ -76,48 +72,29 @@ const SECTION_ICONS: Record<string, typeof Atom> = {
   technique: Wrench,
   'sciences-informatique': Cpu,
   'eco-gestion': Briefcase,
-  // 4AS lettres alias (same slug, same icon)
 };
 
-// ============== PLURALIZATION HELPERS (Arabic) ==============
+// ============== PLURALIZATION HELPERS REMOVED 2026-09-21 ==============
+// arSectionsCount / arNiveauxCount were used by the cycle header
+// ("3 niveaux · 19 sections"). With cycle headers removed from the
+// drawer, these helpers are no longer needed in this file. Kept here
+// as comments for reference if cycle-level counts come back.
 //
-// 2026-09-18: User clarified that "section" in Tunisian Arabic education
-// terminology is:
-//   - شعبة (singular, one section)
-//   - شعب (plural, multiple sections)
+// function arSectionsCount(n: number): string {
+//   if (n === 0) return '';
+//   if (n === 1) return 'شعبة واحدة';
+//   if (n === 2) return 'شعبتان';
+//   if (n >= 3 && n <= 10) return `${n} شعب`;
+//   return `${n} شعبة`;
+// }
 //
-// We also handle Arabic number agreement:
-//   - 0 → "0 شعبة"
-//   - 1 → "شعبة واحدة" (or just "شعبة")
-//   - 2 → "شعبتان" (dual form)
-//   - 3-10 → "X شعب" (plural with count)
-//   - 11+ → "X شعبة" (singular noun with count, like French "11 sections")
-//
-// 2026-09-18 v2: User wants Latin digits (1, 2, 3) instead of
-// Eastern Arabic numerals (٠١٢٣). The number AGREEMENT still follows
-// Arabic rules (dual, plural), but the digits themselves stay ASCII.
-//
-// 2026-09-18 v2: User asked to NOT display the word "sections" at all
-// in the Collège section of the menu (Collège has 0 sections by
-// design — it's "tronc commun"). So when count === 0 we return '' and
-// the caller omits the badge entirely.
-function arSectionsCount(n: number): string {
-  if (n === 0) return ''; // Collège has no sections — caller hides badge
-  if (n === 1) return 'شعبة واحدة';
-  if (n === 2) return 'شعبتان';
-  if (n >= 3 && n <= 10) return `${n} شعب`;
-  return `${n} شعبة`;
-}
-
-// Same rule for "niveau" in Arabic:
-//   - 0 → "0 مستوى", 1 → "مستوى واحد", 2 → "مستويان", 3-10 → "X مستويات", 11+ → "X مستوى"
-function arNiveauxCount(n: number): string {
-  if (n === 0) return '0 مستوى';
-  if (n === 1) return 'مستوى واحد';
-  if (n === 2) return 'مستويان';
-  if (n >= 3 && n <= 10) return `${n} مستويات`;
-  return `${n} مستوى`;
-}
+// function arNiveauxCount(n: number): string {
+//   if (n === 0) return '0 مستوى';
+//   if (n === 1) return 'مستوى واحد';
+//   if (n === 2) return 'مستويان';
+//   if (n >= 3 && n <= 10) return `${n} مستويات`;
+//   return `${n} مستوى`;
+// }
 
 // ============== COMPONENT ==============
 
@@ -222,22 +199,14 @@ export default function MenuSideDrawer({
             ].join(' ')}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="sticky top-0 bg-white/95 backdrop-blur-sm z-10 px-6 py-5 flex items-center justify-between border-b border-slate-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
-                  <CycleIcon className="w-5 h-5 text-slate-700" strokeWidth={1.75} />
-                </div>
-                {/* 2026-09-20: User asked to drop the subtitle "Programme
-                    officiel tunisien" — kept only the "Classes" title. */}
-                <h2 className="font-extrabold text-lg text-slate-900">
-                  {isAr ? trigger.ar : trigger.fr}
-                </h2>
-              </div>
+            {/* 2026-09-21: Top header now only has the close X button.
+                The "Classes" title + icon box were removed per user
+                request (see attached screenshot, red boxes).
+                Visual identity comes from the brush-stroked niveau rows
+                themselves (cool for collège, warm for lycée). */}
+            <div className="sticky top-0 z-20 px-4 py-3 flex items-center justify-end bg-white/80 backdrop-blur-sm">
               <button
                 onClick={() => setOpen(false)}
-                // 2026-09-18: tap target bumped to 44x44 (was p-2 = 36x36)
-                // to meet Apple HIG / WCAG 2.5.5 minimum for touch.
                 className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-slate-100 rounded-lg transition flex items-center justify-center"
                 aria-label={isAr ? 'إغلاق' : 'Fermer'}
               >
@@ -245,74 +214,27 @@ export default function MenuSideDrawer({
               </button>
             </div>
 
-            {/* Cycles & niveaux */}
-            <div className="p-5 space-y-7 flex-1">
-              {MEGA_MENU_DATA.map((cycle) => {
-                const Icon = CYCLE_ICONS[cycle.slug] ?? School;
-                const sectionsCount = cycle.niveaux.reduce(
-                  (acc, n) => acc + n.sections.length,
-                  0,
-                );
-                return (
-                  <section key={cycle.slug}>
-                    {/* Cycle header — monochrome */}
-                    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-200">
-                      <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center">
-                        <Icon className="w-6 h-6 text-slate-700" strokeWidth={1.5} />
-                      </div>
-                      <div>
-                        <div className="font-extrabold text-base text-slate-900 tracking-wide">
-                          {pickLabel(cycle.label, locale)}
-                        </div>
-                        {/* 2026-09-18 v2: only show the cycle subtitle when
-                            there's something useful to say. For Collège
-                            (0 sections), we skip the entire subtitle —
-                            user asked to not show the word "sections"
-                            when the count is zero. We always show the
-                            "X niveaux" part because it's always useful. */}
-                        <div className="text-[11px] text-slate-500 mt-0.5">
-                          {(() => {
-                            const niveauxPart = isAr
-                              ? arNiveauxCount(cycle.niveaux.length)
-                              : `${cycle.niveaux.length} niveaux`;
-                            const sectionsPart = isAr
-                              ? arSectionsCount(sectionsCount)
-                              : `${sectionsCount} sections`;
-                            // Collège (sections === 0) → only show niveaux
-                            if (sectionsCount === 0) return niveauxPart;
-                            return isAr
-                              ? `${niveauxPart} · ${sectionsPart}`
-                              : `${niveauxPart} · ${sectionsPart}`;
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Niveaux list */}
-                    <div className="space-y-1.5">
-                      {cycle.niveaux.map((n, nIdx) => (
-                        <NiveauRow
-                          key={n.slug}
-                          niveau={n}
-                          niveauIndex={nIdx}
-                          cycleSlug={cycle.slug}
-                          isExpanded={expanded.has(n.slug)}
-                          onToggle={() => toggle(n.slug)}
-                          onNavigate={() => setOpen(false)}
-                          locale={locale}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-
-            {/* Footer */}
-            <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-slate-200 px-6 py-3 text-center">
-              <p className="text-[11px] text-slate-500">
-                {isAr ? 'إسكيب للإغلاق · © إكسامانت' : 'Échap pour fermer · © Examanet'}
-              </p>
+            {/* 2026-09-21: Niveau list — Collège + Lycée flattened into one
+                scrollable list. The cycle headers (Collège/Lycée) and the
+                "Échap pour fermer · © Examanet" footer were all removed
+                per user request. Niveaux are visually distinguishable by
+                their brush stroke color (cool palette for collège, warm
+                for lycée). */}
+            <div className="px-4 py-4 space-y-2 flex-1">
+              {MEGA_MENU_DATA.flatMap((cycle) =>
+                cycle.niveaux.map((n, nIdx) => (
+                  <NiveauRow
+                    key={n.slug}
+                    niveau={n}
+                    niveauIndex={nIdx}
+                    cycleSlug={cycle.slug}
+                    isExpanded={expanded.has(n.slug)}
+                    onToggle={() => toggle(n.slug)}
+                    onNavigate={() => setOpen(false)}
+                    locale={locale}
+                  />
+                )),
+              )}
             </div>
           </aside>
         </div>,
