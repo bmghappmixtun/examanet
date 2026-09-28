@@ -5,10 +5,10 @@
  * /admin/fournisseurs cards (formatNumber, date formatting, % thresholds).
  */
 
-import { formatNumber as fmt } from '@/lib/utils';
-
-// Re-export to keep the import surface tiny for admin cards.
-export const formatNumber = fmt;
+// Re-export `formatNumber` directly (Leçon #73: re-export tree-shake trap).
+// `import { X as Y }; export const X = Y;` is dropped by minifier tree-shake
+// because `Y` looks unused → `formatNumber is not defined` at runtime.
+export { formatNumber } from '@/lib/utils';
 
 /**
  * Pick the bar color based on % used.
