@@ -41,7 +41,7 @@
   "r2_buckets": [
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "bucket_name": "examanet-pdf-prod"
+      "bucket_name": "examanet-cache"
     },
     {
       "binding": "PDFS_BUCKET",

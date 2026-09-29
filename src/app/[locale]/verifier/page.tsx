@@ -139,9 +139,15 @@ function VerifyOtpForm() {
       setTimeout(() => {
         if (data.status === 'ACTIVE') {
           router.push(redirectTo);
+        } else if (data.status === 'PENDING_FILE_VERIFICATION') {
+          // 2026-09-29: After OTP, skip profile completion step → go straight to file upload
+          router.push(`/enseignant/verification?welcome=1&from=otp`);
         } else if (data.status === 'PENDING_APPROVAL') {
-          // Teacher verified email: go to profile completion (en-attente will be shown after)
-          if (data.nextStep === 'profile_completion') {
+          // Legacy path (if a teacher is still in PENDING_APPROVAL for some reason)
+          if (data.nextStep === 'file_verification') {
+            router.push(`/enseignant/verification?welcome=1&from=otp`);
+          } else if (data.nextStep === 'profile_completion') {
+            // Old behavior — kept as fallback for edge cases
             router.push(`/profil/completer?welcome=1&from=otp`);
           } else {
             router.push(`/en-attente`);
