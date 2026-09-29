@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from '@/i18n/navigation';
 import { useTransition } from 'react';
 import { ArrowUpDown } from 'lucide-react';
 

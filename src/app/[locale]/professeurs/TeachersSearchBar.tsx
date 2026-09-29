@@ -1,7 +1,7 @@
 'use client';
 
 import { Search, X } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from '@/i18n/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 
 export default function TeachersSearchBar({ initialQ }: { initialQ: string }) {
