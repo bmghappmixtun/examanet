@@ -1,27 +1,33 @@
 // 2026-09-17: Classes (niveaux) sub-sitemap.
-// Lists /niveaux/<slug> for each Class in D1 (~12 entries).
-// Refresh: weekly.
+// 2026-09-29 FIX: was querying `Class` table (returning Class slugs like
+// `7eme`, `8eme`, `9eme`), but the actual route `/fr/niveaux/[level]/page.tsx`
+// reads from the `Level` table (which only has `college`, `lycee`).
+// Result: every sitemap URL was returning HTTP 500 → SEO disaster.
+//
+// Now queries the `Level` table to emit URLs that actually exist.
 import { getD1, sitemapCacheHeaders, withAlternates, xmlEscape, toSitemapDate } from '@/lib/sitemap-helpers';
 
 export const revalidate = 86400; // Refresh daily (small dataset, cheap)
 
 export async function GET() {
   const db = await getD1();
-  let classes: any[] = [];
+  let levels: any[] = [];
   if (db) {
     try {
-      const r: any = await db.prepare('SELECT slug FROM `Class`').all();
-      classes = (r?.results || []) as any[];
+      const r: any = await db.prepare('SELECT slug, updatedAt FROM Level ORDER BY "order" ASC').all();
+      levels = (r?.results || []) as any[];
     } catch (e) {
       console.error('[sitemap-classes] error:', e);
     }
   }
 
-  const entries = classes.map((c) => {
-    const e = withAlternates(`/niveaux/${c.slug}`, 0.7, 'weekly');
+  const entries = levels.map((l) => {
+    const e = withAlternates(`/niveaux/${l.slug}`, 0.7, 'weekly');
     // 2026-09-22: Emit <lastmod> so GSC can prioritize crawling these
     // pages. They get refreshed regularly as resources are added.
-    e.lastModified = toSitemapDate(new Date());
+    e.lastModified = l.updatedAt
+      ? toSitemapDate(new Date(l.updatedAt))
+      : toSitemapDate(new Date());
     return e;
   });
 

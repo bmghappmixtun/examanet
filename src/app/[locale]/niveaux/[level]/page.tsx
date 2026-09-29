@@ -18,6 +18,10 @@ export const revalidate = 300; // 5 min cache
 export async function generateMetadata({ params }: { params: Promise<{ level: string }> }) {
   const { level: levelSlug } = await params;
   const locale = await getLocale();
+  // 2026-09-29 FIX: declare baseUrl BEFORE the early-return branch.
+  // Previously baseUrl was declared AFTER the !level early-return which
+  // referenced it, causing a ReferenceError → HTTP 500 on unknown slugs.
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   const db = await getD1();
   const level: any = await db?.prepare("SELECT nameFr, nameAr, slug FROM Level WHERE slug = ?").bind(levelSlug).first();
   if (!level) {
@@ -31,7 +35,6 @@ export async function generateMetadata({ params }: { params: Promise<{ level: st
       robots: { index: false, follow: true },
     };
   }
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   return {
     title: `${getLocalizedName(level, locale)} — Cours et Devoirs gratuits`,
     description: `Ressources pédagogiques gratuites pour ${getLocalizedName(level, locale)} en Tunisie : cours, devoirs, exercices et corrigés.`,
