@@ -3,16 +3,20 @@
  * GET /api/devoirs/[slug]
  *
  * Returns paginated devoir (DEVOIR type) resources for a subject,
- * optionally filtered by class. Used by the SEO-optimized landing
- * page /[locale]/devoirs/[slug].
+ * with optional filters: class, trimestre, subtype, number.
  *
  * Query params:
- *   - class: optional class slug (e.g. "7eme", "2eme-secondaire")
- *   - cursor: numeric offset for pagination (default 0)
- *   - limit: page size (default 24, max 48)
+ *   - class:    optional class slug (e.g. "7eme", "2eme-secondaire")
+ *   - trimestre: optional "1" | "2" | "3"
+ *   - subtype:  optional "CONTROLE" | "SYNTHESE" | "MAISON" | "REVISION"
+ *               (normalized: also matches CONTROL/SYNTHESIS variants in DB)
+ *   - number:   optional integer (homeworkNumber)
+ *   - cursor:   numeric offset for pagination (default 0)
+ *   - limit:    page size (default 24, max 48)
  *
  * Response:
- *   { items: ResourceCardData[], total: number, nextCursor: number | null }
+ *   { items: ResourceCardData[], total: number, nextCursor: number | null,
+ *     filters: { trimestre: 1, subtype: 'CONTROLE', number: 1 } }
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
@@ -30,6 +34,9 @@ export async function GET(
     const { slug: subjectSlug } = await params;
     const sp = request.nextUrl.searchParams;
     const classSlug = sp.get('class');
+    const trimestreParam = sp.get('trimestre');
+    const subtypeParam = sp.get('subtype');
+    const numberParam = sp.get('number');
     const cursor = Math.max(0, parseInt(sp.get('cursor') || '0', 10));
     const limit = Math.min(MAX_LIMIT, Math.max(1, parseInt(sp.get('limit') || String(DEFAULT_LIMIT), 10)));
 
@@ -39,9 +46,9 @@ export async function GET(
       return NextResponse.json({ error: 'DB not available', items: [], total: 0 }, { status: 503 });
     }
 
-    // Resolve subject id
+    // Resolve subject
     const subject = await db
-      .prepare('SELECT id, nameFr, nameAr, color FROM "Subject" WHERE slug = ?')
+      .prepare('SELECT id, slug, nameFr, nameAr, color FROM "Subject" WHERE slug = ?')
       .bind(subjectSlug)
       .first();
     if (!subject) {
@@ -64,16 +71,40 @@ export async function GET(
       params_arr.push(classRow.id);
     }
 
+    if (trimestreParam && ['1', '2', '3'].includes(trimestreParam)) {
+      // Trimester column is TEXT in D1 (stores '1', '2', '3' as strings)
+      conditions.push("r.`trimester` = ?");
+      params_arr.push(trimestreParam); // pass string directly
+    }
+
+    if (subtypeParam) {
+      // Normalize: also match English variants (CONTROL ↔ CONTROLE, SYNTHESIS ↔ SYNTHESE)
+      const variants = getSubtypeVariants(subtypeParam);
+      if (variants.length > 0) {
+        const placeholders = variants.map(() => '?').join(',');
+        conditions.push(`r.homeworkSubtype IN (${placeholders})`);
+        params_arr.push(...variants);
+      }
+    }
+
+    if (numberParam) {
+      const num = parseInt(numberParam, 10);
+      if (!isNaN(num) && num > 0) {
+        conditions.push('r.homeworkNumber = ?');
+        params_arr.push(num);
+      }
+    }
+
     const whereClause = conditions.join(' AND ');
 
-    // Get total count
+    // Total count
     const totalRes = await db
       .prepare(`SELECT COUNT(*) as total FROM Resource r WHERE ${whereClause}`)
       .bind(...params_arr)
       .first();
     const total = Number(totalRes?.total || 0);
 
-    // Fetch paginated items (joined with subject + class + teacher)
+    // Paginated items (joined)
     const itemsRes = await db
       .prepare(
         [
@@ -81,10 +112,10 @@ export async function GET(
           'r.viewsCount, r.downloadsCount, r.avgRating, r.ratingsCount,',
           'r.hasCorrection, r.year, r.thumbnailUrl, r.thumbnailKey,',
           'r.pageCount, r.fileSize, r.language, r.publishedAt,',
+          'r.`trimester`, r.homeworkSubtype, r.homeworkNumber,',
           's.slug as s_slug, s.nameFr as s_nameFr, s.color as s_color,',
           'c.slug as c_slug, c.nameFr as c_nameFr,',
-          't.firstName as t_firstName, t.lastName as t_lastName,',
-          't.firstNameAr as t_firstNameAr, t.lastNameAr as t_lastNameAr',
+          't.firstName as t_firstName, t.lastName as t_lastName',
           'FROM Resource r',
           'LEFT JOIN `Subject` s ON r.subjectId = s.id',
           'LEFT JOIN `Class` c ON r.classId = c.id',
@@ -116,18 +147,12 @@ export async function GET(
       fileSize: r.fileSize,
       language: r.language,
       publishedAt: r.publishedAt,
-      subject: r.s_slug
-        ? { slug: r.s_slug, nameFr: r.s_nameFr, color: r.s_color }
-        : null,
+      trimester: r.trimester,
+      homeworkSubtype: r.homeworkSubtype,
+      homeworkNumber: r.homeworkNumber,
+      subject: r.s_slug ? { slug: r.s_slug, nameFr: r.s_nameFr, color: r.s_color } : null,
       class: r.c_slug ? { slug: r.c_slug, nameFr: r.c_nameFr } : null,
-      teacher: r.t_firstName
-        ? {
-            firstName: r.t_firstName,
-            lastName: r.t_lastName,
-            firstNameAr: r.t_firstNameAr,
-            lastNameAr: r.t_lastNameAr,
-          }
-        : null,
+      teacher: r.t_firstName ? { firstName: r.t_firstName, lastName: r.t_lastName } : null,
     }));
 
     const nextCursor = cursor + items.length < total ? cursor + items.length : null;
@@ -138,15 +163,31 @@ export async function GET(
         total,
         nextCursor,
         subject: { slug: subjectSlug, nameFr: subject.nameFr, color: subject.color },
-      },
-      {
-        headers: {
-          'Cache-Control': 'public, max-age=60, s-maxage=60',
+        filters: {
+          class: classSlug,
+          trimestre: trimestreParam ? parseInt(trimestreParam, 10) : null,
+          subtype: subtypeParam,
+          number: numberParam ? parseInt(numberParam, 10) : null,
         },
       },
+      { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=60' } },
     );
   } catch (e: any) {
     console.error('[api/devoirs] error:', e);
     return NextResponse.json({ error: e.message, items: [], total: 0 }, { status: 500 });
   }
+}
+
+/**
+ * Returns the DB variants for a normalized subtype label.
+ * CONTROLE <-> CONTROL, SYNTHESE <-> SYNTHESIS.
+ */
+function getSubtypeVariants(normalized: string): string[] {
+  const map: Record<string, string[]> = {
+    CONTROLE: ['CONTROLE', 'CONTROL'],
+    SYNTHESE: ['SYNTHESE', 'SYNTHESIS'],
+    MAISON: ['MAISON'],
+    REVISION: ['REVISION'],
+  };
+  return map[normalized] || [normalized];
 }

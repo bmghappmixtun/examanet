@@ -177,6 +177,44 @@ export default async function DevoirsLandingPage({ params, searchParams }: Props
     labelFr: c.nameFr,
   }));
 
+  // Compute facets for the sidebar (counts per trimestre + per type)
+  const baseWhere = conditions.join(' AND ');
+  const facetsTrimRes = await db
+    .prepare(
+      `SELECT \`trimester\`, COUNT(*) as cnt FROM Resource r WHERE ${baseWhere} GROUP BY \`trimester\``,
+    )
+    .bind(...params_arr)
+    .all();
+  const trimestres: Record<string, number> = {};
+  for (const r of (facetsTrimRes.results || []) as any[]) {
+    const key = r.trimester === null ? 'null' : String(r.trimester);
+    trimestres[key] = Number(r.cnt);
+  }
+
+  const facetsDetailRes = await db
+    .prepare(
+      `SELECT
+         \`trimester\`,
+         CASE WHEN homeworkSubtype IN ('CONTROLE','CONTROL') THEN 'CONTROLE'
+              WHEN homeworkSubtype IN ('SYNTHESE','SYNTHESIS') THEN 'SYNTHESE'
+              ELSE homeworkSubtype END as subtype_norm,
+         homeworkNumber,
+         COUNT(*) as cnt
+       FROM Resource r
+       WHERE ${baseWhere} AND \`trimester\` IS NOT NULL
+       GROUP BY \`trimester\`, subtype_norm, homeworkNumber
+       ORDER BY \`trimester\`, subtype_norm, homeworkNumber`,
+    )
+    .bind(...params_arr)
+    .all();
+  const facetsFilters = (facetsDetailRes.results || []).map((r: any) => ({
+    trimestre: Number(r.trimester),
+    subtype: r.subtype_norm,
+    number: r.homeworkNumber,
+    count: Number(r.cnt),
+  }));
+  const initialFacets = { total, trimestres, filters: facetsFilters };
+
   // JSON-LD ItemList
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   const jsonLd = {
@@ -256,6 +294,7 @@ export default async function DevoirsLandingPage({ params, searchParams }: Props
             initialTotal={total}
             initialNextCursor={items.length < total ? items.length : null}
             initialClassSlug={classSlug}
+            initialFacets={initialFacets}
           />
         </Suspense>
       </main>
