@@ -5,7 +5,8 @@
 // All numeric fields are guarded with `?? 0` to prevent `toLocaleString` crashes.
 
 import { useEffect, useState, useMemo } from 'react';
-import { useRouter, useSearchParams } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
 import {
   GraduationCap, MapPin, Star, Search, ChevronLeft, ChevronRight,

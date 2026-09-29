@@ -1,6 +1,7 @@
 'use client';
 
-import { useRouter, useSearchParams } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 import { BookOpen, GraduationCap, CheckCircle2, X } from 'lucide-react';
 
