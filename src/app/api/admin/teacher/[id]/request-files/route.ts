@@ -78,8 +78,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       `INSERT INTO Notification (id, userId, type, title, body, link, createdAt)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       genId(), id, 'verification_files_requested',
-      '📁 Action requise : envoyez 5 fichiers de vérification',
-      `Bonjour ${teacher.firstName}, pour finaliser la vérification de votre compte enseignant, merci de nous envoyer 5 fichiers Word/PDF d'exemple (cours, séries, devoirs, etc.) avec votre nom et prénom. Vous avez 7 jours.`,
+      '📁 Action requise : envoyez 1 fichier de vérification',
+      `Bonjour ${teacher.firstName}, pour finaliser la vérification de votre compte enseignant, merci de nous envoyer 1 fichier Word/PDF d'exemple (cours, séries, devoirs, etc.) avec votre nom et prénom. Vous avez 7 jours.`,
       '/enseignant/verification', now,
     );
   } catch {}

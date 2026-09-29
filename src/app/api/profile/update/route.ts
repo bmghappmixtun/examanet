@@ -103,8 +103,8 @@ export async function PATCH(req: NextRequest) {
               genId(),
               user.id,
               'verification_files_requested',
-              '📁 Bienvenue ! Envoyez 5 fichiers de vérification',
-              `Bonjour ${updated.firstName || ''}, votre profil est complet ! Pour finaliser la vérification de votre compte enseignant et obtenir le badge "Vérifié", merci d'envoyer 5 fichiers Word ou PDF d'exemple (cours, séries d'exercices, devoirs) avec votre nom et prénom. Vous avez 7 jours.`,
+              '📁 Bienvenue ! Envoyez 1 fichier de vérification',
+              `Bonjour ${updated.firstName || ''}, votre profil est complet ! Pour finaliser la vérification de votre compte enseignant et obtenir le badge "Vérifié", merci d'envoyer 1 fichier Word ou PDF d'exemple (cours, séries d'exercices, devoirs) avec votre nom et prénom. Vous avez 7 jours.`,
               '/enseignant/verification',
               now,
             )
@@ -121,7 +121,7 @@ export async function PATCH(req: NextRequest) {
               firstName: updated.firstName || '',
               lastName: updated.lastName || '',
               email: updated.email,
-              note: 'Bienvenue ! Votre profil est complet. Pour finaliser la vérification, merci d\'envoyer 5 fichiers (Word ou PDF) avec votre nom et prénom.',
+              note: 'Bienvenue ! Votre profil est complet. Pour finaliser la vérification, merci d\'envoyer 1 fichier (Word ou PDF) avec votre nom et prénom.',
             });
             emailSent = emailResult.success;
             if (!emailResult.success) {

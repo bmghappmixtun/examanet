@@ -333,10 +333,10 @@ export default function VerificationUploader({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
           <div className="text-3xl font-extrabold text-violet-700">
-            {totalUploaded}/5
+            {totalUploaded}/{MAX_FILES}
           </div>
           <div className="text-xs text-slate-500 font-semibold uppercase mt-1">
-            Fichiers reçus
+            Fichier reçu{MAX_FILES > 1 ? 's' : ''}
           </div>
         </div>
         <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">

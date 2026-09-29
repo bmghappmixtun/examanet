@@ -512,28 +512,28 @@ export function renderTeacherFileRequestEmail(opts: {
 </body></html>`;
   }
 
-  // 2026-09-11: New 5-file verification flow (default)
+  // 2026-09-29: MAX_FILES reduced 5 → 1
   return renderEmailShell({
     accent: 'violet',
     icon: '📁',
-    title: 'Bienvenue ! Envoyez vos 5 fichiers de vérification',
+    title: 'Bienvenue ! Envoyez votre fichier de vérification',
     subtitle: 'Pour devenir un Enseignant Vérifié',
-    preheader: `Action requise : 5 fichiers de vérification`,
+    preheader: `Action requise : 1 fichier de vérification`,
     body: `
       <p style="margin:0 0 8px;color:#0F172A;font-size:16px;font-family:${F};">Bonjour <strong style="color:#0F172A;">${safeFirst}</strong>,</p>
       ${paragraph(opts.lastName ? `${safeFirst} ${opts.lastName.replace(/</g, '&lt;').replace(/>/g, '&gt;')}` : safeFirst + ',', '')}
-      ${paragraph('Pour finaliser la vérification de votre compte enseignant et obtenir le badge <strong style="color:#16A34A;">"Enseignant Vérifié"</strong>, merci d\'envoyer 5 fichiers Word ou PDF d\'exemple (cours, séries d\'exercices, devoirs) avec votre nom et prénom.')}
+      ${paragraph('Pour finaliser la vérification de votre compte enseignant et obtenir le badge <strong style="color:#16A34A;">"Enseignant Vérifié"</strong>, merci d\'envoyer 1 fichier Word ou PDF d\'exemple (cours, série d\'exercices, devoir) avec votre nom et prénom.')}
       <div style="background:#FEF3C7;border-left:4px solid #F59E0B;padding:14px 18px;border-radius:8px;margin:20px 0;font-family:${F};">
         <div style="color:#92400E;font-weight:700;font-size:14px;margin-bottom:4px;">📋 Ce que nous vérifions</div>
         <div style="color:#78350F;font-size:13px;line-height:1.6;">
-          • Que les fichiers sont bien des productions pédagogiques de votre cru<br/>
-          • Que votre nom et prénom apparaissent sur chaque document<br/>
+          • Que le fichier est bien une production pédagogique de votre cru<br/>
+          • Que votre nom et prénom apparaissent sur le document<br/>
           • Que le contenu est cohérent avec une activité d'enseignement
         </div>
       </div>
-      ${paragraph('Vous avez <strong>7 jours</strong> pour envoyer vos fichiers. Passé ce délai, votre demande devra être renouvelée.')}
-      ${ctaButton(verificationUrl, '📤 Envoyer mes 5 fichiers', 'violet')}
-      ${paragraph('<strong>Confidentialité :</strong> vos fichiers ne sont utilisés que pour la vérification. Ils ne sont jamais publiés sur Examanet.', 'muted')}
+      ${paragraph('Vous avez <strong>7 jours</strong> pour envoyer votre fichier. Passé ce délai, votre demande devra être renouvelée.')}
+      ${ctaButton(verificationUrl, '📤 Envoyer mon fichier', 'violet')}
+      ${paragraph('<strong>Confidentialité :</strong> votre fichier n\'est utilisé que pour la vérification. Il n\'est jamais publié sur Examanet.', 'muted')}
     `,
   });
 }
@@ -548,7 +548,7 @@ export function renderTeacherVerifiedEmail(firstName: string): string {
     preheader: 'Félicitations, votre compte enseignant a été vérifié',
     body: `
       <p style="margin:0 0 8px;color:#0F172A;font-size:16px;font-family:${EMAIL_FONT_STACK};">Bonjour <strong style="color:#0F172A;">${firstName || ''}</strong>,</p>
-      ${paragraph('Après vérification de vos 5 fichiers, votre compte enseignant a été <strong style="color:#16A34A;">officiellement vérifié</strong> par notre équipe.')}
+      ${paragraph('Après vérification de votre fichier, votre compte enseignant a été <strong style="color:#16A34A;">officiellement vérifié</strong> par notre équipe.')}
       <div style="background:#16A34A;color:white;font-size:18px;font-weight:700;text-align:center;padding:20px;border-radius:12px;margin:24px 0;font-family:${EMAIL_FONT_STACK};">
         ✓ Enseignant Vérifié
       </div>

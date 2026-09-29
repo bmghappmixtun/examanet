@@ -32,7 +32,7 @@ export async function GET() {
 
   let message = '';
   if (status === 'PENDING_FILE_VERIFICATION') {
-    message = '🔒 Soumettez vos 5 fichiers de vérification pour pouvoir publier des ressources.';
+    message = '🔒 Soumettez vos 1 fichier de vérification pour pouvoir publier des ressources.';
   } else if (status === 'PENDING_APPROVAL') {
     message = "⏳ Votre compte est en attente d'approbation par l'administrateur.";
   } else if (status === 'PENDING_OTP') {

@@ -42,7 +42,7 @@ export function checkTeacherCanPublish(user: {
     return {
       ok: false,
       error:
-        "Vous devez d'abord soumettre vos 5 fichiers de vérification avant de pouvoir publier des ressources.",
+        "Vous devez d'abord soumettre vos 1 fichier de vérification avant de pouvoir publier des ressources.",
       code: 'PENDING_FILE_VERIFICATION',
       status,
     };

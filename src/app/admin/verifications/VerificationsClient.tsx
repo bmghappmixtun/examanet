@@ -5,7 +5,7 @@
  *
  * Modern grid-based UI with:
  * - Filterable teacher cards (status, search)
- * - Per-teacher file progress (X/5 reçus, Y/5 examinés)
+ * - Per-teacher file progress (X/1 reçus, Y/1 examinés)
  * - Inline file preview modal
  * - Per-file review toggle
  * - Approve/Reject teacher with confirmation
@@ -628,7 +628,7 @@ function TeacherCard({
                 <div className="flex justify-between items-center text-[10px] font-bold uppercase mb-1">
                   <span className="text-slate-500">Fichiers reçus</span>
                   <span className="text-slate-700">
-                    {t.files.length}/5 · {t.reviewedCount} examiné{t.reviewedCount > 1 ? 's' : ''}
+                    {t.files.length}/1 · {t.reviewedCount} examiné{t.reviewedCount > 1 ? 's' : ''}
                   </span>
                 </div>
                 <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">

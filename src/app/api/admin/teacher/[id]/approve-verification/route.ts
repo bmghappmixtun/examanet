@@ -140,8 +140,8 @@ export async function POST(
         genId(), id, 'verification_rejected',
         '⚠️ Fichiers de vérification rejetés',
         reason
-          ? `Bonjour ${teacher.firstName || ''}, vos fichiers de vérification ont été rejetés. Motif : ${reason}. Merci de renvoyer 5 nouveaux fichiers.`
-          : `Bonjour ${teacher.firstName || ''}, vos fichiers de vérification ont été rejetés. Merci de renvoyer 5 nouveaux fichiers.`,
+          ? `Bonjour ${teacher.firstName || ''}, vos fichiers de vérification ont été rejetés. Motif : ${reason}. Merci de renvoyer 1 nouveau fichier.`
+          : `Bonjour ${teacher.firstName || ''}, vos fichiers de vérification ont été rejetés. Merci de renvoyer 1 nouveau fichier.`,
         '/enseignant/verification', now,
       );
     } catch (e) {

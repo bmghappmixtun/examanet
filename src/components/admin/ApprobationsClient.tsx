@@ -879,7 +879,7 @@ export default function ApprobationsClient({
                           }}
                           disabled={loading !== null}
                           className="p-2 sm:px-3 sm:py-2 bg-violet-500 hover:bg-violet-600 text-white text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition disabled:opacity-50 flex items-center gap-1.5"
-                          title="Demander 5 fichiers de vérification"
+                          title="Demander 1 fichier de vérification"
                         >
                           {loading === `${item.id}-request-files` ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -1002,7 +1002,7 @@ export default function ApprobationsClient({
                 </div>
                 <div>
                   <h2 className="text-xl font-extrabold leading-tight">
-                    Demander 5 fichiers de vérification
+                    Demander 1 fichier de vérification
                   </h2>
                   <p className="text-sm text-violet-100 mt-1">
                     {fileRequestModal.teacher.firstName} {fileRequestModal.teacher.lastName}
@@ -1014,7 +1014,7 @@ export default function ApprobationsClient({
               <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 mb-4 text-sm text-violet-800">
                 <Shield className="w-4 h-4 inline me-1" />
                 Cette action enverra un email au prof lui demandant de nous envoyer
-                <strong> 5 fichiers Word/PDF d'exemple</strong> avec son nom et prénom.
+                <strong> 1 fichier Word/PDF d'exemple</strong> avec son nom et prénom.
                 <br />
                 <span className="text-xs text-violet-600 mt-1 block">
                   Le prof aura 7 jours pour répondre. Son statut passera à

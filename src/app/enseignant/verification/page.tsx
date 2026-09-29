@@ -77,8 +77,8 @@ export default async function VerificationPage() {
             genId(),
             teacher.id,
             'verification_files_requested',
-            '📁 Bienvenue ! Envoyez 5 fichiers de vérification',
-            `Bonjour ${teacher.firstName || ''}, votre profil est complet ! Pour finaliser la vérification de votre compte enseignant et obtenir le badge "Vérifié", merci d'envoyer 5 fichiers Word ou PDF d'exemple avec votre nom et prénom.`,
+            '📁 Bienvenue ! Envoyez 1 fichier de vérification',
+            `Bonjour ${teacher.firstName || ''}, votre profil est complet ! Pour finaliser la vérification de votre compte enseignant et obtenir le badge "Vérifié", merci d'envoyer 1 fichier Word ou PDF d'exemple avec votre nom et prénom.`,
             '/enseignant/verification',
             now,
           )
@@ -93,7 +93,7 @@ export default async function VerificationPage() {
             firstName: teacher.firstName || '',
             lastName: teacher.lastName || '',
             email: teacher.email,
-            note: 'Votre profil est complet. Pour finaliser la vérification, merci d\'envoyer 5 fichiers avec votre nom et prénom.',
+            note: 'Votre profil est complet. Pour finaliser la vérification, merci d\'envoyer 1 fichier avec votre nom et prénom.',
           });
         } catch (e) {
           console.error('[verification page] email error:', e);

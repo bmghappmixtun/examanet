@@ -79,8 +79,8 @@ export async function POST(
         `INSERT INTO Notification (id, userId, type, title, body, link, createdAt)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         genId(), id, 'verification_files_requested',
-        '📁 Bienvenue ! Envoyez 5 fichiers de vérification',
-        `Bonjour ${teacher.firstName || ''}, votre compte enseignant vient d'être approuvé. Pour finaliser la vérification et obtenir le badge "Enseignant Vérifié", merci d'envoyer 5 fichiers Word ou PDF d'exemple (cours, séries d'exercices, devoirs) avec votre nom et prénom. Vous avez 7 jours.`,
+        '📁 Bienvenue ! Envoyez 1 fichier de vérification',
+        `Bonjour ${teacher.firstName || ''}, votre compte enseignant vient d'être approuvé. Pour finaliser la vérification et obtenir le badge "Enseignant Vérifié", merci d'envoyer 1 fichier Word ou PDF d'exemple (cours, séries d'exercices, devoirs) avec votre nom et prénom. Vous avez 7 jours.`,
         '/enseignant/verification', now,
       );
     } catch (e) {
@@ -96,7 +96,7 @@ export async function POST(
           firstName: teacher.firstName || '',
           lastName: teacher.lastName || '',
           email: teacher.email,
-          note: 'Bienvenue ! Votre compte enseignant a été approuvé. Pour finaliser la vérification, merci d\'envoyer 5 fichiers.',
+          note: 'Bienvenue ! Votre compte enseignant a été approuvé. Pour finaliser la vérification, merci d\'envoyer 1 fichier.',
         });
         emailSent = emailResult.success;
         if (!emailResult.success) {
@@ -115,7 +115,7 @@ export async function POST(
       nextStep: 'file_verification',
       emailSent,
       message: emailSent
-        ? `Enseignant approuvé. Email envoyé pour demander 5 fichiers de vérification.`
+        ? `Enseignant approuvé. Email envoyé pour demander 1 fichier de vérification.`
         : `Enseignant approuvé. Demande de fichiers créée (email non envoyé — vérifier Resend).`,
     });
   } else {
