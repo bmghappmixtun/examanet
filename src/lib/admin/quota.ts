@@ -5,10 +5,12 @@
  * /admin/fournisseurs cards (formatNumber, date formatting, % thresholds).
  */
 
-import { formatNumber as fmt } from '@/lib/utils';
-
-// Re-export to keep the import surface tiny for admin cards.
-export const formatNumber = fmt;
+// 2026-09-21 nightly fix: re-export directly so CF Workers tree-shaker
+// does not drop the binding (7 "formatNumber is not defined" runtime errors
+// on /admin/fournisseurs over the last 24h). Direct re-export preserves the
+// function reference, while `export const formatNumber = fmt` aliases through
+// a const that the bundler can mistakenly tree-shake.
+export { formatNumber } from '@/lib/utils';
 
 /**
  * Pick the bar color based on % used.
