@@ -347,21 +347,21 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
       </Link>
       <div className="space-y-0.5 text-xs">
         <Link
-          href={`/ressources?subject=${subject.slug}&type=DEVOIR`}
+          href={`/devoirs/${subject.slug}`}
           onClick={onClose}
           className="block text-slate-600 hover:text-primary-600 transition"
         >
           Devoirs {displayName}
         </Link>
         <Link
-          href={`/ressources?subject=${subject.slug}&type=EXERCISE`}
+          href={`/series/${subject.slug}`}
           onClick={onClose}
           className="block text-slate-600 hover:text-primary-600 transition"
         >
           Séries {displayName}
         </Link>
         <Link
-          href={`/ressources?subject=${subject.slug}&type=COURSE`}
+          href={`/cours/${subject.slug}`}
           onClick={onClose}
           className="block text-slate-600 hover:text-primary-600 transition"
         >
