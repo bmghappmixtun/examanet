@@ -321,8 +321,21 @@ function ClasseHero({
 
 /* ====================== COLUMNS ====================== */
 
+// 2026-09-29: Display-name overrides for the mega menu only.
+// Students use abbreviations daily ("SVT" not "Sciences de la Vie et de la Terre"),
+// so we show the friendly name in the menu. The DB stays canonical (full names).
+const SUBJECT_DISPLAY_NAME_OVERRIDES: Record<string, string> = {
+  'svt': 'SVT',
+  'systeme-exploitation-reseaux': 'STI',
+};
+
+function getDisplayName(subject: SubjectItem): string {
+  return SUBJECT_DISPLAY_NAME_OVERRIDES[subject.slug] ?? subject.nameFr;
+}
+
 function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: () => void }) {
   const base = `/matieres/${subject.slug}`;
+  const displayName = getDisplayName(subject);
   return (
     <div>
       <Link
@@ -330,7 +343,7 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
         onClick={onClose}
         className="block font-bold text-slate-900 hover:text-primary-600 transition mb-1 text-sm"
       >
-        {subject.nameFr}
+        {displayName}
       </Link>
       <div className="space-y-0.5 text-xs">
         <Link
@@ -338,21 +351,21 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
           onClick={onClose}
           className="block text-slate-600 hover:text-primary-600 transition"
         >
-          Devoirs {subject.nameFr}
+          Devoirs {displayName}
         </Link>
         <Link
           href={`/ressources?subject=${subject.slug}&type=EXERCISE`}
           onClick={onClose}
           className="block text-slate-600 hover:text-primary-600 transition"
         >
-          Séries {subject.nameFr}
+          Séries {displayName}
         </Link>
         <Link
           href={`/ressources?subject=${subject.slug}&type=COURSE`}
           onClick={onClose}
           className="block text-slate-600 hover:text-primary-600 transition"
         >
-          Cours {subject.nameFr}
+          Cours {displayName}
         </Link>
       </div>
     </div>
