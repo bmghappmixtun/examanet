@@ -35,12 +35,20 @@
   // with real data, NOT a separate staging DB.
   "r2_buckets": [
     {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "examanet-cache"
+    },
+    {
       "binding": "BLOB_BUCKET",
       "bucket_name": "examanet-pdf-prod"
     },
     {
       "binding": "PDFS_BUCKET",
       "bucket_name": "examanet-pdf-prod"
+    },
+    {
+      "binding": "TEXT_BUCKET",
+      "bucket_name": "examanet-text-prod"
     }
   ],
   "kv_namespaces": [

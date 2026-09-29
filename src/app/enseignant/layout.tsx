@@ -46,15 +46,10 @@ export default async function TeacherLayout({ children }: { children: React.Reac
   if (!user) redirect('/connexion');
   if (user.role !== 'TEACHER' && user.role !== 'ADMIN') redirect('/');
 
-  // 2026-09-11: Force profile completion for teachers
-  // Admins can always access (they need to manage teachers)
-  // Skip check for the /profil/completer page itself to avoid redirect loop
-  if (
-    user.role === 'TEACHER' &&
-    !isTeacherProfileComplete(user)
-  ) {
-    redirect('/profil/completer?welcome=1&from=incomplete');
-  }
+  // 2026-09-29: Profile completion is no longer required before verification.
+  // Teachers can fill schoolName / governorate at their leisure from the dashboard.
+  // Verification files come first — this matches the simplified onboarding flow.
+  // (isTeacherProfileComplete still used elsewhere for optional banners / UX hints.)
 
   const db = await getD1();
 

@@ -108,6 +108,57 @@ export async function POST(req: NextRequest) {
         console.error('Admin notify error:', e),
       );
 
+      // 2026-09-29: Skip profile completion step — go straight to verification files.
+      // Set status directly to PENDING_FILE_VERIFICATION + request files now.
+      const now = Date.now();
+      try {
+        await db
+          .prepare(
+            `UPDATE User
+             SET status = 'PENDING_FILE_VERIFICATION',
+                 verificationFilesRequestedAt = ?,
+                 updatedAt = ?
+             WHERE id = ?`,
+          )
+          .bind(now, now, user.id)
+          .run();
+
+        // In-app notification (best-effort)
+        const { genId } = await import('@/lib/db-d1');
+        await db
+          .prepare(
+            `INSERT INTO Notification (id, userId, type, title, body, link, createdAt)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          )
+          .bind(
+            genId(),
+            user.id,
+            'verification_files_requested',
+            '📁 Bienvenue ! Envoyez votre fichier de vérification',
+            `Bonjour ${user.firstName || ''}, votre email est vérifié ! Pour finaliser la vérification de votre compte enseignant et obtenir le badge "Vérifié", merci d'envoyer 1 fichier Word ou PDF d'exemple de votre travail avec votre nom et prénom.`,
+            '/enseignant/verification',
+            now,
+          )
+          .run();
+      } catch (e) {
+        console.error('[verify-otp] Failed to set PENDING_FILE_VERIFICATION:', e);
+        // Don't block the auth flow if the status update fails
+      }
+
+      // Send email notification (best-effort)
+      try {
+        const { sendTeacherFileRequestEmail } = await import('@/lib/email');
+        await sendTeacherFileRequestEmail({
+          to: user.email,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.email,
+          note: 'Votre email est vérifié. Pour finaliser la vérification, merci d\'envoyer 1 fichier Word (.docx) ou PDF contenant un exemple de votre travail avec votre nom et prénom.',
+        });
+      } catch (e) {
+        console.error('[verify-otp] sendTeacherFileRequestEmail error:', e);
+      }
+
       // 2026-09-13: Track OTP verification + first login for teacher journey
       const { trackJourney } = await import('@/lib/teacher-journey');
       await trackJourney(user.id, 'SELF_SIGNUP_OTP_VERIFIED', {
@@ -123,10 +174,10 @@ export async function POST(req: NextRequest) {
       // Return autoLoggedIn so client knows to skip the manual login
       return NextResponse.json({
         success: true,
-        status: 'PENDING_APPROVAL',
+        status: 'PENDING_FILE_VERIFICATION',
         autoLoggedIn: true,
-        message: 'Email vérifié ! Votre compte enseignant est en attente d\'approbation.',
-        nextStep: 'profile_completion', // tells UI to redirect to /profil/completer
+        message: 'Email vérifié ! Envoyez votre fichier de vérification pour devenir Enseignant Vérifié.',
+        nextStep: 'file_verification', // 2026-09-29: skip profile, go straight to /enseignant/verification
       });
     }
 

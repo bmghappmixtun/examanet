@@ -135,7 +135,9 @@ export default function VerificationUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const totalUploaded = files.length;
-  const allUploaded = totalUploaded >= 5;
+  // 2026-09-29: MAX_FILES reduced 5 → 1
+  const MAX_FILES = 1;
+  const allUploaded = totalUploaded >= MAX_FILES;
   const canAddMore = !allUploaded && remaining > 0;
   const isUploading = pending.some((p) => p.status === 'uploading');
   const hasErrors = pending.some((p) => p.status === 'error');
@@ -145,7 +147,7 @@ export default function VerificationUploader({
   const addFiles = useCallback(
     (fileList: FileList | File[]) => {
       if (!canAddMore) {
-        toast.error('Vous avez déjà 5 fichiers. Limite atteinte.');
+        toast.error('Vous avez déjà envoyé votre fichier de vérification.');
         return;
       }
       const incoming = Array.from(fileList);
@@ -158,9 +160,10 @@ export default function VerificationUploader({
           rejected.push(`${f.name}: ${check.reason}`);
           continue;
         }
-        const slotsLeft = 5 - totalUploaded - pending.length - valid.length;
+        // 2026-09-29: MAX_FILES = 1, so only accept the first file
+        const slotsLeft = MAX_FILES - totalUploaded - pending.length - valid.length;
         if (slotsLeft <= 0) {
-          rejected.push(`${f.name}: limite de 5 fichiers atteinte`);
+          rejected.push(`${f.name}: vous ne pouvez envoyer qu'un seul fichier`);
           break;
         }
         valid.push({
@@ -475,20 +478,19 @@ export default function VerificationUploader({
         >
           <Upload className="w-12 h-12 mx-auto text-slate-400 mb-3" />
           <h3 className="font-bold text-slate-900 mb-1">
-            Glissez vos fichiers ici
+            Glissez votre fichier ici
           </h3>
           <p className="text-sm text-slate-500">
             ou cliquez pour parcourir —{' '}
             <span className="font-semibold">
-              sélectionnez jusqu&apos;à {remaining} fichier(s) en une fois
+              un seul fichier Word ou PDF
             </span>
             <br />
-            Formats acceptés : .docx, .doc, .pdf (max 25 MB par fichier)
+            Formats acceptés : .docx, .doc, .pdf (max 25 MB)
           </p>
           <input
             ref={fileInputRef}
             type="file"
-            multiple
             accept=".docx,.doc,.pdf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={onFileInputChange}
             className="hidden"

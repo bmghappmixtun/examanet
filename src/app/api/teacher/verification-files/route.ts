@@ -11,7 +11,8 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
-const MAX_FILES = 5;
+// 2026-09-29: Reduced from 5 → 1 (UX simplification — single canonical sample)
+const MAX_FILES = 1;
 const ALLOWED_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/msword',
@@ -75,9 +76,8 @@ export async function POST(req: NextRequest) {
     if (!db) return NextResponse.json({ error: 'DB not available' }, { status: 503 });
 
     // 2026-09-11: Removed the strict PENDING_FILE_VERIFICATION status check.
-    // Bug: after the first upload, status flips to PENDING_REVIEW (correct), but
-    // this check then blocked all subsequent uploads. The teacher needs to send
-    // 5 files in total, not just 1.
+    // 2026-09-29: MAX_FILES reduced from 5 → 1, so after the first upload the
+    // status flips to PENDING_REVIEW and no further uploads are needed.
     //
     // New logic: just check the count. The teacher can upload as long as they
     // haven't hit MAX_FILES, regardless of intermediate status.
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       'SELECT COUNT(*) as c FROM TeacherVerificationFile WHERE userId = ?'
     ).bind(user.id).first();
     if ((countResult?.c || 0) >= MAX_FILES) {
-      return NextResponse.json({ error: `Vous avez déjà atteint la limite de ${MAX_FILES} fichiers.` }, { status: 400 });
+      return NextResponse.json({ error: `Vous avez déjà envoyé votre fichier de vérification.` }, { status: 400 });
     }
 
     const formData = await req.formData();

@@ -10,26 +10,19 @@ const ALLOWED_PREFIXES = [
   'resources/',
   'thumbnails/',
   'test-',
-  'verification/',  // 2026-09-12: Added for teacher verification files (admin/verifications tab)
+  'verification/',
+  'text/',  // 2026-09-22: AI Search text bucket
 ];
 
 /**
  * GET /api/file/[...key]
  *
  * Public unified file proxy for Examanet. R2 only.
- *
- *  - All files (new uploads + legacy Vercel Blob imports) live in R2
- *  - Browser only sees /api/file/{key}, never third-party URLs
- *  - The token-protected /api/blob-teacher route still exists for the
- *    internal AI extraction pipeline that needs to bypass IP rate limits
- *
- * If a file is not in R2, returns 404 — caller must run the migration script.
- *
- * The key is the path relative to the bucket, e.g.
- * "teacher-library/{teacherId}/{timestamp}-{filename}.pdf".
+ * If a teacher-library .doc/.docx is marked as orphan (lost in 2026-09-22 R2 cleanup),
+ * returns 410 Gone with a user-friendly message in FR/AR.
  */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ key: string[] }> },
 ) {
   const { key: keyParts } = await params;
@@ -40,15 +33,30 @@ export async function GET(
     return new NextResponse('Bad request', { status: 400 });
   }
 
-  // Allow-list: only serve files from known namespaces
+  // Allow-list
   if (!ALLOWED_PREFIXES.some((p) => key.startsWith(p))) {
     return new NextResponse('Not found', { status: 404 });
   }
 
-  // Try R2
+  // 2026-09-22: Check if this teacher-library .doc/.docx is a known orphan
+  if (key.startsWith('teacher-library/')) {
+    const lower = key.toLowerCase();
+    if (lower.endsWith('.doc') || lower.endsWith('.docx')) {
+      const orphan = await checkOrphanStatus(key);
+      if (orphan) {
+        return buildGoneResponse(req, orphan);
+      }
+    }
+  }
+
+  // Try R2 — pick the right bucket based on prefix
+  // 2026-09-22: text/ lives in TEXT_BUCKET
   const { getCloudflareContext } = await import('@opennextjs/cloudflare');
   const ctx = await getCloudflareContext({ async: true });
-  const bucket = (ctx as any).env.PDFS_BUCKET as R2Bucket | undefined;
+  const env = (ctx as any).env;
+  const bucket = key.startsWith('text/')
+    ? (env?.TEXT_BUCKET as R2Bucket | undefined)
+    : (env?.PDFS_BUCKET as R2Bucket | undefined);
 
   if (!bucket) {
     return new NextResponse('Storage not configured', { status: 500 });
@@ -76,4 +84,59 @@ export async function GET(
     console.error('[api/file] R2 error:', e.message);
     return new NextResponse(`R2 error: ${e.message}`, { status: 502 });
   }
+}
+
+/**
+ * Look up if a teacher-library file is marked as orphan in D1.
+ * Returns the orphan record if found, null otherwise.
+ */
+async function checkOrphanStatus(key: string): Promise<any | null> {
+  try {
+    const { getCloudflareContext } = await import('@opennextjs/cloudflare');
+    const ctx = await getCloudflareContext({ async: true });
+    const db = (ctx as any).env?.DB;
+    if (!db) return null;
+
+    const fileUrl = `/api/file/${key}`;
+    const stmt = db.prepare(
+      'SELECT id, fileName, originalLostAt, originalLostReason FROM TeacherFile WHERE fileUrl = ? AND isOriginalLost = 1 LIMIT 1'
+    ).bind(fileUrl);
+    return (await stmt.first()) || null;
+  } catch (e) {
+    console.error('[api/file/orphan] check failed:', (e as any).message);
+    return null;
+  }
+}
+
+/**
+ * Build a 410 Gone response with localized message.
+ */
+function buildGoneResponse(req: NextRequest, orphan: any): NextResponse {
+  const acceptLang = req.headers.get('accept-language') || '';
+  const isAr = acceptLang.toLowerCase().startsWith('ar');
+
+  const frMsg = [
+    'Document original perdu le 22/09/2026 lors d\'un incident de maintenance R2.',
+    '',
+    'La version PDF convertie peut être disponible dans la bibliothèque du professeur.',
+    'Pour récupérer ce document, contactez l\'administrateur (admin@examanet.com).',
+  ].join('\n');
+
+  const arMsg = [
+    'فُقد المستند الأصلي في 22/09/2026 أثناء حادث صيانة على R2.',
+    '',
+    'قد تكون نسخة PDF المحوّلة متاحة في مكتبة الأستاذ.',
+    'لاسترجاع هذا المستند، يُرجى التواصل مع المشرف (admin@examanet.com).',
+  ].join('\n');
+
+  const body = isAr ? arMsg : frMsg;
+
+  const headers = new Headers();
+  headers.set('Content-Type', 'text/plain; charset=utf-8');
+  headers.set('Content-Language', isAr ? 'ar' : 'fr');
+  headers.set('X-Document-Status', 'original-lost');
+  headers.set('X-Lost-At', String(orphan.originalLostAt || ''));
+  headers.set('Cache-Control', 'no-store');
+
+  return new NextResponse(body, { status: 410, headers });
 }

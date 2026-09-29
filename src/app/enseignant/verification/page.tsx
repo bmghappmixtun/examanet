@@ -149,7 +149,8 @@ export default async function VerificationPage() {
   const receivedAtISO = teacher.verificationFilesReceivedAt
     ? new Date(Number(teacher.verificationFilesReceivedAt)).toISOString()
     : null;
-  const remaining = Math.max(0, 5 - files.length);
+  // 2026-09-29: MAX_FILES reduced 5 → 1
+  const remaining = Math.max(0, 1 - files.length);
 
   return (
     <div className="space-y-6">
@@ -162,7 +163,7 @@ export default async function VerificationPage() {
           <div className="flex-1">
             <h1 className="text-2xl font-extrabold mb-1">Vérification de votre compte</h1>
             <p className="text-violet-100 text-sm">
-              Pour devenir un Enseignant Vérifié, envoyez 5 fichiers Word ou PDF d'exemple de votre travail.
+              Pour devenir un Enseignant Vérifié, envoyez 1 fichier Word ou PDF d'exemple de votre travail avec votre nom et prénom.
             </p>
           </div>
         </div>
@@ -174,11 +175,11 @@ export default async function VerificationPage() {
           <div className="flex items-start gap-3">
             <Clock className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h3 className="font-bold text-amber-900 mb-1">En attente de vos 5 fichiers</h3>
+              <h3 className="font-bold text-amber-900 mb-1">En attente de votre fichier</h3>
               <p className="text-sm text-amber-800 mb-2">
-                Pour finaliser la vérification, merci d'envoyer 5 fichiers Word (.docx) ou PDF
-                contenant des exemples de votre travail (cours, séries, devoirs).
-                Chaque fichier doit inclure votre nom et prénom.
+                Pour finaliser la vérification, merci d'envoyer 1 fichier Word (.docx) ou PDF
+                contenant un exemple de votre travail (cours, série d'exercices, devoir).
+                Le fichier doit inclure votre nom et prénom.
               </p>
               {requestedAtISO && (
                 <p className="text-xs text-amber-700">
