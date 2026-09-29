@@ -8,6 +8,7 @@ import MenuModalOverlay from '@/components/mega-menu/MenuModalOverlay';
 import MenuSideDrawer from '@/components/mega-menu/MenuSideDrawer';
 import MenuCompactBar from '@/components/mega-menu/MenuCompactBar';
 import MenuVisualCards from '@/components/mega-menu/MenuVisualCards';
+import MenuMatieresModal from '@/components/mega-menu/MenuMatieresModal';
 
 const VARIANTS = [
   {
@@ -61,6 +62,23 @@ const VARIANTS = [
     Component: MenuVisualCards,
     variant: 'hover-cards',
   },
+  {
+    id: 6,
+    name: 'Matières Modal',
+    description: 'Modal avec TOUTES les matières en grille 4 colonnes + carte hero. Devoirs/Séries/Cours en accès direct par matière.',
+    pros: [
+      'Accès direct à toutes les matières',
+      'Filtres pré-appliqués (Devoirs/Séries/Cours)',
+      'Hero card visuel pour la marque',
+      'Mobile-friendly',
+    ],
+    cons: [
+      'Modal interrompt le flux',
+      'Beaucoup de liens → hiérarchie visuelle importante',
+    ],
+    Component: MenuMatieresModal,
+    variant: 'click-matieres-modal',
+  },
 ];
 
 export const dynamic = 'force-dynamic';
@@ -75,7 +93,7 @@ export default async function PreviewMenuPage({
 }) {
   const { variant: variantStr, locale } = await params;
   const id = parseInt(variantStr, 10);
-  if (isNaN(id) || id < 1 || id > 5) notFound();
+  if (isNaN(id) || id < 1 || id > 6) notFound();
 
   const v = VARIANTS[id - 1];
   const MenuComponent = v.Component;
