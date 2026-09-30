@@ -58,22 +58,6 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
     .first();
   const totalCount = Number(totalRes?.c || 0);
 
-  const featuredRes = await db
-    .prepare(
-      'SELECT r.id, r.title, r.thumbnailUrl, r.homeworkNumber, r.`trimester`, c.slug as c_slug, c.nameFr as c_nameFr, t.firstName as t_firstName, t.lastName as t_lastName FROM Resource r LEFT JOIN `Class` c ON r.classId = c.id LEFT JOIN `User` t ON r.teacherId = t.id WHERE r.status = \'PUBLISHED\' AND r.type = \'DEVOIR\' AND r.subjectId = ? AND r.thumbnailUrl IS NOT NULL ORDER BY r.publishedAt DESC LIMIT 3',
-    )
-    .bind(subject.id)
-    .all();
-  const featured = (featuredRes.results || []).map((r: any) => ({
-    id: r.id,
-    title: r.title,
-    thumbnailUrl: r.thumbnailUrl,
-    homeworkNumber: r.homeworkNumber,
-    trimester: r.trimester,
-    class: r.c_slug ? { slug: r.c_slug, nameFr: r.c_nameFr } : null,
-    teacher: r.t_firstName ? { firstName: r.t_firstName, lastName: r.t_lastName } : null,
-  }));
-
   const trimCountRes = await db
     .prepare("SELECT COUNT(DISTINCT `trimester`) as c FROM Resource WHERE status='PUBLISHED' AND type='DEVOIR' AND subjectId = ? AND `trimester` IS NOT NULL")
     .bind(subject.id)
@@ -112,7 +96,6 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
           totalCount={totalCount}
           classCount={allClasses.length}
           trimesterCount={trimesterCount}
-          featured={featured}
           classes={allClasses}
           activeClass={classSlug}
         />
