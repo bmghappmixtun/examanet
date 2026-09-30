@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, Grid3x3, LayoutGrid, X, Loader2, Eye, Download, Star, Calendar } from 'lucide-react';
 import styles from './apex-devoirs.module.css';
 import { useDevoirsContext } from './devoirs-context';
+import SmartThumb from './SmartThumb';
 
 interface ListingProps {
   subject: { slug: string; nameFr: string };
@@ -272,15 +273,12 @@ export default function ApexListing({ subject, classes }: ListingProps) {
               className={`${styles.bentoCard} ${idx === 0 ? styles.large : ''}`}
               style={{ contentVisibility: 'auto' }}
             >
-              {item.thumbnailUrl && (
-                <img
-                  src={item.thumbnailUrl}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className={styles.bentoThumb}
-                />
-              )}
+              <SmartThumb
+                src={item.thumbnailUrl}
+                type={item.homeworkSubtype}
+                homeworkNumber={item.homework_number ?? item.homeworkNumber}
+                large={idx === 0}
+              />
               <div className={styles.bentoCardBody}>
                 <div className={styles.bentoMeta}>
                   <span className={styles.bentoTag}>{item.class?.nameFr || '—'}</span>
