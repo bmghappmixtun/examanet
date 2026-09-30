@@ -150,48 +150,83 @@ export default function ApexListing({ subject, classes }: ListingProps) {
       {/* Sticky filter bar — same as classic UI */}
       <div className={styles.filterBar}>
         <div className={styles.filterBarInner}>
-          {classSlug ? (
-            <div className={styles.filterGroup}>
-              <span className={styles.filterLabel}>Classe</span>
-              <button onClick={() => ctx.setClass(null)} className={`${styles.filterPill} ${styles.active}`}>
-                {classes.find((c) => c.slug === classSlug)?.labelFr}
-                <X size={12} style={{ marginLeft: 4 }} />
-              </button>
-            </div>
-          ) : (
-            <div className={styles.filterGroup}>
-              <span className={styles.filterLabel}>Classe</span>
-              <span className={styles.filterPill} style={{ opacity: 0.5 }}>Toutes</span>
-            </div>
-          )}
+          {/* ROW 1: Classe + Trimestre + (Density + Sort on right) */}
+          <div className={styles.filterBarRow} style={{ flex: 1, minWidth: 0 }}>
+            {classSlug ? (
+              <div className={styles.filterGroup}>
+                <span className={styles.filterLabel}>Classe</span>
+                <button onClick={() => ctx.setClass(null)} className={`${styles.filterPill} ${styles.active}`}>
+                  {classes.find((c) => c.slug === classSlug)?.labelFr}
+                  <X size={12} style={{ marginLeft: 4 }} />
+                </button>
+              </div>
+            ) : (
+              <div className={styles.filterGroup}>
+                <span className={styles.filterLabel}>Classe</span>
+                <span className={styles.filterPill} style={{ opacity: 0.6 }}>Toutes</span>
+              </div>
+            )}
 
-          <div className={styles.filterDivider} />
+            <div className={styles.filterDivider} />
 
-          <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Trimestre</span>
-            <button
-              onClick={() => setTrimestre(null)}
-              className={`${styles.filterPill} ${!activeTrimestre ? styles.active : ''}`}
-            >
-              Tout <span className={styles.count}>{facets.total}</span>
-            </button>
-            {[1, 2, 3].map((t) => (
+            <div className={styles.filterGroup}>
+              <span className={styles.filterLabel}>Trimestre</span>
               <button
-                key={t}
-                onClick={() => setTrimestre(String(t))}
-                className={`${styles.filterPill} ${activeTrimestre === String(t) ? styles.active : ''}`}
+                onClick={() => setTrimestre(null)}
+                className={`${styles.filterPill} ${!activeTrimestre ? styles.active : ''}`}
               >
-                T{t} <span className={styles.count}>{facets.trimestres[String(t)] || 0}</span>
+                Tout {" "}<span className={styles.count}>{facets.total}</span>
               </button>
-            ))}
+              {[1, 2, 3].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTrimestre(String(t))}
+                  className={`${styles.filterPill} ${activeTrimestre === String(t) ? styles.active : ''}`}
+                >
+                  T{t} {" "}<span className={styles.count}>{facets.trimestres[String(t)] || 0}</span>
+                </button>
+              ))}
+            </div>
+
+            <div style={{ flex: 1 }} />
+
+            <div className={styles.densityToggle} role="group" aria-label="Density">
+              <button
+                onClick={() => setDensity('comfortable')}
+                className={`${styles.densityBtn} ${density !== 'compact' ? styles.active : ''}`}
+                aria-label="Confortable"
+                title="Confortable"
+              >
+                <LayoutGrid size={14} />
+              </button>
+              <button
+                onClick={() => setDensity('compact')}
+                className={`${styles.densityBtn} ${density === 'compact' ? styles.active : ''}`}
+                aria-label="Compact"
+                title="Compact"
+              >
+                <Grid3x3 size={14} />
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                const order = ['recent', 'popular', 'downloads'];
+                const idx = order.indexOf(sortMode);
+                setSort(order[(idx + 1) % order.length]);
+              }}
+              className={styles.sortButton}
+            >
+              {sortMode === 'recent' ? <Calendar size={14} /> : <ArrowDown size={14} />}
+              {SORT_LABELS[sortMode] || sortMode}
+            </button>
           </div>
 
-          {/* TYPE filter — independent of trimestre, aggregates across all T */}
+          {/* ROW 2: TYPE filter (scrollable, full width) */}
           {facets.subtypes && facets.subtypes.length > 0 && (
-            <>
-              <div className={styles.filterDivider} />
-              <div className={styles.filterGroup} style={{ maxWidth: '100%', overflowX: 'auto', flexWrap: 'wrap' }}>
-                <span className={styles.filterLabel}>Type</span>
+            <div className={styles.filterBarRow}>
+              <span className={styles.filterLabel}>Type</span>
+              <div className={styles.filterBarRowScrollable}>
                 <button
                   onClick={() => setType(null, null)}
                   className={`${styles.filterPill} ${!activeSubtype ? styles.active : ''}`}
@@ -205,6 +240,7 @@ export default function ApexListing({ subject, classes }: ListingProps) {
                       key={`${opt.subtype}-${opt.number}`}
                       onClick={() => setType(opt.subtype, opt.number !== null ? String(opt.number) : null)}
                       className={`${styles.filterPill} ${isActive ? styles.active : ''}`}
+                      title={`${SUBTYPE_LABELS[opt.subtype] || opt.subtype} N°${opt.number ?? '?'}`}
                     >
                       {SUBTYPE_LABELS[opt.subtype] || opt.subtype} N°{opt.number ?? '?'}
                       <span className={styles.count}>{opt.count}</span>
@@ -212,39 +248,8 @@ export default function ApexListing({ subject, classes }: ListingProps) {
                   );
                 })}
               </div>
-            </>
+            </div>
           )}
-
-          <div className={styles.densityToggle} role="group" aria-label="Density">
-            <button
-              onClick={() => setDensity('comfortable')}
-              className={`${styles.densityBtn} ${density !== 'compact' ? styles.active : ''}`}
-              aria-label="Confortable"
-              title="Confortable"
-            >
-              <LayoutGrid size={14} />
-            </button>
-            <button
-              onClick={() => setDensity('compact')}
-              className={`${styles.densityBtn} ${density === 'compact' ? styles.active : ''}`}
-              aria-label="Compact"
-              title="Compact"
-            >
-              <Grid3x3 size={14} />
-            </button>
-          </div>
-
-          <button
-            onClick={() => {
-              const order = ['recent', 'popular', 'downloads'];
-              const idx = order.indexOf(sortMode);
-              setSort(order[(idx + 1) % order.length]);
-            }}
-            className={styles.sortButton}
-          >
-            {sortMode === 'recent' ? <Calendar size={14} /> : <ArrowDown size={14} />}
-            {SORT_LABELS[sortMode] || sortMode}
-          </button>
         </div>
       </div>
 

@@ -963,3 +963,57 @@
   border-radius: 14px;
   height: 280px;
 }
+
+/* Filter bar rows */
+.filterBarRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.filterBarRow + .filterBarRow {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border);
+}
+
+.filterBarRowScrollable {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.filterBarRowScrollable::-webkit-scrollbar {
+  height: 4px;
+}
+
+.filterBarRowScrollable::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+/* Make pills more visible (not transparent on white bg) */
+.filterPill {
+  background: color-mix(in oklch, var(--ink) 4%, var(--surface)) !important;
+  border: 1px solid var(--border) !important;
+  flex-shrink: 0;
+}
+
+.filterPill:where(:hover, :focus-visible) {
+  background: color-mix(in oklch, var(--ink) 10%, var(--surface)) !important;
+  border-color: color-mix(in oklch, var(--primary) 30%, var(--border)) !important;
+}
+
+.filterPill.active {
+  background: var(--primary) !important;
+  color: #fff !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 2px 8px -2px color-mix(in oklch, var(--primary) 50%, transparent);
+}
