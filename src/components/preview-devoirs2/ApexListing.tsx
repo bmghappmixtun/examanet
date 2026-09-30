@@ -290,7 +290,11 @@ export default function ApexListing({ subject, classes }: ListingProps) {
                   )}
                 </div>
                 <h3 className={styles.bentoTitle}>{item.title}</h3>
-                {item.summary && <p className={styles.bentoSummary}>{item.summary}</p>}
+                {item.summary && (
+                  <p className={`${styles.bentoSummary} ${idx === 0 ? styles.bentoSummaryLarge : ''}`}>
+                    {item.summary}
+                  </p>
+                )}
                 <div className={styles.bentoFooter}>
                   <div className={styles.bentoStats}>
                     <span className={styles.bentoStat}><Eye size={12} /> {item.viewsCount || 0}</span>
