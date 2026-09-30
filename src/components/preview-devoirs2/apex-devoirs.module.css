@@ -836,3 +836,47 @@
   color: var(--muted);
   line-height: 1.6;
 }
+
+/* SmartThumb fallback (no broken image icon) */
+.thumbFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #fef3c7 100%);
+  color: #0369a1;
+  position: relative;
+  overflow: hidden;
+}
+
+.thumbFallback::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(240, 143, 69, 0.2) 0%, transparent 50%);
+}
+
+.thumbFallbackLarge {
+  aspect-ratio: 1 !important;
+}
+
+.thumbFallbackInner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 1;
+}
+
+.thumbBadge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: rgba(14, 165, 233, 0.15);
+  color: #0369a1;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
