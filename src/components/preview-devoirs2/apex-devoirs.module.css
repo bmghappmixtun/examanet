@@ -909,3 +909,57 @@
   letter-spacing: 0.02em;
   z-index: 1;
 }
+
+/* Classic grid (masonry-like using CSS columns) */
+.classicGrid {
+  max-width: 1400px;
+  margin: 2rem auto 1rem;
+  padding: 0 1.5rem;
+  column-count: 1;
+  column-gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .classicGrid { column-count: 2; }
+}
+
+@media (min-width: 1024px) {
+  .classicGrid { column-count: 3; }
+}
+
+@media (min-width: 1280px) {
+  .classicGrid { column-count: 4; }
+}
+
+.classicGrid[data-density="compact"] {
+  column-count: 4;
+}
+
+@media (min-width: 640px) {
+  .classicGrid[data-density="compact"] { column-count: 5; }
+}
+@media (min-width: 1024px) {
+  .classicGrid[data-density="compact"] { column-count: 6; }
+}
+@media (min-width: 1280px) {
+  .classicGrid[data-density="compact"] { column-count: 7; }
+}
+
+.classicCardWrap {
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
+  display: block;
+}
+
+.skeletonCard {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--ink) 4%, transparent) 25%,
+    color-mix(in oklch, var(--ink) 8%, transparent) 50%,
+    color-mix(in oklch, var(--ink) 4%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 14px;
+  height: 280px;
+}

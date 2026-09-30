@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Grid3x3, LayoutGrid, X, Loader2, Eye, Download, Star, Calendar } from 'lucide-react';
+import { ArrowDown, ArrowUp, Grid3x3, LayoutGrid, X, Loader2, Calendar } from 'lucide-react';
+import ResourceCard from '@/components/resources/ResourceCard';
 import styles from './apex-devoirs.module.css';
 import { useDevoirsContext } from './devoirs-context';
-import SmartThumb from './SmartThumb';
 
 interface ListingProps {
   subject: { slug: string; nameFr: string };
@@ -150,11 +150,11 @@ export default function ApexListing({ subject, classes }: ListingProps) {
   }
 
   const activeTrimNum = activeTrimestre ? parseInt(activeTrimestre, 10) : null;
-  const isCompact = density === 'compact';
   const percent = facets.total > 0 ? Math.round((items.length / facets.total) * 100) : 0;
 
   return (
     <>
+      {/* Sticky filter bar — same as classic UI */}
       <div className={styles.filterBar}>
         <div className={styles.filterBarInner}>
           {classSlug ? (
@@ -226,7 +226,7 @@ export default function ApexListing({ subject, classes }: ListingProps) {
           <div className={styles.densityToggle} role="group" aria-label="Density">
             <button
               onClick={() => setDensity('comfortable')}
-              className={`${styles.densityBtn} ${!isCompact ? styles.active : ''}`}
+              className={`${styles.densityBtn} ${density !== 'compact' ? styles.active : ''}`}
               aria-label="Confortable"
               title="Confortable"
             >
@@ -234,7 +234,7 @@ export default function ApexListing({ subject, classes }: ListingProps) {
             </button>
             <button
               onClick={() => setDensity('compact')}
-              className={`${styles.densityBtn} ${isCompact ? styles.active : ''}`}
+              className={`${styles.densityBtn} ${density === 'compact' ? styles.active : ''}`}
               aria-label="Compact"
               title="Compact"
             >
@@ -256,69 +256,25 @@ export default function ApexListing({ subject, classes }: ListingProps) {
         </div>
       </div>
 
-      <div
-        className={styles.bentoGrid}
-        style={isCompact ? { gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' } : undefined}
-      >
+      {/* Classic cards in masonry layout (like /fr/devoirs/[slug]) */}
+      <div className={styles.classicGrid} data-density={density}>
         {items.length === 0 && !loading ? (
           <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem 0', color: 'var(--muted)' }}>
             <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>Aucun devoir pour ces filtres.</p>
             <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>Essayez un autre trimestre ou un autre type.</p>
           </div>
         ) : (
-          items.map((item, idx) => (
-            <a
-              key={item.id}
-              href={`/fr/ressources/${item.numericId || item.id}/${item.slug}`}
-              className={`${styles.bentoCard} ${idx === 0 ? styles.large : ''}`}
-              style={{ contentVisibility: 'auto' }}
-            >
-              <SmartThumb
-                src={item.thumbnailUrl}
-                type={item.homeworkSubtype}
-                homeworkNumber={item.homework_number ?? item.homeworkNumber}
-                large={idx === 0}
-              />
-              <div className={styles.bentoCardBody}>
-                <div className={styles.bentoMeta}>
-                  <span className={styles.bentoTag}>{item.class?.nameFr || '—'}</span>
-                  {item.homeworkSubtype && (
-                    <span className={`${styles.bentoTag} ${styles.type}`}>
-                      {SUBTYPE_LABELS[item.homeworkSubtype] || item.homeworkSubtype}
-                      {item.homework_number ? ` N°${item.homework_number}` : ''}
-                    </span>
-                  )}
-                </div>
-                <h3 className={styles.bentoTitle}>{item.title}</h3>
-                {item.summary && (
-                  <p className={`${styles.bentoSummary} ${idx === 0 ? styles.bentoSummaryLarge : ''}`}>
-                    {item.summary}
-                  </p>
-                )}
-                <div className={styles.bentoFooter}>
-                  <div className={styles.bentoStats}>
-                    <span className={styles.bentoStat}><Eye size={12} /> {item.viewsCount || 0}</span>
-                    <span className={styles.bentoStat}><Download size={12} /> {item.downloadsCount || 0}</span>
-                    {item.avgRating > 0 && (
-                      <span className={styles.bentoStat}><Star size={12} /> {(item.avgRating || 0).toFixed(1)}</span>
-                    )}
-                  </div>
-                  {item.year && <span>{item.year}</span>}
-                </div>
-              </div>
-            </a>
+          items.map((item) => (
+            <div key={item.id} className={styles.classicCardWrap}>
+              <ResourceCard resource={item} />
+            </div>
           ))
         )}
 
         {loading && items.length === 0 &&
           Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className={styles.bentoCard} style={{ contentVisibility: 'auto' }}>
-              <div className={`${styles.skeleton} ${styles.bentoThumb}`} />
-              <div className={styles.bentoCardBody}>
-                <div className={styles.skeleton} style={{ height: 14, width: '40%' }} />
-                <div className={styles.skeleton} style={{ height: 18, marginTop: 8 }} />
-                <div className={styles.skeleton} style={{ height: 14, marginTop: 6, width: '80%' }} />
-              </div>
+            <div key={`sk-${i}`} className={styles.classicCardWrap}>
+              <div className={styles.skeletonCard} />
             </div>
           ))
         }
