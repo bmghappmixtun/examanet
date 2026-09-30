@@ -557,6 +557,12 @@
   background: color-mix(in oklch, var(--ink) 4%, transparent);
 }
 
+.bentoThumbCompact {
+  aspect-ratio: 5/1;
+  position: relative;
+  overflow: hidden;
+}
+
 .bentoCard.large .bentoThumb { aspect-ratio: 1; }
 
 .bentoCardBody {
@@ -565,6 +571,33 @@
   flex-direction: column;
   gap: 0.5rem;
   flex: 1;
+}
+
+.bentoCardBody {
+  padding: 0.875rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.bentoSummary {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: color-mix(in oklch, var(--ink) 75%, transparent);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bentoSummaryLarge {
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  font-size: 0.85rem;
 }
 
 .bentoMeta {
@@ -598,15 +631,6 @@
   overflow: hidden;
 }
 
-.bentoSummary {
-  font-size: 0.8rem;
-  color: var(--muted);
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 
 .bentoFooter {
   display: flex;
@@ -841,9 +865,11 @@
 .thumbFallback {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.875rem;
+  gap: 0.75rem;
   background:
-    linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #fef3c7 100%);
+    linear-gradient(95deg, #f0f9ff 0%, #e0f2fe 60%, #fef3c7 100%);
   color: #0369a1;
   position: relative;
   overflow: hidden;
@@ -854,29 +880,32 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 20% 80%, rgba(14, 165, 233, 0.2) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(240, 143, 69, 0.2) 0%, transparent 50%);
+    radial-gradient(circle at 15% 50%, rgba(14, 165, 233, 0.18) 0%, transparent 60%),
+    radial-gradient(circle at 90% 50%, rgba(240, 143, 69, 0.15) 0%, transparent 60%);
+  pointer-events: none;
 }
 
-.thumbFallbackLarge {
-  aspect-ratio: 1 !important;
+.thumbFallbackCompact {
+  aspect-ratio: 5/1 !important;
 }
 
 .thumbFallbackInner {
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.625rem;
   z-index: 1;
+  flex-shrink: 0;
 }
 
 .thumbBadge {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 700;
   background: rgba(14, 165, 233, 0.15);
   color: #0369a1;
-  padding: 0.3rem 0.75rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  border: 1px solid rgba(14, 165, 233, 0.2);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  letter-spacing: 0.02em;
+  z-index: 1;
 }
