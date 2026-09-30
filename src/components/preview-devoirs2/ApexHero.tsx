@@ -10,15 +10,6 @@ interface HeroProps {
   totalCount: number;
   classCount: number;
   trimesterCount: number;
-  featured: Array<{
-    id: string;
-    title: string;
-    thumbnailUrl?: string | null;
-    class: { slug: string; nameFr: string } | null;
-    teacher: { firstName: string | null; lastName: string | null } | null;
-    homeworkNumber: number | null;
-    trimester: string | number | null;
-  }>;
   classes: { slug: string; labelFr: string }[];
   activeClass: string | null;
 }
@@ -28,7 +19,6 @@ export default function ApexHero({
   totalCount,
   classCount,
   trimesterCount,
-  featured,
   classes,
   activeClass,
 }: HeroProps) {
@@ -118,35 +108,6 @@ export default function ApexHero({
             </button>
           ))}
         </div>
-
-        {featured.length > 0 && (
-          <div className={styles.featured}>
-            {featured.slice(0, 3).map((card, idx) => (
-              <a
-                key={card.id}
-                href={`/fr/ressources/${card.id}`}
-                className={styles.featuredCard}
-              >
-                {card.thumbnailUrl && (
-                  <img
-                    src={card.thumbnailUrl}
-                    alt=""
-                    loading={idx < 2 ? 'eager' : 'lazy'}
-                    decoding="async"
-                    className={styles.featuredImg}
-                  />
-                )}
-                <div className={styles.featuredOverlay}>
-                  <div className={styles.featuredTag}>Nouveau</div>
-                  <div className={styles.featuredTitle}>{card.title}</div>
-                  <div className={styles.featuredMeta}>
-                    {card.class?.nameFr} · Contrôle N°{card.homeworkNumber ?? '?'} · T{card.trimester ?? '?'}
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
