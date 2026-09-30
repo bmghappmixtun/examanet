@@ -50,6 +50,7 @@ export async function GET(
       trimestres[key] = Number(r.cnt);
     }
 
+    // Filters nested per trimestre (for the existing TYPE pill list when T selected)
     const filtersRes = await db
       .prepare(
         `SELECT
@@ -73,8 +74,33 @@ export async function GET(
       count: Number(r.cnt),
     }));
 
+    // Subtype-number aggregation ACROSS ALL TRIMESTRES (for the standalone TYPE filter)
+    const subtypesRes = await db
+      .prepare(
+        `SELECT
+           CASE WHEN homeworkSubtype IN ('CONTROLE','CONTROL') THEN 'CONTROLE'
+                WHEN homeworkSubtype IN ('SYNTHESE','SYNTHESIS') THEN 'SYNTHESE'
+                WHEN homeworkSubtype IS NULL THEN NULL
+                ELSE homeworkSubtype END as subtype_norm,
+           homeworkNumber,
+           COUNT(*) as cnt
+         FROM Resource r
+         WHERE ${whereClause} AND homeworkSubtype IS NOT NULL
+         GROUP BY subtype_norm, homeworkNumber
+         ORDER BY subtype_norm, homeworkNumber`,
+      )
+      .bind(...params_arr)
+      .all();
+    const subtypes = (subtypesRes.results || [])
+      .filter((r: any) => r.subtype_norm != null && r.homeworkNumber != null)
+      .map((r: any) => ({
+        subtype: r.subtype_norm,
+        number: r.homeworkNumber,
+        count: Number(r.cnt),
+      }));
+
     return NextResponse.json(
-      { total, trimestres, filters },
+      { total, trimestres, filters, subtypes },
       { headers: { 'Cache-Control': 'public, max-age=120, s-maxage=120' } },
     );
   } catch (e: any) {

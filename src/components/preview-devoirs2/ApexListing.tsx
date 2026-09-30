@@ -39,8 +39,8 @@ export default function ApexListing({ subject, classes }: ListingProps) {
   const [items, setItems] = useState<any[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [facets, setFacets] = useState<{ total: number; trimestres: Record<string, number>; filters: any[] }>({
-    total: 0, trimestres: {}, filters: [],
+  const [facets, setFacets] = useState<{ total: number; trimestres: Record<string, number>; filters: any[]; subtypes: any[] }>({
+    total: 0, trimestres: {}, filters: [], subtypes: [],
   });
 
   const [density, setDensity] = useState<Density>(() => {
@@ -142,14 +142,7 @@ export default function ApexListing({ subject, classes }: ListingProps) {
   }, []);
 
   // Group facets
-  const filtersByTrim: Record<number, Record<string, any[]>> = {};
-  for (const f of facets.filters) {
-    if (!filtersByTrim[f.trimestre]) filtersByTrim[f.trimestre] = {};
-    if (!filtersByTrim[f.trimestre][f.subtype]) filtersByTrim[f.trimestre][f.subtype] = [];
-    filtersByTrim[f.trimestre][f.subtype].push(f);
-  }
 
-  const activeTrimNum = activeTrimestre ? parseInt(activeTrimestre, 10) : null;
   const percent = facets.total > 0 ? Math.round((items.length / facets.total) * 100) : 0;
 
   return (
@@ -193,7 +186,8 @@ export default function ApexListing({ subject, classes }: ListingProps) {
             ))}
           </div>
 
-          {activeTrimNum && filtersByTrim[activeTrimNum] && (
+          {/* TYPE filter — independent of trimestre, aggregates across all T */}
+          {facets.subtypes && facets.subtypes.length > 0 && (
             <>
               <div className={styles.filterDivider} />
               <div className={styles.filterGroup} style={{ maxWidth: '100%', overflowX: 'auto', flexWrap: 'wrap' }}>
@@ -202,23 +196,21 @@ export default function ApexListing({ subject, classes }: ListingProps) {
                   onClick={() => setType(null, null)}
                   className={`${styles.filterPill} ${!activeSubtype ? styles.active : ''}`}
                 >
-                  Tous <span className={styles.count}>{facets.trimestres[String(activeTrimNum)] || 0}</span>
+                  Tous <span className={styles.count}>{facets.total}</span>
                 </button>
-                {Object.entries(filtersByTrim[activeTrimNum]).flatMap(([subtype, options]) =>
-                  options.map((opt: any) => {
-                    const isActive = activeSubtype === subtype && activeNumber === String(opt.number);
-                    return (
-                      <button
-                        key={`${subtype}-${opt.number}`}
-                        onClick={() => setType(subtype, opt.number !== null ? String(opt.number) : null)}
-                        className={`${styles.filterPill} ${isActive ? styles.active : ''}`}
-                      >
-                        {SUBTYPE_LABELS[subtype] || subtype} N°{opt.number ?? '?'}
-                        <span className={styles.count}>{opt.count}</span>
-                      </button>
-                    );
-                  })
-                )}
+                {facets.subtypes.map((opt: any) => {
+                  const isActive = activeSubtype === opt.subtype && activeNumber === String(opt.number);
+                  return (
+                    <button
+                      key={`${opt.subtype}-${opt.number}`}
+                      onClick={() => setType(opt.subtype, opt.number !== null ? String(opt.number) : null)}
+                      className={`${styles.filterPill} ${isActive ? styles.active : ''}`}
+                    >
+                      {SUBTYPE_LABELS[opt.subtype] || opt.subtype} N°{opt.number ?? '?'}
+                      <span className={styles.count}>{opt.count}</span>
+                    </button>
+                  );
+                })}
               </div>
             </>
           )}
