@@ -43,12 +43,12 @@ export default function ApexListing({ subject, classes }: ListingProps) {
     total: 0, trimestres: {}, filters: [], subtypes: [],
   });
 
-  const [density, setDensity] = useState<Density>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('apex-density') as Density) || 'comfortable';
-    }
-    return 'comfortable';
-  });
+  // Density: defer to client-side only to avoid hydration mismatch (localStorage)
+  const [density, setDensity] = useState<Density>('comfortable');
+  useEffect(() => {
+    const saved = localStorage.getItem('apex-density') as Density | null;
+    if (saved && saved !== density) setDensity(saved);
+  }, []);
   useEffect(() => {
     if (typeof window !== 'undefined') localStorage.setItem('apex-density', density);
   }, [density]);
