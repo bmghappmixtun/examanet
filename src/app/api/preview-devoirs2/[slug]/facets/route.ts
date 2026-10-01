@@ -51,6 +51,7 @@ export async function GET(
     }
 
     // Filters nested per trimestre (for the existing TYPE pill list when T selected)
+    // Sanity: homeworkNumber must be 1-20 (anything else = teacher typo, e.g. year)
     const filtersRes = await db
       .prepare(
         `SELECT
@@ -62,6 +63,7 @@ export async function GET(
            COUNT(*) as cnt
          FROM Resource r
          WHERE ${whereClause} AND \`trimester\` IS NOT NULL
+           AND homeworkNumber BETWEEN 1 AND 20
          GROUP BY \`trimester\`, subtype_norm, homeworkNumber
          ORDER BY \`trimester\`, subtype_norm, homeworkNumber`,
       )
@@ -86,6 +88,7 @@ export async function GET(
            COUNT(*) as cnt
          FROM Resource r
          WHERE ${whereClause} AND homeworkSubtype IS NOT NULL
+           AND homeworkNumber BETWEEN 1 AND 20
          GROUP BY subtype_norm, homeworkNumber
          ORDER BY subtype_norm, homeworkNumber`,
       )
