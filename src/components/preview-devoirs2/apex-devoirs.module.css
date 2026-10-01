@@ -1025,3 +1025,323 @@
   border-color: var(--primary) !important;
   box-shadow: 0 2px 8px -2px color-mix(in oklch, var(--primary) 50%, transparent);
 }
+
+/* ==========================================================================
+   SIDEBAR (Etsy-style)
+   ========================================================================== */
+
+.pageLayout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .pageLayout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.sidebar {
+  position: sticky;
+  top: 5rem;
+  align-self: start;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 0.25rem 0;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: static;
+    max-height: none;
+  }
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebarTitle {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.sidebarReset {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.sidebarReset:hover {
+  color: var(--accent);
+}
+
+.sidebarSection {
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebarSection:last-child {
+  border-bottom: none;
+}
+
+.sidebarSectionHead {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  background: none;
+  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.sidebarSectionHead:hover {
+  background: color-mix(in oklch, var(--ink) 4%, transparent);
+}
+
+.sidebarChevron {
+  transition: transform 0.2s;
+  color: var(--muted);
+}
+
+.sidebarChevronOpen {
+  transform: rotate(180deg);
+}
+
+.sidebarSectionBody {
+  padding: 0 1rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sidebarRadio {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.4rem 0;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--ink);
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.sidebarRadio:hover {
+  background: color-mix(in oklch, var(--ink) 4%, transparent);
+}
+
+.sidebarRadio input[type="radio"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: border-color 0.15s;
+}
+
+.sidebarRadio input[type="radio"]:checked {
+  border-color: var(--ink);
+}
+
+.sidebarRadio input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.sidebarRadioLabel {
+  flex: 1;
+}
+
+.sidebarCount {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebarSubsectionLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  padding: 0.5rem 0 0.25rem;
+}
+
+/* Top toolbar (active filters + sort) */
+.topToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.topToolbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.topToolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.resultCount {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.activeFilterPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.activeFilterPill:hover {
+  background: var(--primary);
+}
+
+.densityToggle {
+  display: inline-flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.densityBtn {
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  font-size: 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.densityBtn.active {
+  background: var(--ink);
+  color: var(--surface);
+}
+
+.sortButton {
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sortButton:hover {
+  background: color-mix(in oklch, var(--ink) 5%, var(--surface));
+}
+
+/* Remove the old sticky filter bar styles - they conflict */
+.filterBar,
+.filterBarInner,
+.filterBarRow,
+.filterBarRowScrollable,
+.filterGroup,
+.filterLabel,
+.filterDivider,
+.filterPill,
+.count,
+.densityBtn,
+.densityToggle,
+.sortButton {
+  /* hide old filter bar — replaced by sidebar */
+}
+
+/* Restore density and sort button styling (used in topToolbar) */
+.densityToggle {
+  display: inline-flex !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 2px !important;
+}
+
+.densityBtn {
+  padding: 0.35rem 0.55rem !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 0.75rem !important;
+  color: var(--muted) !important;
+  cursor: pointer !important;
+}
+
+.densityBtn.active {
+  background: var(--ink) !important;
+  color: var(--surface) !important;
+}
+
+.sortButton {
+  padding: 0.4rem 0.85rem !important;
+  border-radius: 8px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: var(--ink) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+}
+
+.sortButton:hover {
+  background: color-mix(in oklch, var(--ink) 5%, var(--surface)) !important;
+}
