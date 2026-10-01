@@ -1300,9 +1300,19 @@
 }
 
 .sidebarCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: #f1f5f9; /* light gray (slate-100) */
+  color: #475569; /* slate-600 */
   font-size: 0.78rem;
-  color: var(--muted);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 .sidebarSubsectionLabel {
