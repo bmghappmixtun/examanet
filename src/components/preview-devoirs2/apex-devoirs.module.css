@@ -1189,9 +1189,9 @@
 }
 
 .sidebarTitle {
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: var(--ink); /* Title stays dark */
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--ink);
 }
 
 .sidebarReset {
@@ -1222,12 +1222,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.875rem 1rem;
+  padding: 1rem;
   background: none;
   border: none;
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--muted); /* gray text like top menu */
+  font-weight: 700;
+  font-size: 1rem;
+  color: #64748b; /* gray like top menu */
   cursor: pointer;
   text-align: left;
   transition: background 0.15s, color 0.15s;
@@ -1261,12 +1261,13 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  padding: 0.4rem 0;
+  padding: 0.5rem 0.25rem;
   cursor: pointer;
-  font-size: 0.88rem;
-  color: var(--muted); /* gray text like top menu */
+  font-size: 0.95rem; /* bigger text */
+  color: #64748b; /* explicit gray (slate-500) like top menu */
   border-radius: 6px;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
+  font-weight: 500;
 }
 
 .sidebarCheckbox:hover {
@@ -1305,12 +1306,12 @@
 }
 
 .sidebarSubsectionLabel {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  padding: 0.5rem 0 0.25rem;
+  letter-spacing: 0.06em;
+  color: #475569; /* slate-600 - darker gray for grouping labels */
+  padding: 0.75rem 0 0.4rem;
 }
 
 /* Top toolbar (active filters + sort) */
