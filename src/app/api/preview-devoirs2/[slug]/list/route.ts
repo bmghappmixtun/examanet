@@ -74,6 +74,9 @@ export async function GET(
       }
     }
 
+    // Global sanity: homeworkNumber must be 1-20 (teacher typos filtered out)
+    conditions.push('(r.homeworkNumber IS NULL OR (r.homeworkNumber BETWEEN 1 AND 20))');
+    
     const whereClause = conditions.join(' AND ');
 
     const totalRes = await db
