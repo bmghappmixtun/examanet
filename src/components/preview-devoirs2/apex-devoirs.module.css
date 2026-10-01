@@ -1461,3 +1461,67 @@
 .sortButton:hover {
   background: color-mix(in oklch, var(--ink) 5%, var(--surface)) !important;
 }
+
+/* ==========================================================================
+   SUB-TYPE SECTIONS (each devoir type is its own collapsible)
+   ========================================================================== */
+
+.sidebarSubtypeSection {
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebarSubtypeSection:last-child {
+  border-bottom: none;
+}
+
+.sidebarSubtypeHead {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  color: #64748b; /* gray like other sidebar text */
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.sidebarSubtypeHead:hover {
+  background: color-mix(in oklch, var(--ink) 4%, transparent);
+}
+
+.sidebarSubtypeLabel {
+  flex: 1;
+}
+
+.sidebarSubtypeBubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
+
+.sidebarSubtypeBody {
+  padding: 0 1rem 0.5rem 2.25rem; /* indented to align with parent label */
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sidebarSubtypeBody .sidebarCheckbox {
+  padding: 0.3rem 0.25rem;
+  font-size: 0.9rem;
+}
