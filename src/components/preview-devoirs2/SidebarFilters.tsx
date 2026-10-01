@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, EyeOff, Eye } from 'lucide-react';
 import styles from './apex-devoirs.module.css';
 import { useDevoirsContext } from './devoirs-context';
 
@@ -17,11 +17,12 @@ interface SidebarFiltersProps {
   onToggleVisible: () => void;
 }
 
-const SUBTYPE_LABELS: Record<string, string> = {
-  CONTROLE: 'Contrôle',
-  SYNTHESE: 'Synthèse',
-  MAISON: 'Maison',
-  REVISION: 'Révision',
+// Full French labels
+const SUBTYPE_FULL_LABELS: Record<string, (n: number | null) => string> = {
+  CONTROLE: (n) => n ? `Devoir de Contrôle N°${n}` : 'Devoir de Contrôle',
+  SYNTHESE: (n) => n ? `Devoir de Synthèse N°${n}` : 'Devoir de Synthèse',
+  MAISON: (n) => n ? `Devoir de Maison N°${n}` : 'Devoir de Maison',
+  REVISION: (n) => n ? `Devoir de Révision N°${n}` : 'Devoir de Révision',
 };
 
 const TYPE_ORDER = ['CONTROLE', 'SYNTHESE', 'MAISON', 'REVISION'];
@@ -33,7 +34,6 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
     setClass, setTrimestre, setType, clearAll,
   } = ctx;
 
-  // All sections COLLAPSED by default
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     classe: false,
     trimestre: false,
@@ -61,16 +61,12 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
 
   const hasActiveFilters = !!(classSlug || activeTrimestre || activeSubtype);
 
-  // Hidden state: show button only
+  // Hidden state: show "Afficher les filtres" button only
   if (!visible) {
     return (
       <button onClick={onToggleVisible} className={styles.showFiltersBtn}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <line x1="4" y1="6" x2="20" y2="6" />
-          <line x1="6" y1="12" x2="18" y2="12" />
-          <line x1="8" y1="18" x2="16" y2="18" />
-        </svg>
-        <span>Masquer les filtres</span>
+        <Eye size={16} />
+        <span>Afficher les filtres</span>
       </button>
     );
   }
@@ -86,12 +82,8 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
             </button>
           )}
           <button onClick={onToggleVisible} className={styles.sidebarHideBtn} aria-label="Masquer les filtres">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="6" y1="12" x2="18" y2="12" />
-              <line x1="8" y1="18" x2="16" y2="18" />
-            </svg>
-            <span>Masquer</span>
+            <EyeOff size={16} />
+            <span>Masquer les filtres</span>
           </button>
         </div>
       </div>
@@ -146,7 +138,7 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
                     onChange={() => toggleTrimestre(String(t))}
                     style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
                   />
-                  <span className={styles.sidebarCheckboxLabel}>T{t}</span>
+                  <span className={styles.sidebarCheckboxLabel}>Trimestre {t}</span>
                   <span className={styles.sidebarCount}>{facets.trimestres[String(t)] || 0}</span>
                 </label>
               );
@@ -164,10 +156,11 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
         {expanded.type && (
           <div className={styles.sidebarSectionBody}>
             {TYPE_ORDER.filter((t) => subtypesByType[t]).map((subtype) => (
-              <div key={subtype} style={{ marginBottom: '0.5rem' }}>
-                <div className={styles.sidebarSubsectionLabel}>{SUBTYPE_LABELS[subtype] || subtype}</div>
+              <div key={subtype} className={styles.sidebarSubsection}>
+                <div className={styles.sidebarSubsectionLabel}>{subtype}</div>
                 {subtypesByType[subtype].map((opt) => {
                   const isActive = activeSubtype === subtype && activeNumber === String(opt.number);
+                  const label = SUBTYPE_FULL_LABELS[subtype]?.(opt.number) || `${subtype} ${opt.number}`;
                   return (
                     <label key={`${subtype}-${opt.number}`} className={styles.sidebarCheckbox}>
                       <span className={`${styles.sidebarBox} ${isActive ? styles.sidebarBoxChecked : ''}`}>
@@ -179,7 +172,7 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
                         onChange={() => toggleType(subtype, String(opt.number))}
                         style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
                       />
-                      <span className={styles.sidebarCheckboxLabel}>N°{opt.number}</span>
+                      <span className={styles.sidebarCheckboxLabel}>{label}</span>
                       <span className={styles.sidebarCount}>{opt.count}</span>
                     </label>
                   );
