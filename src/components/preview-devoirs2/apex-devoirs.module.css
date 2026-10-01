@@ -1030,6 +1030,59 @@
    SIDEBAR (Etsy-style)
    ========================================================================== */
 
+/* Hide filters button (inside sidebar header) */
+.sidebarHideBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.sidebarHideBtn:hover {
+  color: var(--ink);
+}
+
+/* Show filters button (when sidebar is hidden) */
+.showFiltersBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--ink);
+  color: var(--surface);
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.showFiltersBtn:hover {
+  background: var(--primary);
+  transform: translateY(-1px);
+}
+
+.showFiltersBtn svg {
+  flex-shrink: 0;
+}
+
+/* When sidebar hidden, the pageLayout only has 1 col */
+.pageLayoutNoSidebar {
+  display: block;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
 .pageLayout {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -1037,10 +1090,71 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 1.5rem;
+  transition: grid-template-columns 0.3s ease;
+}
+
+.pageLayoutFullWidth {
+  display: block;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
 }
 
 @media (max-width: 900px) {
-  .pageLayout {
+  /* Hide filters button (inside sidebar header) */
+.sidebarHideBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.sidebarHideBtn:hover {
+  color: var(--ink);
+}
+
+/* Show filters button (when sidebar is hidden) */
+.showFiltersBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--ink);
+  color: var(--surface);
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.showFiltersBtn:hover {
+  background: var(--primary);
+  transform: translateY(-1px);
+}
+
+.showFiltersBtn svg {
+  flex-shrink: 0;
+}
+
+/* When sidebar hidden, the pageLayout only has 1 col */
+.pageLayoutNoSidebar {
+  display: block;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.pageLayout {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
@@ -1077,7 +1191,7 @@
 .sidebarTitle {
   font-weight: 700;
   font-size: 1.05rem;
-  color: var(--ink);
+  color: var(--ink); /* Title stays dark */
 }
 
 .sidebarReset {
@@ -1113,10 +1227,14 @@
   border: none;
   font-weight: 600;
   font-size: 0.95rem;
-  color: var(--ink);
+  color: var(--muted); /* gray text like top menu */
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebarSectionHead:hover {
+  color: var(--ink);
 }
 
 .sidebarSectionHead:hover {
@@ -1139,47 +1257,44 @@
   gap: 0.4rem;
 }
 
-.sidebarRadio {
+.sidebarCheckbox {
   display: flex;
   align-items: center;
   gap: 0.625rem;
   padding: 0.4rem 0;
   cursor: pointer;
   font-size: 0.88rem;
-  color: var(--ink);
+  color: var(--muted); /* gray text like top menu */
   border-radius: 6px;
   transition: background 0.15s;
 }
 
-.sidebarRadio:hover {
+.sidebarCheckbox:hover {
   background: color-mix(in oklch, var(--ink) 4%, transparent);
+  color: var(--ink);
 }
 
-.sidebarRadio input[type="radio"] {
-  appearance: none;
+/* Custom checkbox box (visible span) */
+.sidebarBox {
   width: 16px;
   height: 16px;
-  border: 2px solid var(--border);
-  border-radius: 50%;
-  cursor: pointer;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 3px;
+  background: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  position: relative;
-  transition: border-color 0.15s;
+  transition: all 0.15s;
+  color: var(--surface);
 }
 
-.sidebarRadio input[type="radio"]:checked {
-  border-color: var(--ink);
+.sidebarBoxChecked {
+  background: #0f172a;
+  border-color: #0f172a;
 }
 
-.sidebarRadio input[type="radio"]:checked::after {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  border-radius: 50%;
-  background: var(--ink);
-}
-
-.sidebarRadioLabel {
+.sidebarCheckboxLabel {
   flex: 1;
 }
 
