@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, Check, EyeOff, Eye } from 'lucide-react';
+import { ChevronDown, ChevronRight, Check, EyeOff, Eye } from 'lucide-react';
 import styles from './apex-devoirs.module.css';
 import { useDevoirsContext } from './devoirs-context';
 
@@ -17,12 +17,19 @@ interface SidebarFiltersProps {
   onToggleVisible: () => void;
 }
 
-// Full French labels
 const SUBTYPE_FULL_LABELS: Record<string, (n: number | null) => string> = {
   CONTROLE: (n) => n ? `Devoir de Contrôle N°${n}` : 'Devoir de Contrôle',
   SYNTHESE: (n) => n ? `Devoir de Synthèse N°${n}` : 'Devoir de Synthèse',
   MAISON: (n) => n ? `Devoir de Maison N°${n}` : 'Devoir de Maison',
   REVISION: (n) => n ? `Devoir de Révision N°${n}` : 'Devoir de Révision',
+};
+
+// Color for each subtype bubble (Etsy-style colored badges)
+const SUBTYPE_COLORS: Record<string, string> = {
+  CONTROLE: '#0ea5e9',   // blue
+  SYNTHESE: '#a855f7',   // purple
+  MAISON: '#f59e0b',    // orange
+  REVISION: '#10b981',   // green
 };
 
 const TYPE_ORDER = ['CONTROLE', 'SYNTHESE', 'MAISON', 'REVISION'];
@@ -34,10 +41,14 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
     setClass, setTrimestre, setType, clearAll,
   } = ctx;
 
+  // Each top section + each subtype is its own collapsible
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     classe: false,
     trimestre: false,
-    type: false,
+    controle: false,
+    synthese: false,
+    maison: false,
+    revision: false,
   });
 
   const toggle = (key: string) =>
@@ -47,6 +58,12 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
   for (const opt of facets.subtypes || []) {
     if (!subtypesByType[opt.subtype]) subtypesByType[opt.subtype] = [];
     subtypesByType[opt.subtype].push({ number: opt.number, count: opt.count });
+  }
+
+  // Total per subtype (sum of all numbers)
+  const totalsByType: Record<string, number> = {};
+  for (const opt of facets.subtypes || []) {
+    totalsByType[opt.subtype] = (totalsByType[opt.subtype] || 0) + opt.count;
   }
 
   const toggleClasse = (slug: string) => setClass(classSlug === slug ? null : slug);
@@ -70,6 +87,51 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
       </button>
     );
   }
+
+  // Render a subtype section (collapsible)
+  const renderSubtypeSection = (subtype: string) => {
+    const isExpanded = expanded[subtype.toLowerCase()];
+    const options = subtypesByType[subtype] || [];
+    const total = totalsByType[subtype] || 0;
+    if (total === 0) return null;
+    const color = SUBTYPE_COLORS[subtype] || '#64748b';
+
+    return (
+      <section key={subtype} className={styles.sidebarSubtypeSection}>
+        <button className={styles.sidebarSubtypeHead} onClick={() => toggle(subtype.toLowerCase())}>
+          {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          <span className={styles.sidebarSubtypeLabel}>{SUBTYPE_FULL_LABELS[subtype](null)}</span>
+          <span className={styles.sidebarSubtypeBubble} style={{ backgroundColor: color }}>
+            {total}
+          </span>
+        </button>
+        {isExpanded && (
+          <div className={styles.sidebarSubtypeBody}>
+            {options.map((opt) => {
+              const isActive = activeSubtype === subtype && activeNumber === String(opt.number);
+              const label = SUBTYPE_FULL_LABELS[subtype](opt.number);
+              return (
+                <label key={`${subtype}-${opt.number}`} className={styles.sidebarCheckbox}>
+                  <span className={`${styles.sidebarBox} ${isActive ? styles.sidebarBoxChecked : ''}`}
+                    style={isActive ? { backgroundColor: color, borderColor: color } : {}}>
+                    {isActive && <Check size={12} strokeWidth={3} />}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={() => toggleType(subtype, String(opt.number))}
+                    style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+                  />
+                  <span className={styles.sidebarCheckboxLabel}>{label}</span>
+                  <span className={styles.sidebarCount}>{opt.count}</span>
+                </label>
+              );
+            })}
+          </div>
+        )}
+      </section>
+    );
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -147,41 +209,8 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
         )}
       </section>
 
-      {/* TYPE section */}
-      <section className={styles.sidebarSection}>
-        <button className={styles.sidebarSectionHead} onClick={() => toggle('type')}>
-          <span>Type de devoir</span>
-          <ChevronDown size={16} className={`${styles.sidebarChevron} ${expanded.type ? styles.sidebarChevronOpen : ''}`} />
-        </button>
-        {expanded.type && (
-          <div className={styles.sidebarSectionBody}>
-            {TYPE_ORDER.filter((t) => subtypesByType[t]).map((subtype) => (
-              <div key={subtype} className={styles.sidebarSubsection}>
-                <div className={styles.sidebarSubsectionLabel}>{subtype}</div>
-                {subtypesByType[subtype].map((opt) => {
-                  const isActive = activeSubtype === subtype && activeNumber === String(opt.number);
-                  const label = SUBTYPE_FULL_LABELS[subtype]?.(opt.number) || `${subtype} ${opt.number}`;
-                  return (
-                    <label key={`${subtype}-${opt.number}`} className={styles.sidebarCheckbox}>
-                      <span className={`${styles.sidebarBox} ${isActive ? styles.sidebarBoxChecked : ''}`}>
-                        {isActive && <Check size={12} strokeWidth={3} />}
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={isActive}
-                        onChange={() => toggleType(subtype, String(opt.number))}
-                        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-                      />
-                      <span className={styles.sidebarCheckboxLabel}>{label}</span>
-                      <span className={styles.sidebarCount}>{opt.count}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      {/* TYPE DE DEVOIR section - each subtype is a collapsible sub-section */}
+      {TYPE_ORDER.map((subtype) => renderSubtypeSection(subtype))}
     </aside>
   );
 }
