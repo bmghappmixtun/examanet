@@ -38,6 +38,7 @@ export default function ApexListing({ subject, classes }: ListingProps) {
   });
 
   const [density, setDensity] = useState<Density>('comfortable');
+  const [sidebarVisible, setSidebarVisible] = useState(true);
   useEffect(() => {
     const saved = localStorage.getItem('apex-density') as Density | null;
     if (saved && saved !== density) setDensity(saved);
@@ -149,12 +150,14 @@ export default function ApexListing({ subject, classes }: ListingProps) {
     : null;
 
   return (
-    <div className={styles.pageLayout}>
+    <div className={sidebarVisible ? styles.pageLayout : styles.pageLayoutFullWidth}>
       {/* LEFT SIDEBAR (Etsy-style) */}
       <SidebarFilters
         facets={facets}
         classes={classes}
         resultCount={facets.total}
+        visible={sidebarVisible}
+        onToggleVisible={() => setSidebarVisible((v) => !v)}
       />
 
       {/* MAIN CONTENT */}
