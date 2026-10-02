@@ -127,7 +127,7 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
   };
 
   return (
-    <>
+    <div className={styles.sidebarWrapper}>
       {/* Show filters button (always rendered, visible only when sidebar is hidden) */}
       <button
         onClick={onToggleVisible}
@@ -217,6 +217,6 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
       {/* TYPE DE DEVOIR section - each subtype is a collapsible sub-section */}
       {TYPE_ORDER.map((subtype) => renderSubtypeSection(subtype))}
     </aside>
-    </>
+    </div>
   );
 }
