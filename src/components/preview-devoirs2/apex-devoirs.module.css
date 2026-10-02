@@ -1358,19 +1358,38 @@
 .activeFilterPill {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
+  gap: 0.625rem;
+  padding: 0.7rem 1rem;
   border-radius: 999px;
   background: var(--ink);
   color: var(--surface);
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  min-height: 40px;
 }
 
 .activeFilterPill:hover {
   background: var(--primary);
+  transform: translateY(-1px);
+}
+
+.activeFilterClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  margin-left: 0.25rem;
+  transition: background 0.15s;
+}
+
+.activeFilterPill:hover .activeFilterClose {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .densityToggle {
