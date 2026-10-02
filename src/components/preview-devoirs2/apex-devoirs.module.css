@@ -1049,6 +1049,11 @@
   color: var(--ink);
 }
 
+/* Sidebar wrapper - keeps sidebar + show button in one grid cell */
+.sidebarWrapper {
+  display: block;
+}
+
 /* Show filters button (when sidebar is hidden) */
 .showFiltersBtn {
   display: inline-flex;
@@ -1227,8 +1232,8 @@
 
 .sidebarHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 0.875rem 1rem;
   border-bottom: 1px solid var(--border);
 }
@@ -1237,6 +1242,14 @@
   font-weight: 800;
   font-size: 1.15rem;
   color: var(--ink);
+}
+
+.sidebarHeader > div {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .sidebarReset {
@@ -1603,11 +1616,12 @@
 
 /* ==========================================================================
    SIDEBAR SHOW/HIDE ANIMATIONS (Etsy-style smooth)
+   NOTE: The base .pageLayout rule (260px + 1fr) is defined earlier in this file.
+   We just need to ADD the transition here, not the grid-template-columns.
    ========================================================================== */
 
-/* When sidebar is hidden, take 0 columns smoothly */
+/* Add transition to existing .pageLayout (defined at line 1098) */
 .pageLayout {
-  grid-template-columns: minmax(0, 1fr);
   transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               gap 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }

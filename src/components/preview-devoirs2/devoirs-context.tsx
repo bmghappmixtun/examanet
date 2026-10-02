@@ -49,8 +49,25 @@ function writeToUrl(state: FilterState) {
   window.history.replaceState(null, '', url.toString());
 }
 
+const DEFAULT_STATE: FilterState = {
+  classSlug: null,
+  trimestre: null,
+  subtype: null,
+  number: null,
+  sortMode: 'recent',
+};
+
 export function DevoirsFilterProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<FilterState>(getFromUrl);
+  // IMPORTANT: Initialize with DEFAULT on both server AND client to avoid
+  // hydration mismatch. The URL has classSlug=7eme? Server renders no pill,
+  // client would render "7ème année de base" → React #425 crash.
+  // Sync from URL AFTER mount in useEffect.
+  const [state, setState] = useState<FilterState>(DEFAULT_STATE);
+
+  // On mount: read URL once
+  useEffect(() => {
+    setState(getFromUrl());
+  }, []);
 
   const update = useCallback((patch: Partial<FilterState>) => {
     setState((prev) => {
