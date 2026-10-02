@@ -150,8 +150,8 @@ export default function ApexListing({ subject, classes }: ListingProps) {
     : null;
 
   return (
-    <div className={sidebarVisible ? styles.pageLayout : styles.pageLayoutFullWidth}>
-      {/* LEFT SIDEBAR (Etsy-style) */}
+    <div className={styles.pageLayout}>
+      {/* LEFT SIDEBAR (Etsy-style) — always rendered, controlled by CSS */}
       <SidebarFilters
         facets={facets}
         classes={classes}
