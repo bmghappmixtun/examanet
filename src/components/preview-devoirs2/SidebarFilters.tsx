@@ -78,15 +78,8 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
 
   const hasActiveFilters = !!(classSlug || activeTrimestre || activeSubtype);
 
-  // Hidden state: show "Afficher les filtres" button only
-  if (!visible) {
-    return (
-      <button onClick={onToggleVisible} className={styles.showFiltersBtn}>
-        <Eye size={16} />
-        <span>Afficher les filtres</span>
-      </button>
-    );
-  }
+  // Always render both: the aside (hidden via CSS) and the "Afficher" button.
+  // CSS controls visibility so toggling animates smoothly (no remount).
 
   // Render a subtype section (collapsible)
   const renderSubtypeSection = (subtype: string) => {
@@ -134,7 +127,19 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
   };
 
   return (
-    <aside className={styles.sidebar}>
+    <>
+      {/* Show filters button (always rendered, visible only when sidebar is hidden) */}
+      <button
+        onClick={onToggleVisible}
+        className={`${styles.showFiltersBtn} ${visible ? styles.hidden : ''}`}
+        aria-label="Afficher les filtres"
+      >
+        <Eye size={16} />
+        <span>Afficher les filtres</span>
+      </button>
+
+      {/* Sidebar (always rendered, hidden via CSS when not visible) */}
+      <aside className={`${styles.sidebar} ${!visible ? styles.sidebarHidden : ''}`}>
       <div className={styles.sidebarHeader}>
         <span className={styles.sidebarTitle}>Filtres</span>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -212,5 +217,6 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
       {/* TYPE DE DEVOIR section - each subtype is a collapsible sub-section */}
       {TYPE_ORDER.map((subtype) => renderSubtypeSection(subtype))}
     </aside>
+    </>
   );
 }
