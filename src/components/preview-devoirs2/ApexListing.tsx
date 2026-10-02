@@ -162,27 +162,33 @@ export default function ApexListing({ subject, classes }: ListingProps) {
 
       {/* MAIN CONTENT */}
       <div>
-        {/* Top toolbar with active filter pills + sort */}
+        {/* Top toolbar with active filter pills + sort (no result count) */}
         <div className={styles.topToolbar}>
           <div className={styles.topToolbarLeft}>
-            <span className={styles.resultCount}>
-              {items.length || facets.total} {(items.length || facets.total) === 1 ? 'devoir' : 'devoirs'}
-            </span>
             {hasActiveFilters && (
               <>
                 {activeClassLabel && (
                   <button className={styles.activeFilterPill} onClick={() => setClass(null)}>
-                    {activeClassLabel} <X size={12} />
+                    {activeClassLabel}
+                    <span className={styles.activeFilterClose}>
+                      <X size={18} strokeWidth={2.5} />
+                    </span>
                   </button>
                 )}
                 {activeTrimestre && (
                   <button className={styles.activeFilterPill} onClick={() => setTrimestre(null)}>
-                    T{activeTrimestre} <X size={12} />
+                    Trimestre {activeTrimestre}
+                    <span className={styles.activeFilterClose}>
+                      <X size={18} strokeWidth={2.5} />
+                    </span>
                   </button>
                 )}
                 {activeTypeLabel && (
                   <button className={styles.activeFilterPill} onClick={() => setType(null, null)}>
-                    {activeTypeLabel} <X size={12} />
+                    {activeTypeLabel}
+                    <span className={styles.activeFilterClose}>
+                      <X size={18} strokeWidth={2.5} />
+                    </span>
                   </button>
                 )}
               </>

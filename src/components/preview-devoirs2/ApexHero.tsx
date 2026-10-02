@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { Search, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import styles from './apex-devoirs.module.css';
 import { useDevoirsContext } from './devoirs-context';
 
@@ -23,19 +22,6 @@ export default function ApexHero({
   activeClass,
 }: HeroProps) {
   const ctx = useDevoirsContext();
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Cmd+K / Ctrl+K — dispatch custom event (parent listens)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        window.dispatchEvent(new CustomEvent('devoirs-palette-open'));
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
 
   return (
     <section className={styles.hero}>
@@ -70,43 +56,6 @@ export default function ApexHero({
             <div className={styles.heroStatValue}>{trimesterCount}</div>
             <div className={styles.heroStatLabel}>Trimestres</div>
           </div>
-        </div>
-
-        <div className={styles.searchWrap}>
-          <Search className={styles.searchIcon} size={20} />
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Rechercher un devoir, un thème, une année..."
-            onKeyDown={(e) => {
-              if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                window.dispatchEvent(new CustomEvent('devoirs-palette-open'));
-              }
-            }}
-            className={styles.searchInput}
-          />
-          <kbd className={styles.searchHint}>⌘K</kbd>
-        </div>
-
-        <div className={styles.classChips} role="tablist">
-          <button
-            type="button"
-            onClick={() => ctx.setClass(null)}
-            className={`${styles.classChip} ${activeClass === null ? styles.active : ''}`}
-          >
-            Toutes <span className={styles.classChipCount}>({totalCount.toLocaleString('fr-FR')})</span>
-          </button>
-          {classes.map((c) => (
-            <button
-              key={c.slug}
-              type="button"
-              onClick={() => ctx.setClass(c.slug)}
-              className={`${styles.classChip} ${activeClass === c.slug ? styles.active : ''}`}
-            >
-              {c.labelFr}
-            </button>
-          ))}
         </div>
       </div>
     </section>
