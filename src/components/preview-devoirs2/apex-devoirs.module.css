@@ -32,7 +32,8 @@
 /* -------- AURORA HERO -------- */
 .hero {
   position: relative;
-  padding: clamp(4rem, 8vw, 7rem) 1.5rem clamp(5rem, 10vw, 9rem);
+  margin-top: 5rem; /* clear fixed navbar (~80px) so content isn't overlapped */
+  padding: clamp(1.5rem, 3vw, 2.5rem) 1.5rem clamp(1.5rem, 3vw, 2.5rem);
   background: var(--bg);
   color: var(--ink);
   overflow: hidden;
@@ -156,7 +157,7 @@
 .heroStats {
   display: flex;
   gap: clamp(1.5rem, 4vw, 3rem);
-  margin-top: 2rem;
+  margin-top: 1.25rem;
   flex-wrap: wrap;
 }
 
@@ -167,11 +168,12 @@
 }
 
 .heroStatValue {
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   color: var(--ink);
+  line-height: 1;
 }
 
 .heroStatLabel {
