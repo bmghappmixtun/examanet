@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Check, EyeOff, Eye } from 'lucide-react';
+import { ChevronDown, ChevronRight, Check, EyeOff } from 'lucide-react';
 import styles from './apex-devoirs.module.css';
 import { useDevoirsContext } from './devoirs-context';
 
@@ -127,19 +127,7 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
   };
 
   return (
-    <div className={styles.sidebarWrapper}>
-      {/* Show filters button (always rendered, visible only when sidebar is hidden) */}
-      <button
-        onClick={onToggleVisible}
-        className={`${styles.showFiltersBtn} ${visible ? styles.hidden : ''}`}
-        aria-label="Afficher les filtres"
-      >
-        <Eye size={16} />
-        <span>Afficher les filtres</span>
-      </button>
-
-      {/* Sidebar (always rendered, hidden via CSS when not visible) */}
-      <aside className={`${styles.sidebar} ${!visible ? styles.sidebarHidden : ''}`}>
+    <aside className={`${styles.sidebar} ${!visible ? styles.sidebarHidden : ''}`}>
       <div className={styles.sidebarHeader}>
         <span className={styles.sidebarTitle}>Filtres</span>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -217,6 +205,5 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
       {/* TYPE DE DEVOIR section - each subtype is a collapsible sub-section */}
       {TYPE_ORDER.map((subtype) => renderSubtypeSection(subtype))}
     </aside>
-    </div>
   );
 }

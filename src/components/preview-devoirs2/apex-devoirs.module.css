@@ -1049,11 +1049,6 @@
   color: var(--ink);
 }
 
-/* Sidebar wrapper - keeps sidebar + show button in one grid cell */
-.sidebarWrapper {
-  display: block;
-}
-
 /* Show filters button (when sidebar is hidden) */
 .showFiltersBtn {
   display: inline-flex;
@@ -1208,8 +1203,15 @@
   background: var(--surface);
   padding: 0.25rem 0;
   scrollbar-width: thin;
-  /* Smooth entrance from grid column collapse/expand */
-  animation: sidebarFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 260px;
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease 0.05s,
+              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes sidebarFadeIn {
@@ -1638,11 +1640,6 @@
   border: none;
   transform: translateX(-20px);
   pointer-events: none;
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.25s ease,
-              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              padding 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* When sidebar is visible (default) — full width + opacity 1 */
@@ -1661,4 +1658,49 @@
 /* Show button — visible by default, hidden when sidebar visible */
 .hidden {
   display: none !important;
+}
+
+/* ==========================================================================
+   OVERRIDE: pageLayoutNoSidebar must collapse sidebar column (not block display)
+   ========================================================================== */
+.pageLayoutNoSidebar {
+  grid-template-columns: 0px minmax(0, 1fr) !important;
+  gap: 0 !important;
+}
+
+/* ==========================================================================
+   SIDEBAR CELL — wraps show button + sidebar in one grid cell
+   Show button is absolutely positioned so it escapes the collapsing 0px column
+   ========================================================================== */
+.sidebarCell {
+  display: block;
+  min-width: 0;
+  position: relative;
+  overflow: visible;
+}
+
+.sidebarCell > button[aria-label="Afficher les filtres"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  margin: 0;
+  animation: showBtnFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes showBtnFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Prevent the show button text from wrapping when sidebar cell collapses */
+.sidebarCell > button[aria-label="Afficher les filtres"] {
+  white-space: nowrap;
+  width: auto;
 }
