@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Grid3x3, LayoutGrid, X, Loader2, Calendar } from 'lucide-react';
+import { ArrowDown, ArrowUp, Grid3x3, LayoutGrid, X, Loader2, Calendar, Eye } from 'lucide-react';
 import ResourceCard from '@/components/resources/ResourceCard';
 import styles from './apex-devoirs.module.css';
 import { useDevoirsContext } from './devoirs-context';
@@ -150,15 +150,27 @@ export default function ApexListing({ subject, classes }: ListingProps) {
     : null;
 
   return (
-    <div className={styles.pageLayout}>
-      {/* LEFT SIDEBAR (Etsy-style) — always rendered, controlled by CSS */}
-      <SidebarFilters
-        facets={facets}
-        classes={classes}
-        resultCount={facets.total}
-        visible={sidebarVisible}
-        onToggleVisible={() => setSidebarVisible((v) => !v)}
-      />
+    <div className={`${styles.pageLayout} ${!sidebarVisible ? styles.pageLayoutNoSidebar : ''}`}>
+      {/* SIDEBAR CELL — contains show button + sidebar in one grid cell */}
+      <div className={styles.sidebarCell}>
+        {/* Show button — visible only when sidebar is hidden, overflows the 0px column */}
+        <button
+          onClick={() => setSidebarVisible(true)}
+          className={`${styles.showFiltersBtn} ${sidebarVisible ? styles.hidden : ''}`}
+          aria-label="Afficher les filtres"
+        >
+          <Eye size={16} />
+          <span>Afficher les filtres</span>
+        </button>
+
+        <SidebarFilters
+          facets={facets}
+          classes={classes}
+          resultCount={facets.total}
+          visible={sidebarVisible}
+          onToggleVisible={() => setSidebarVisible((v) => !v)}
+        />
+      </div>
 
       {/* MAIN CONTENT */}
       <div>
