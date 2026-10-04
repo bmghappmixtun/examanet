@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import {
   Search,
@@ -32,6 +33,83 @@ type Subject = {
 };
 type Resource = any;
 
+// Subtle scroll-reveal hook: attaches is-visible class when element enters viewport.
+function useReveal() {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      document.querySelectorAll('[data-reveal], [data-reveal-stagger]').forEach((el) => {
+        el.classList.add('is-visible');
+      });
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -60px 0px' }
+    );
+    document.querySelectorAll('[data-reveal], [data-reveal-stagger]').forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
+
+// Animated counter: counts up from 0 to value when entering viewport.
+function AnimatedNumber({ value, duration = 1400 }: { value: number; duration?: number }) {
+  const [display, setDisplay] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const startedRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const el = ref.current;
+    if (!el) return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) {
+      setDisplay(value);
+      return;
+    }
+    const start = () => {
+      if (startedRef.current) return;
+      startedRef.current = true;
+      const startTime = performance.now();
+      const tick = (now: number) => {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setDisplay(Math.round(value * eased));
+        if (progress < 1) requestAnimationFrame(tick);
+        else setDisplay(value);
+      };
+      requestAnimationFrame(tick);
+    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            start();
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [value, duration]);
+
+  return (
+    <div ref={ref} className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-1 tabular-nums">
+      {`${formatNumber(display)}+`}
+    </div>
+  );
+}
+
 export default function HomeClient({
   popular,
   recent,
@@ -43,6 +121,7 @@ export default function HomeClient({
   subjects: Subject[];
   stats: { resources: number; teachers: number; students: number; downloads: number };
 }) {
+  useReveal();
   const t = useTranslations(); const locale = useLocale();
   const [resourceCount, teacherCount, studentCount, downloads] = [
     stats.resources,
@@ -189,7 +268,7 @@ export default function HomeClient({
           </div>
 
           {/* Live stats */}
-          <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4" data-reveal-stagger>
             {[
               {
                 icon: FileText,
@@ -225,13 +304,11 @@ export default function HomeClient({
                 className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 text-center card-hover"
               >
                 <div
-                  className={`w-12 h-12 mx-auto mb-3 rounded-xl ${s.color} flex items-center justify-center`}
+                  className={`w-12 h-12 mx-auto mb-3 rounded-xl ${s.color} flex items-center justify-center transition-transform duration-300 hover:scale-110 hover:rotate-3`}
                 >
                   <s.icon className={`w-6 h-6 ${s.text}`} />
                 </div>
-                <div className="text-3xl lg:text-4xl font-extrabold text-slate-900 mb-1">
-                  {`${formatNumber(s.value)}+`}
-                </div>
+                <AnimatedNumber value={s.value} />
                 <div className="text-sm text-slate-500">{s.label}</div>
               </div>
             ))}
@@ -241,7 +318,7 @@ export default function HomeClient({
 
       {/* NIVEAUX */}
       <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <div className="text-center mb-12">
             <div className="inline-block px-4 py-1.5 bg-primary-100 text-primary-700 rounded-full text-xs font-bold mb-3">
               {t('nav.levels').toUpperCase()}
@@ -252,7 +329,7 @@ export default function HomeClient({
             </h2>
             <p className="text-lg text-slate-600">{t('home.sections.levelsSubtitle')}</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-6" data-reveal-stagger>
             {[
               {
                 slug: 'college',
@@ -305,7 +382,7 @@ export default function HomeClient({
 
       {/* MATIÈRES */}
       <section className="py-20 bg-gradient-to-br from-slate-50 to-primary-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <div className="text-center mb-12">
             <div className="inline-block px-4 py-1.5 bg-primary-100 text-primary-700 rounded-full text-xs font-bold mb-3">
               {t('nav.subjects').toUpperCase()}
@@ -316,7 +393,7 @@ export default function HomeClient({
             </h2>
             <p className="text-lg text-slate-600">{t('home.sections.subjectsSubtitle')}</p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3" data-reveal-stagger>
             {subjects.slice(0, 16).map((s) => (
               <Link
                 key={s.slug}
@@ -340,7 +417,7 @@ export default function HomeClient({
 
       {/* POPULAIRES */}
       <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10">
             <div>
               <div className="inline-block px-4 py-1.5 bg-primary-100 text-primary-700 rounded-full text-xs font-bold mb-3">
@@ -370,7 +447,7 @@ export default function HomeClient({
 
       {/* NOUVEAUTÉS */}
       <section className="py-20 bg-gradient-to-br from-primary-50 to-sky-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-10">
             <div>
               <div className="inline-block px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold mb-3">
@@ -400,7 +477,7 @@ export default function HomeClient({
 
       {/* COMMENT ÇA MARCHE */}
       <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <div className="text-center mb-12">
             <div className="inline-block px-4 py-1.5 bg-primary-100 text-primary-700 rounded-full text-xs font-bold mb-3">
               {t('home.sections.howTitle').toUpperCase()}
@@ -465,7 +542,7 @@ export default function HomeClient({
 
       {/* POURQUOI NOUS */}
       <section className="py-20 bg-gradient-to-br from-slate-50 to-primary-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <div className="text-center mb-12">
             <div className="inline-block px-4 py-1.5 bg-primary-100 text-primary-700 rounded-full text-xs font-bold mb-3">
               {t('home.sections.whyTitle').toUpperCase()}
@@ -475,7 +552,7 @@ export default function HomeClient({
               <span className="gradient-text">{t('home.sections.whyHighlight')}</span>
             </h2>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" data-reveal-stagger>
             {[
               {
                 icon: Download,
@@ -530,7 +607,7 @@ export default function HomeClient({
 
       {/* CTA ENSEIGNANT */}
       <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-reveal>
           <div className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 rounded-3xl p-10 lg:p-16 overflow-hidden">
             <div className="absolute -top-20 -end-20 w-80 h-80 bg-primary-400 rounded-full opacity-20 blur-3xl" />
             <div className="absolute -bottom-20 -start-20 w-80 h-80 bg-amber-400 rounded-full opacity-20 blur-3xl" />
