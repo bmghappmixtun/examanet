@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Grid3x3, LayoutGrid, X, Loader2, Calendar, Eye } from 'lucide-react';
+import { ArrowDown, ArrowUp, Grid3x3, LayoutGrid, X, Loader2, Calendar, Eye, Rows3 } from 'lucide-react';
 import ResourceCard from '@/components/resources/ResourceCard';
 import styles from './apex-devoirs.module.css';
 import { useDevoirsContext } from './devoirs-context';
@@ -12,7 +12,7 @@ interface ListingProps {
   classes: { slug: string; labelFr: string }[];
 }
 
-type Density = 'comfortable' | 'compact';
+type Density = 'comfortable' | 'compact' | 'wide';
 
 const SORT_LABELS: Record<string, string> = {
   recent: 'Plus récents',
@@ -223,6 +223,14 @@ export default function ApexListing({ subject, classes }: ListingProps) {
                 title="Compact"
               >
                 <Grid3x3 size={14} />
+              </button>
+              <button
+                onClick={() => setDensity('wide')}
+                className={`${styles.densityBtn} ${density === 'wide' ? styles.active : ''}`}
+                aria-label="Pleine largeur"
+                title="Pleine largeur (1 par ligne)"
+              >
+                <Rows3 size={14} />
               </button>
             </div>
             <button
