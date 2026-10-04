@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, Grid3x3, LayoutGrid, X, Loader2, Calendar, Eye, Rows3 } from 'lucide-react';
+import { ArrowDown, ArrowUp, LayoutGrid, X, Loader2, Calendar, Eye, Rows3 } from 'lucide-react';
 import ResourceCard from '@/components/resources/ResourceCard';
 import styles from './apex-devoirs.module.css';
 import { useDevoirsContext } from './devoirs-context';
@@ -215,14 +215,6 @@ export default function ApexListing({ subject, classes }: ListingProps) {
                 title="Confortable"
               >
                 <LayoutGrid size={14} />
-              </button>
-              <button
-                onClick={() => setDensity('compact')}
-                className={`${styles.densityBtn} ${density === 'compact' ? styles.active : ''}`}
-                aria-label="Compact"
-                title="Compact"
-              >
-                <Grid3x3 size={14} />
               </button>
               <button
                 onClick={() => setDensity('wide')}
