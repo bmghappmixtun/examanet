@@ -231,9 +231,19 @@ export async function searchV2(options: SearchOptions): Promise<SearchResponse> 
     const params: any[] = [];
     
     if (q) {
-      // LIKE-based search: search in title, description, summary
-      const likeParam = `%${q}%`;
-      conditions.push('(r.title LIKE ? OR r.description LIKE ? OR r.summary LIKE ?)');
+      // LIKE-based search: search in title, description, summary.
+      // Escape LIKE metachars (\, %, _) so user input can't trigger
+      // "LIKE or GLOB pattern too complex" or match-everything wildcards.
+      // Also cap query length to avoid pathological patterns.
+      const safeQ = q
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_')
+        .slice(0, 200);
+      const likeParam = `%${safeQ}%`;
+      conditions.push(
+        "(r.title LIKE ? ESCAPE '\\\\' OR r.description LIKE ? ESCAPE '\\\\' OR r.summary LIKE ? ESCAPE '\\\\')"
+      );
       params.push(likeParam, likeParam, likeParam);
     }
     if (subjectIds.length) {
