@@ -163,9 +163,9 @@ export default function ResourceCard({ resource }: { resource: ResourceCardData 
             </div>
           )}
 
-        {/* Title */}
+        {/* Title — show full text (no line-clamp, no truncation) */}
         <h3
-          className={`text-base font-extrabold text-slate-900 leading-snug mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 ${titleIsAr ? 'text-right' : 'text-left'}`}
+          className={`text-base font-extrabold text-slate-900 leading-snug mb-2 group-hover:text-blue-600 transition-colors break-words [overflow-wrap:anywhere] ${titleIsAr ? 'text-right' : 'text-left'}`}
           dir={titleIsAr ? 'rtl' : 'ltr'}
           lang={titleIsAr ? 'ar' : 'fr'}
         >
@@ -175,14 +175,14 @@ export default function ResourceCard({ resource }: { resource: ResourceCardData 
         {/* Summary */}
         {resource.summary ? (
           <p
-            className={`text-sm text-slate-600 leading-relaxed mb-3 line-clamp-2 ${summaryIsAr ? 'text-right' : 'text-left'}`}
+            className={`text-sm text-slate-600 leading-relaxed mb-3 line-clamp-3 ${summaryIsAr ? 'text-right' : 'text-left'}`}
             dir={summaryIsAr ? 'rtl' : 'ltr'}
             lang={summaryIsAr ? 'ar' : 'fr'}
           >
             {resource.summary}
           </p>
         ) : (
-          <p className="text-sm text-slate-400 italic mb-3 line-clamp-2">
+          <p className="text-sm text-slate-400 italic mb-3 line-clamp-3">
             Pas de résumé disponible.
           </p>
         )}
