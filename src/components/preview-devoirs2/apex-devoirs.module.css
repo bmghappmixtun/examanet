@@ -948,6 +948,21 @@
   .classicGrid[data-density="compact"] { column-count: 7; }
 }
 
+/* Wide density — single column at all breakpoints (full-width cards) */
+.classicGrid[data-density="wide"] {
+  column-count: 1 !important;
+}
+
+@media (min-width: 640px) {
+  .classicGrid[data-density="wide"] { column-count: 1 !important; }
+}
+@media (min-width: 1024px) {
+  .classicGrid[data-density="wide"] { column-count: 1 !important; }
+}
+@media (min-width: 1280px) {
+  .classicGrid[data-density="wide"] { column-count: 1 !important; }
+}
+
 .classicCardWrap {
   break-inside: avoid;
   margin-bottom: 1.25rem;
