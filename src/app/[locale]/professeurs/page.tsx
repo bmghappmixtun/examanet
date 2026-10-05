@@ -7,9 +7,16 @@
 // CF Worker cache key stripping the query string (worker-with-cache.js).
 // After fixing the cache key, ISR is fine — each unique URL (incl. query
 // string) gets its own cache entry.
+//
+// 2026-10-05: Wrap <TeachersClient> in <Suspense> (Leçon #93). The client
+// component (and its 3 children) call useSearchParams() which throws
+// "Cannot read properties of undefined (reading 'type')" during SSR if
+// rendered without a Suspense boundary. Symptom: 4× errors
+// "(0 , c.useSearchParams) is not a function" on /fr/professeurs over
+// the past 7d. Mirrored from src/app/[locale]/recherche/page.tsx.
 
+import { Suspense } from 'react';
 import TeachersClient from '@/components/teachers/TeachersClient';
-import { headers } from 'next/headers';
 import { breadcrumbSchema, itemListSchema } from '@/lib/structured-data';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
@@ -251,7 +258,15 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           dangerouslySetInnerHTML={{ __html: JSON.stringify(teacherListJsonLd) }}
         />
       )}
-      <TeachersClient initialData={initialData} />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full" />
+          </div>
+        }
+      >
+        <TeachersClient initialData={initialData} />
+      </Suspense>
     </>
   );
 }
