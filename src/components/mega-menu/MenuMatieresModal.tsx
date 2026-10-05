@@ -345,32 +345,29 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
       >
         {displayName}
       </Link>
-      <div className="space-y-0.5 text-sm">
+      <div className="space-y-0.5 text-sm" style={{ display: "flex", flexWrap: "wrap", gap: "0 2rem" }}>
         <Link
           href={`/preview-devoirs2/${subject.slug}`}
           onClick={onClose}
-          className="flex items-center gap-1 text-blue-700 hover:text-blue-900 transition font-semibold"
+          className="text-blue-700 hover:text-blue-900 transition font-semibold"
           title={`Devoirs ${displayName}`}
         >
-          <span className="w-1 h-1 rounded-full bg-blue-500" />
           Devoirs
         </Link>
         <Link
           href={`/preview-cours2/${subject.slug}`}
           onClick={onClose}
-          className="flex items-center gap-1 text-amber-700 hover:text-amber-900 transition font-semibold"
+          className="text-amber-700 hover:text-amber-900 transition font-semibold"
           title={`Cours ${displayName}`}
         >
-          <span className="w-1 h-1 rounded-full bg-amber-500" />
           Cours
         </Link>
         <Link
           href={`/preview-series2/${subject.slug}`}
           onClick={onClose}
-          className="flex items-center gap-1 text-green-700 hover:text-green-900 transition font-semibold"
+          className="text-green-700 hover:text-green-900 transition font-semibold"
           title={`Séries ${displayName}`}
         >
-          <span className="w-1 h-1 rounded-full bg-green-500" />
           Séries
         </Link>
       </div>
