@@ -13,7 +13,7 @@ import ResourceCard from '@/components/resources/ResourceCard';
 import SubjectHero from '@/components/subjects/SubjectHero';
 import SubjectFilters from '@/components/subjects/SubjectFilters';
 import SmartPagination from '@/components/ui/SmartPagination';
-import { Sparkles, ArrowRight, BookOpen, GraduationCap, SlidersHorizontal } from 'lucide-react';
+import { Sparkles, ArrowRight, BookOpen, FileText, Layers, GraduationCap, SlidersHorizontal } from 'lucide-react';
 import { getSubjectConfig, SUBJECTS_CONFIG } from '@/lib/subjects.config';
 import { getLocalizedName } from '@/lib/localized-name';
 
@@ -228,6 +228,66 @@ function MatiereView({ data, locale, currentSort }: { data: PageData; locale: st
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Subject Hero */}
           <SubjectHero subject={heroSubject} totalResources={totalCount} totalTeachers={uniqueTeachers.length} intro={cfg?.seo?.descriptionFr ?? `Ressources en ${subject.nameFr} pour le système éducatif tunisien : cours, exercices, sujets de bac et corrigés.`} />
+
+          {/* APEX Preview Links - Devoir / Cours / Série landing pages */}
+          <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Link
+              href={`/preview-devoirs2/${subject.slug}`}
+              className="group relative bg-white border border-slate-200 rounded-2xl p-5 hover:border-blue-400 hover:shadow-md transition-all overflow-hidden"
+            >
+              <div className="absolute -top-3 -end-3 w-20 h-20 bg-blue-100 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
+              <div className="relative">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-blue-100 text-blue-700 mb-3">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wider text-blue-600 mb-1">Devoirs</div>
+                <div className="text-base font-bold text-slate-900 mb-1">Devoirs de contrôle & synthèse</div>
+                <div className="text-xs text-slate-500 mb-3">Filtrer par classe, trimestre et type</div>
+                <div className="inline-flex items-center gap-1 text-sm font-semibold text-blue-700 group-hover:gap-2 transition-all">
+                  Explorer
+                  <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href={`/preview-cours2/${subject.slug}`}
+              className="group relative bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-400 hover:shadow-md transition-all overflow-hidden"
+            >
+              <div className="absolute -top-3 -end-3 w-20 h-20 bg-amber-100 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
+              <div className="relative">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-amber-100 text-amber-700 mb-3">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wider text-amber-600 mb-1">Cours</div>
+                <div className="text-base font-bold text-slate-900 mb-1">Cours & leçons complètes</div>
+                <div className="text-xs text-slate-500 mb-3">Tout le contenu pédagogique par classe</div>
+                <div className="inline-flex items-center gap-1 text-sm font-semibold text-amber-700 group-hover:gap-2 transition-all">
+                  Explorer
+                  <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                </div>
+              </div>
+            </Link>
+
+            <Link
+              href={`/preview-series2/${subject.slug}`}
+              className="group relative bg-white border border-slate-200 rounded-2xl p-5 hover:border-green-400 hover:shadow-md transition-all overflow-hidden"
+            >
+              <div className="absolute -top-3 -end-3 w-20 h-20 bg-green-100 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
+              <div className="relative">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-green-100 text-green-700 mb-3">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div className="text-xs font-bold uppercase tracking-wider text-green-600 mb-1">Séries</div>
+                <div className="text-base font-bold text-slate-900 mb-1">Séries d. exercices</div>
+                <div className="text-xs text-slate-500 mb-3">Entraînement par série thématique</div>
+                <div className="inline-flex items-center gap-1 text-sm font-semibold text-green-700 group-hover:gap-2 transition-all">
+                  Explorer
+                  <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                </div>
+              </div>
+            </Link>
+          </div>
 
           {/* Intro section: "Tout sur X au système éducatif tunisien" */}
           {cfg?.seo?.introFr ? (
