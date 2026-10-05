@@ -144,7 +144,7 @@ export default function MenuMatieresModal() {
                 onClick={() => setActiveTab('matieres')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition ${
                   activeTab === 'matieres'
-                    ? 'bg-emerald-600 text-white shadow-sm'
+                    ? 'bg-gradient-to-r from-sky-500 to-orange-500 text-white shadow-sm'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
@@ -240,7 +240,7 @@ function MatiereHero({
   onClose: () => void;
 }) {
   return (
-    <div className="relative bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-950 p-6 flex flex-col justify-between overflow-hidden">
+    <div className="relative bg-gradient-to-br from-sky-500 via-sky-500 to-orange-500 p-6 flex flex-col justify-between overflow-hidden">
       <div className="absolute top-8 right-6 opacity-20">
         <GraduationCap className="w-24 h-24 text-white" />
       </div>
@@ -252,13 +252,13 @@ function MatiereHero({
       </div>
 
       <div className="relative z-10">
-        <div className="text-sm uppercase tracking-widest text-emerald-200 font-bold mb-1.5">
+        <div className="text-sm uppercase tracking-widest text-white/90 font-bold mb-1.5">
           Toutes les
         </div>
         <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
           Matières
         </h2>
-        <p className="text-emerald-100 text-base mt-3 max-w-[260px] leading-relaxed">
+        <p className="text-white/95 text-base mt-3 max-w-[260px] leading-relaxed">
           Explorez {subjectsCount || 'toutes les'} matières du programme tunisien et accédez à leurs
           devoirs, séries et cours.
         </p>
