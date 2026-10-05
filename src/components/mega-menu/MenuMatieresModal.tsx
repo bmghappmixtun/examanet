@@ -341,31 +341,37 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
       <Link
         href={base}
         onClick={onClose}
-        className="block font-bold text-slate-900 hover:text-primary-600 transition mb-1 text-sm"
+        className="block font-bold text-slate-900 hover:text-primary-600 transition mb-1.5 text-sm"
       >
         {displayName}
       </Link>
-      <div className="space-y-0.5 text-xs">
+      <div className="space-y-0.5 text-[11px]">
         <Link
-          href={`/devoirs/${subject.slug}`}
+          href={`/preview-devoirs2/${subject.slug}`}
           onClick={onClose}
-          className="block text-slate-600 hover:text-primary-600 transition"
+          className="flex items-center gap-1 text-blue-700 hover:text-blue-900 transition font-semibold"
+          title={`Devoirs ${displayName} — nouvelle page APEX`}
         >
-          Devoirs {displayName}
+          <span className="w-1 h-1 rounded-full bg-blue-500" />
+          Devoirs <span className="text-[9px] uppercase tracking-wider px-1 py-px bg-blue-100 text-blue-700 rounded ml-auto">APEX</span>
         </Link>
         <Link
-          href={`/series/${subject.slug}`}
+          href={`/preview-cours2/${subject.slug}`}
           onClick={onClose}
-          className="block text-slate-600 hover:text-primary-600 transition"
+          className="flex items-center gap-1 text-amber-700 hover:text-amber-900 transition font-semibold"
+          title={`Cours ${displayName} — nouvelle page APEX`}
         >
-          Séries {displayName}
+          <span className="w-1 h-1 rounded-full bg-amber-500" />
+          Cours <span className="text-[9px] uppercase tracking-wider px-1 py-px bg-amber-100 text-amber-700 rounded ml-auto">APEX</span>
         </Link>
         <Link
-          href={`/cours/${subject.slug}`}
+          href={`/preview-series2/${subject.slug}`}
           onClick={onClose}
-          className="block text-slate-600 hover:text-primary-600 transition"
+          className="flex items-center gap-1 text-green-700 hover:text-green-900 transition font-semibold"
+          title={`Séries ${displayName} — nouvelle page APEX`}
         >
-          Cours {displayName}
+          <span className="w-1 h-1 rounded-full bg-green-500" />
+          Séries <span className="text-[9px] uppercase tracking-wider px-1 py-px bg-green-100 text-green-700 rounded ml-auto">APEX</span>
         </Link>
       </div>
     </div>
