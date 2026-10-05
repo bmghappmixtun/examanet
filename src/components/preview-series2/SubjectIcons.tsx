@@ -98,21 +98,21 @@ const XIcon = ({ className }: IconProps) => (
 
 // Position grid: each icon gets a position, size, rotation, and delay
 const ICON_POSITIONS = [
-  { Icon: SigmaIcon, top: '8%', left: '6%', size: 60, rotate: -15, delay: 0 },
-  { Icon: PiIcon, top: '18%', left: '88%', size: 48, rotate: 12, delay: 1 },
-  { Icon: SqrtIcon, top: '28%', left: '78%', size: 54, rotate: -8, delay: 2 },
-  { Icon: CompassIcon, top: '52%', left: '4%', size: 70, rotate: 8, delay: 1.5 },
-  { Icon: RulerIcon, top: '78%', left: '12%', size: 80, rotate: -20, delay: 0.5 },
-  { Icon: BookIcon, top: '88%', left: '82%', size: 64, rotate: 15, delay: 2.5 },
-  { Icon: InfinityIcon, top: '70%', left: '78%', size: 56, rotate: -5, delay: 1 },
-  { Icon: IntegralIcon, top: '38%', left: '92%', size: 50, rotate: 18, delay: 0 },
-  { Icon: CalculatorIcon, top: '12%', left: '40%', size: 44, rotate: -12, delay: 1.2 },
-  { Icon: FunctionIcon, top: '90%', left: '50%', size: 52, rotate: 10, delay: 2 },
-  { Icon: DivideIcon, top: '46%', left: '50%', size: 40, rotate: -18, delay: 0.8 },
-  { Icon: TriangleIcon, top: '62%', left: '32%', size: 48, rotate: 22, delay: 1.8 },
-  { Icon: XIcon, top: '78%', left: '46%', size: 36, rotate: -8, delay: 1.4 },
-  { Icon: SigmaIcon, top: '22%', left: '60%', size: 42, rotate: 8, delay: 2.2 },
-  { Icon: PiIcon, top: '60%', left: '14%', size: 56, rotate: -10, delay: 0.6 },
+  { Icon: SigmaIcon, top: '6%', left: '58%', size: 64, rotate: -15, delay: 0 },
+  { Icon: PiIcon, top: '12%', left: '88%', size: 48, rotate: 12, delay: 1 },
+  { Icon: SqrtIcon, top: '24%', left: '72%', size: 56, rotate: -8, delay: 2 },
+  { Icon: CompassIcon, top: '38%', left: '94%', size: 72, rotate: 8, delay: 1.5 },
+  { Icon: RulerIcon, top: '50%', left: '78%', size: 84, rotate: -20, delay: 0.5 },
+  { Icon: BookIcon, top: '62%', left: '90%', size: 68, rotate: 15, delay: 2.5 },
+  { Icon: InfinityIcon, top: '74%', left: '72%', size: 60, rotate: -5, delay: 1 },
+  { Icon: IntegralIcon, top: '86%', left: '56%', size: 52, rotate: 18, delay: 0 },
+  { Icon: CalculatorIcon, top: '8%', left: '78%', size: 46, rotate: -12, delay: 1.2 },
+  { Icon: FunctionIcon, top: '44%', left: '60%', size: 54, rotate: 10, delay: 2 },
+  { Icon: DivideIcon, top: '32%', left: '60%', size: 42, rotate: -18, delay: 0.8 },
+  { Icon: TriangleIcon, top: '58%', left: '64%', size: 48, rotate: 22, delay: 1.8 },
+  { Icon: XIcon, top: '80%', left: '82%', size: 36, rotate: -8, delay: 1.4 },
+  { Icon: SigmaIcon, top: '20%', left: '64%', size: 42, rotate: 8, delay: 2.2 },
+  { Icon: PiIcon, top: '70%', left: '56%', size: 56, rotate: -10, delay: 0.6 },
 ];
 
 export default function SubjectIcons() {
