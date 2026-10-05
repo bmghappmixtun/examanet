@@ -350,28 +350,28 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
           href={`/preview-devoirs2/${subject.slug}`}
           onClick={onClose}
           className="flex items-center gap-1 text-blue-700 hover:text-blue-900 transition font-semibold"
-          title={`Devoirs ${displayName} — nouvelle page APEX`}
+          title={`Devoirs ${displayName}`}
         >
           <span className="w-1 h-1 rounded-full bg-blue-500" />
-          Devoirs <span className="text-[9px] uppercase tracking-wider px-1 py-px bg-blue-100 text-blue-700 rounded ml-auto">APEX</span>
+          Devoirs
         </Link>
         <Link
           href={`/preview-cours2/${subject.slug}`}
           onClick={onClose}
           className="flex items-center gap-1 text-amber-700 hover:text-amber-900 transition font-semibold"
-          title={`Cours ${displayName} — nouvelle page APEX`}
+          title={`Cours ${displayName}`}
         >
           <span className="w-1 h-1 rounded-full bg-amber-500" />
-          Cours <span className="text-[9px] uppercase tracking-wider px-1 py-px bg-amber-100 text-amber-700 rounded ml-auto">APEX</span>
+          Cours
         </Link>
         <Link
           href={`/preview-series2/${subject.slug}`}
           onClick={onClose}
           className="flex items-center gap-1 text-green-700 hover:text-green-900 transition font-semibold"
-          title={`Séries ${displayName} — nouvelle page APEX`}
+          title={`Séries ${displayName}`}
         >
           <span className="w-1 h-1 rounded-full bg-green-500" />
-          Séries <span className="text-[9px] uppercase tracking-wider px-1 py-px bg-green-100 text-green-700 rounded ml-auto">APEX</span>
+          Séries
         </Link>
       </div>
     </div>
