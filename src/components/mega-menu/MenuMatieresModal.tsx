@@ -135,7 +135,7 @@ export default function MenuMatieresModal() {
             </button>
 
             {/* TAB SWITCHER */}
-            <div className="sticky top-0 z-[5] bg-white/95 backdrop-blur border-b border-slate-200 px-6 md:px-8 py-3 flex items-center gap-2">
+            <div className="sticky top-0 z-[5] bg-white/95 backdrop-blur border-b border-slate-200 px-4 md:px-6 py-2 flex items-center gap-2">
               <span className="text-xs uppercase tracking-widest font-bold text-slate-500 mr-2 hidden sm:inline">
                 Explorer par
               </span>
@@ -176,7 +176,7 @@ export default function MenuMatieresModal() {
               )}
 
               {/* RIGHT: Content grid */}
-              <div className="p-6 md:p-8">
+              <div className="p-3 md:p-4">
                 {activeTab === 'matieres' ? (
                   // ========== TAB: MATIÈRES ==========
                   <>
@@ -185,9 +185,9 @@ export default function MenuMatieresModal() {
                         Chargement des matières…
                       </div>
                     ) : (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
                         {subjectColumns.map((col, i) => (
-                          <div key={i} className="space-y-5">
+                          <div key={i} className="space-y-2.5">
                             {col.map((s) => (
                               <SubjectColumn key={s.slug} subject={s} onClose={() => setOpen(false)} />
                             ))}
@@ -211,9 +211,9 @@ export default function MenuMatieresModal() {
                   </>
                 ) : (
                   // ========== TAB: CLASSES ==========
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
                     {classColumns.map((col, i) => (
-                      <div key={i} className="space-y-5">
+                      <div key={i} className="space-y-2.5">
                         {col.map((cl) => (
                           <ClassColumn key={cl.slug} classe={cl} onClose={() => setOpen(false)} />
                         ))}
@@ -240,7 +240,7 @@ function MatiereHero({
   onClose: () => void;
 }) {
   return (
-    <div className="relative bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-950 p-8 flex flex-col justify-between min-h-[260px] md:min-h-[480px] overflow-hidden">
+    <div className="relative bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-950 p-6 flex flex-col justify-between overflow-hidden">
       <div className="absolute top-8 right-6 opacity-20">
         <GraduationCap className="w-24 h-24 text-white" />
       </div>
@@ -252,13 +252,13 @@ function MatiereHero({
       </div>
 
       <div className="relative z-10">
-        <div className="text-xs uppercase tracking-widest text-emerald-200 font-bold mb-2">
+        <div className="text-sm uppercase tracking-widest text-emerald-200 font-bold mb-1.5">
           Toutes les
         </div>
         <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
           Matières
         </h2>
-        <p className="text-emerald-100 text-sm mt-3 max-w-[220px]">
+        <p className="text-emerald-100 text-base mt-3 max-w-[260px] leading-relaxed">
           Explorez {subjectsCount || 'toutes les'} matières du programme tunisien et accédez à leurs
           devoirs, séries et cours.
         </p>
@@ -267,7 +267,7 @@ function MatiereHero({
       <Link
         href="/matieres"
         onClick={onClose}
-        className="relative z-10 inline-flex items-center gap-2 text-white text-sm font-semibold hover:gap-3 transition-all mt-6"
+        className="relative z-10 inline-flex items-center gap-2 text-white text-base font-semibold hover:gap-3 transition-all mt-4"
       >
         Voir toutes les matières
         <ArrowRight className="w-4 h-4" />
@@ -284,7 +284,7 @@ function ClasseHero({
   onClose: () => void;
 }) {
   return (
-    <div className="relative bg-gradient-to-br from-blue-700 via-blue-800 to-blue-950 p-8 flex flex-col justify-between min-h-[260px] md:min-h-[480px] overflow-hidden">
+    <div className="relative bg-gradient-to-br from-blue-700 via-blue-800 to-blue-950 p-6 flex flex-col justify-between overflow-hidden">
       <div className="absolute top-8 right-6 opacity-20">
         <Layers className="w-24 h-24 text-white" />
       </div>
@@ -296,13 +296,13 @@ function ClasseHero({
       </div>
 
       <div className="relative z-10">
-        <div className="text-xs uppercase tracking-widest text-blue-200 font-bold mb-2">
+        <div className="text-sm uppercase tracking-widest text-blue-200 font-bold mb-1.5">
           Tous les
         </div>
         <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
           Niveaux
         </h2>
-        <p className="text-blue-100 text-sm mt-3 max-w-[220px]">
+        <p className="text-blue-100 text-base mt-3 max-w-[260px] leading-relaxed">
           {classesCount} classes du système éducatif tunisien, avec leurs sections (maths, sciences, lettres, sport…).
         </p>
       </div>
@@ -310,7 +310,7 @@ function ClasseHero({
       <Link
         href="/niveaux"
         onClick={onClose}
-        className="relative z-10 inline-flex items-center gap-2 text-white text-sm font-semibold hover:gap-3 transition-all mt-6"
+        className="relative z-10 inline-flex items-center gap-2 text-white text-base font-semibold hover:gap-3 transition-all mt-4"
       >
         Voir tous les niveaux
         <ArrowRight className="w-4 h-4" />
@@ -341,11 +341,11 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
       <Link
         href={base}
         onClick={onClose}
-        className="block font-bold text-slate-900 hover:text-primary-600 transition mb-1.5 text-sm"
+        className="block font-bold text-slate-900 hover:text-primary-600 transition mb-1.5 text-base"
       >
         {displayName}
       </Link>
-      <div className="space-y-0.5 text-[11px]">
+      <div className="space-y-0.5 text-sm">
         <Link
           href={`/preview-devoirs2/${subject.slug}`}
           onClick={onClose}
@@ -391,11 +391,11 @@ function ClassColumn({
       <Link
         href={`/ressources?class=${classe.slug}`}
         onClick={onClose}
-        className="block font-bold text-slate-900 hover:text-primary-600 transition mb-1 text-sm"
+        className="block font-bold text-slate-900 hover:text-primary-600 transition mb-1.5 text-base"
       >
         {classe.label.fr}
       </Link>
-      <div className="space-y-0.5 text-xs">
+      <div className="space-y-1 text-sm">
         <Link
           href={`/ressources?class=${classe.slug}&type=DEVOIR`}
           onClick={onClose}
