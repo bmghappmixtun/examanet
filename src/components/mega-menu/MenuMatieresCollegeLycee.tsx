@@ -28,7 +28,6 @@ import {
   GraduationCap,
   School,
   ArrowRight,
-  Languages,
 } from 'lucide-react';
 
 interface SubjectItem {
@@ -84,15 +83,15 @@ function classifySubject(slug: string): 'college' | 'lycee' | 'both' {
   return SUBJECT_CYCLE[slug] || 'both';
 }
 
-// Language of instruction for standard collège (JORT 2019-063).
-// In Tunisia most collège subjects are taught in Arabic; only the language
-// classes (Français/Anglais) are taught in their target language.
+// Language of instruction for standard collège (JORT 2019-063 + user
+// override: Informatique is taught in French at collège, even in standard
+// curriculum — confirmed by the user 2026-10-06).
 // 'fr' = small left block, 'ar' = large right block (per user request).
 const SUBJECT_LANG_COLLEGE: Record<string, 'fr' | 'ar'> = {
   francais: 'fr',
   anglais: 'fr',
+  informatique: 'fr', // User: 'informatique est en français pour le collège'
   // Everything else default = Arabic at standard collège.
-  // (Physique, Informatique flipped for *pilote* — not applied here.)
 };
 
 function classifyLangCollege(slug: string): 'fr' | 'ar' {
@@ -244,23 +243,17 @@ export default function MenuMatieresCollegeLycee() {
                     Chargement des matières…
                   </div>
                 ) : isCollege && subjectColumns ? (
-                  /* COLLÈGE: 2 moitiés FR (gauche) / AR (droite) */
+                  /* COLLÈGE: 2 moitiés FR (gauche) / AR (droite) — pas de titre */
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* LEFT — Enseignées en français */}
                     <LangHalf
                       lang="fr"
-                      title="Enseignées en français"
-                      subtitle="Matières où la langue d'enseignement est le français"
-                      badge="FR"
                       subjects={subjectColumns.fr}
                       onClose={() => setOpen(false)}
                     />
                     {/* RIGHT — Enseignées en arabe */}
                     <LangHalf
                       lang="ar"
-                      title="تُدرَّس بالعربية"
-                      subtitle="Matières où la langue d'enseignement est l'arabe"
-                      badge="ع"
                       subjects={subjectColumns.ar}
                       onClose={() => setOpen(false)}
                     />
@@ -372,42 +365,11 @@ function CycleHero({
 
 /* ====================== SUBJECT COLUMN ====================== */
 
-// Short labels for each subject (so links stay compact: "Devoirs Math" not
-// "Devoirs Mathématiques"). Falls back to full nameFr if no short label.
-const SHORT_LABELS: Record<string, string> = {
-  mathematiques: 'Math',
-  physique: 'Physique',
-  svt: 'SVT',
-  francais: 'Français',
-  anglais: 'Anglais',
-  arabe: 'Arabe',
-  histoire: 'Histoire',
-  geographie: 'Géographie',
-  histoire_geographie: 'Histoire-Géo',
-  'histoire-geographie': 'Histoire-Géo',
-  philosophie: 'Philo',
-  economie: 'Économie',
-  gestion: 'Gestion',
-  informatique: 'Info',
-  technologie: 'Techno',
-  'algo-prog': 'Algo',
-  'bases-donnees': 'BD',
-  tic: 'TIC',
-  'systeme-exploitation-reseaux': 'SE',
-  '3eme-langue-allemand': 'Allemand',
-  '3eme-langue-italien': 'Italien',
-  '3eme-langue-espagnol': 'Espagnol',
-  'education-islamique': 'Islamique',
-  'pensee-islamique': 'Pensée Isl.',
-  'education-civique': 'Civique',
-  'education-artistique': 'Artistique',
-  musique: 'Musique',
-  theatre: 'Théâtre',
-  'genie-electrique': 'Génie Élec.',
-};
-
-function getShortLabel(slug: string, fullName: string): string {
-  return SHORT_LABELS[slug] || fullName;
+function getShortLabel(slug: string, lang: 'fr' | 'ar', fallback: string): string {
+  if (lang === 'ar') {
+    return SHORT_LABELS_AR[slug] || fallback;
+  }
+  return SHORT_LABELS_FR[slug] || fallback;
 }
 
 function SubjectColumn({
@@ -421,9 +383,11 @@ function SubjectColumn({
   cycle: CycleKey;
   lang?: 'fr' | 'ar';
 }) {
-  const short = getShortLabel(subject.slug, subject.nameFr);
+  const isAr = lang === 'ar';
+  const labels = isAr ? LINK_LABELS.ar : LINK_LABELS.fr;
+  const short = getShortLabel(subject.slug, isAr ? 'ar' : 'fr', isAr ? subject.nameAr || subject.nameFr : subject.nameFr);
   const linkBase = 'block text-slate-500 hover:text-slate-900 transition text-xs leading-tight py-0.5';
-  const displayName = lang === 'ar' && subject.nameAr ? subject.nameAr : subject.nameFr;
+  const displayName = isAr && subject.nameAr ? subject.nameAr : subject.nameFr;
   return (
     <div className="mb-1">
       <Link
@@ -433,37 +397,37 @@ function SubjectColumn({
       >
         <div
           className={`font-bold text-slate-900 group-hover:text-primary-600 transition mb-1 text-sm ${
-            lang === 'ar' ? 'text-right' : ''
+            isAr ? 'text-right' : ''
           }`}
-          dir={lang === 'ar' ? 'rtl' : 'ltr'}
+          dir={isAr ? 'rtl' : 'ltr'}
         >
           {displayName}
         </div>
       </Link>
-      <div className="flex flex-col text-sm" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="flex flex-col text-sm" dir={isAr ? 'rtl' : 'ltr'}>
         <Link
           href={`/preview-devoirs2/${subject.slug}`}
           onClick={onClose}
           className={linkBase}
-          title={`Devoirs ${displayName}`}
+          title={`${labels.devoirs} ${displayName}`}
         >
-          Devoirs {short}
+          {labels.devoirs} {short}
         </Link>
         <Link
           href={`/preview-series2/${subject.slug}`}
           onClick={onClose}
           className={linkBase}
-          title={`Séries ${displayName}`}
+          title={`${labels.series} ${displayName}`}
         >
-          Séries {short}
+          {labels.series} {short}
         </Link>
         <Link
           href={`/preview-cours2/${subject.slug}`}
           onClick={onClose}
           className={linkBase}
-          title={`Cours ${displayName}`}
+          title={`${labels.cours} ${displayName}`}
         >
-          Cours {short}
+          {labels.cours} {short}
         </Link>
       </div>
     </div>
@@ -472,18 +436,83 @@ function SubjectColumn({
 
 /* ====================== LANGUAGE HALF (Collège) ====================== */
 
+// French and Arabic vocab for the 3 link types.
+// Arabic side uses Tunisian school terminology:
+//   واجبات (wajibat) = devoirs/assignments
+//   تمارين (tamārīn) = exercices/séries
+//   دروس (durūs)     = cours/leçons
+const LINK_LABELS: Record<'fr' | 'ar', { devoirs: string; series: string; cours: string }> = {
+  fr: { devoirs: 'Devoirs', series: 'Séries', cours: 'Cours' },
+  ar: { devoirs: 'واجبات', series: 'تمارين', cours: 'دروس' },
+};
+
+// Short labels per subject AND per language side (so 'Math' on FR side,
+// 'الرياضيات' on AR side, etc.).
+const SHORT_LABELS_FR: Record<string, string> = {
+  mathematiques: 'Math',
+  physique: 'Physique',
+  svt: 'SVT',
+  francais: 'Français',
+  anglais: 'Anglais',
+  arabe: 'Arabe',
+  histoire: 'Histoire',
+  geographie: 'Géographie',
+  'histoire-geographie': 'Histoire-Géo',
+  philosophie: 'Philo',
+  economie: 'Économie',
+  gestion: 'Gestion',
+  informatique: 'Info',
+  technologie: 'Techno',
+  'algo-prog': 'Algo',
+  'bases-donnees': 'BD',
+  tic: 'TIC',
+  'systeme-exploitation-reseaux': 'STI',
+  '3eme-langue-allemand': 'Allemand',
+  '3eme-langue-italien': 'Italien',
+  '3eme-langue-espagnol': 'Espagnol',
+  'education-islamique': 'Islamique',
+  'pensee-islamique': 'Pensée Isl.',
+  'education-civique': 'Civique',
+  'education-artistique': 'Artistique',
+  musique: 'Musique',
+  theatre: 'Théâtre',
+  'genie-electrique': 'Génie Élec.',
+};
+
+// Short labels in Arabic — used on the AR side. Falls back to nameAr.
+// We intentionally omit Informatique here since it lives in the FR side at collège.
+const SHORT_LABELS_AR: Record<string, string> = {
+  mathematiques: 'الرياضيات',
+  physique: 'الفيزياء',
+  svt: 'علوم الحياة والأرض',
+  francais: 'الفرنسية',
+  anglais: 'الإنجليزية',
+  arabe: 'دراسة النص',
+  histoire: 'التاريخ',
+  geographie: 'الجغرافيا',
+  'histoire-geographie': 'التاريخ والجغرافيا',
+  philosophie: 'الفلسفة',
+  economie: 'الاقتصاد',
+  gestion: 'التصرف',
+  informatique: 'الإعلامية',
+  technologie: 'التكنولوجيا',
+  'algo-prog': 'الخوارزميات',
+  'bases-donnees': 'قواعد البيانات',
+  tic: 'تكنولوجيا المعلومات',
+  'systeme-exploitation-reseaux': 'أنظمة التشغيل',
+  'education-islamique': 'التربية الإسلامية',
+  'education-civique': 'التربية المدنية',
+  'education-artistique': 'التربية التشكيلية',
+  musique: 'الموسيقى',
+  theatre: 'المسرحية',
+};
+
 function LangHalf({
   lang,
-  title,
-  subtitle,
-  badge,
   subjects,
   onClose,
 }: {
   lang: 'fr' | 'ar';
-  title: string;
-  subtitle: string;
-  badge: string;
   subjects: SubjectItem[];
   onClose: () => void;
 }) {
@@ -497,26 +526,6 @@ function LangHalf({
       dir={isRtl ? 'rtl' : 'ltr'}
       className={`rounded-xl border ${accent} p-3`}
     >
-      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-200/60">
-        <span
-          className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold ${
-            lang === 'fr'
-              ? 'bg-blue-600 text-white'
-              : 'bg-emerald-600 text-white'
-          }`}
-        >
-          {badge}
-        </span>
-        <div className="flex-1 min-w-0">
-          <div className={`font-bold text-sm text-slate-900 ${isRtl ? 'text-right' : ''}`}>
-            {title}
-          </div>
-          <div className={`text-[11px] text-slate-500 ${isRtl ? 'text-right' : ''}`}>
-            {subtitle}
-          </div>
-        </div>
-        <Languages className="w-4 h-4 text-slate-400 flex-shrink-0" />
-      </div>
       <div className={`grid gap-x-3 gap-y-2 ${subjects.length > 4 ? 'grid-cols-2' : 'grid-cols-1'}`}>
         {subjects.map((s) => (
           <SubjectColumn
