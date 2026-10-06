@@ -1349,9 +1349,9 @@
   font-size: 13px;
   font-weight: 600;
   border-radius: 8px;
-  background: var(--surface-2);
-  color: var(--ink-2);
-  border: 1px solid var(--border);
+  background: oklch(0.97 0 0);
+  color: oklch(0.25 0 0);
+  border: 1px solid oklch(0.92 0 0);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -1360,13 +1360,18 @@
   border-color: var(--accent);
 }
 .sidebarCycleBtnActive {
-  background: var(--accent);
+  background: oklch(0.72 0.18 35);
   color: white;
-  border-color: var(--accent);
+  border-color: oklch(0.72 0.18 35);
 }
 .sidebarCycleBtnActive:hover {
-  background: var(--accent);
+  background: oklch(0.72 0.18 35);
   color: white;
+}
+.sidebarCycleBtn:hover {
+  background: oklch(0.97 0.03 35);
+  border-color: oklch(0.72 0.18 35);
+  color: oklch(0.72 0.18 35);
 }
 
 .sidebarSection {
@@ -1803,4 +1808,12 @@
 .sidebarCell > button[aria-label="Afficher les filtres"] {
   white-space: nowrap;
   width: auto;
+}
+
+.sidebarCycleRow {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0 1rem 0.875rem;
 }

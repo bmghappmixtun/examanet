@@ -157,7 +157,7 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
         <div className={styles.sidebarSectionHead} style={{ cursor: 'default' }}>
           <span>Cycle</span>
         </div>
-        <div className={styles.sidebarSectionBody} style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div className={styles.sidebarCycleRow}>
           <button
             type="button"
             onClick={() => setCycle(activeCycle === 'college' ? null : 'college')}
