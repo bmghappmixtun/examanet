@@ -24,7 +24,6 @@ import { Link } from '@/i18n/navigation';
 import {
   ChevronDown,
   X,
-  BookOpen,
   GraduationCap,
   School,
   ArrowRight,
@@ -165,7 +164,7 @@ export default function MenuMatieresCollegeLycee() {
         onClick={() => setOpen(true)}
         className="flex items-center gap-1 px-4 py-2 rounded-lg font-semibold text-base text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition"
       >
-        <BookOpen className="w-4 h-4" />
+        <School className="w-4 h-4" />
         Matières
         <ChevronDown className="w-4 h-4" />
       </button>
@@ -192,7 +191,7 @@ export default function MenuMatieresCollegeLycee() {
               <X className="w-5 h-5 text-slate-700" />
             </button>
 
-            {/* CYCLE TABS */}
+            {/* CYCLE TABS — gray/black/white only */}
             <div className="sticky top-0 z-[5] bg-white/95 backdrop-blur border-b border-slate-200 px-4 md:px-6 py-3">
               <div className="text-xs uppercase tracking-widest font-bold text-slate-500 mb-2">
                 Quel cycle ?
@@ -201,30 +200,30 @@ export default function MenuMatieresCollegeLycee() {
                 <button
                   type="button"
                   onClick={() => setActiveCycle('college')}
-                  className={`flex items-center gap-3 px-5 py-3 rounded-xl font-bold text-base transition ${
+                  className={`flex items-center gap-3 px-5 py-3 rounded-xl font-bold transition ${
                     isCollege
-                      ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md border-2 border-emerald-300'
-                      : 'bg-slate-50 text-slate-500 border-2 border-transparent hover:bg-slate-100'
+                      ? 'bg-slate-900 text-white shadow-md border-2 border-slate-900'
+                      : 'bg-slate-100 text-slate-700 border-2 border-transparent hover:bg-slate-200'
                   }`}
                 >
                   <School className="w-6 h-6" />
                   <div className="text-left">
-                    <div className="text-base">Collège</div>
+                    <div className="text-lg">Collège</div>
                     <div className="text-xs opacity-80 font-normal">7ème → 9ème année</div>
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveCycle('lycee')}
-                  className={`flex items-center gap-3 px-5 py-3 rounded-xl font-bold text-base transition ${
+                  className={`flex items-center gap-3 px-5 py-3 rounded-xl font-bold transition ${
                     !isCollege
-                      ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-md border-2 border-violet-300'
-                      : 'bg-slate-50 text-slate-500 border-2 border-transparent hover:bg-slate-100'
+                      ? 'bg-slate-900 text-white shadow-md border-2 border-slate-900'
+                      : 'bg-slate-100 text-slate-700 border-2 border-transparent hover:bg-slate-200'
                   }`}
                 >
                   <GraduationCap className="w-6 h-6" />
                   <div className="text-left">
-                    <div className="text-base">Lycée</div>
+                    <div className="text-lg">Lycée</div>
                     <div className="text-xs opacity-80 font-normal">1ère → 4ème année (Bac)</div>
                   </div>
                 </button>
@@ -251,14 +250,16 @@ export default function MenuMatieresCollegeLycee() {
                         lang="fr"
                         subjects={subjectColumns.fr}
                         onClose={() => setOpen(false)}
+                        cycle={activeCycle}
                       />
                     </div>
-                    {/* RIGHT (2/3) — Enseignées en arabe (texte agrandi) */}
+                    {/* RIGHT (2/3) — Enseignées en arabe */}
                     <div className="md:col-span-2">
                       <LangHalf
                         lang="ar"
                         subjects={subjectColumns.ar}
                         onClose={() => setOpen(false)}
+                        cycle={activeCycle}
                       />
                     </div>
                   </div>
@@ -312,56 +313,29 @@ function CycleHero({
   subjectsCount: number;
   onClose: () => void;
 }) {
-  if (cycle === 'college') {
-    return (
-      <div className="relative bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-6 flex flex-col justify-between overflow-hidden">
-        <div className="absolute top-8 right-6 opacity-20">
-          <School className="w-24 h-24 text-white" />
-        </div>
-        <div className="absolute bottom-12 left-4 opacity-15">
-          <BookOpen className="w-20 h-20 text-white" />
-        </div>
-        <div className="relative z-10">
-          <div className="text-sm uppercase tracking-widest text-white/90 font-bold mb-1.5">
-            Cycle
-          </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
-            Collège
-          </h2>
-          <p className="text-white/95 text-base mt-3 max-w-[260px] leading-relaxed">
-            Enseignement de base (7ème → 9ème). Tronc commun pour toutes les matières.
-          </p>
-        </div>
-        <div className="relative z-10 mt-4 flex items-center gap-2 text-white">
-          <span className="text-2xl font-bold">{subjectsCount}</span>
-          <span className="text-white/90 text-sm">matières disponibles</span>
-        </div>
-      </div>
-    );
-  }
-
+  // No colors, no images, no gradients — just text on a neutral panel.
+  // User request (2026-10-06): gray/black/white only.
+  const label = cycle === 'college' ? 'Collège' : 'Lycée';
+  const desc =
+    cycle === 'college'
+      ? 'Enseignement de base (7ème → 9ème). Tronc commun pour toutes les matières.'
+      : 'Enseignement secondaire (1ère → 4ème année). Tronc commun + 7 sections du Bac.';
   return (
-    <div className="relative bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 p-6 flex flex-col justify-between overflow-hidden">
-      <div className="absolute top-8 right-6 opacity-20">
-        <GraduationCap className="w-24 h-24 text-white" />
-      </div>
-      <div className="absolute bottom-12 left-4 opacity-15">
-        <BookOpen className="w-20 h-20 text-white" />
-      </div>
-      <div className="relative z-10">
-        <div className="text-sm uppercase tracking-widest text-white/90 font-bold mb-1.5">
+    <div className="bg-slate-50 border-r border-slate-200 p-6 flex flex-col justify-between min-h-full">
+      <div>
+        <div className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-2">
           Cycle
         </div>
-        <h2 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
-          Lycée
+        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+          {label}
         </h2>
-        <p className="text-white/95 text-base mt-3 max-w-[260px] leading-relaxed">
-          Enseignement secondaire (1ère → 4ème année). Tronc commun + 7 sections du Bac.
+        <p className="text-slate-700 text-sm mt-3 leading-relaxed">
+          {desc}
         </p>
       </div>
-      <div className="relative z-10 mt-4 flex items-center gap-2 text-white">
-        <span className="text-2xl font-bold">{subjectsCount}</span>
-        <span className="text-white/90 text-sm">matières disponibles</span>
+      <div className="mt-6 flex items-baseline gap-2 text-slate-900">
+        <span className="text-3xl font-extrabold">{subjectsCount}</span>
+        <span className="text-slate-500 text-sm">matières disponibles</span>
       </div>
     </div>
   );
@@ -407,19 +381,20 @@ function SubjectColumn({
   const labels = isAr ? LINK_LABELS.ar : LINK_LABELS.fr;
   const displayNameFr = getDisplayNameForCycle(subject, cycle);
   const short = getShortLabel(subject.slug, isAr ? 'ar' : 'fr', isAr ? subject.nameAr || displayNameFr : displayNameFr);
-  // AR side = bigger text (titles base, links sm); FR side = same compact
+  // No colors — gray text on hover only.
+  // Make links BIG: large text + generous padding + full-width block.
   const titleCls = isAr
-    ? 'font-bold text-slate-900 group-hover:text-primary-600 transition mb-1.5 text-base'
-    : 'font-bold text-slate-900 group-hover:text-primary-600 transition mb-1 text-sm';
+    ? 'font-bold text-slate-900 hover:text-black transition mb-1 text-base leading-snug'
+    : 'font-bold text-slate-900 hover:text-black transition mb-1 text-base leading-snug';
   const linkCls = isAr
-    ? 'block text-slate-500 hover:text-slate-900 transition text-sm leading-snug py-1'
-    : 'block text-slate-500 hover:text-slate-900 transition text-xs leading-tight py-0.5';
+    ? 'block text-slate-700 hover:text-black hover:underline transition text-sm leading-snug py-1.5 px-1 -mx-1 rounded'
+    : 'block text-slate-700 hover:text-black hover:underline transition text-sm leading-snug py-1.5 px-1 -mx-1 rounded';
   // Display name: AR = nameAr ; FR = cycle-specific (Technologie industrielle for lycée)
   const displayName = isAr && subject.nameAr ? subject.nameAr : displayNameFr;
   // Cycle param so the target page filters by cycle's classes
   const cycleQs = `?cycle=${cycle}`;
   return (
-    <div className="mb-1.5">
+    <div className="mb-2">
       <Link
         href={`/matieres/${subject.slug}`}
         onClick={onClose}
@@ -539,31 +514,31 @@ function LangHalf({
   lang,
   subjects,
   onClose,
+  cycle,
 }: {
   lang: 'fr' | 'ar';
   subjects: SubjectItem[];
   onClose: () => void;
+  cycle: CycleKey;
 }) {
   const isRtl = lang === 'ar';
-  const accent =
-    lang === 'fr'
-      ? 'border-blue-200 bg-blue-50/40'
-      : 'border-emerald-200 bg-emerald-50/40';
+  // No colors — just gray borders.
+  const border = 'border-slate-200';
   // AR side gets wider 2-col grid (since the parent gave it 2/3 width)
   // + FR side stays 1-col (parent gave it 1/3 width)
   const gridCols = isRtl ? 'grid-cols-2' : 'grid-cols-1';
   return (
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
-      className={`rounded-xl border ${accent} p-4`}
+      className={`border ${border} p-3`}
     >
-      <div className={`grid gap-x-4 gap-y-3 ${gridCols}`}>
+      <div className={`grid gap-x-3 gap-y-2 ${gridCols}`}>
         {subjects.map((s) => (
           <SubjectColumn
             key={s.slug}
             subject={s}
             onClose={onClose}
-            cycle="college"
+            cycle={cycle}
             lang={lang}
           />
         ))}
