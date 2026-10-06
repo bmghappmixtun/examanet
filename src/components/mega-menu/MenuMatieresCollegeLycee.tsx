@@ -323,6 +323,44 @@ function CycleHero({
 
 /* ====================== SUBJECT COLUMN ====================== */
 
+// Short labels for each subject (so links stay compact: "Devoirs Math" not
+// "Devoirs Mathématiques"). Falls back to full nameFr if no short label.
+const SHORT_LABELS: Record<string, string> = {
+  mathematiques: 'Math',
+  physique: 'Physique',
+  svt: 'SVT',
+  francais: 'Français',
+  anglais: 'Anglais',
+  arabe: 'Arabe',
+  histoire: 'Histoire',
+  geographie: 'Géographie',
+  histoire_geographie: 'Histoire-Géo',
+  'histoire-geographie': 'Histoire-Géo',
+  philosophie: 'Philo',
+  economie: 'Économie',
+  gestion: 'Gestion',
+  informatique: 'Info',
+  technologie: 'Techno',
+  'algo-prog': 'Algo',
+  'bases-donnees': 'BD',
+  tic: 'TIC',
+  'systeme-exploitation-reseaux': 'SE',
+  '3eme-langue-allemand': 'Allemand',
+  '3eme-langue-italien': 'Italien',
+  '3eme-langue-espagnol': 'Espagnol',
+  'education-islamique': 'Islamique',
+  'pensee-islamique': 'Pensée Isl.',
+  'education-civique': 'Civique',
+  'education-artistique': 'Artistique',
+  musique: 'Musique',
+  theatre: 'Théâtre',
+  'genie-electrique': 'Génie Élec.',
+};
+
+function getShortLabel(slug: string, fullName: string): string {
+  return SHORT_LABELS[slug] || fullName;
+}
+
 function SubjectColumn({
   subject,
   onClose,
@@ -332,8 +370,10 @@ function SubjectColumn({
   onClose: () => void;
   cycle: CycleKey;
 }) {
+  const short = getShortLabel(subject.slug, subject.nameFr);
+  const linkBase = 'block text-slate-500 hover:text-slate-900 transition text-xs leading-tight py-0.5';
   return (
-    <div>
+    <div className="mb-1">
       <Link
         href={`/matieres/${subject.slug}`}
         onClick={onClose}
@@ -343,30 +383,30 @@ function SubjectColumn({
           {subject.nameFr}
         </div>
       </Link>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0 2rem' }} className="text-sm">
+      <div className="flex flex-col text-sm">
         <Link
           href={`/preview-devoirs2/${subject.slug}`}
           onClick={onClose}
-          className="text-blue-700 hover:text-blue-900 transition font-semibold"
+          className={linkBase}
           title={`Devoirs ${subject.nameFr}`}
         >
-          Devoirs
-        </Link>
-        <Link
-          href={`/preview-cours2/${subject.slug}`}
-          onClick={onClose}
-          className="text-amber-700 hover:text-amber-900 transition font-semibold"
-          title={`Cours ${subject.nameFr}`}
-        >
-          Cours
+          Devoirs {short}
         </Link>
         <Link
           href={`/preview-series2/${subject.slug}`}
           onClick={onClose}
-          className="text-emerald-700 hover:text-emerald-900 transition font-semibold"
+          className={linkBase}
           title={`Séries ${subject.nameFr}`}
         >
-          Séries
+          Séries {short}
+        </Link>
+        <Link
+          href={`/preview-cours2/${subject.slug}`}
+          onClick={onClose}
+          className={linkBase}
+          title={`Cours ${subject.nameFr}`}
+        >
+          Cours {short}
         </Link>
       </div>
     </div>
