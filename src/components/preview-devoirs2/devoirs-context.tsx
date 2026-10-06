@@ -8,6 +8,7 @@ interface FilterState {
   subtype: string | null;
   number: string | null;
   sortMode: string;
+  cycle: string | null;
 }
 
 interface FilterContext extends FilterState {
@@ -15,6 +16,7 @@ interface FilterContext extends FilterState {
   setTrimestre: (tri: string | null) => void;
   setType: (subtype: string | null, number: string | null) => void;
   setSort: (s: string) => void;
+  setCycle: (c: string | null) => void;
   clearAll: () => void;
 }
 
@@ -22,7 +24,7 @@ const Ctx = createContext<FilterContext | null>(null);
 
 function getFromUrl(): FilterState {
   if (typeof window === 'undefined') {
-    return { classSlug: null, trimestre: null, subtype: null, number: null, sortMode: 'recent' };
+    return { classSlug: null, trimestre: null, subtype: null, number: null, sortMode: 'recent', cycle: null };
   }
   const sp = new URLSearchParams(window.location.search);
   return {
@@ -31,6 +33,7 @@ function getFromUrl(): FilterState {
     subtype: sp.get('subtype'),
     number: sp.get('number'),
     sortMode: sp.get('sort') || 'recent',
+    cycle: sp.get('cycle'),
   };
 }
 
@@ -38,7 +41,7 @@ function writeToUrl(state: FilterState) {
   if (typeof window === 'undefined') return;
   const url = new URL(window.location.href);
   // Clear known params first
-  for (const k of ['classSlug', 'class', 'trimestre', 'subtype', 'number', 'sort']) {
+  for (const k of ['classSlug', 'class', 'trimestre', 'subtype', 'number', 'sort', 'cycle']) {
     url.searchParams.delete(k);
   }
   if (state.classSlug) url.searchParams.set('classSlug', state.classSlug);
@@ -46,6 +49,7 @@ function writeToUrl(state: FilterState) {
   if (state.subtype) url.searchParams.set('subtype', state.subtype);
   if (state.number) url.searchParams.set('number', state.number);
   if (state.sortMode && state.sortMode !== 'recent') url.searchParams.set('sort', state.sortMode);
+  if (state.cycle) url.searchParams.set('cycle', state.cycle);
   window.history.replaceState(null, '', url.toString());
 }
 
@@ -55,18 +59,25 @@ const DEFAULT_STATE: FilterState = {
   subtype: null,
   number: null,
   sortMode: 'recent',
+  cycle: null,
 };
 
-export function DevoirsFilterProvider({ children }: { children: ReactNode }) {
+export function DevoirsFilterProvider({ children, initialCycle }: { children: ReactNode; initialCycle?: string | null }) {
   // IMPORTANT: Initialize with DEFAULT on both server AND client to avoid
   // hydration mismatch. The URL has classSlug=7eme? Server renders no pill,
   // client would render "7ème année de base" → React #425 crash.
   // Sync from URL AFTER mount in useEffect.
-  const [state, setState] = useState<FilterState>(DEFAULT_STATE);
+  // initialCycle (from server-rendered searchParams) takes precedence on
+  // first paint to align server/client output and avoid hydration mismatches.
+  const [state, setState] = useState<FilterState>({
+    ...DEFAULT_STATE,
+    cycle: initialCycle || null,
+  });
 
-  // On mount: read URL once
+  // On mount: read URL once (URL takes precedence over initialCycle)
   useEffect(() => {
-    setState(getFromUrl());
+    const fromUrl = getFromUrl();
+    setState(fromUrl);
   }, []);
 
   const update = useCallback((patch: Partial<FilterState>) => {
@@ -90,6 +101,7 @@ export function DevoirsFilterProvider({ children }: { children: ReactNode }) {
     setTrimestre: (tri) => update({ trimestre: tri, subtype: null, number: null }),
     setType: (subtype, number) => update({ subtype, number }),
     setSort: (s) => update({ sortMode: s }),
+    setCycle: (c) => update({ cycle: c, classSlug: null, trimestre: null, subtype: null, number: null }),
     clearAll: () => update({ trimestre: null, subtype: null, number: null }),
   };
 

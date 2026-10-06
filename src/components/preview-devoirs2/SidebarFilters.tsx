@@ -37,9 +37,18 @@ const TYPE_ORDER = ['CONTROLE', 'SYNTHESE', 'MAISON', 'REVISION'];
 export default function SidebarFilters({ facets, classes, resultCount, visible, onToggleVisible }: SidebarFiltersProps) {
   const ctx = useDevoirsContext();
   const {
-    classSlug, trimestre: activeTrimestre, subtype: activeSubtype, number: activeNumber,
-    setClass, setTrimestre, setType, clearAll,
+    classSlug, trimestre: activeTrimestre, subtype: activeSubtype, number: activeNumber, cycle: activeCycle,
+    setClass, setTrimestre, setType, clearAll, setCycle,
   } = ctx;
+
+  // Filter classes shown in the Classe list based on the active cycle
+  const visibleClasses = activeCycle
+    ? classes.filter((c) =>
+        activeCycle === 'college'
+          ? ['7eme', '8eme', '9eme'].includes(c.slug)
+          : ['1ere-secondaire', '2eme-secondaire', '3eme-secondaire', '4eme-secondaire'].includes(c.slug),
+      )
+    : classes;
 
   // Each top section + each subtype is its own collapsible
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
@@ -143,6 +152,29 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
         </div>
       </div>
 
+      {/* CYCLE section */}
+      <section className={styles.sidebarSection}>
+        <div className={styles.sidebarSectionHead} style={{ cursor: 'default' }}>
+          <span>Cycle</span>
+        </div>
+        <div className={styles.sidebarSectionBody} style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => setCycle(activeCycle === 'college' ? null : 'college')}
+            className={`${styles.sidebarCycleBtn} ${activeCycle === 'college' ? styles.sidebarCycleBtnActive : ''}`}
+          >
+            🏫 Collège
+          </button>
+          <button
+            type="button"
+            onClick={() => setCycle(activeCycle === 'lycee' ? null : 'lycee')}
+            className={`${styles.sidebarCycleBtn} ${activeCycle === 'lycee' ? styles.sidebarCycleBtnActive : ''}`}
+          >
+            🎓 Lycée
+          </button>
+        </div>
+      </section>
+
       {/* CLASSE section */}
       <section className={styles.sidebarSection}>
         <button className={styles.sidebarSectionHead} onClick={() => toggle('classe')}>
@@ -151,7 +183,7 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
         </button>
         {expanded.classe && (
           <div className={styles.sidebarSectionBody}>
-            {classes.map((c) => {
+            {visibleClasses.map((c) => {
               const checked = classSlug === c.slug;
               return (
                 <label key={c.slug} className={styles.sidebarCheckbox}>
@@ -168,6 +200,11 @@ export default function SidebarFilters({ facets, classes, resultCount, visible, 
                 </label>
               );
             })}
+            {activeCycle && visibleClasses.length === 0 && (
+              <div style={{ fontSize: '12px', color: '#94a3b8', padding: '4px 0' }}>
+                Aucune classe disponible.
+              </div>
+            )}
           </div>
         )}
       </section>

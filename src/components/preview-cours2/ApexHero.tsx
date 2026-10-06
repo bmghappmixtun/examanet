@@ -12,6 +12,7 @@ interface HeroProps {
   trimesterCount: number;
   classes: { slug: string; labelFr: string }[];
   activeClass: string | null;
+  activeCycle?: string | null;
 }
 
 export default function ApexHero({
@@ -21,8 +22,11 @@ export default function ApexHero({
   trimesterCount,
   classes,
   activeClass,
+  activeCycle,
 }: HeroProps) {
   const ctx = useCoursContext();
+  const cycle = ctx.cycle ?? activeCycle ?? null;
+  const cycleLabel = cycle === 'college' ? 'Collège (7-9ème)' : cycle === 'lycee' ? 'Lycée (1-4AS)' : null;
 
   return (
     <section className={styles.hero}>
@@ -33,22 +37,28 @@ export default function ApexHero({
         <div className={styles.heroBadge}>
           <Sparkles size={12} />
           Mis à jour quotidiennement · {totalCount.toLocaleString('fr-FR')} ressources
+          {cycleLabel && (
+            <span style={{ marginLeft: '0.75rem', padding: '0.125rem 0.5rem', background: 'rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '11px' }}>
+              {cycleLabel}
+            </span>
+          )}
         </div>
 
         <h1 className={styles.heroTitle}>
-          <span className={styles.heroTitleAccent}>Cours</span>
+          <span className={styles.heroTitleAccent}>Devoirs</span>
           {subject.nameFr}
         </h1>
 
         <p className={styles.heroSub}>
-          Tous les cours de {subject.nameFr} du programme officiel tunisien — par classe,
-          par trimestre, par type. PDFs gratuits, téléchargeables directement.
+          {cycleLabel
+            ? <>Devoirs de <strong>{subject.nameFr}</strong> au <strong>{cycleLabel}</strong> — conformes au programme officiel tunisien.</>
+            : <>Tous les devoirs de {subject.nameFr} du programme officiel tunisien — par classe, par trimestre, par type. PDFs gratuits, téléchargeables directement.</>}
         </p>
 
         <div className={styles.heroStats}>
           <div className={styles.heroStat}>
             <div className={styles.heroStatValue}>{totalCount.toLocaleString('fr-FR')}</div>
-            <div className={styles.heroStatLabel}>Cours</div>
+            <div className={styles.heroStatLabel}>Devoirs</div>
           </div>
           <div className={styles.heroStat}>
             <div className={styles.heroStatValue}>{classCount}</div>
