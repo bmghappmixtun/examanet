@@ -243,20 +243,24 @@ export default function MenuMatieresCollegeLycee() {
                     Chargement des matières…
                   </div>
                 ) : isCollege && subjectColumns ? (
-                  /* COLLÈGE: 2 moitiés FR (gauche) / AR (droite) — pas de titre */
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* LEFT — Enseignées en français */}
-                    <LangHalf
-                      lang="fr"
-                      subjects={subjectColumns.fr}
-                      onClose={() => setOpen(false)}
-                    />
-                    {/* RIGHT — Enseignées en arabe */}
-                    <LangHalf
-                      lang="ar"
-                      subjects={subjectColumns.ar}
-                      onClose={() => setOpen(false)}
-                    />
+                  /* COLLÈGE: 1/3 FR (gauche) + 2/3 AR (droite) — pas de titre */
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* LEFT (1/3) — Enseignées en français */}
+                    <div className="md:col-span-1">
+                      <LangHalf
+                        lang="fr"
+                        subjects={subjectColumns.fr}
+                        onClose={() => setOpen(false)}
+                      />
+                    </div>
+                    {/* RIGHT (2/3) — Enseignées en arabe (texte agrandi) */}
+                    <div className="md:col-span-2">
+                      <LangHalf
+                        lang="ar"
+                        subjects={subjectColumns.ar}
+                        onClose={() => setOpen(false)}
+                      />
+                    </div>
                   </div>
                 ) : (
                   /* LYCÉE: grille 4 colonnes (modèle actuel) */
@@ -386,29 +390,33 @@ function SubjectColumn({
   const isAr = lang === 'ar';
   const labels = isAr ? LINK_LABELS.ar : LINK_LABELS.fr;
   const short = getShortLabel(subject.slug, isAr ? 'ar' : 'fr', isAr ? subject.nameAr || subject.nameFr : subject.nameFr);
-  const linkBase = 'block text-slate-500 hover:text-slate-900 transition text-xs leading-tight py-0.5';
+  // AR side = bigger text (titles base, links sm); FR side = same compact
+  const titleCls = isAr
+    ? 'font-bold text-slate-900 group-hover:text-primary-600 transition mb-1.5 text-base'
+    : 'font-bold text-slate-900 group-hover:text-primary-600 transition mb-1 text-sm';
+  const linkCls = isAr
+    ? 'block text-slate-500 hover:text-slate-900 transition text-sm leading-snug py-1'
+    : 'block text-slate-500 hover:text-slate-900 transition text-xs leading-tight py-0.5';
   const displayName = isAr && subject.nameAr ? subject.nameAr : subject.nameFr;
   return (
-    <div className="mb-1">
+    <div className="mb-1.5">
       <Link
         href={`/matieres/${subject.slug}`}
         onClick={onClose}
         className="block group"
       >
         <div
-          className={`font-bold text-slate-900 group-hover:text-primary-600 transition mb-1 text-sm ${
-            isAr ? 'text-right' : ''
-          }`}
+          className={`${titleCls} ${isAr ? 'text-right' : ''}`}
           dir={isAr ? 'rtl' : 'ltr'}
         >
           {displayName}
         </div>
       </Link>
-      <div className="flex flex-col text-sm" dir={isAr ? 'rtl' : 'ltr'}>
+      <div className="flex flex-col" dir={isAr ? 'rtl' : 'ltr'}>
         <Link
           href={`/preview-devoirs2/${subject.slug}`}
           onClick={onClose}
-          className={linkBase}
+          className={linkCls}
           title={`${labels.devoirs} ${displayName}`}
         >
           {labels.devoirs} {short}
@@ -416,7 +424,7 @@ function SubjectColumn({
         <Link
           href={`/preview-series2/${subject.slug}`}
           onClick={onClose}
-          className={linkBase}
+          className={linkCls}
           title={`${labels.series} ${displayName}`}
         >
           {labels.series} {short}
@@ -424,7 +432,7 @@ function SubjectColumn({
         <Link
           href={`/preview-cours2/${subject.slug}`}
           onClick={onClose}
-          className={linkBase}
+          className={linkCls}
           title={`${labels.cours} ${displayName}`}
         >
           {labels.cours} {short}
@@ -438,12 +446,12 @@ function SubjectColumn({
 
 // French and Arabic vocab for the 3 link types.
 // Arabic side uses Tunisian school terminology:
-//   واجبات (wajibat) = devoirs/assignments
+//   فروض (furuḍ)     = devoirs/épreuves (user override 2026-10-06)
 //   تمارين (tamārīn) = exercices/séries
 //   دروس (durūs)     = cours/leçons
 const LINK_LABELS: Record<'fr' | 'ar', { devoirs: string; series: string; cours: string }> = {
   fr: { devoirs: 'Devoirs', series: 'Séries', cours: 'Cours' },
-  ar: { devoirs: 'واجبات', series: 'تمارين', cours: 'دروس' },
+  ar: { devoirs: 'فروض', series: 'تمارين', cours: 'دروس' },
 };
 
 // Short labels per subject AND per language side (so 'Math' on FR side,
@@ -521,12 +529,15 @@ function LangHalf({
     lang === 'fr'
       ? 'border-blue-200 bg-blue-50/40'
       : 'border-emerald-200 bg-emerald-50/40';
+  // AR side gets wider 2-col grid (since the parent gave it 2/3 width)
+  // + FR side stays 1-col (parent gave it 1/3 width)
+  const gridCols = isRtl ? 'grid-cols-2' : 'grid-cols-1';
   return (
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
-      className={`rounded-xl border ${accent} p-3`}
+      className={`rounded-xl border ${accent} p-4`}
     >
-      <div className={`grid gap-x-3 gap-y-2 ${subjects.length > 4 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+      <div className={`grid gap-x-4 gap-y-3 ${gridCols}`}>
         {subjects.map((s) => (
           <SubjectColumn
             key={s.slug}
