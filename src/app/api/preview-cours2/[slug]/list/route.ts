@@ -2,6 +2,8 @@
 /**
  * GET /api/preview-cours2/[slug]/list
  * Returns COURSE resources (type='COURSE') for the v2 apex design page.
+ *
+ * Supports `cycle=college|lycee` filter (2026-10-06).
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
@@ -17,6 +19,11 @@ const SORT_QUERIES: Record<string, string> = {
   downloads: 'r.downloadsCount DESC',
 };
 
+const CYCLE_CLASS_SLUGS: Record<string, string[]> = {
+  college: ['7eme', '8eme', '9eme'],
+  lycee: ['1ere-secondaire', '2eme-secondaire', '3eme-secondaire', '4eme-secondaire'],
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
@@ -25,6 +32,7 @@ export async function GET(
     const { slug: subjectSlug } = await params;
     const sp = request.nextUrl.searchParams;
     const classSlug = sp.get('class');
+    const cycleParam = sp.get('cycle');
     const trimestreParam = sp.get('trimestre');
     const sortParam = sp.get('sort') || 'recent';
     const cursor = Math.max(0, parseInt(sp.get('cursor') || '0', 10));
@@ -43,11 +51,29 @@ export async function GET(
     const conditions = ["r.status = 'PUBLISHED'", "r.type = 'COURSE'", 'r.subjectId = ?'];
     const params_arr: any[] = [subject.id];
 
+    let cycleClassIds: number[] | null = null;
+    if (cycleParam && CYCLE_CLASS_SLUGS[cycleParam]) {
+      const slugs = CYCLE_CLASS_SLUGS[cycleParam];
+      const placeholders = slugs.map(() => '?').join(',');
+      const idsRes = await db
+        .prepare(`SELECT id FROM "Class" WHERE slug IN (${placeholders})`)
+        .bind(...slugs)
+        .all();
+      cycleClassIds = (idsRes.results || []).map((r: any) => r.id);
+      if (cycleClassIds.length === 0) {
+        return NextResponse.json({ items: [], total: 0, nextCursor: null });
+      }
+    }
+
     if (classSlug) {
       const classRow = await db.prepare('SELECT id FROM "Class" WHERE slug = ?').bind(classSlug).first();
       if (!classRow) return NextResponse.json({ error: 'Class not found' }, { status: 404 });
       conditions.push('r.classId = ?');
       params_arr.push(classRow.id);
+    } else if (cycleClassIds) {
+      const placeholders = cycleClassIds.map(() => '?').join(',');
+      conditions.push(`r.classId IN (${placeholders})`);
+      params_arr.push(...cycleClassIds);
     }
 
     if (trimestreParam && ['1', '2', '3'].includes(trimestreParam)) {

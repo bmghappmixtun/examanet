@@ -369,11 +369,27 @@ function CycleHero({
 
 /* ====================== SUBJECT COLUMN ====================== */
 
+// Cycle-specific display name overrides (2026-10-06).
+// User: 'au lycée la technologie ne s'appelle pas technologie, autre chose'.
+// At lycée (3AS/4AS Bac Technique) the subject is officially
+// "Technologie industrielle" (Génie mécanique + Génie électrique).
+const SUBJECT_CYCLE_DISPLAY_NAME: Record<string, { college?: string; lycee?: string }> = {
+  technologie: {
+    college: 'Technologie',
+    lycee: 'Technologie industrielle',
+  },
+};
+
 function getShortLabel(slug: string, lang: 'fr' | 'ar', fallback: string): string {
   if (lang === 'ar') {
     return SHORT_LABELS_AR[slug] || fallback;
   }
   return SHORT_LABELS_FR[slug] || fallback;
+}
+
+function getDisplayNameForCycle(subject: SubjectItem, cycle: CycleKey): string {
+  const override = SUBJECT_CYCLE_DISPLAY_NAME[subject.slug]?.[cycle];
+  return override ?? subject.nameFr;
 }
 
 function SubjectColumn({
@@ -389,7 +405,8 @@ function SubjectColumn({
 }) {
   const isAr = lang === 'ar';
   const labels = isAr ? LINK_LABELS.ar : LINK_LABELS.fr;
-  const short = getShortLabel(subject.slug, isAr ? 'ar' : 'fr', isAr ? subject.nameAr || subject.nameFr : subject.nameFr);
+  const displayNameFr = getDisplayNameForCycle(subject, cycle);
+  const short = getShortLabel(subject.slug, isAr ? 'ar' : 'fr', isAr ? subject.nameAr || displayNameFr : displayNameFr);
   // AR side = bigger text (titles base, links sm); FR side = same compact
   const titleCls = isAr
     ? 'font-bold text-slate-900 group-hover:text-primary-600 transition mb-1.5 text-base'
@@ -397,7 +414,10 @@ function SubjectColumn({
   const linkCls = isAr
     ? 'block text-slate-500 hover:text-slate-900 transition text-sm leading-snug py-1'
     : 'block text-slate-500 hover:text-slate-900 transition text-xs leading-tight py-0.5';
-  const displayName = isAr && subject.nameAr ? subject.nameAr : subject.nameFr;
+  // Display name: AR = nameAr ; FR = cycle-specific (Technologie industrielle for lycée)
+  const displayName = isAr && subject.nameAr ? subject.nameAr : displayNameFr;
+  // Cycle param so the target page filters by cycle's classes
+  const cycleQs = `?cycle=${cycle}`;
   return (
     <div className="mb-1.5">
       <Link
@@ -414,7 +434,7 @@ function SubjectColumn({
       </Link>
       <div className="flex flex-col" dir={isAr ? 'rtl' : 'ltr'}>
         <Link
-          href={`/preview-devoirs2/${subject.slug}`}
+          href={`/preview-devoirs2/${subject.slug}${cycleQs}`}
           onClick={onClose}
           className={linkCls}
           title={`${labels.devoirs} ${displayName}`}
@@ -422,7 +442,7 @@ function SubjectColumn({
           {labels.devoirs} {short}
         </Link>
         <Link
-          href={`/preview-series2/${subject.slug}`}
+          href={`/preview-series2/${subject.slug}${cycleQs}`}
           onClick={onClose}
           className={linkCls}
           title={`${labels.series} ${displayName}`}
@@ -430,7 +450,7 @@ function SubjectColumn({
           {labels.series} {short}
         </Link>
         <Link
-          href={`/preview-cours2/${subject.slug}`}
+          href={`/preview-cours2/${subject.slug}${cycleQs}`}
           onClick={onClose}
           className={linkCls}
           title={`${labels.cours} ${displayName}`}

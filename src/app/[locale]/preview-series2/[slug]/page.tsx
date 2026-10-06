@@ -9,12 +9,13 @@ import ApexHero from '@/components/preview-series2/ApexHero';
 import ApexListing from '@/components/preview-series2/ApexListing';
 import { SeriesFilterProvider } from '@/components/preview-series2/series-context';
 import styles from '@/components/preview-series2/apex-series.module.css';
+import { getSubjectDisplayName } from '@/lib/subject-cycle-name';
 
 export const revalidate = 300;
 
 interface Props {
   params: Promise<{ slug: string; locale: string }>;
-  searchParams: Promise<{ class?: string; trimestre?: string }>;
+  searchParams: Promise<{ class?: string; cycle?: string; trimestre?: string }>;
 }
 
 const FAQ_ITEMS = [
@@ -37,6 +38,7 @@ export default async function ApexSeriesPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const sp = await searchParams;
   const classSlug = sp?.class || null;
+  const cycleParam = sp?.cycle || null;
 
   const ctx = await getCloudflareContext({ async: true });
   const db = (ctx as any).env?.DB;
@@ -48,15 +50,28 @@ export default async function ApexSeriesPage({ params, searchParams }: Props) {
     .first();
   if (!subject) notFound();
 
+  // Cycle-specific display name override (e.g. Technologie → Technologie industrielle at lycée)
+  subject.nameFr = getSubjectDisplayName(subject.slug, subject.nameFr, cycleParam);
+
   const allClassesRes = await db
     .prepare('SELECT slug, nameFr FROM "Class" ORDER BY numericId ASC')
     .all();
   const allClasses = (allClassesRes.results || []).map((c: any) => ({ slug: c.slug, labelFr: c.nameFr }));
 
-  const totalRes = await db
-    .prepare("SELECT COUNT(*) as c FROM Resource WHERE status='PUBLISHED' AND type='EXERCISE' AND subjectId = ?")
-    .bind(subject.id)
-    .first();
+  // Cycle-filtered total count (2026-10-06)
+  const CYCLE_CLASS_SLUGS: Record<string, string[]> = {
+    college: ['7eme', '8eme', '9eme'],
+    lycee: ['1ere-secondaire', '2eme-secondaire', '3eme-secondaire', '4eme-secondaire'],
+  };
+  let totalCountQuery = "SELECT COUNT(*) as c FROM Resource WHERE status='PUBLISHED' AND type='EXERCISE' AND subjectId = ?";
+  const totalCountBindings: any[] = [subject.id];
+  if (cycleParam && CYCLE_CLASS_SLUGS[cycleParam]) {
+    const slugs = CYCLE_CLASS_SLUGS[cycleParam];
+    const placeholders = slugs.map(() => '?').join(',');
+    totalCountQuery += ` AND classId IN (SELECT id FROM "Class" WHERE slug IN (${placeholders}))`;
+    totalCountBindings.push(...slugs);
+  }
+  const totalRes = await db.prepare(totalCountQuery).bind(...totalCountBindings).first();
   const totalCount = Number(totalRes?.c || 0);
 
   const trimCountRes = await db
@@ -91,7 +106,7 @@ export default async function ApexSeriesPage({ params, searchParams }: Props) {
         <script key={idx} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       ))}
 
-      <SeriesFilterProvider>
+      <SeriesFilterProvider initialCycle={cycleParam}>
         <ApexHero
           subject={subject}
           totalCount={totalCount}
@@ -99,9 +114,10 @@ export default async function ApexSeriesPage({ params, searchParams }: Props) {
           trimesterCount={trimesterCount}
           classes={allClasses}
           activeClass={classSlug}
+          activeCycle={cycleParam}
         />
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 0 4rem' }}>
-          <ApexListing subject={subject} classes={allClasses} />
+          <ApexListing subject={subject} classes={allClasses} activeCycle={cycleParam} />
         </div>
       </SeriesFilterProvider>
 

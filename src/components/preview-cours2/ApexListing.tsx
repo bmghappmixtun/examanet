@@ -10,6 +10,7 @@ import SidebarFilters from './SidebarFilters';
 interface ListingProps {
   subject: { slug: string; nameFr: string };
   classes: { slug: string; labelFr: string }[];
+  activeCycle?: string | null;
 }
 
 type Density = 'comfortable' | 'compact' | 'wide';
@@ -20,12 +21,14 @@ const SORT_LABELS: Record<string, string> = {
   downloads: 'Plus téléchargés',
 };
 
-export default function ApexListing({ subject, classes }: ListingProps) {
+export default function ApexListing({ subject, classes, activeCycle }: ListingProps) {
   const ctx = useCoursContext();
   const {
-    classSlug, trimestre: activeTrimestre, subtype: activeSubtype, number: activeNumber, sortMode,
+    classSlug, trimestre: activeTrimestre, subtype: activeSubtype, number: activeNumber, sortMode, cycle: ctxCycle,
     setTrimestre, setType, setSort, setClass,
   } = ctx;
+  // Use prop on SSR for initial fetch, then ctx (which mirrors URL) for client refetches.
+  const effectiveCycle = ctxCycle ?? activeCycle ?? null;
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const progressCircleRef = useRef<SVGCircleElement | null>(null);
@@ -53,16 +56,18 @@ export default function ApexListing({ subject, classes }: ListingProps) {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const listUrl = new URL(`/api/preview-cours2/${subject.slug}/list`, window.location.origin);
+        const listUrl = new URL(`/api/proview-cours2/${subject.slug}/list`, window.location.origin);
         if (classSlug) listUrl.searchParams.set('class', classSlug);
+        if (effectiveCycle) listUrl.searchParams.set('cycle', effectiveCycle);
         if (activeTrimestre) listUrl.searchParams.set('trimestre', activeTrimestre);
         if (activeSubtype) listUrl.searchParams.set('subtype', activeSubtype);
         if (activeNumber) listUrl.searchParams.set('number', activeNumber);
         listUrl.searchParams.set('sort', sortMode);
         listUrl.searchParams.set('limit', '24');
 
-        const facetUrl = new URL(`/api/preview-cours2/${subject.slug}/facets`, window.location.origin);
+        const facetUrl = new URL(`/api/proview-cours2/${subject.slug}/facets`, window.location.origin);
         if (classSlug) facetUrl.searchParams.set('class', classSlug);
+        if (effectiveCycle) facetUrl.searchParams.set('cycle', effectiveCycle);
 
         const [listRes, facetRes] = await Promise.all([fetch(listUrl.toString()), fetch(facetUrl.toString())]);
         if (cancelled) return;
@@ -82,15 +87,16 @@ export default function ApexListing({ subject, classes }: ListingProps) {
     };
     fetchAll();
     return () => { cancelled = true; };
-  }, [subject.slug, classSlug, activeTrimestre, activeSubtype, activeNumber, sortMode]);
+  }, [subject.slug, classSlug, effectiveCycle, activeTrimestre, activeSubtype, activeNumber, sortMode]);
 
   // Infinite scroll
   const fetchNext = async () => {
     if (loading || nextCursor === null) return;
     setLoading(true);
     try {
-      const url = new URL(`/api/preview-cours2/${subject.slug}/list`, window.location.origin);
+      const url = new URL(`/api/proview-cours2/${subject.slug}/list`, window.location.origin);
       if (classSlug) url.searchParams.set('class', classSlug);
+      if (effectiveCycle) url.searchParams.set('cycle', effectiveCycle);
       if (activeTrimestre) url.searchParams.set('trimestre', activeTrimestre);
       if (activeSubtype) url.searchParams.set('subtype', activeSubtype);
       if (activeNumber) url.searchParams.set('number', activeNumber);

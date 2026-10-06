@@ -4,6 +4,11 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export const dynamic = 'force-dynamic';
 
+const CYCLE_CLASS_SLUGS: Record<string, string[]> = {
+  college: ['7eme', '8eme', '9eme'],
+  lycee: ['1ere-secondaire', '2eme-secondaire', '3eme-secondaire', '4eme-secondaire'],
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> },
@@ -12,6 +17,7 @@ export async function GET(
     const { slug: subjectSlug } = await params;
     const sp = request.nextUrl.searchParams;
     const classSlug = sp.get('class');
+    const cycleParam = sp.get('cycle');
 
     const ctx = await getCloudflareContext({ async: true });
     const db = (ctx as any).env?.DB;
@@ -23,11 +29,29 @@ export async function GET(
     const conditions = ["r.status = 'PUBLISHED'", "r.type = 'COURSE'", 'r.subjectId = ?'];
     const params_arr: any[] = [subject.id];
 
+    let cycleClassIds: number[] | null = null;
+    if (cycleParam && CYCLE_CLASS_SLUGS[cycleParam]) {
+      const slugs = CYCLE_CLASS_SLUGS[cycleParam];
+      const placeholders = slugs.map(() => '?').join(',');
+      const idsRes = await db
+        .prepare(`SELECT id FROM "Class" WHERE slug IN (${placeholders})`)
+        .bind(...slugs)
+        .all();
+      cycleClassIds = (idsRes.results || []).map((r: any) => r.id);
+      if (cycleClassIds.length === 0) {
+        return NextResponse.json({ total: 0, trimestres: {} });
+      }
+    }
+
     if (classSlug) {
       const c = await db.prepare('SELECT id FROM "Class" WHERE slug = ?').bind(classSlug).first();
       if (!c) return NextResponse.json({ error: 'Class not found' }, { status: 404 });
       conditions.push('r.classId = ?');
       params_arr.push(c.id);
+    } else if (cycleClassIds) {
+      const placeholders = cycleClassIds.map(() => '?').join(',');
+      conditions.push(`r.classId IN (${placeholders})`);
+      params_arr.push(...cycleClassIds);
     }
 
     const whereClause = conditions.join(' AND ');
