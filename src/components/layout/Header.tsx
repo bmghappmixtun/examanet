@@ -11,6 +11,8 @@ import MobileMenu from './MobileMenu';
 import SearchModalTrigger from '@/components/search/SearchModalTrigger';
 import { ConnexionV2, InscriptionV2 } from './buttons/ButtonV2Aurora';
 import { getTranslations } from 'next-intl/server';
+import MenuMatieresCollegeLycee from '@/components/mega-menu/MenuMatieresCollegeLycee';
+import CatalogueModalBridge from '@/components/mega-menu/CatalogueModalBridge';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,6 +84,13 @@ export default async function Header() {
 
           {/* CENTER: Main nav (centered between logo and search) */}
           <nav className="hidden lg:flex items-center gap-7 shrink-0">
+            {/* 2026-10-07: "Catalogue" mega menu (Collège/Lycée cycle tabs) — first position */}
+            <MenuMatieresCollegeLycee
+              triggerLabel={t('nav.catalogue')}
+              triggerIcon="hamburger"
+              triggerIconColor="text-slate-500"
+              triggerClassName="group relative flex items-center gap-2 text-base font-semibold text-slate-700 hover:text-primary-600 transition-colors"
+            />
             <Link
               href="/ressources"
               className="group relative text-base font-semibold text-slate-700 hover:text-primary-600 transition-colors"
@@ -123,6 +132,10 @@ export default async function Header() {
               />
             </Link>
           </nav>
+
+          {/* 2026-10-07: Hidden Catalogue modal bridge — listens for
+              'examanet:catalogue-open' CustomEvent from Mobile menu. */}
+          <CatalogueModalBridge />
 
           {/* RIGHT: Search + actions */}
           <div className="flex-1 flex items-center justify-end gap-2 min-w-0">

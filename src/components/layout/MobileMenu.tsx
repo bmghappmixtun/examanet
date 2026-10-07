@@ -89,6 +89,18 @@ export default function MobileMenu({ user }: { user: any }) {
         )}
 
         <nav className="p-2 flex-1">
+          {/* 2026-10-07: "Catalogue" mega menu entry — first position */}
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              // Open the desktop catalogue modal via custom event (Lesson #94)
+              window.dispatchEvent(new CustomEvent('examanet:catalogue-open'));
+            }}
+            className="w-full text-left block px-4 py-3 hover:bg-slate-50 rounded-lg font-medium"
+          >
+            {`☰ ${t('nav.catalogue')}`}
+          </button>
           <Link
             href="/ressources"
             onClick={() => setOpen(false)}
