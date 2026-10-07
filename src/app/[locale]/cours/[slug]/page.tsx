@@ -118,7 +118,7 @@ export default async function ApexCoursPage({ params, searchParams }: Props) {
           activeCycle={cycleParam}
         />
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 0 4rem' }}>
-          <ApexListing subject={subject} classes={allClasses} activeCycle={cycleParam} />
+          <ApexListing type="Cours" subject={subject} classes={allClasses} activeCycle={cycleParam} />
         </div>
       </CoursFilterProvider>
 

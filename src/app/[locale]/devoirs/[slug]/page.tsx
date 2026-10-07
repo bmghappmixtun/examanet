@@ -118,7 +118,7 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
           activeCycle={cycleParam}
         />
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 0 4rem' }}>
-          <ApexListing subject={subject} classes={allClasses} activeCycle={cycleParam} />
+          <ApexListing type="Devoirs" subject={subject} classes={allClasses} activeCycle={cycleParam} />
         </div>
       </DevoirsFilterProvider>
 
