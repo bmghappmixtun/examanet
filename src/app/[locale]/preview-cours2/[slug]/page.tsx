@@ -50,7 +50,7 @@ export default async function ApexCoursPage({ params, searchParams }: Props) {
     .first();
   if (!subject) notFound();
 
-  // Cycle-specific display name override (e.g. Technologie → Technologie industrielle at lycée)
+  // Cycle-specific display name override (e.g. Technologie → Sciences Techniques at lycée)
   subject.nameFr = getSubjectDisplayName(subject.slug, subject.nameFr, cycleParam);
 
   const allClassesRes = await db
