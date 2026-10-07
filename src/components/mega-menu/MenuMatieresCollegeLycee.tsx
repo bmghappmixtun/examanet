@@ -191,7 +191,7 @@ export default function MenuMatieresCollegeLycee() {
               <X className="w-5 h-5 text-slate-700" />
             </button>
 
-            {/* CYCLE TABS — gray/black/white only */}
+            {/* CYCLE TABS — opaque orange (Collège) / opaque blue (Lycée) */}
             <div className="sticky top-0 z-[5] bg-white/95 backdrop-blur border-b border-slate-200 px-4 md:px-6 py-3">
               <div className="text-xs uppercase tracking-widest font-bold text-slate-500 mb-2">
                 Quel cycle ?
@@ -202,7 +202,7 @@ export default function MenuMatieresCollegeLycee() {
                   onClick={() => setActiveCycle('college')}
                   className={`flex items-center gap-3 px-5 py-3 rounded-xl font-bold transition ${
                     isCollege
-                      ? 'bg-slate-900 text-white shadow-md border-2 border-slate-900'
+                      ? 'bg-orange-500 text-white shadow-md border-2 border-orange-500 hover:bg-orange-600'
                       : 'bg-slate-100 text-slate-700 border-2 border-transparent hover:bg-slate-200'
                   }`}
                 >
@@ -217,7 +217,7 @@ export default function MenuMatieresCollegeLycee() {
                   onClick={() => setActiveCycle('lycee')}
                   className={`flex items-center gap-3 px-5 py-3 rounded-xl font-bold transition ${
                     !isCollege
-                      ? 'bg-slate-900 text-white shadow-md border-2 border-slate-900'
+                      ? 'bg-blue-600 text-white shadow-md border-2 border-blue-600 hover:bg-blue-700'
                       : 'bg-slate-100 text-slate-700 border-2 border-transparent hover:bg-slate-200'
                   }`}
                 >
@@ -230,70 +230,64 @@ export default function MenuMatieresCollegeLycee() {
               </div>
             </div>
 
-            {/* CONTENT GRID + HERO */}
-            <div className="grid grid-cols-1 md:grid-cols-[280px_1fr]">
-              {/* LEFT: Hero card */}
-              <CycleHero cycle={activeCycle} subjectsCount={visibleSubjects.length} onClose={() => setOpen(false)} />
-
-              {/* RIGHT: Content grid */}
-              <div className="p-3 md:p-4">
-                {subjects.length === 0 ? (
-                  <div className="text-center py-12 text-slate-500">
-                    Chargement des matières…
+            {/* CONTENT — full width (hero removed 2026-10-07) */}
+            <div className="p-3 md:p-4">
+              {subjects.length === 0 ? (
+                <div className="text-center py-12 text-slate-500">
+                  Chargement des matières…
+                </div>
+              ) : isCollege && subjectColumns ? (
+                /* COLLÈGE: 1/3 FR (gauche) + 2/3 AR (droite) — pas de titre */
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* LEFT (1/3) — Enseignées en français */}
+                  <div className="md:col-span-1">
+                    <LangHalf
+                      lang="fr"
+                      subjects={subjectColumns.fr}
+                      onClose={() => setOpen(false)}
+                      cycle={activeCycle}
+                    />
                   </div>
-                ) : isCollege && subjectColumns ? (
-                  /* COLLÈGE: 1/3 FR (gauche) + 2/3 AR (droite) — pas de titre */
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* LEFT (1/3) — Enseignées en français */}
-                    <div className="md:col-span-1">
-                      <LangHalf
-                        lang="fr"
-                        subjects={subjectColumns.fr}
-                        onClose={() => setOpen(false)}
-                        cycle={activeCycle}
-                      />
+                  {/* RIGHT (2/3) — Enseignées en arabe */}
+                  <div className="md:col-span-2">
+                    <LangHalf
+                      lang="ar"
+                      subjects={subjectColumns.ar}
+                      onClose={() => setOpen(false)}
+                      cycle={activeCycle}
+                    />
+                  </div>
+                </div>
+              ) : (
+                /* LYCÉE: grille 4 colonnes (modèle actuel) */
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
+                  {lyceeColumns.map((col, i) => (
+                    <div key={i} className="space-y-2.5">
+                      {col.map((s) => (
+                        <SubjectColumn
+                          key={s.slug}
+                          subject={s}
+                          onClose={() => setOpen(false)}
+                          cycle={activeCycle}
+                        />
+                      ))}
+                      {i === 3 && activeCycle === 'lycee' && (
+                        <div className="pt-1">
+                          <Link
+                            href="/bac/archives"
+                            onClick={() => setOpen(false)}
+                            className="block group"
+                          >
+                            <div className="font-bold text-slate-900 group-hover:text-primary-600 transition mb-1 text-sm">
+                              Examens Bac Tunisie
+                            </div>
+                          </Link>
+                        </div>
+                      )}
                     </div>
-                    {/* RIGHT (2/3) — Enseignées en arabe */}
-                    <div className="md:col-span-2">
-                      <LangHalf
-                        lang="ar"
-                        subjects={subjectColumns.ar}
-                        onClose={() => setOpen(false)}
-                        cycle={activeCycle}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  /* LYCÉE: grille 4 colonnes (modèle actuel) */
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
-                    {lyceeColumns.map((col, i) => (
-                      <div key={i} className="space-y-2.5">
-                        {col.map((s) => (
-                          <SubjectColumn
-                            key={s.slug}
-                            subject={s}
-                            onClose={() => setOpen(false)}
-                            cycle={activeCycle}
-                          />
-                        ))}
-                        {i === 3 && activeCycle === 'lycee' && (
-                          <div className="pt-1">
-                            <Link
-                              href="/bac/archives"
-                              onClick={() => setOpen(false)}
-                              className="block group"
-                            >
-                              <div className="font-bold text-slate-900 group-hover:text-primary-600 transition mb-1 text-sm">
-                                Examens Bac Tunisie
-                              </div>
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -302,55 +296,19 @@ export default function MenuMatieresCollegeLycee() {
   );
 }
 
-/* ====================== HERO CARD ====================== */
-
-function CycleHero({
-  cycle,
-  subjectsCount,
-  onClose,
-}: {
-  cycle: CycleKey;
-  subjectsCount: number;
-  onClose: () => void;
-}) {
-  // No colors, no images, no gradients — just text on a neutral panel.
-  // User request (2026-10-06): gray/black/white only.
-  const label = cycle === 'college' ? 'Collège' : 'Lycée';
-  const desc =
-    cycle === 'college'
-      ? 'Enseignement de base (7ème → 9ème). Tronc commun pour toutes les matières.'
-      : 'Enseignement secondaire (1ère → 4ème année). Tronc commun + 7 sections du Bac.';
-  return (
-    <div className="bg-slate-50 border-r border-slate-200 p-6 flex flex-col justify-between min-h-full">
-      <div>
-        <div className="text-xs uppercase tracking-widest text-slate-500 font-bold mb-2">
-          Cycle
-        </div>
-        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
-          {label}
-        </h2>
-        <p className="text-slate-700 text-sm mt-3 leading-relaxed">
-          {desc}
-        </p>
-      </div>
-      <div className="mt-6 flex items-baseline gap-2 text-slate-900">
-        <span className="text-3xl font-extrabold">{subjectsCount}</span>
-        <span className="text-slate-500 text-sm">matières disponibles</span>
-      </div>
-    </div>
-  );
-}
-
 /* ====================== SUBJECT COLUMN ====================== */
 
-// Cycle-specific display name overrides (2026-10-06).
-// User: 'au lycée la technologie ne s'appelle pas technologie, autre chose'.
-// At lycée (3AS/4AS Bac Technique) the subject is officially
-// "Technologie industrielle" (Génie mécanique + Génie électrique).
+// Cycle-specific display name overrides (2026-10-07).
+// User: 'la matière technologie s'appelle Sciences Techniques au lycée en Tunisie'.
+// NOTE: per programme officiel tunisien, the matière is titled
+// « Technologie » in the official documents (programme 3AS/4AS sciences
+// techniques — Mécanique 4h + Électricité 4h). We display "Sciences
+// Techniques" at lycée per user preference (common Tunisian usage +
+// matches the SECTION name).
 const SUBJECT_CYCLE_DISPLAY_NAME: Record<string, { college?: string; lycee?: string }> = {
   technologie: {
     college: 'Technologie',
-    lycee: 'Technologie industrielle',
+    lycee: 'Sciences Techniques',
   },
 };
 
@@ -389,7 +347,7 @@ function SubjectColumn({
   const linkCls = isAr
     ? 'block text-slate-700 hover:text-black hover:underline transition text-sm leading-snug py-1.5 px-1 -mx-1 rounded'
     : 'block text-slate-700 hover:text-black hover:underline transition text-sm leading-snug py-1.5 px-1 -mx-1 rounded';
-  // Display name: AR = nameAr ; FR = cycle-specific (Technologie industrielle for lycée)
+  // Display name: AR = nameAr ; FR = cycle-specific (Sciences Techniques for lycée)
   const displayName = isAr && subject.nameAr ? subject.nameAr : displayNameFr;
   // Cycle param so the target page filters by cycle's classes
   const cycleQs = `?cycle=${cycle}`;
