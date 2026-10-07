@@ -26,6 +26,7 @@ import {
   Key,
   AlertTriangle,
   Mail,
+  Rocket,
 } from 'lucide-react';
 
 // Admin pages should never be indexed
@@ -162,6 +163,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { group: 'Configuration' },
     { href: '/admin/parametres', icon: Settings, label: 'Paramètres' },
     { href: '/admin/fournisseurs', icon: Key, label: 'Fournisseurs & API' },
+
+    { group: 'Dev' },
+    { href: '/admin/features', icon: Rocket, label: 'Features log' },
   ];
 
   return (
