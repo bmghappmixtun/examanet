@@ -2,7 +2,7 @@
 
 import { Sparkles } from 'lucide-react';
 import styles from './apex-cours.module.css';
-import SubjectIcons from './SubjectIcons';
+import SubjectIcons from '@/components/shared/SubjectIcons';
 import { useCoursContext } from './cours-context';
 
 interface HeroProps {
@@ -32,7 +32,7 @@ export default function ApexHero({
 
   return (
     <section className={styles.hero}>
-      <SubjectIcons />
+      <SubjectIcons slug={subject.slug} />
       <div className={styles.aurora} aria-hidden="true" />
 
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
