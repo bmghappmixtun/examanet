@@ -26,6 +26,8 @@ import {
   X,
   GraduationCap,
   School,
+  Menu as Hamburger,
+  BookOpen,
   ArrowRight,
 } from 'lucide-react';
 
@@ -97,10 +99,58 @@ function classifyLangCollege(slug: string): 'fr' | 'ar' {
   return SUBJECT_LANG_COLLEGE[slug] || 'ar';
 }
 
-export default function MenuMatieresCollegeLycee() {
-  const [open, setOpen] = useState(false);
+export interface MenuMatieresCollegeLyceeProps {
+  /** Label of the trigger button. Defaults to "Matières". */
+  triggerLabel?: string;
+  /**
+   * Which icon to use inside the trigger button. Defaults to `school`.
+   * - `school`    → School (lucide)
+   * - `hamburger` → Menu (lucide, 3 horizontal bars) — gray "Catalogue" style
+   * - `book`      → BookOpen (lucide)
+   */
+  triggerIcon?: 'school' | 'hamburger' | 'book';
+  /**
+   * Color of the icon. Tailwind class. Defaults to `text-slate-500`.
+   * (Lesson #96: hardcoded colors instead of CSS vars that don't cross scopes.)
+   */
+  triggerIconColor?: string;
+  /**
+   * Class for the trigger wrapper. Pass to integrate into a specific nav style
+   * (e.g. centered group underline like other Header links).
+   */
+  triggerClassName?: string;
+  /**
+   * Controlled mode — when `true`, no visible trigger button is rendered,
+   * and `open` + `onOpenChange` are required (state is owned by the caller).
+   * Use this when you want to open the modal from elsewhere (e.g. a mobile
+   * menu dispatching a CustomEvent → CatalogueModalBridge).
+   *
+   * NOTE (Lesson #94): if you pass these from a Server Component, the SSR
+   * will crash. Always wrap with a Client Component (e.g. the bridge).
+   */
+  headless?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export default function MenuMatieresCollegeLycee({
+  triggerLabel = 'Matières',
+  triggerIcon = 'school',
+  triggerIconColor = 'text-slate-500',
+  triggerClassName = '',
+  headless = false,
+  open: openProp,
+  onOpenChange,
+}: MenuMatieresCollegeLyceeProps = {}) {
+  const [openInternal, setOpenInternal] = useState(false);
   const [activeCycle, setActiveCycle] = useState<CycleKey>('college');
   const [subjects, setSubjects] = useState<SubjectItem[]>([]);
+
+  const isControlled = headless;
+  const open = isControlled ? (openProp ?? false) : openInternal;
+  const setOpen = isControlled
+    ? onOpenChange ?? (() => {})
+    : setOpenInternal;
 
   useEffect(() => {
     if (!open || subjects.length > 0) return;
@@ -160,15 +210,28 @@ export default function MenuMatieresCollegeLycee() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-1 px-4 py-2 rounded-lg font-semibold text-base text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition"
-      >
-        <School className="w-4 h-4" />
-        Matières
-        <ChevronDown className="w-4 h-4" />
-      </button>
+      {!headless && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-expanded={open}
+          aria-haspopup="dialog"
+          className={
+            triggerClassName ||
+            'flex items-center gap-1 px-4 py-2 rounded-lg font-semibold text-base text-slate-700 hover:text-primary-600 hover:bg-slate-50 transition'
+          }
+        >
+          {triggerIcon === 'hamburger' ? (
+            <Hamburger className={`w-4 h-4 ${triggerIconColor}`} />
+          ) : triggerIcon === 'book' ? (
+            <BookOpen className={`w-4 h-4 ${triggerIconColor}`} />
+          ) : (
+            <School className={`w-4 h-4 ${triggerIconColor}`} />
+          )}
+          {triggerLabel}
+          <ChevronDown className="w-4 h-4" />
+        </button>
+      )}
 
       {open && (
         <div
