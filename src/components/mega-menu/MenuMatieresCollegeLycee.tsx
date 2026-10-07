@@ -144,14 +144,15 @@ export default function MenuMatieresCollegeLycee() {
     return null;
   }, [visibleSubjects, activeCycle]);
 
-  // Lycée split into 4 columns
+  // Lycée split into 5 columns (user request 2026-10-07)
   const lyceeColumns = useMemo(() => {
-    const perCol = Math.ceil(visibleSubjects.length / 4);
+    const perCol = Math.ceil(visibleSubjects.length / 5);
     return [
       visibleSubjects.slice(0, perCol),
       visibleSubjects.slice(perCol, perCol * 2),
       visibleSubjects.slice(perCol * 2, perCol * 3),
-      visibleSubjects.slice(perCol * 3),
+      visibleSubjects.slice(perCol * 3, perCol * 4),
+      visibleSubjects.slice(perCol * 4),
     ];
   }, [visibleSubjects]);
 
@@ -202,7 +203,7 @@ export default function MenuMatieresCollegeLycee() {
                   onClick={() => setActiveCycle('college')}
                   className={`flex items-center gap-3 px-5 py-3 rounded-xl font-bold transition ${
                     isCollege
-                      ? 'bg-orange-500 text-white shadow-md border-2 border-orange-500 hover:bg-orange-600'
+                      ? 'bg-[#f29046] text-white shadow-md border-2 border-[#f29046] hover:bg-[#d97a30]'
                       : 'bg-slate-100 text-slate-700 border-2 border-transparent hover:bg-slate-200'
                   }`}
                 >
@@ -217,7 +218,7 @@ export default function MenuMatieresCollegeLycee() {
                   onClick={() => setActiveCycle('lycee')}
                   className={`flex items-center gap-3 px-5 py-3 rounded-xl font-bold transition ${
                     !isCollege
-                      ? 'bg-blue-600 text-white shadow-md border-2 border-blue-600 hover:bg-blue-700'
+                      ? 'bg-[#428396] text-white shadow-md border-2 border-[#428396] hover:bg-[#356a7c]'
                       : 'bg-slate-100 text-slate-700 border-2 border-transparent hover:bg-slate-200'
                   }`}
                 >
@@ -260,7 +261,7 @@ export default function MenuMatieresCollegeLycee() {
                 </div>
               ) : (
                 /* LYCÉE: grille 4 colonnes (modèle actuel) */
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-x-4 gap-y-3">
                   {lyceeColumns.map((col, i) => (
                     <div key={i} className="space-y-2.5">
                       {col.map((s) => (
@@ -271,7 +272,7 @@ export default function MenuMatieresCollegeLycee() {
                           cycle={activeCycle}
                         />
                       ))}
-                      {i === 3 && activeCycle === 'lycee' && (
+                      {i === 4 && activeCycle === 'lycee' && (
                         <div className="pt-1">
                           <Link
                             href="/bac/archives"
@@ -305,10 +306,17 @@ export default function MenuMatieresCollegeLycee() {
 // techniques — Mécanique 4h + Électricité 4h). We display "Sciences
 // Techniques" at lycée per user preference (common Tunisian usage +
 // matches the SECTION name).
+// User (2026-10-07): shorter labels at lycée for SVT and STI.
 const SUBJECT_CYCLE_DISPLAY_NAME: Record<string, { college?: string; lycee?: string }> = {
   technologie: {
     college: 'Technologie',
     lycee: 'Sciences Techniques',
+  },
+  svt: {
+    lycee: 'SVT',
+  },
+  'systeme-exploitation-reseaux': {
+    lycee: 'STI',
   },
 };
 
@@ -484,7 +492,7 @@ function LangHalf({
   const border = 'border-slate-200';
   // AR side gets wider 2-col grid (since the parent gave it 2/3 width)
   // + FR side stays 1-col (parent gave it 1/3 width)
-  const gridCols = isRtl ? 'grid-cols-2' : 'grid-cols-1';
+  const gridCols = isRtl ? 'grid-cols-3' : 'grid-cols-1';
   return (
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
