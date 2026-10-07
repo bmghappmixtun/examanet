@@ -20,6 +20,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from '@/i18n/navigation';
 import {
   ChevronDown,
@@ -145,6 +146,13 @@ export default function MenuMatieresCollegeLycee({
   const [openInternal, setOpenInternal] = useState(false);
   const [activeCycle, setActiveCycle] = useState<CycleKey>('college');
   const [subjects, setSubjects] = useState<SubjectItem[]>([]);
+  // Guard for SSR — only enable createPortal after the component mounts
+  // on the client (document.body is undefined on the server).
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isControlled = headless;
   const open = isControlled ? (openProp ?? false) : openInternal;
@@ -233,9 +241,9 @@ export default function MenuMatieresCollegeLycee({
         </button>
       )}
 
-      {open && (
+      {open && mounted && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"
           onClick={() => setOpen(false)}
         >
           <div
@@ -354,7 +362,8 @@ export default function MenuMatieresCollegeLycee({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
