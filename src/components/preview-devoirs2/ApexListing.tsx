@@ -56,7 +56,7 @@ export default function ApexListing({ subject, classes, activeCycle }: ListingPr
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const listUrl = new URL(`/api/preview-devoirs2/${subject.slug}/list`, window.location.origin);
+        const listUrl = new URL(`/api/devoirs/${subject.slug}/list`, window.location.origin);
         if (classSlug) listUrl.searchParams.set('class', classSlug);
         if (effectiveCycle) listUrl.searchParams.set('cycle', effectiveCycle);
         if (activeTrimestre) listUrl.searchParams.set('trimestre', activeTrimestre);
@@ -65,7 +65,7 @@ export default function ApexListing({ subject, classes, activeCycle }: ListingPr
         listUrl.searchParams.set('sort', sortMode);
         listUrl.searchParams.set('limit', '24');
 
-        const facetUrl = new URL(`/api/preview-devoirs2/${subject.slug}/facets`, window.location.origin);
+        const facetUrl = new URL(`/api/devoirs/${subject.slug}/facets`, window.location.origin);
         if (classSlug) facetUrl.searchParams.set('class', classSlug);
         if (effectiveCycle) facetUrl.searchParams.set('cycle', effectiveCycle);
 
@@ -94,7 +94,7 @@ export default function ApexListing({ subject, classes, activeCycle }: ListingPr
     if (loading || nextCursor === null) return;
     setLoading(true);
     try {
-      const url = new URL(`/api/preview-devoirs2/${subject.slug}/list`, window.location.origin);
+      const url = new URL(`/api/devoirs/${subject.slug}/list`, window.location.origin);
       if (classSlug) url.searchParams.set('class', classSlug);
       if (effectiveCycle) url.searchParams.set('cycle', effectiveCycle);
       if (activeTrimestre) url.searchParams.set('trimestre', activeTrimestre);

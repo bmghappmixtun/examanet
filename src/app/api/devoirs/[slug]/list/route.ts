@@ -1,9 +1,11 @@
 // @ts-nocheck
 /**
- * GET /api/preview-cours2/[slug]/list
- * Returns COURSE resources (type='COURSE') for the v2 apex design page.
+ * GET /api/devoirs/[slug]/list
+ * Same as /api/devoirs/[slug] but for the v2 apex design page.
  *
- * Supports `cycle=college|lycee` filter (2026-10-06).
+ * Supports `cycle=college|lycee` filter (2026-10-06):
+ *   - college → restricts to 7eme, 8eme, 9eme
+ *   - lycee   → restricts to 1ere-secondaire, 2eme/3eme/4eme-secondaire
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
@@ -19,6 +21,7 @@ const SORT_QUERIES: Record<string, string> = {
   downloads: 'r.downloadsCount DESC',
 };
 
+// Map cycle to allowed class slugs (used when `cycle` query param is set).
 const CYCLE_CLASS_SLUGS: Record<string, string[]> = {
   college: ['7eme', '8eme', '9eme'],
   lycee: ['1ere-secondaire', '2eme-secondaire', '3eme-secondaire', '4eme-secondaire'],
@@ -32,8 +35,10 @@ export async function GET(
     const { slug: subjectSlug } = await params;
     const sp = request.nextUrl.searchParams;
     const classSlug = sp.get('class');
-    const cycleParam = sp.get('cycle');
+    const cycleParam = sp.get('cycle'); // 'college' | 'lycee' | null
     const trimestreParam = sp.get('trimestre');
+    const subtypeParam = sp.get('subtype');
+    const numberParam = sp.get('number');
     const sortParam = sp.get('sort') || 'recent';
     const cursor = Math.max(0, parseInt(sp.get('cursor') || '0', 10));
     const limit = Math.min(MAX_LIMIT, Math.max(1, parseInt(sp.get('limit') || String(DEFAULT_LIMIT), 10)));
@@ -48,9 +53,11 @@ export async function GET(
       .first();
     if (!subject) return NextResponse.json({ error: 'Subject not found', items: [], total: 0 }, { status: 404 });
 
-    const conditions = ["r.status = 'PUBLISHED'", "r.type = 'COURSE'", 'r.subjectId = ?'];
+    const conditions = ["r.status = 'PUBLISHED'", "r.type = 'DEVOIR'", 'r.subjectId = ?'];
     const params_arr: any[] = [subject.id];
 
+    // Cycle filter (mutually exclusive with explicit `class` param when cycle is set,
+    // but class takes precedence if both are provided — backward compatible).
     let cycleClassIds: number[] | null = null;
     if (cycleParam && CYCLE_CLASS_SLUGS[cycleParam]) {
       const slugs = CYCLE_CLASS_SLUGS[cycleParam];
@@ -61,6 +68,7 @@ export async function GET(
         .all();
       cycleClassIds = (idsRes.results || []).map((r: any) => r.id);
       if (cycleClassIds.length === 0) {
+        // Cycle has no records for this subject — return empty result
         return NextResponse.json({ items: [], total: 0, nextCursor: null });
       }
     }
@@ -81,6 +89,26 @@ export async function GET(
       params_arr.push(trimestreParam);
     }
 
+    if (subtypeParam) {
+      const variants = getSubtypeVariants(subtypeParam);
+      if (variants.length > 0) {
+        const placeholders = variants.map(() => '?').join(',');
+        conditions.push(`r.homeworkSubtype IN (${placeholders})`);
+        params_arr.push(...variants);
+      }
+    }
+
+    if (numberParam) {
+      const num = parseInt(numberParam, 10);
+      if (!isNaN(num) && num > 0) {
+        conditions.push('r.homeworkNumber = ?');
+        params_arr.push(num);
+      }
+    }
+
+    // Global sanity: homeworkNumber must be 1-20 (teacher typos filtered out)
+    conditions.push('(r.homeworkNumber IS NULL OR (r.homeworkNumber BETWEEN 1 AND 20))');
+    
     const whereClause = conditions.join(' AND ');
 
     const totalRes = await db
@@ -98,7 +126,7 @@ export async function GET(
           'r.viewsCount, r.downloadsCount, r.avgRating, r.ratingsCount,',
           'r.hasCorrection, r.year, r.thumbnailUrl, r.thumbnailKey,',
           'r.pageCount, r.fileSize, r.language, r.publishedAt,',
-          'r.`trimester`,',
+          'r.`trimester`, r.homeworkSubtype, r.homeworkNumber,',
           's.slug as s_slug, s.nameFr as s_nameFr, s.color as s_color,',
           'c.slug as c_slug, c.nameFr as c_nameFr,',
           't.firstName as t_firstName, t.lastName as t_lastName',
@@ -134,8 +162,8 @@ export async function GET(
       language: r.language,
       publishedAt: r.publishedAt,
       trimester: r.trimester,
-      homeworkSubtype: null,
-      homeworkNumber: null,
+      homeworkSubtype: r.homeworkSubtype,
+      homeworkNumber: r.homeworkNumber,
       commentsCount: 0,
       favoritesCount: 0,
       isFavorited: false,
@@ -151,7 +179,17 @@ export async function GET(
       { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=60' } },
     );
   } catch (e: any) {
-    console.error('[api/preview-cours2/list] error:', e);
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error('[api/devoirs/list] error:', e);
+    return NextResponse.json({ error: e.message, items: [], total: 0 }, { status: 500 });
   }
+}
+
+function getSubtypeVariants(normalized: string): string[] {
+  const map: Record<string, string[]> = {
+    CONTROLE: ['CONTROLE', 'CONTROL'],
+    SYNTHESE: ['SYNTHESE', 'SYNTHESIS'],
+    MAISON: ['MAISON'],
+    REVISION: ['REVISION'],
+  };
+  return map[normalized] || [normalized];
 }

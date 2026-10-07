@@ -26,7 +26,7 @@ export async function GET(
     const subject = await db.prepare('SELECT id FROM "Subject" WHERE slug = ?').bind(subjectSlug).first();
     if (!subject) return NextResponse.json({ error: 'Subject not found' }, { status: 404 });
 
-    const conditions = ["r.status = 'PUBLISHED'", "r.type = 'EXERCISE'", 'r.subjectId = ?'];
+    const conditions = ["r.status = 'PUBLISHED'", "r.type = 'COURSE'", 'r.subjectId = ?'];
     const params_arr: any[] = [subject.id];
 
     let cycleClassIds: number[] | null = null;
@@ -75,8 +75,27 @@ export async function GET(
       trimestres[key] = Number(r.cnt);
     }
 
-    // No subtypes aggregation for series
-    const filters: any[] = [];
+    // Trimestre distribution (same format as devoirs preview, kept simple)
+    const filtersRes = await db
+      .prepare(
+        `SELECT
+           \`trimester\`,
+           COUNT(*) as cnt
+         FROM Resource r
+         WHERE ${whereClause} AND \`trimester\` IS NOT NULL
+         GROUP BY \`trimester\`
+         ORDER BY \`trimester\``,
+      )
+      .bind(...params_arr)
+      .all();
+    const filters = (filtersRes.results || []).map((r: any) => ({
+      trimestre: Number(r.trimester),
+      subtype: 'COURSE',
+      number: 0,
+      count: Number(r.cnt),
+    }));
+
+    // No subtypes aggregation for courses — return empty array (sidebar will show nothing in this section)
     const subtypes: any[] = [];
 
     return NextResponse.json(
@@ -84,7 +103,7 @@ export async function GET(
       { headers: { 'Cache-Control': 'public, max-age=120, s-maxage=120' } },
     );
   } catch (e: any) {
-    console.error('[api/preview-series2/facets] error:', e);
+    console.error('[api/cours/facets] error:', e);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

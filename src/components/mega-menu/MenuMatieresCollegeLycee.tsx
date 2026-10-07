@@ -447,7 +447,7 @@ function SubjectColumn({
       </Link>
       <div className="flex flex-col" dir={isAr ? 'rtl' : 'ltr'}>
         <Link
-          href={`/preview-devoirs2/${subject.slug}${cycleQs}`}
+          href={`/devoirs/${subject.slug}${cycleQs}`}
           onClick={onClose}
           className={linkCls}
           title={`${labels.devoirs} ${displayName}`}
@@ -455,7 +455,7 @@ function SubjectColumn({
           {labels.devoirs} {short}
         </Link>
         <Link
-          href={`/preview-series2/${subject.slug}${cycleQs}`}
+          href={`/series/${subject.slug}${cycleQs}`}
           onClick={onClose}
           className={linkCls}
           title={`${labels.series} ${displayName}`}
@@ -463,7 +463,7 @@ function SubjectColumn({
           {labels.series} {short}
         </Link>
         <Link
-          href={`/preview-cours2/${subject.slug}${cycleQs}`}
+          href={`/cours/${subject.slug}${cycleQs}`}
           onClick={onClose}
           className={linkCls}
           title={`${labels.cours} ${displayName}`}

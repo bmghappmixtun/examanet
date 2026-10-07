@@ -386,7 +386,7 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
       </Link>
       <div className="flex flex-col text-sm">
         <Link
-          href={`/preview-devoirs2/${subject.slug}`}
+          href={`/devoirs/${subject.slug}`}
           onClick={onClose}
           className={linkCls}
           title={`Devoirs ${displayName}`}
@@ -394,7 +394,7 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
           Devoirs {short}
         </Link>
         <Link
-          href={`/preview-series2/${subject.slug}`}
+          href={`/series/${subject.slug}`}
           onClick={onClose}
           className={linkCls}
           title={`Séries ${displayName}`}
@@ -402,7 +402,7 @@ function SubjectColumn({ subject, onClose }: { subject: SubjectItem; onClose: ()
           Séries {short}
         </Link>
         <Link
-          href={`/preview-cours2/${subject.slug}`}
+          href={`/cours/${subject.slug}`}
           onClick={onClose}
           className={linkCls}
           title={`Cours ${displayName}`}

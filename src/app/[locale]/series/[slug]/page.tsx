@@ -1,39 +1,40 @@
 // @ts-nocheck
 /**
- * /[locale]/preview-devoirs2/[slug] — APEX DESIGN v2 (preview only, doesn't touch existing /devoirs/[slug])
+ * /[locale]/series/[slug] — APEX DESIGN for SÉRIES D'EXERCICES.
+ * Filtered by cycle (Collège / Lycée) via ?cycle=college|lycee.
  */
 import { notFound } from 'next/navigation';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import ApexHero from '@/components/preview-devoirs2/ApexHero';
-import ApexListing from '@/components/preview-devoirs2/ApexListing';
-import { DevoirsFilterProvider } from '@/components/preview-devoirs2/devoirs-context';
-import styles from '@/components/preview-devoirs2/apex-devoirs.module.css';
+import ApexHero from '@/components/preview-series2/ApexHero';
+import ApexListing from '@/components/preview-series2/ApexListing';
+import { SeriesFilterProvider } from '@/components/preview-series2/series-context';
+import styles from '@/components/preview-series2/apex-series.module.css';
 import { getSubjectDisplayName } from '@/lib/subject-cycle-name';
 
 export const revalidate = 300;
 
 interface Props {
   params: Promise<{ slug: string; locale: string }>;
-  searchParams: Promise<{ class?: string; cycle?: string; trimestre?: string; subtype?: string; number?: string }>;
+  searchParams: Promise<{ class?: string; cycle?: string; trimestre?: string }>;
 }
 
 const FAQ_ITEMS = [
-  { q: `Qu'est-ce qu'un devoir de contrôle en {SUBJECT} ?`, a: 'Un devoir de contrôle est une évaluation ponctuelle...' },
-  { q: `Quelle est la différence entre devoir de contrôle et devoir de synthèse ?`, a: 'Le contrôle porte sur une séquence limitée...' },
-  { q: `Comment bien préparer un devoir de {SUBJECT} ?`, a: 'Révisez le cours, faites les exercices...' },
-  { q: `Les devoirs sont-ils gratuits ?`, a: 'Oui, 100% gratuits sur Examanet.' },
+  { q: `Qu'est-ce qu'une série d'exercices en {SUBJECT} ?`, a: "Une série regroupe plusieurs exercices pour s'entraîner sur une notion ou un chapitre." },
+  { q: `Comment choisir une série d'exercices ?`, a: 'Filtrez par classe et par trimestre pour cibler le bon niveau.' },
+  { q: `Les séries sont-elles gratuites ?`, a: 'Oui, 100% gratuites sur Examanet.' },
+  { q: `Y a-t-il des corrigés ?`, a: 'Oui, certains documents sont accompagnés de corrigés.' },
 ];
 
 export async function generateMetadata({ params }: Props) {
   const { slug, locale } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   return {
-    title: `Devoirs ${slug} | Examanet`,
-    alternates: { canonical: `${baseUrl}/${locale}/preview-devoirs2/${slug}` },
+    title: `Séries ${slug} | Examanet`,
+    alternates: { canonical: `${baseUrl}/${locale}/series/${slug}` },
   };
 }
 
-export default async function ApexDevoirsPage({ params, searchParams }: Props) {
+export default async function ApexSeriesPage({ params, searchParams }: Props) {
   const { slug } = await params;
   const sp = await searchParams;
   const classSlug = sp?.class || null;
@@ -62,7 +63,7 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
     college: ['7eme', '8eme', '9eme'],
     lycee: ['1ere-secondaire', '2eme-secondaire', '3eme-secondaire', '4eme-secondaire'],
   };
-  let totalCountQuery = "SELECT COUNT(*) as c FROM Resource WHERE status='PUBLISHED' AND type='DEVOIR' AND subjectId = ?";
+  let totalCountQuery = "SELECT COUNT(*) as c FROM Resource WHERE status='PUBLISHED' AND type='EXERCISE' AND subjectId = ?";
   const totalCountBindings: any[] = [subject.id];
   if (cycleParam && CYCLE_CLASS_SLUGS[cycleParam]) {
     const slugs = CYCLE_CLASS_SLUGS[cycleParam];
@@ -74,7 +75,7 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
   const totalCount = Number(totalRes?.c || 0);
 
   const trimCountRes = await db
-    .prepare("SELECT COUNT(DISTINCT `trimester`) as c FROM Resource WHERE status='PUBLISHED' AND type='DEVOIR' AND subjectId = ? AND `trimester` IS NOT NULL")
+    .prepare("SELECT COUNT(DISTINCT `trimester`) as c FROM Resource WHERE status='PUBLISHED' AND type='EXERCISE' AND subjectId = ? AND `trimester` IS NOT NULL")
     .bind(subject.id)
     .first();
   const trimesterCount = Number(trimCountRes?.c || 0);
@@ -92,11 +93,11 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
       { '@type': 'ListItem', position: 1, name: 'Accueil', item: `${baseUrl}/fr` },
       { '@type': 'ListItem', position: 2, name: 'Matières', item: `${baseUrl}/fr/matieres` },
       { '@type': 'ListItem', position: 3, name: subjectNameFr, item: `${baseUrl}/fr/matieres/${subject.slug}` },
-      { '@type': 'ListItem', position: 4, name: 'Devoirs', item: `${baseUrl}/fr/preview-devoirs2/${subject.slug}` },
+      { '@type': 'ListItem', position: 4, name: 'Séries', item: `${baseUrl}/fr/series/${subject.slug}` },
     ]},
-    { '@context': 'https://schema.org', '@type': 'Course', name: `Devoirs ${subjectNameFr}`, description: 'Programme tunisien' },
+    { '@context': 'https://schema.org', '@type': 'Course', name: `Séries d'exercices ${subjectNameFr}`, description: 'Programme tunisien' },
     { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqContent },
-    { '@context': 'https://schema.org', '@type': 'WebPage', name: `Devoirs ${subjectNameFr}`, speakable: { '@type': 'SpeakableSpecification', xpath: ['/html/head/title', '/html/body//h1'] } },
+    { '@context': 'https://schema.org', '@type': 'WebPage', name: `Séries ${subjectNameFr}`, speakable: { '@type': 'SpeakableSpecification', xpath: ['/html/head/title', '/html/body//h1'] } },
   ];
 
   return (
@@ -105,8 +106,9 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
         <script key={idx} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       ))}
 
-      <DevoirsFilterProvider initialCycle={cycleParam}>
+      <SeriesFilterProvider initialCycle={cycleParam}>
         <ApexHero
+          type="Séries"
           subject={subject}
           totalCount={totalCount}
           classCount={allClasses.length}
@@ -118,10 +120,10 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
         <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 0 4rem' }}>
           <ApexListing subject={subject} classes={allClasses} activeCycle={cycleParam} />
         </div>
-      </DevoirsFilterProvider>
+      </SeriesFilterProvider>
 
       <section className={styles.faqSection}>
-        <h2>Questions fréquentes sur les devoirs de {subjectNameFr}</h2>
+        <h2>Questions fréquentes sur les séries d'exercices de {subjectNameFr}</h2>
         <div className={styles.faq}>
           {FAQ_ITEMS.map((item, idx) => (
             <details key={idx}>

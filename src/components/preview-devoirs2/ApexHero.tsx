@@ -13,6 +13,7 @@ interface HeroProps {
   classes: { slug: string; labelFr: string }[];
   activeClass: string | null;
   activeCycle?: string | null;
+  type?: 'Devoirs' | 'Cours' | 'Séries';
 }
 
 export default function ApexHero({
@@ -23,6 +24,7 @@ export default function ApexHero({
   classes,
   activeClass,
   activeCycle,
+  type = 'Devoirs',
 }: HeroProps) {
   const ctx = useDevoirsContext();
   const cycle = ctx.cycle ?? activeCycle ?? null;
@@ -45,20 +47,20 @@ export default function ApexHero({
         </div>
 
         <h1 className={styles.heroTitle}>
-          <span className={styles.heroTitleAccent}>Devoirs</span>
+          <span className={styles.heroTitleAccent}>{type}</span>
           {subject.nameFr}
         </h1>
 
         <p className={styles.heroSub}>
           {cycleLabel
-            ? <>Devoirs de <strong>{subject.nameFr}</strong> au <strong>{cycleLabel}</strong> — conformes au programme officiel tunisien.</>
-            : <>Tous les devoirs de {subject.nameFr} du programme officiel tunisien — par classe, par trimestre, par type. PDFs gratuits, téléchargeables directement.</>}
+            ? <>{type} de <strong>{subject.nameFr}</strong> au <strong>{cycleLabel}</strong> — conformes au programme officiel tunisien.</>
+            : <>Tous les {type.toLowerCase()} de {subject.nameFr} du programme officiel tunisien — par classe, par trimestre, par type. PDFs gratuits, téléchargeables directement.</>}
         </p>
 
         <div className={styles.heroStats}>
           <div className={styles.heroStat}>
             <div className={styles.heroStatValue}>{totalCount.toLocaleString('fr-FR')}</div>
-            <div className={styles.heroStatLabel}>Devoirs</div>
+            <div className={styles.heroStatLabel}>{type}</div>
           </div>
           <div className={styles.heroStat}>
             <div className={styles.heroStatValue}>{classCount}</div>

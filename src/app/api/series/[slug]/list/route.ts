@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * GET /api/preview-series2/[slug]/list
+ * GET /api/series/[slug]/list
  * Returns EXERCISE resources (Série d'exercices) for the v2 apex design page.
  *
  * Supports `cycle=college|lycee` filter (2026-10-06).
@@ -151,7 +151,7 @@ export async function GET(
       { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=60' } },
     );
   } catch (e: any) {
-    console.error('[api/preview-series2/list] error:', e);
+    console.error('[api/series/list] error:', e);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

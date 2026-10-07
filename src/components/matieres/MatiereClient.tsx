@@ -232,7 +232,7 @@ function MatiereView({ data, locale, currentSort }: { data: PageData; locale: st
           {/* APEX Preview Links - Devoir / Cours / Série landing pages */}
           <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link
-              href={`/preview-devoirs2/${subject.slug}`}
+              href={`/devoirs/${subject.slug}`}
               className="group relative bg-white border border-slate-200 rounded-2xl p-5 hover:border-blue-400 hover:shadow-md transition-all overflow-hidden"
             >
               <div className="absolute -top-3 -end-3 w-20 h-20 bg-blue-100 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
@@ -251,7 +251,7 @@ function MatiereView({ data, locale, currentSort }: { data: PageData; locale: st
             </Link>
 
             <Link
-              href={`/preview-cours2/${subject.slug}`}
+              href={`/cours/${subject.slug}`}
               className="group relative bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-400 hover:shadow-md transition-all overflow-hidden"
             >
               <div className="absolute -top-3 -end-3 w-20 h-20 bg-amber-100 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
@@ -270,7 +270,7 @@ function MatiereView({ data, locale, currentSort }: { data: PageData; locale: st
             </Link>
 
             <Link
-              href={`/preview-series2/${subject.slug}`}
+              href={`/series/${subject.slug}`}
               className="group relative bg-white border border-slate-200 rounded-2xl p-5 hover:border-green-400 hover:shadow-md transition-all overflow-hidden"
             >
               <div className="absolute -top-3 -end-3 w-20 h-20 bg-green-100 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
