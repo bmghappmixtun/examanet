@@ -40,18 +40,23 @@ const MAX_QUERY_LENGTH = 500;
 const MAX_RESULTS = 8;
 
 interface AiSearchHit {
-  file_id?: string;
-  filename?: string;
-  content?: string;
+  id?: string;
+  type?: string;
   score?: number;
-  metadata?: Record<string, string>;
+  text?: string;
+  item?: {
+    key?: string;        // e.g. "text/cmr93f6sc005or2zipgyeqlbw.txt"
+    metadata?: Record<string, any>;
+  };
+  scoring_details?: { vector_score?: number };
 }
 
 interface AiSearchResponse {
   success: boolean;
   result?: {
-    response?: string;
-    sources?: Array<{ file_id?: string; filename?: string; score?: number }>;
+    query_kind?: string;
+    search_query?: string;
+    chunks?: AiSearchHit[];
   };
   errors?: Array<{ message: string }>;
 }
@@ -79,50 +84,78 @@ async function getD1() {
 }
 
 /**
- * Parse the header of an AI Search hit's text file.
- * Each chunk's filename follows a convention: `text/{id}.txt` where the
- * file content (when present) starts with metadata keys we control.
+ * Extract resource CUID from the AI Search item key.
+ * Pattern: "text/{cuid}.txt" → {cuid}
  */
-function extractResourceIdFromFilename(filename?: string): string | null {
-  if (!filename) return null;
-  // Pattern 1: text/{cuid}.txt
-  const m1 = filename.match(/^text\/([a-z0-9]+)\.txt$/i);
-  if (m1) return m1[1];
-  // Pattern 2: bare cuid.txt
-  const m2 = filename.match(/^([a-z0-9]{20,30})\.txt$/i);
-  if (m2) return m2[1];
+function extractResourceIdFromKey(key?: string): string | null {
+  if (!key) return null;
+  const m = key.match(/^text\/([a-z0-9]+)\.txt$/i);
+  if (m) return m[1];
   return null;
 }
 
 /**
- * Parse metadata header from .txt content (if our ingestion script wrote one).
- * Falls back to empty metadata if header is missing.
+ * Parse the structured header that the ingestion script writes to each .txt
+ * chunk. Real format (confirmed 2026-10-08):
+ *
+ *   # Titre - Matière - Niveau - Section (année) : Topic
+ *
+ *   PDF original: /api/file/teacher-library/{teacherId}/imported/{fileKey}.pdf
+ *   Resource ID: {cuid}
+ *
+ *   Matière: ...
+ *   Niveau: ...
+ *   Prof(s): ...
+ *   Durée estimée: ...
+ *   Topics: ...
+ *   Tags: ...
+ *   Concepts clés: ...
+ *   ...
+ *
+ *   ---
+ *
+ *   {PDF text content}
  */
 function parseContentHeader(content: string): {
+  title: string | null;
   resourceId: string | null;
+  pdfPath: string | null;
   metadata: Record<string, string>;
   body: string;
 } {
   const lines = content.split('\n');
   const metadata: Record<string, string> = {};
   let i = 0;
-  // Optional header block: "key: value\n---\n"
-  if (lines[0]?.match(/^[a-z_]+:\s/i)) {
-    for (; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.trim() === '---' || line.trim() === '') break;
-      const m = line.match(/^([a-z_]+):\s*(.+)$/i);
-      if (m) metadata[m[1]] = m[2].trim();
-    }
-    if (lines[i]?.trim() === '---') i++;
+
+  // Line 0: "# Titre - Matière - Niveau - Section (année) : Topic"
+  let title: string | null = null;
+  if (lines[0]?.startsWith('# ')) {
+    title = lines[0].slice(2).trim();
+    i = 1;
   }
+
+  // Skip blank line between title and PDF original
+  while (i < lines.length && lines[i].trim() === '') i++;
+
+  // Parse "Key: value" lines until we hit "---" or the body
+  for (; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    if (trimmed === '---') {
+      i++;
+      break;
+    }
+    if (trimmed === '') continue;
+    // Match "Key: value" — accept keys with parentheses like "Concepts clés:"
+    const m = line.match(/^([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]*?):\s*(.+)$/);
+    if (m) metadata[m[1].trim()] = m[2].trim();
+    else break; // non-key-value line = body starts here
+  }
+
   const body = lines.slice(i).join('\n').trim();
-  const resourceId =
-    metadata.resource_id ||
-    metadata.resourceId ||
-    extractResourceIdFromFilename(metadata.filename) ||
-    null;
-  return { resourceId, metadata, body };
+  const resourceId = metadata['Resource ID'] || null;
+  const pdfPath = metadata['PDF original'] || null;
+  return { title, resourceId, pdfPath, metadata, body };
 }
 
 async function lookupResourcesByIds(
@@ -218,7 +251,9 @@ export async function GET(req: NextRequest) {
   const instance = (await getSecret('CF_AI_SEARCH_INSTANCE')) || AI_SEARCH_INSTANCE_DEFAULT;
 
   // Forward to Cloudflare AI Search
-  const cfUrl = `${CF_API_BASE}/accounts/${accountId}/ai-search/namespace/default/instances/${instance}/search`;
+  // 2026-10-08: correct endpoint is /ai-search/instances/{instance}/search
+  // (NOT /ai-search/namespace/default/instances/{instance}/search — 404)
+  const cfUrl = `${CF_API_BASE}/accounts/${accountId}/ai-search/instances/${instance}/search`;
   let cfRes: Response;
   let cfBody: AiSearchResponse;
   try {
@@ -256,48 +291,38 @@ export async function GET(req: NextRequest) {
   }
 
   // Parse the response — collect hits, parse content headers
-  const rawSources = cfBody.result?.sources || [];
-  const hits: AiSearchHit[] = [];
-  for (const s of rawSources) {
-    const headerParsed = parseContentHeader(s.content || '');
-    hits.push({
-      file_id: s.file_id,
-      filename: s.filename,
-      content: s.content,
-      score: s.score,
-      metadata: headerParsed.metadata,
-    });
-  }
+  const chunks = cfBody.result?.chunks || [];
+  const hits: AiSearchHit[] = chunks;
 
   // Lookup matching D1 resources for richer previews
   const resourceIds = hits
-    .map((h) => extractResourceIdFromFilename(h.filename) || h.metadata?.resource_id)
+    .map((h) => extractResourceIdFromKey(h.item?.key))
     .filter((id): id is string => !!id);
   const db = await getD1();
   const d1Map = await lookupResourcesByIds(db, resourceIds);
 
   // Build the response
   const sources = hits.map((h) => {
-    const rid = extractResourceIdFromFilename(h.filename) || h.metadata?.resource_id;
+    const rid = extractResourceIdFromKey(h.item?.key);
     const d1 = rid ? d1Map.get(rid) : null;
-    const headerParsed = parseContentHeader(h.content || '');
+    const headerParsed = parseContentHeader(h.text || '');
     return {
-      file_id: h.file_id,
-      filename: h.filename,
+      id: h.id,
+      itemKey: h.item?.key,
       score: h.score,
       resourceId: rid,
-      // D1 enrichment
-      title: d1?.titleFr || d1?.titleAr || h.metadata?.title || null,
-      titleAr: d1?.titleAr || null,
-      typeSlug: d1?.typeSlug || null,
-      subjectSlug: d1?.subjectSlug || null,
-      classSlug: d1?.classSlug || null,
-      teacherName: d1?.teacherName || null,
-      pdfUrl: d1?.pdfUrl || null,
-      thumbnailUrl: d1?.thumbnailUrl || null,
+      // Header-parsed metadata (always present if ingestion ran)
+      title: headerParsed.title,
+      matiere: headerParsed.metadata['Matière'] || null,
+      niveau: headerParsed.metadata['Niveau'] || null,
+      profs: headerParsed.metadata['Prof(s)'] || null,
+      tags: headerParsed.metadata['Tags'] || null,
+      pdfPath: headerParsed.pdfPath, // e.g. "/api/file/teacher-library/.../imported/...pdf"
+      // D1 enrichment (numeric ID + thumbnail)
       numericId: d1?.numericId || null,
-      // Excerpt from chunk (first 280 chars)
-      excerpt: (headerParsed.body || h.content || '').slice(0, 280).trim(),
+      thumbnailUrl: d1?.thumbnailUrl || null,
+      // Excerpt from chunk body (first 320 chars)
+      excerpt: (headerParsed.body || h.text || '').slice(0, 320).trim(),
     };
   });
 

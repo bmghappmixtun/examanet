@@ -24,19 +24,18 @@ import Link from 'next/link';
 import { useLocale } from 'next-intl';
 
 interface AiSource {
-  file_id?: string;
-  filename?: string;
+  id?: string;
+  itemKey?: string;
   score?: number;
   resourceId?: string;
-  title?: string | null;
-  titleAr?: string | null;
-  typeSlug?: string | null;
-  subjectSlug?: string | null;
-  classSlug?: string | null;
-  teacherName?: string | null;
-  pdfUrl?: string | null;
-  thumbnailUrl?: string | null;
   numericId?: number | null;
+  title?: string | null;
+  matiere?: string | null;
+  niveau?: string | null;
+  profs?: string | null;
+  tags?: string | null;
+  pdfPath?: string | null;
+  thumbnailUrl?: string | null;
   excerpt?: string;
 }
 
@@ -350,32 +349,41 @@ function SourceCard({
   locale: 'fr' | 'ar';
   t: any;
 }) {
-  const title = locale === 'ar' && source.titleAr ? source.titleAr : source.title;
+  const title = source.title;
+  // Link priority: 1) resource page (if numericId) 2) PDF 3) '#'
   const href =
-    source.resourceId && source.numericId
-      ? `/${locale}/ressources/${source.numericId}/${encodeURIComponent(
-          (title || source.filename || '').replace(/\s+/g, '-').toLowerCase()
-        )}`
-      : source.pdfUrl
-      ? source.pdfUrl
+    source.numericId
+      ? `/${locale}/ressources/${source.numericId}`
+      : source.pdfPath
+      ? source.pdfPath
       : '#';
   const score = source.score != null ? (source.score * 100).toFixed(0) : null;
   return (
     <a
       href={href}
-      target={source.pdfUrl && !source.resourceId ? '_blank' : undefined}
+      target={source.pdfPath && !source.numericId ? '_blank' : undefined}
       rel="noopener noreferrer"
       className="block bg-white border border-slate-200 rounded-2xl p-5 hover:border-primary-300 hover:shadow-md transition"
     >
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex-1 min-w-0">
           {title && (
-            <h3 className="font-bold text-slate-900 line-clamp-2 mb-1">{title}</h3>
+            <h3 className="font-bold text-slate-900 line-clamp-2 mb-1 text-sm">
+              {title}
+            </h3>
           )}
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-            {source.subjectSlug && <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">{source.subjectSlug}</span>}
-            {source.classSlug && <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-700 font-medium">{source.classSlug}</span>}
-            {source.teacherName && <span>· {source.teacherName}</span>}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+            {source.matiere && (
+              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">
+                {source.matiere}
+              </span>
+            )}
+            {source.niveau && (
+              <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-700 font-medium">
+                {source.niveau}
+              </span>
+            )}
+            {source.profs && <span className="truncate max-w-[200px]">· {source.profs}</span>}
           </div>
         </div>
         {score != null && (
@@ -385,7 +393,7 @@ function SourceCard({
         )}
       </div>
       {source.excerpt && (
-        <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed">
+        <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed" dir="ltr">
           {source.excerpt}
         </p>
       )}
