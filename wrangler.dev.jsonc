@@ -6,6 +6,9 @@
 // R2 bucket (examanet-pdf-prod) as production. This is intentional for
 // previewing with real data. When testing is done, switch wrangler.prod.jsonc
 // to use the new design and merge to main.
+//
+// 2026-10-08: AI Search frontend. CF_API_TOKEN is a secret:
+//   wrangler secret put CF_API_TOKEN --name examanet-dev
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": "worker-with-cache.js",
@@ -16,7 +19,9 @@
     "global_fetch_strictly_public"
   ],
   "vars": {
-    "NEXT_PUBLIC_SITE_URL": "https://examanet-dev.examanet-poc.workers.dev"
+    "NEXT_PUBLIC_SITE_URL": "https://examanet-dev.examanet-poc.workers.dev",
+    "CF_AI_SEARCH_ACCOUNT_ID": "59cffdeaadf3809cc3d2039c43f836e0",
+    "CF_AI_SEARCH_INSTANCE": "examanet-text-search-v2"
   },
   "assets": {
     "directory": ".open-next/assets",
