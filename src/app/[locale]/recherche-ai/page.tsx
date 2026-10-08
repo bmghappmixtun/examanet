@@ -15,6 +15,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+// (useEffect is already imported at the top)
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
@@ -403,9 +404,46 @@ export default function RechercheAiPage() {
  * output. The result is HTML safe (we escape first, then apply patterns).
  */
 function MarkdownLite({ content }: { content: string }) {
+  const ref = useRef<HTMLDivElement>(null);
   const html = renderMarkdown(content);
+  // After every content change, run KaTeX's auto-render on the new DOM.
+  // Retry up to 10× (200ms apart) to handle slow CDN load on first render.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !ref.current) return;
+    let attempts = 0;
+    const maxAttempts = 10;
+    const tryRender = () => {
+      // @ts-ignore - renderMathInElement is added by katex/contrib/auto-render
+      if (typeof window.renderMathInElement === 'function') {
+        try {
+          // @ts-ignore
+          window.renderMathInElement(ref.current, {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '$', right: '$', display: false },
+              { left: '\\[', right: '\\]', display: true },
+              { left: '\\(', right: '\\)', display: false },
+            ],
+            throwOnError: false,
+            errorColor: '#dc2626',
+          });
+        } catch (e) {
+          // silent
+        }
+      } else if (attempts < maxAttempts) {
+        attempts++;
+        setTimeout(tryRender, 200);
+      }
+    };
+    // Two RAFs: 1) React commits DOM, 2) layout settles, then render
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(tryRender);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [content]);
   return (
     <div
+      ref={ref}
       id="ai-answer-body"
       className="prose prose-slate max-w-none text-slate-800 text-sm leading-relaxed
                  [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2
@@ -425,15 +463,6 @@ function MarkdownLite({ content }: { content: string }) {
                  [&_td]:p-2 [&_td]:border [&_td]:border-slate-200"
       dir="auto"
       dangerouslySetInnerHTML={{ __html: html }}
-      ref={(el) => {
-        if (el && typeof window !== 'undefined') {
-          // Trigger KaTeX rendering after React commits the DOM.
-          // requestAnimationFrame ensures the DOM is fully painted first.
-          requestAnimationFrame(() => {
-            window.dispatchEvent(new CustomEvent('ai-answer-rendered'));
-          });
-        }
-      }}
     />
   );
 }
