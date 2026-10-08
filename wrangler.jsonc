@@ -1,4 +1,9 @@
 // Cloudflare Workers config for examanet-poc
+//
+// 2026-10-08: AI Search frontend integration.
+// Account ID + instance name are public (visible in dashboard URL).
+// CF_API_TOKEN must be set as a secret:
+//   wrangler secret put CF_API_TOKEN
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
@@ -53,5 +58,9 @@
       "database_id": "***REMOVED***",
       "migrations_dir": "drizzle-migrations"
     }
-  ]
+  ],
+  "vars": {
+    "CF_AI_SEARCH_ACCOUNT_ID": "59cffdeaadf3809cc3d2039c43f836e0",
+    "CF_AI_SEARCH_INSTANCE": "examanet-text-search-v2"
+  }
 }
