@@ -406,6 +406,7 @@ function MarkdownLite({ content }: { content: string }) {
   const html = renderMarkdown(content);
   return (
     <div
+      id="ai-answer-body"
       className="prose prose-slate max-w-none text-slate-800 text-sm leading-relaxed
                  [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2
                  [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-2
@@ -424,6 +425,15 @@ function MarkdownLite({ content }: { content: string }) {
                  [&_td]:p-2 [&_td]:border [&_td]:border-slate-200"
       dir="auto"
       dangerouslySetInnerHTML={{ __html: html }}
+      ref={(el) => {
+        if (el && typeof window !== 'undefined') {
+          // Trigger KaTeX rendering after React commits the DOM.
+          // requestAnimationFrame ensures the DOM is fully painted first.
+          requestAnimationFrame(() => {
+            window.dispatchEvent(new CustomEvent('ai-answer-rendered'));
+          });
+        }
+      }}
     />
   );
 }
