@@ -1,31 +1,30 @@
 // @ts-nocheck
 /**
- * /api/search/ai — Worker proxy for Cloudflare AI Search
+ * /api/search/ai — Cloudflare AI Search CHAT proxy
  *
- * 2026-10-08: Reconstructed from session 409889696682287 (23/9/2026
- * architecture diagram) + Cloudflare AI Search instance
- * `examanet-text-search-v2` (14k items indexed, 1024-dim, R2 source
- * `examanet-text-prod`).
+ * 2026-10-08 v3: migrated from /search (pure retrieval) to
+ *   /chat/completions (managed RAG with LLM generation).
  *
- * Architecture (3 layers, no LLM in the loop):
+ * Architecture (3 layers, WITH LLM in the loop):
  *   1. USER  (frontend /recherche-ai or /api/search/ai)
  *   2. WORKER PROXY  (this route — thin pass-through)
  *        - validate query
- *        - forward to CF AI Search
- *        - parse .txt header for metadata
- *        - lookup D1 Resource → PDF URL
- *   3. CF AI SEARCH  (managed RAG, @cf/qwen/qwen3-embedding-0.6b)
+ *        - locale detect (FR / AR / darija) → system prompt
+ *        - forward to CF AI Search /chat/completions
+ *        - parse response + chunks (sources)
+ *        - lookup D1 Resource for richer previews
+ *   3. CF AI SEARCH  (managed RAG, @cf/openai/gpt-oss-120b default model)
+ *        - embeds query with qwen3-embedding-0.6b
+ *        - retrieves top-K chunks (1024-dim, 14k indexed PDFs)
+ *        - generates answer in user's language
  *
- * Auth: requires CF_API_TOKEN (Worker AI:Read + AI Search:Read).
- *       Token is fetched via getSecret(), never hardcoded.
- *
- * Rate limit: 30 req/min/IP (same as /api/search/v2).
+ * Auth: CF_API_TOKEN via getSecret() (NEVER hardcode).
+ * Rate limit: 20 req/min/IP (LLM is expensive).
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { rateLimitKv, rateLimitResponse } from '@/lib/rate-limit-kv';
-import { getClientIp } from '@/lib/security';
 import { getSecret } from '@/lib/cf-auth';
 
 export const dynamic = 'force-dynamic';
@@ -37,28 +36,77 @@ const CF_API_BASE = 'https://api.cloudflare.com/client/v4';
 
 const MIN_QUERY_LENGTH = 2;
 const MAX_QUERY_LENGTH = 500;
-const MAX_RESULTS = 8;
+const MAX_RESULTS = 6;
 
-interface AiSearchHit {
+const SYSTEM_PROMPTS: Record<string, string> = {
+  fr: `Tu es un assistant pédagogique pour les élèves tunisiens (collège 7-9 et lycée 1-4).
+Tu réponds en français de manière claire et structurée, en utilisant le markdown (titres, listes, **gras**, LaTeX pour les formules).
+Tu cites tes sources en mentionnant le titre de la ressource et la matière/niveau.
+Si la question est ambiguë, propose des pistes. Si tu n'as pas assez d'information dans les sources, dis-le honnêtement.
+Longueur cible: 150-300 mots. Ne dépasse pas 500 mots sauf si on te demande une explication approfondie.`,
+  ar: `أنت مساعد تربوي للطلاب التونسيين (المرحلة الإعدادية 7-9 والثانوية 1-4).
+أجب بالعربية بشكل واضح ومنظم، واستخدم markdown (عناوين، قوائم، **عريض**، LaTeX للصيغ).
+اذكر المصادر من خلال ذكر عنوان المورد والمادة/المستوى.
+إذا كان السؤال غامضًا، اقترح اتجاهات. إذا لم تتوفر معلومات كافية، قل ذلك بصراحة.
+الطول المستهدف: 150-300 كلمة. لا تتجاوز 500 كلمة.`,
+  darija: `T'es un assistant pédagogique pour les élèves tunisiens (collège 7-9 w lycée 1-4).
+Réponds en darija tunisienne (mélange arabe/français) de manière simple, comme un grand frère qui explique.
+Utilise markdown si nécessaire. Cite les sources par leur titre.
+Si tu connais pas la réponse, dis-le franchement au lieu d'inventer.`,
+};
+
+function detectLocale(query: string, explicit?: string): 'fr' | 'ar' | 'darija' {
+  if (explicit && (explicit === 'fr' || explicit === 'ar' || explicit === 'darija')) {
+    return explicit as 'fr' | 'ar' | 'darija';
+  }
+  // Arabic Unicode range (basic + extended)
+  const arabicChars = (query.match(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g) || []).length;
+  const latinChars = (query.match(/[a-zA-Z]/g) || []).length;
+  if (arabicChars > latinChars * 0.5) {
+    // Detected Arabic — check if it's darija (lots of latin script mixed in)
+    if (arabicChars >= 2 && latinChars >= 2 && arabicChars < query.length * 0.7) {
+      return 'darija';
+    }
+    return 'ar';
+  }
+  return 'fr';
+}
+
+interface ChatChunk {
   id?: string;
   type?: string;
   score?: number;
   text?: string;
   item?: {
-    key?: string;        // e.g. "text/cmr93f6sc005or2zipgyeqlbw.txt"
+    key?: string;
     metadata?: Record<string, any>;
   };
   scoring_details?: { vector_score?: number };
 }
 
-interface AiSearchResponse {
-  success: boolean;
-  result?: {
-    query_kind?: string;
-    search_query?: string;
-    chunks?: AiSearchHit[];
+interface ChatChoice {
+  finish_reason?: string;
+  index?: number;
+  message?: {
+    role?: string;
+    content?: string;
+    reasoning?: string;        // gpt-oss-120b exposes CoT
+    reasoning_content?: string;
   };
-  errors?: Array<{ message: string }>;
+}
+
+interface ChatResponse {
+  id?: string;
+  object?: string;
+  created?: number;
+  model?: string;
+  choices?: ChatChoice[];
+  chunks?: ChatChunk[];
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+  };
 }
 
 interface D1Lookup {
@@ -83,38 +131,22 @@ async function getD1() {
   }
 }
 
-/**
- * Extract resource CUID from the AI Search item key.
- * Pattern: "text/{cuid}.txt" → {cuid}
- */
+/** Extract resource CUID from the AI Search item key (text/{cuid}.txt) */
 function extractResourceIdFromKey(key?: string): string | null {
   if (!key) return null;
   const m = key.match(/^text\/([a-z0-9]+)\.txt$/i);
-  if (m) return m[1];
-  return null;
+  return m ? m[1] : null;
 }
 
 /**
- * Parse the structured header that the ingestion script writes to each .txt
- * chunk. Real format (confirmed 2026-10-08):
- *
+ * Parse the structured header that the ingestion script writes to each
+ * .txt chunk. Format:
  *   # Titre - Matière - Niveau - Section (année) : Topic
- *
- *   PDF original: /api/file/teacher-library/{teacherId}/imported/{fileKey}.pdf
+ *   PDF original: /api/file/.../...pdf
  *   Resource ID: {cuid}
- *
- *   Matière: ...
- *   Niveau: ...
- *   Prof(s): ...
- *   Durée estimée: ...
- *   Topics: ...
- *   Tags: ...
- *   Concepts clés: ...
- *   ...
- *
+ *   Matière: ... / Niveau: ... / Prof(s): ... / Tags: ...
  *   ---
- *
- *   {PDF text content}
+ *   {PDF body}
  */
 function parseContentHeader(content: string): {
   title: string | null;
@@ -127,35 +159,31 @@ function parseContentHeader(content: string): {
   const metadata: Record<string, string> = {};
   let i = 0;
 
-  // Line 0: "# Titre - Matière - Niveau - Section (année) : Topic"
   let title: string | null = null;
   if (lines[0]?.startsWith('# ')) {
     title = lines[0].slice(2).trim();
     i = 1;
   }
-
-  // Skip blank line between title and PDF original
   while (i < lines.length && lines[i].trim() === '') i++;
 
-  // Parse "Key: value" lines until we hit "---" or the body
   for (; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
-    if (trimmed === '---') {
-      i++;
-      break;
-    }
+    if (trimmed === '---') { i++; break; }
     if (trimmed === '') continue;
-    // Match "Key: value" — accept keys with parentheses like "Concepts clés:"
     const m = line.match(/^([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]*?):\s*(.+)$/);
     if (m) metadata[m[1].trim()] = m[2].trim();
-    else break; // non-key-value line = body starts here
+    else break;
   }
 
   const body = lines.slice(i).join('\n').trim();
-  const resourceId = metadata['Resource ID'] || null;
-  const pdfPath = metadata['PDF original'] || null;
-  return { title, resourceId, pdfPath, metadata, body };
+  return {
+    title,
+    resourceId: metadata['Resource ID'] || null,
+    pdfPath: metadata['PDF original'] || null,
+    metadata,
+    body,
+  };
 }
 
 async function lookupResourcesByIds(
@@ -164,7 +192,6 @@ async function lookupResourcesByIds(
 ): Promise<Map<string, D1Lookup>> {
   const map = new Map<string, D1Lookup>();
   if (!db || ids.length === 0) return map;
-  // D1 IN clause: placeholder count = ids.length
   const placeholders = ids.map(() => '?').join(',');
   try {
     const rows = await db
@@ -188,7 +215,7 @@ async function lookupResourcesByIds(
     for (const row of rows.results || []) {
       const pdfUrl = row.pdfKey ? `/api/file/${row.pdfKey}` : null;
       const thumbnailUrl = row.thumbKey ? `/api/file/${row.thumbKey}` : null;
-      const item: D1Lookup = {
+      map.set(row.id, {
         id: row.id,
         numericId: row.numericId,
         titleFr: row.titleFr,
@@ -199,8 +226,7 @@ async function lookupResourcesByIds(
         pdfUrl,
         thumbnailUrl,
         teacherName: row.teacherName,
-      };
-      map.set(row.id, item);
+      });
     }
   } catch (e) {
     console.error('[ai-search] D1 lookup failed:', e);
@@ -212,14 +238,12 @@ export async function GET(req: NextRequest) {
   const t0 = Date.now();
   const p = req.nextUrl.searchParams;
   const query = (p.get('q') || '').trim();
+  const explicitLocale = p.get('locale') || undefined;
 
-  // Rate limit (same as /api/search/v2)
-  const rl = await rateLimitKv(req, 'search-ai', 30, 60 * 1000);
-  if (!rl.allowed) {
-    return rateLimitResponse(rl);
-  }
+  // Rate limit — 20 req/min (LLM is more expensive than keyword search)
+  const rl = await rateLimitKv(req, 'search-ai', 20, 60 * 1000);
+  if (!rl.allowed) return rateLimitResponse(rl);
 
-  // Validate query
   if (query.length < MIN_QUERY_LENGTH) {
     return NextResponse.json(
       { error: 'query_too_short', minLength: MIN_QUERY_LENGTH },
@@ -233,10 +257,9 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Get CF API token + config (NEVER hardcode the secret)
+  // Get CF API token (NEVER hardcode)
   const token = await getSecret('CF_API_TOKEN');
   if (!token) {
-    console.error('[ai-search] CF_API_TOKEN missing — wrangler secret put needed');
     return NextResponse.json(
       {
         error: 'config_missing',
@@ -246,16 +269,21 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Read config from env (with safe defaults matching wrangler.jsonc vars)
   const accountId = (await getSecret('CF_AI_SEARCH_ACCOUNT_ID')) || ACCOUNT_ID_DEFAULT;
   const instance = (await getSecret('CF_AI_SEARCH_INSTANCE')) || AI_SEARCH_INSTANCE_DEFAULT;
+  const locale = detectLocale(query, explicitLocale);
+  const systemPrompt = SYSTEM_PROMPTS[locale];
 
-  // Forward to Cloudflare AI Search
-  // 2026-10-08: correct endpoint is /ai-search/instances/{instance}/search
-  // (NOT /ai-search/namespace/default/instances/{instance}/search — 404)
-  const cfUrl = `${CF_API_BASE}/accounts/${accountId}/ai-search/instances/${instance}/search`;
+  // Call CF AI Search chat/completions endpoint
+  // Model: @cf/openai/gpt-oss-120b (default, ~120B params, multilingual, great for FR/AR/darija)
+  // Override with CF_AI_SEARCH_MODEL env if you want (e.g. "@cf/meta/llama-3.3-70b-instruct-fp8-fast")
+  const customModel = await getSecret('CF_AI_SEARCH_MODEL');
+  const model = customModel || '@cf/openai/gpt-oss-120b';
+
+  const cfUrl = `${CF_API_BASE}/accounts/${accountId}/ai-search/instances/${instance}/chat/completions`;
+
   let cfRes: Response;
-  let cfBody: AiSearchResponse;
+  let cfBody: ChatResponse;
   try {
     cfRes = await fetch(cfUrl, {
       method: 'POST',
@@ -264,15 +292,18 @@ export async function GET(req: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        query,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: query },
+        ],
         max_num_results: MAX_RESULTS,
-        // AI Search returns chunks; we use them to build a lightweight
-        // answer (no LLM in the loop per architecture).
-        return_metadata: true,
-        rerank: false,
+        // stream: false → simple JSON response (we could later add SSE)
       }),
+      // AI Search chat can be slow (5-10s)
+      // @ts-ignore — Node fetch supports signal
+      signal: AbortSignal.timeout(30_000),
     });
-    cfBody = (await cfRes.json()) as AiSearchResponse;
+    cfBody = (await cfRes.json()) as ChatResponse;
   } catch (e: any) {
     console.error('[ai-search] CF fetch failed:', e);
     return NextResponse.json(
@@ -281,67 +312,59 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  if (!cfRes.ok || !cfBody.success) {
-    const err = cfBody.errors?.[0]?.message || `CF returned ${cfRes.status}`;
-    console.error('[ai-search] CF error:', err);
+  if (!cfRes.ok) {
+    const errMsg = (cfBody as any)?.errors?.[0]?.message || `CF returned ${cfRes.status}`;
+    console.error('[ai-search] CF error:', errMsg);
     return NextResponse.json(
-      { error: 'upstream_error', message: err },
+      { error: 'upstream_error', message: errMsg },
       { status: 502 }
     );
   }
 
-  // Parse the response — collect hits, parse content headers
-  const chunks = cfBody.result?.chunks || [];
-  const hits: AiSearchHit[] = chunks;
+  // Extract LLM answer + reasoning (CoT)
+  const message = cfBody.choices?.[0]?.message;
+  const answer = message?.content || '';
+  const reasoning = message?.reasoning || message?.reasoning_content || '';
 
-  // Lookup matching D1 resources for richer previews
-  const resourceIds = hits
-    .map((h) => extractResourceIdFromKey(h.item?.key))
+  // Parse sources (chunks) for source cards
+  const chunks: ChatChunk[] = cfBody.chunks || [];
+  const resourceIds = chunks
+    .map((c) => extractResourceIdFromKey(c.item?.key))
     .filter((id): id is string => !!id);
   const db = await getD1();
   const d1Map = await lookupResourcesByIds(db, resourceIds);
 
-  // Build the response
-  const sources = hits.map((h) => {
-    const rid = extractResourceIdFromKey(h.item?.key);
+  const sources = chunks.map((c) => {
+    const rid = extractResourceIdFromKey(c.item?.key);
     const d1 = rid ? d1Map.get(rid) : null;
-    const headerParsed = parseContentHeader(h.text || '');
+    const headerParsed = parseContentHeader(c.text || '');
     return {
-      id: h.id,
-      itemKey: h.item?.key,
-      score: h.score,
+      id: c.id,
+      itemKey: c.item?.key,
+      score: c.score,
       resourceId: rid,
-      // Header-parsed metadata (always present if ingestion ran)
       title: headerParsed.title,
       matiere: headerParsed.metadata['Matière'] || null,
       niveau: headerParsed.metadata['Niveau'] || null,
       profs: headerParsed.metadata['Prof(s)'] || null,
       tags: headerParsed.metadata['Tags'] || null,
-      pdfPath: headerParsed.pdfPath, // e.g. "/api/file/teacher-library/.../imported/...pdf"
-      // D1 enrichment (numeric ID + thumbnail)
+      pdfPath: headerParsed.pdfPath,
       numericId: d1?.numericId || null,
       thumbnailUrl: d1?.thumbnailUrl || null,
-      // Excerpt from chunk body (first 320 chars)
-      excerpt: (headerParsed.body || h.text || '').slice(0, 320).trim(),
+      excerpt: (headerParsed.body || c.text || '').slice(0, 320).trim(),
     };
   });
-
-  // Lightweight answer (no LLM) — concatenate the top 3 excerpts.
-  // This is a placeholder until we decide whether to add a generation LLM.
-  const top3 = sources.slice(0, 3);
-  const pseudoAnswer =
-    top3.length > 0
-      ? top3
-          .map((s, i) => `${i + 1}. ${s.title || s.filename} — ${s.excerpt || '(extrait non disponible)'}`)
-          .join('\n\n')
-      : 'Aucun résultat pertinent trouvé.';
 
   return NextResponse.json(
     {
       query,
-      answer: pseudoAnswer,
+      locale,
+      model,
+      answer,         // LLM-generated markdown answer
+      reasoning,      // Chain-of-thought (optional, exposed for debugging)
       sources,
       total: sources.length,
+      usage: cfBody.usage,  // tokens (for monitoring cost)
       durationMs: Date.now() - t0,
     },
     {

@@ -2,18 +2,14 @@
 /**
  * /fr/recherche-ai — AI-powered semantic search UI
  *
- * 2026-10-08: Reconstructed. Forwards queries to /api/search/ai
- * which queries the Cloudflare AI Search instance
- * `examanet-text-search-v2` (14k PDFs indexed, qwen3-embedding-0.6b).
+ * 2026-10-08 v3: Cloudflare AI Search CHAT (with LLM @cf/openai/gpt-oss-120b).
+ * - Renders the LLM answer as markdown (titles, lists, **bold**, LaTeX)
+ * - Locale detection: FR / AR / darija → server uses matching system prompt
+ * - Source cards below the answer
+ * - Reasoning (chain-of-thought) hidden by default, toggle to show
+ * - Recent queries in localStorage
  *
- * Stack: Client component (useState/useEffect). No SSR data.
- *
- * Behaviour:
- *   - User types a query (FR / AR / darija tolerated — embedding is
- *     english-leaning but the API falls back to keyword-style results)
- *   - POST /api/search/ai?q=...
- *   - Render answer (text) + source cards (clickable to PDF)
- *   - Persist last 5 queries in localStorage for "recent searches"
+ * Stack: Client component (useState/useEffect).
  */
 
 'use client';
@@ -41,9 +37,13 @@ interface AiSource {
 
 interface AiResponse {
   query: string;
+  locale?: 'fr' | 'ar' | 'darija';
+  model?: string;
   answer?: string;
+  reasoning?: string;
   sources?: AiSource[];
   total?: number;
+  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
   durationMs?: number;
   error?: string;
   message?: string;
@@ -62,6 +62,7 @@ export default function RechercheAiPage() {
   const [result, setResult] = useState<AiResponse | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showReasoning, setShowReasoning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Load recent queries on mount
@@ -99,7 +100,7 @@ export default function RechercheAiPage() {
     const t0 = performance.now();
     try {
       const res = await fetch(
-        `/api/search/ai?q=${encodeURIComponent(trimmed)}`,
+        `/api/search/ai?q=${encodeURIComponent(trimmed)}&locale=${locale}`,
         { method: 'GET', headers: { Accept: 'application/json' } }
       );
       const data: AiResponse = await res.json();
@@ -107,6 +108,7 @@ export default function RechercheAiPage() {
         setError(data.message || data.error || `Erreur ${res.status}`);
       } else {
         setResult(data);
+        setShowReasoning(false); // reset on new query
       }
     } catch (e: any) {
       setError(e?.message || 'Erreur réseau');
@@ -132,19 +134,24 @@ export default function RechercheAiPage() {
       ? 'اسأل سؤالاً… (مثال: كيف نحل معادلة من الدرجة الثانية؟)'
       : 'Pose ta question… (ex: équations du second degré)',
     ask: isAr ? 'ابحث' : 'Rechercher',
-    loading: isAr ? 'جاري البحث في 14 000 مورد…' : 'Recherche dans 14 000 ressources…',
+    loading: isAr ? 'جاري التفكير…' : 'Réflexion en cours…',
     noResult: isAr
       ? 'لا توجد نتائج. جرّب كلمات مختلفة.'
       : 'Aucun résultat. Essaie d\'autres mots-clés.',
     exampleQueries: isAr
-      ? ['معادلات من الدرجة الثانية', 'قانون أوم', 'الدوال المثلثية']
-      : ['équations du second degré', 'loi d\'Ohm', 'fonctions trigonométriques', 'درس الدارجة: كيفاش نحل exercice'],
+      ? ['معادلات من الدرجة الثانية', 'قانون أوم', 'الدوال المثلثية', 'كيفاش نحل exercice']
+      : ['équations du second degré', 'loi d\'Ohm', 'fonctions trigonométriques', 'درّسني كيفاش نحل exercice'],
     recent: isAr ? 'عمليات البحث الأخيرة' : 'Recherches récentes',
     poweredBy: isAr ? 'مدعوم بـ' : 'Propulsé par',
     open: isAr ? 'فتح' : 'Ouvrir',
     excerpt: isAr ? 'مقتطف' : 'Extrait',
     sources: isAr ? 'المصادر' : 'Sources',
+    sourcesLabel: isAr ? 'مصدر' : 'sources',
     score: isAr ? 'النتيجة' : 'Score',
+    aiAnswer: isAr ? 'إجابة الذكاء الاصطناعي' : 'Réponse IA',
+    showReasoning: isAr ? 'عرض التفكير' : 'Voir le raisonnement',
+    hideReasoning: isAr ? 'إخفاء' : 'Masquer',
+    reasoningLabel: isAr ? 'تفكير النموذج' : 'Raisonnement du modèle',
     fallbackCta: isAr
       ? 'لا تجد ما تبحث عنه؟ جرّب البحث الكلاسيكي.'
       : 'Tu ne trouves pas ? Essaie la recherche classique.',
@@ -293,18 +300,54 @@ export default function RechercheAiPage() {
         {/* Result */}
         {result && !loading && !error && (
           <div className="space-y-6">
-            {/* Top-level answer (concatenated excerpts) */}
+            {/* LLM-generated answer (markdown) */}
             {result.answer && (
               <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-                  {t.sources} · {result.total}
-                </h2>
-                <div className="prose prose-slate max-w-none whitespace-pre-wrap text-slate-800 text-sm leading-relaxed">
-                  {result.answer}
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 text-xs font-semibold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+                      {t.aiAnswer}
+                    </span>
+                    {result.locale && (
+                      <span className="text-xs text-slate-400">
+                        {result.locale === 'ar' ? 'العربية' : result.locale === 'darija' ? 'دارجي' : 'FR'}
+                      </span>
+                    )}
+                    {result.model && (
+                      <span className="text-xs text-slate-400 font-mono">
+                        {result.model.replace('@cf/', '')}
+                      </span>
+                    )}
+                  </div>
+                  {result.reasoning && (
+                    <button
+                      onClick={() => setShowReasoning((v) => !v)}
+                      className="text-xs text-slate-500 hover:text-slate-700"
+                    >
+                      {showReasoning ? t.hideReasoning : t.showReasoning}
+                    </button>
+                  )}
                 </div>
+
+                <MarkdownLite content={result.answer} />
+
+                {result.reasoning && showReasoning && (
+                  <details className="mt-4 pt-4 border-t border-slate-100">
+                    <summary className="text-xs font-semibold text-slate-500 cursor-pointer">
+                      {t.reasoningLabel}
+                    </summary>
+                    <pre className="mt-2 text-xs text-slate-600 whitespace-pre-wrap font-mono">
+                      {result.reasoning}
+                    </pre>
+                  </details>
+                )}
+
                 {result.durationMs != null && (
                   <p className="text-xs text-slate-400 mt-4">
-                    {result.durationMs}ms · {result.sources?.length ?? 0} chunks
+                    {result.durationMs}ms · {result.sources?.length ?? 0} {t.sourcesLabel}
+                    {result.usage?.total_tokens != null &&
+                      ` · ${result.usage.total_tokens.toLocaleString()} tokens`}
                   </p>
                 )}
               </div>
@@ -312,10 +355,15 @@ export default function RechercheAiPage() {
 
             {/* Source cards */}
             {result.sources && result.sources.length > 0 && (
-              <div className="grid gap-3">
-                {result.sources.map((s, i) => (
-                  <SourceCard key={`${s.file_id}-${i}`} source={s} locale={locale} t={t} />
-                ))}
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+                  {t.sources} · {result.total}
+                </h2>
+                <div className="grid gap-3">
+                  {result.sources.map((s, i) => (
+                    <SourceCard key={`${s.id}-${i}`} source={s} locale={locale} t={t} />
+                  ))}
+                </div>
               </div>
             )}
 
@@ -338,6 +386,133 @@ export default function RechercheAiPage() {
       </div>
     </main>
   );
+}
+
+/**
+ * Lightweight markdown renderer — handles:
+ *   # ## ### headings
+ *   **bold**, *italic*
+ *   `inline code`
+ *   - lists / 1. ordered lists
+ *   > blockquote
+ *   ```code blocks```
+ *   LaTeX: $...$ and $$...$$ (passed through, browser renders as text)
+ *   newlines / paragraphs
+ *
+ * Avoids pulling in a 100kb markdown library for a small block of LLM
+ * output. The result is HTML safe (we escape first, then apply patterns).
+ */
+function MarkdownLite({ content }: { content: string }) {
+  const html = renderMarkdown(content);
+  return (
+    <div
+      className="prose prose-slate max-w-none text-slate-800 text-sm leading-relaxed
+                 [&_h1]:text-xl [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2
+                 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-3 [&_h2]:mb-2
+                 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1
+                 [&_p]:my-2
+                 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:ps-6
+                 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:ps-6
+                 [&_li]:my-1
+                 [&_strong]:font-semibold
+                 [&_em]:italic
+                 [&_code]:bg-slate-100 [&_code]:px-1 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono
+                 [&_pre]:bg-slate-900 [&_pre]:text-slate-100 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre]:text-xs
+                 [&_blockquote]:border-s-4 [&_blockquote]:border-slate-300 [&_blockquote]:ps-4 [&_blockquote]:italic [&_blockquote]:text-slate-600
+                 [&_table]:w-full [&_table]:my-2
+                 [&_th]:bg-slate-100 [&_th]:p-2 [&_th]:text-start [&_th]:font-semibold [&_th]:border [&_th]:border-slate-200
+                 [&_td]:p-2 [&_td]:border [&_td]:border-slate-200"
+      dir="auto"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
+function renderMarkdown(md: string): string {
+  let text = md;
+  // 1. Escape HTML
+  text = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // 2. Code blocks ```...``` (process first so other patterns don't touch them)
+  text = text.replace(/```(\w*)\n([\s\S]*?)```/g, (_m, lang, code) => {
+    return `<pre><code>${code.trim()}</code></pre>`;
+  });
+
+  // 3. Inline code `...`
+  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+  // 4. Headings
+  text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  text = text.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  text = text.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // 5. Bold + italic
+  text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+
+  // 6. Blockquote
+  text = text.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // 7. Unordered lists (consecutive lines starting with - or *)
+  text = text.replace(/(^[-*] .+(?:\n[-*] .+)*)/gm, (block) => {
+    const items = block
+      .split('\n')
+      .map((l) => l.replace(/^[-*] /, '').trim())
+      .map((l) => `<li>${l}</li>`)
+      .join('');
+    return `<ul>${items}</ul>`;
+  });
+
+  // 8. Ordered lists (consecutive lines starting with "1. " "2. " etc)
+  text = text.replace(/(^\d+\. .+(?:\n\d+\. .+)*)/gm, (block) => {
+    const items = block
+      .split('\n')
+      .map((l) => l.replace(/^\d+\. /, '').trim())
+      .map((l) => `<li>${l}</li>`)
+      .join('');
+    return `<ol>${items}</ol>`;
+  });
+
+  // 9. Tables (simple GFM: |col|col|)
+  text = text.replace(
+    /(^\|.+\|\n\|[-:|\s]+\|(?:\n\|.+\|)+)/gm,
+    (block) => {
+      const lines = block.split('\n').filter((l) => l.trim());
+      if (lines.length < 2) return block;
+      const head = lines[0]
+        .split('|')
+        .slice(1, -1)
+        .map((c) => c.trim());
+      const rows = lines.slice(2).map((l) =>
+        l
+          .split('|')
+          .slice(1, -1)
+          .map((c) => c.trim())
+      );
+      const thead = '<thead><tr>' + head.map((h) => `<th>${h}</th>`).join('') + '</tr></thead>';
+      const tbody =
+        '<tbody>' +
+        rows
+          .map((r) => '<tr>' + r.map((c) => `<td>${c}</td>`).join('') + '</tr>')
+          .join('') +
+        '</tbody>';
+      return `<table>${thead}${tbody}</table>`;
+    }
+  );
+
+  // 10. Paragraphs: split by double newline, wrap each in <p>
+  text = text
+    .split(/\n{2,}/)
+    .map((block) => {
+      if (/^<(h\d|ul|ol|pre|blockquote|table)/.test(block.trim())) return block;
+      return `<p>${block.replace(/\n/g, '<br/>')}</p>`;
+    })
+    .join('\n');
+
+  return text;
 }
 
 function SourceCard({
