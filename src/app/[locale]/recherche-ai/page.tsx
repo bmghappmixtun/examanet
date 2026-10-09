@@ -423,30 +423,51 @@ function MarkdownLite({ content }: { content: string }) {
       if (!el) return;
 
       if (typeof katex !== 'undefined' && typeof katex.render === 'function') {
-        // Walk all text nodes; replace \(...\) and \[...\] and $...$ and $$...$$
-        // with rendered KaTeX HTML. Also catch bare LaTeX commands that
-        // the LLM forgot to wrap in delimiters.
-        walkTextNodes(el, (text) => {
-          let v = text.nodeValue || '';
+        // IMPORTANT: process all text nodes in ONE pass, in memory,
+        // then commit all changes at once. If we mutate the DOM during
+        // the walk, parent.closest('.katex') would reject subsequent
+        // text nodes in the same paragraph.
+        const targets: Text[] = [];
+        const walker = document.createTreeWalker(
+          el,
+          NodeFilter.SHOW_TEXT,
+          {
+            acceptNode: (n) => {
+              const parent = (n as Text).parentElement;
+              if (!parent) return NodeFilter.FILTER_REJECT;
+              const tag = parent.tagName.toLowerCase();
+              if (tag === 'code' || tag === 'pre' || tag === 'script' || tag === 'style') {
+                return NodeFilter.FILTER_REJECT;
+              }
+              return NodeFilter.FILTER_ACCEPT;
+            },
+          }
+        );
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+          targets.push(node as Text);
+        }
 
-          // 0. Normalize: the LLM sometimes escapes brackets to be
-          //    markdown-safe (\\[, \\], \\(, \\)). Collapse them.
+        // Phase 1: process each text node IN MEMORY (no DOM mutation)
+        targets.forEach((text) => {
+          let v = text.nodeValue || '';
+          if (v.indexOf('\\') < 0 && v.indexOf('$') < 0) return; // no math
+
+          // 0. Normalize escaped brackets
           v = v.replace(/\\\\\[/g, '\\[')
                .replace(/\\\\\]/g, '\\]')
                .replace(/\\\\\(/g, '\\(')
                .replace(/\\\\\)/g, '\\)');
 
-          // 1. Process $$ ... $$ (block, must be first to avoid eating single $)
+          // 1. Process $$ ... $$ (block)
           v = v.replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) => safeKatexRender(katex, tex, true));
           // 2. Process \[ ... \] (block)
           v = v.replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) => safeKatexRender(katex, tex, true));
           // 3. Process \( ... \) (inline)
           v = v.replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => safeKatexRender(katex, tex, false));
-          // 4. Process $ ... $ (inline, single) — careful with $$
+          // 4. Process $ ... $ (inline)
           v = v.replace(/(?<![\\$])\$([^\$\n]+?)\$(?![\\$])/g, (_m, tex) => safeKatexRender(katex, tex, false));
-          // 5. FALLBACK: any line containing a bare LaTeX command
-          //    (e.g. "\frac{a}{b}", "\sin x", "\Delta") that wasn't
-          //    already wrapped gets wrapped in \(...\) inline.
+          // 5. FALLBACK: bare LaTeX commands → wrap in \(...\)
           v = v.replace(
             /(^|[^\\\w$\\])((\\[a-zA-Z]+(?:\s*\{[^{}]*\})*)+)/g,
             (m, prefix, latex) => {
@@ -461,6 +482,8 @@ function MarkdownLite({ content }: { content: string }) {
 
           text.nodeValue = v;
         });
+
+        // Phase 2: NOW mutate the DOM — swap markers for KaTeX HTML
         restoreKatexSpans(el);
       } else if (attempts < maxAttempts) {
         attempts++;
