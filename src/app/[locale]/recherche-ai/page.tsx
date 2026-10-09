@@ -427,43 +427,39 @@ function MarkdownLite({ content }: { content: string }) {
         // with rendered KaTeX HTML. Also catch bare LaTeX commands that
         // the LLM forgot to wrap in delimiters.
         walkTextNodes(el, (text) => {
+          let v = text.nodeValue || '';
+
+          // 0. Normalize: the LLM sometimes escapes brackets to be
+          //    markdown-safe (\\[, \\], \\(, \\)). Collapse them.
+          v = v.replace(/\\\\\[/g, '\\[')
+               .replace(/\\\\\]/g, '\\]')
+               .replace(/\\\\\(/g, '\\(')
+               .replace(/\\\\\)/g, '\\)');
+
           // 1. Process $$ ... $$ (block, must be first to avoid eating single $)
-          text.nodeValue = text.nodeValue!.replace(
-            /\$\$([\s\S]+?)\$\$/g,
-            (_m, tex) => safeKatexRender(katex, tex, true)
-          );
+          v = v.replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) => safeKatexRender(katex, tex, true));
           // 2. Process \[ ... \] (block)
-          text.nodeValue = text.nodeValue!.replace(
-            /\\\[([\s\S]+?)\\\]/g,
-            (_m, tex) => safeKatexRender(katex, tex, true)
-          );
+          v = v.replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) => safeKatexRender(katex, tex, true));
           // 3. Process \( ... \) (inline)
-          text.nodeValue = text.nodeValue!.replace(
-            /\\\(([\s\S]+?)\\\)/g,
-            (_m, tex) => safeKatexRender(katex, tex, false)
-          );
+          v = v.replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => safeKatexRender(katex, tex, false));
           // 4. Process $ ... $ (inline, single) — careful with $$
-          text.nodeValue = text.nodeValue!.replace(
-            /(?<![\\$])\$([^\$\n]+?)\$(?![\\$])/g,
-            (_m, tex) => safeKatexRender(katex, tex, false)
-          );
+          v = v.replace(/(?<![\\$])\$([^\$\n]+?)\$(?![\\$])/g, (_m, tex) => safeKatexRender(katex, tex, false));
           // 5. FALLBACK: any line containing a bare LaTeX command
           //    (e.g. "\frac{a}{b}", "\sin x", "\Delta") that wasn't
           //    already wrapped gets wrapped in \(...\) inline.
-          text.nodeValue = text.nodeValue!.replace(
-            /(^|[^\\\w$])((\\[a-zA-Z]+(?:\s*\{[^{}]*\})*)+)/g,
+          v = v.replace(
+            /(^|[^\\\w$\\])((\\[a-zA-Z]+(?:\s*\{[^{}]*\})*)+)/g,
             (m, prefix, latex) => {
-              // Skip if this looks like an escape sequence
-              if (latex.startsWith('\\\\')) return m;
-              // Skip if already a marker from a previous step
               if (latex.indexOf('\x00KATEX:') >= 0) return m;
-              // Skip trivial backslash-letter (used for escaping in markdown)
-              if (/^\\[a-z]$/.test(latex) && !/^\\(frac|sqrt|sin|cos|tan|ln|log|exp|sum|prod|int|lim|alpha|beta|gamma|delta|epsilon|theta|lambda|mu|pi|sigma|phi|omega|cdot|times|div|pm|leq|geq|neq|approx|infty|partial|nabla|to|Rightarrow|Leftarrow|Leftrightarrow|quad|circ|rightarrow|mathrm|text|boxed|overline|underline|bar|hat|vec|dot|ddot|widetilde|widehat|overleftrightarrow|overleftarrow|overrightarrow|not|sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|sinh|cosh|tanh|coth|arg|max|min|sup|inf|det|gcd|deg|hom|ker|im|dim|exp|log|ln|Pr)\b/.test(latex)) {
+              if (latex.startsWith('\\\\')) return m;
+              if (!/^\\(frac|sqrt|sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|sinh|cosh|tanh|coth|ln|log|exp|sum|prod|int|lim|alpha|beta|gamma|delta|epsilon|theta|lambda|mu|pi|sigma|phi|omega|cdot|times|div|pm|mp|leq|geq|neq|approx|sim|simeq|equiv|infty|partial|nabla|to|Rightarrow|Leftarrow|Leftrightarrow|quad|circ|rightarrow|mathrm|text|boxed|overline|underline|bar|hat|vec|dot|ddot|widetilde|widehat|overleftrightarrow|overleftarrow|overrightarrow|not|infty|arg|max|min|sup|inf|det|gcd|deg|hom|ker|im|dim|Pr|mapsto|right|left|big|bigstar|approx|partial)\b/.test(latex)) {
                 return m;
               }
               return prefix + safeKatexRender(katex, latex, false);
             }
           );
+
+          text.nodeValue = v;
         });
         restoreKatexSpans(el);
       } else if (attempts < maxAttempts) {
