@@ -346,7 +346,7 @@ export default function RechercheAiPage() {
 
                 {result.durationMs != null && (
                   <p className="text-xs text-slate-400 mt-4">
-                    {result.durationMs}ms · {result.sources?.length ?? 0} {t.sourcesLabel}
+                    {result.durationMs}ms
                     {result.usage?.total_tokens != null &&
                       ` · ${result.usage.total_tokens.toLocaleString()} tokens`}
                   </p>
@@ -354,30 +354,12 @@ export default function RechercheAiPage() {
               </div>
             )}
 
-            {/* Source cards */}
-            {result.sources && result.sources.length > 0 && (
-              <div>
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-                  {t.sources} · {result.total}
-                </h2>
-                <div className="grid gap-3">
-                  {result.sources.map((s, i) => (
-                    <SourceCard key={`${s.id}-${i}`} source={s} locale={locale} t={t} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {result.sources?.length === 0 && (
-              <div className="text-center py-12 text-slate-500">
-                {t.noResult}
-              </div>
-            )}
+            {/* Source cards removed per user request (2026-10-09): pure chat mode */}
 
             <div className="text-center pt-4">
               <Link
                 href="/recherche"
-                className="text-sm text-slate-500 hover:text-slate-700 underline"
+                className="text-xs text-slate-400 hover:text-slate-500"
               >
                 {t.fallbackCta}
               </Link>
@@ -707,63 +689,3 @@ function renderMarkdown(md: string): string {
   return text;
 }
 
-function SourceCard({
-  source,
-  locale,
-  t,
-}: {
-  source: AiSource;
-  locale: 'fr' | 'ar';
-  t: any;
-}) {
-  const title = source.title;
-  // Link priority: 1) resource page (if numericId) 2) PDF 3) '#'
-  const href =
-    source.numericId
-      ? `/${locale}/ressources/${source.numericId}`
-      : source.pdfPath
-      ? source.pdfPath
-      : '#';
-  const score = source.score != null ? (source.score * 100).toFixed(0) : null;
-  return (
-    <a
-      href={href}
-      target={source.pdfPath && !source.numericId ? '_blank' : undefined}
-      rel="noopener noreferrer"
-      className="block bg-white border border-slate-200 rounded-2xl p-5 hover:border-primary-300 hover:shadow-md transition"
-    >
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <div className="flex-1 min-w-0">
-          {title && (
-            <h3 className="font-bold text-slate-900 line-clamp-2 mb-1 text-sm">
-              {title}
-            </h3>
-          )}
-          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
-            {source.matiere && (
-              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">
-                {source.matiere}
-              </span>
-            )}
-            {source.niveau && (
-              <span className="px-2 py-0.5 rounded bg-orange-50 text-orange-700 font-medium">
-                {source.niveau}
-              </span>
-            )}
-            {source.profs && <span className="truncate max-w-[200px]">· {source.profs}</span>}
-          </div>
-        </div>
-        {score != null && (
-          <span className="text-xs font-mono text-slate-400 whitespace-nowrap">
-            {score}%
-          </span>
-        )}
-      </div>
-      {source.excerpt && (
-        <p className="text-sm text-slate-600 line-clamp-3 leading-relaxed" dir="ltr">
-          {source.excerpt}
-        </p>
-      )}
-    </a>
-  );
-}
