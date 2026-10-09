@@ -407,39 +407,64 @@ function MarkdownLite({ content }: { content: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const html = renderMarkdown(content);
   // After every content change, run KaTeX's auto-render on the new DOM.
-  // Retry up to 10× (200ms apart) to handle slow CDN load on first render.
+  // We use the lower-level katex.render() directly (more reliable than
+  // the auto-render extension which auto-runs only on page load).
   useEffect(() => {
     if (typeof window === 'undefined' || !ref.current) return;
+    let cancelled = false;
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 25; // 25 × 200ms = 5s max wait for CDN
+
     const tryRender = () => {
-      // @ts-ignore - renderMathInElement is added by katex/contrib/auto-render
-      if (typeof window.renderMathInElement === 'function') {
-        try {
-          // @ts-ignore
-          window.renderMathInElement(ref.current, {
-            delimiters: [
-              { left: '$$', right: '$$', display: true },
-              { left: '$', right: '$', display: false },
-              { left: '\\[', right: '\\]', display: true },
-              { left: '\\(', right: '\\)', display: false },
-            ],
-            throwOnError: false,
-            errorColor: '#dc2626',
-          });
-        } catch (e) {
-          // silent
-        }
+      if (cancelled) return;
+      const w = window as any;
+      const katex = w.katex;
+      const el = ref.current;
+      if (!el) return;
+
+      if (typeof katex !== 'undefined' && typeof katex.render === 'function') {
+        // Walk all text nodes; replace \(...\) and \[...\] and $...$ and $$...$$
+        // with rendered KaTeX HTML.
+        walkTextNodes(el, (text) => {
+          // Process $$ ... $$ (block)
+          text.nodeValue = text.nodeValue!.replace(
+            /\$\$([\s\S]+?)\$\$/g,
+            (_m, tex) => safeKatexRender(katex, tex, true)
+          );
+          // Process \[ ... \] (block)
+          text.nodeValue = text.nodeValue!.replace(
+            /\\\[([\s\S]+?)\\\]/g,
+            (_m, tex) => safeKatexRender(katex, tex, true)
+          );
+          // Process \( ... \) (inline)
+          text.nodeValue = text.nodeValue!.replace(
+            /\\\(([\s\S]+?)\\\)/g,
+            (_m, tex) => safeKatexRender(katex, tex, false)
+          );
+          // Process $ ... $ (inline) — last, to avoid eating $$ 
+          text.nodeValue = text.nodeValue!.replace(
+            /(?<![\\$])\$([^\$\n]+?)\$(?![\\$])/g,
+            (_m, tex) => safeKatexRender(katex, tex, false)
+          );
+        });
+        // After replacing text nodes with HTML, restore HTML structure
+        // by re-parsing each replacement span
+        restoreKatexSpans(el);
       } else if (attempts < maxAttempts) {
         attempts++;
         setTimeout(tryRender, 200);
+      } else {
+        console.warn('[MarkdownLite] katex not loaded after', maxAttempts, 'attempts');
       }
     };
     // Two RAFs: 1) React commits DOM, 2) layout settles, then render
     const id = requestAnimationFrame(() => {
       requestAnimationFrame(tryRender);
     });
-    return () => cancelAnimationFrame(id);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(id);
+    };
   }, [content]);
   return (
     <div
@@ -465,6 +490,99 @@ function MarkdownLite({ content }: { content: string }) {
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
+}
+
+/** Render a single LaTeX expression, return a marker we'll replace later. */
+function safeKatexRender(katex: any, tex: string, displayMode: boolean): string {
+  try {
+    // The output is HTML, but we can't put it inside a text node.
+    // We use a marker pattern: \x00KATEX:<id>::<html>\x00
+    const html = katex.renderToString(tex, {
+      displayMode,
+      throwOnError: false,
+      errorColor: '#dc2626',
+      output: 'html',
+    });
+    const id = Math.random().toString(36).slice(2, 9);
+    pendingKatexSpans.set(id, html);
+    return `\x00KATEX:${id}::\x00`;
+  } catch (e) {
+    return `[KaTeX error: ${(e as Error).message}]`;
+  }
+}
+
+const pendingKatexSpans = new Map<string, string>();
+
+/** Walk all text nodes (not inside <code>, <pre>, or <script>) and apply fn. */
+function walkTextNodes(root: HTMLElement, fn: (text: Text) => void) {
+  const walker = document.createTreeWalker(
+    root,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: (n) => {
+        const parent = (n as Text).parentElement;
+        if (!parent) return NodeFilter.FILTER_REJECT;
+        const tag = parent.tagName.toLowerCase();
+        if (tag === 'code' || tag === 'pre' || tag === 'script' || tag === 'style') {
+          return NodeFilter.FILTER_REJECT;
+        }
+        // Skip if parent already contains rendered katex
+        if (parent.closest('.katex')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    }
+  );
+  const targets: Text[] = [];
+  let node: Node | null;
+  while ((node = walker.nextNode())) {
+    targets.push(node as Text);
+  }
+  targets.forEach(fn);
+}
+
+/** After text nodes have been replaced with markers, swap each marker
+ *  for the actual rendered KaTeX HTML. */
+function restoreKatexSpans(root: HTMLElement) {
+  // Find all text nodes containing markers, then split them and replace
+  const walker = document.createTreeWalker(
+    root,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: (n) => {
+        const txt = (n as Text).nodeValue || '';
+        if (txt.indexOf('\x00KATEX:') < 0) return NodeFilter.FILTER_REJECT;
+        const parent = (n as Text).parentElement;
+        if (!parent) return NodeFilter.FILTER_REJECT;
+        if (parent.closest('.katex')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    }
+  );
+  const targets: Text[] = [];
+  let node: Node | null;
+  while ((node = walker.nextNode())) {
+    targets.push(node as Text);
+  }
+  targets.forEach((text) => {
+    const txt = text.nodeValue!;
+    const parts = txt.split(/(\x00KATEX:[a-z0-9]+::\x00)/);
+    const frag = document.createDocumentFragment();
+    parts.forEach((p) => {
+      const m = p.match(/^\x00KATEX:([a-z0-9]+)::\x00$/);
+      if (m) {
+        const html = pendingKatexSpans.get(m[1]);
+        if (html) {
+          const span = document.createElement('span');
+          span.innerHTML = html;
+          frag.appendChild(span);
+          pendingKatexSpans.delete(m[1]);
+        }
+      } else if (p) {
+        frag.appendChild(document.createTextNode(p));
+      }
+    });
+    text.parentNode!.replaceChild(frag, text);
+  });
 }
 
 function renderMarkdown(md: string): string {
