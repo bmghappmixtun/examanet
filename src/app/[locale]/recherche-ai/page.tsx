@@ -140,8 +140,22 @@ export default function RechercheAiPage() {
       ? 'لا توجد نتائج. جرّب كلمات مختلفة.'
       : 'Aucun résultat. Essaie d\'autres mots-clés.',
     exampleQueries: isAr
-      ? ['معادلات من الدرجة الثانية', 'قانون أوم', 'الدوال المثلثية', 'كيفاش نحل exercice']
-      : ['équations du second degré', 'loi d\'Ohm', 'fonctions trigonométriques', 'درّسني كيفاش نحل exercice'],
+      ? [
+          // AR — 5 questions, math/svt/physique/info, collège+lycée
+          { q: 'كيف نحل معادلة من الدرجة الثانية', s: 'math' as const },
+          { q: 'ما هي عملية التركيب الضوئي', s: 'svt' as const },
+          { q: 'اشرح قانون أوم مع مثال', s: 'physique' as const },
+          { q: 'ما الفرق بين الخلية الحيوانية والنباتية', s: 'svt' as const },
+          { q: 'خوارزمية الترتيب بالدمج (merge sort)', s: 'info' as const },
+        ]
+      : [
+          // FR — 5 questions, math/svt/physique/info, collège+lycée
+          { q: 'Comment résoudre une équation du second degré ?', s: 'math' as const },
+          { q: 'Explique la photosynthèse en 3 étapes', s: 'svt' as const },
+          { q: "C'est quoi la loi d'Ohm avec un exemple", s: 'physique' as const },
+          { q: 'Différence entre mitose et méiose', s: 'svt' as const },
+          { q: "Explique l'algorithme de tri fusion", s: 'info' as const },
+        ],
     recent: isAr ? 'عمليات البحث الأخيرة' : 'Recherches récentes',
     poweredBy: isAr ? 'مدعوم بـ' : 'Propulsé par',
     open: isAr ? 'فتح' : 'Ouvrir',
@@ -252,22 +266,50 @@ export default function RechercheAiPage() {
           </div>
         )}
 
-        {/* Example queries */}
+        {/* Example queries — 10 (5 FR + 5 AR), grouped by subject */}
         {!result && !loading && (
           <div className="mb-8">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-              {isAr ? 'أمثلة' : 'Exemples'}
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+              {isAr ? 'أمثلة (5 أسئلة)' : 'Exemples (5 questions)'}
             </h3>
-            <div className="flex flex-wrap gap-2">
-              {t.exampleQueries.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => runSearch(q)}
-                  className="px-3 py-1.5 rounded-full bg-primary-50 text-primary-700 text-sm hover:bg-primary-100 transition border border-primary-100"
-                >
-                  {q}
-                </button>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {t.exampleQueries.map((item, i) => {
+                const SUBJECT_STYLES: Record<string, string> = {
+                  math:     'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
+                  physique:  'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100',
+                  svt:      'bg-lime-50 text-lime-700 border-lime-200 hover:bg-lime-100',
+                  info:     'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100',
+                };
+                const SUBJECT_ICONS: Record<string, string> = {
+                  math:     '∑',
+                  physique:  '⚛',
+                  svt:      '🌱',
+                  info:     '{ }',
+                };
+                const SUBJECT_LABELS_FR: Record<string, string> = {
+                  math: 'Math', physique: 'Physique', svt: 'SVT', info: 'Info',
+                };
+                const SUBJECT_LABELS_AR: Record<string, string> = {
+                  math: 'رياضيات', physique: 'فيزياء', svt: 'علوم', info: 'إعلامية',
+                };
+                return (
+                  <button
+                    key={`${item.s}-${i}`}
+                    onClick={() => runSearch(item.q)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-start border transition ${
+                      SUBJECT_STYLES[item.s] || 'bg-slate-50 text-slate-700 border-slate-200'
+                    }`}
+                  >
+                    <span className="text-base opacity-70 w-5 text-center">
+                      {SUBJECT_ICONS[item.s]}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider opacity-60 w-12 shrink-0">
+                      {(isAr ? SUBJECT_LABELS_AR : SUBJECT_LABELS_FR)[item.s]}
+                    </span>
+                    <span className="flex-1 truncate">{item.q}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
