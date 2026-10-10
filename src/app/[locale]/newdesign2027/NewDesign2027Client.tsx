@@ -233,9 +233,10 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50">
-      {/* DEMO BANNER */}
-      <div className="bg-gradient-to-r from-violet-600 to-purple-700 text-white text-center text-sm py-2 px-4 font-medium">
-        ✨ NEW DESIGN 2027 — DEMO · /fr/ressources/{main.numericId}/{main.slug} · Switch: /newdesign2027?id=454 ou ?id=12173
+      {/* 2026-10-10: was a violet DEMO banner. Now default on dev, kept as a
+          small unobtrusive strip so the user knows this is the new design. */}
+      <div className="bg-violet-50 border-b border-violet-100 text-violet-700 text-center text-xs py-1.5 px-4">
+        ✨ Nouveau design 2027 · <Link href={`/fr/ressources/${main.numericId}/${main.slug}`} className="underline">/fr/ressources/{main.numericId}/{main.slug}</Link>
       </div>
 
       {/* Breadcrumb */}

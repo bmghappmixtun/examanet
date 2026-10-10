@@ -16,7 +16,8 @@
     "global_fetch_strictly_public"
   ],
   "vars": {
-    "NEXT_PUBLIC_SITE_URL": "https://examanet-dev.examanet-poc.workers.dev"
+    "NEXT_PUBLIC_SITE_URL": "https://examanet-dev.examanet-poc.workers.dev",
+    "ENABLE_NEW_DESIGN": "1"
   },
   "assets": {
     "directory": ".open-next/assets",

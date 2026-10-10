@@ -136,14 +136,16 @@ async function ResourceDetailPageAsync({
   params: Promise<{ id: string; slug: string }>;
 }) {
   const { id, slug } = await params;
-  // 2026-09-13: Read cookie to opt-in to the NEW DESIGN 2027 preview.
-  // We use a cookie (not searchParams) because OpenNext doesn't forward
-  // searchParams to server components in some edge cases.
-  // To enable on dev: set cookie 'preview_newdesign=1' in your browser,
-  // OR run in devtools: document.cookie='preview_newdesign=1'
+  // 2026-10-10: New design toggle.
+  // Source of truth: ENABLE_NEW_DESIGN env var (set in wrangler.dev.jsonc only).
+  // - Dev worker:  ENABLE_NEW_DESIGN=1 → new design by default
+  // - Prod worker: no var             → old design (until manually promoted)
+  // Cookie `preview_olddesign=1` still works as a manual override (forces old design)
+  const envNewDesign = process.env.ENABLE_NEW_DESIGN === '1';
   const { cookies } = await import('next/headers');
   const cookieStore = await cookies();
-  const isNewDesign = cookieStore.get('preview_newdesign')?.value === '1';
+  const cookieOptOut = cookieStore.get('preview_olddesign')?.value === '1';
+  const isNewDesign = envNewDesign && !cookieOptOut;
   const numericId = parseInt(id, 10);
   if (isNaN(numericId)) {
     return (
