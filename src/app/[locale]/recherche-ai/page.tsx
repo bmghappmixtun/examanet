@@ -139,23 +139,21 @@ export default function RechercheAiPage() {
     noResult: isAr
       ? 'لا توجد نتائج. جرّب كلمات مختلفة.'
       : 'Aucun résultat. Essaie d\'autres mots-clés.',
-    exampleQueries: isAr
-      ? [
-          // AR — 5 questions, math/svt/physique/info, collège+lycée
-          { q: 'كيف نحل معادلة من الدرجة الثانية', s: 'math' as const },
-          { q: 'ما هي عملية التركيب الضوئي', s: 'svt' as const },
-          { q: 'اشرح قانون أوم مع مثال', s: 'physique' as const },
-          { q: 'ما الفرق بين الخلية الحيوانية والنباتية', s: 'svt' as const },
-          { q: 'خوارزمية الترتيب بالدمج (merge sort)', s: 'info' as const },
-        ]
-      : [
-          // FR — 5 questions, math/svt/physique/info, collège+lycée
-          { q: 'Comment résoudre une équation du second degré ?', s: 'math' as const },
-          { q: 'Explique la photosynthèse en 3 étapes', s: 'svt' as const },
-          { q: "C'est quoi la loi d'Ohm avec un exemple", s: 'physique' as const },
-          { q: 'Différence entre mitose et méiose', s: 'svt' as const },
-          { q: "Explique l'algorithme de tri fusion", s: 'info' as const },
-        ],
+    // 10 example questions always shown: 5 FR + 5 AR
+    exampleQueries: [
+      // 🇫🇷 FR — math/svt/physique/info, collège+lycée
+      { q: 'Comment résoudre une équation du second degré ?', s: 'math' as const, lang: 'fr' },
+      { q: 'Explique la photosynthèse en 3 étapes', s: 'svt' as const, lang: 'fr' },
+      { q: "C'est quoi la loi d'Ohm avec un exemple", s: 'physique' as const, lang: 'fr' },
+      { q: 'Différence entre mitose et méiose', s: 'svt' as const, lang: 'fr' },
+      { q: "Explique l'algorithme de tri fusion", s: 'info' as const, lang: 'fr' },
+      // 🇹🇳 AR — math/svt/physique/info, collège+lycée
+      { q: 'كيف نحل معادلة من الدرجة الثانية', s: 'math' as const, lang: 'ar' },
+      { q: 'ما هي عملية التركيب الضوئي', s: 'svt' as const, lang: 'ar' },
+      { q: 'اشرح قانون أوم مع مثال', s: 'physique' as const, lang: 'ar' },
+      { q: 'ما الفرق بين الخلية الحيوانية والنباتية', s: 'svt' as const, lang: 'ar' },
+      { q: 'خوارزمية الترتيب بالدمج (merge sort)', s: 'info' as const, lang: 'ar' },
+    ],
     recent: isAr ? 'عمليات البحث الأخيرة' : 'Recherches récentes',
     poweredBy: isAr ? 'مدعوم بـ' : 'Propulsé par',
     open: isAr ? 'فتح' : 'Ouvrir',
@@ -266,51 +264,62 @@ export default function RechercheAiPage() {
           </div>
         )}
 
-        {/* Example queries — 10 (5 FR + 5 AR), grouped by subject */}
+        {/* Example queries — always 10: 5 FR + 5 AR, grouped by language */}
         {!result && !loading && (
-          <div className="mb-8">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-              {isAr ? 'أمثلة (5 أسئلة)' : 'Exemples (5 questions)'}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {t.exampleQueries.map((item, i) => {
-                const SUBJECT_STYLES: Record<string, string> = {
-                  math:     'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
-                  physique:  'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100',
-                  svt:      'bg-lime-50 text-lime-700 border-lime-200 hover:bg-lime-100',
-                  info:     'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100',
-                };
-                const SUBJECT_ICONS: Record<string, string> = {
-                  math:     '∑',
-                  physique:  '⚛',
-                  svt:      '🌱',
-                  info:     '{ }',
-                };
-                const SUBJECT_LABELS_FR: Record<string, string> = {
-                  math: 'Math', physique: 'Physique', svt: 'SVT', info: 'Info',
-                };
-                const SUBJECT_LABELS_AR: Record<string, string> = {
-                  math: 'رياضيات', physique: 'فيزياء', svt: 'علوم', info: 'إعلامية',
-                };
-                return (
-                  <button
-                    key={`${item.s}-${i}`}
-                    onClick={() => runSearch(item.q)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-start border transition ${
-                      SUBJECT_STYLES[item.s] || 'bg-slate-50 text-slate-700 border-slate-200'
-                    }`}
-                  >
-                    <span className="text-base opacity-70 w-5 text-center">
-                      {SUBJECT_ICONS[item.s]}
+          <div className="mb-8 space-y-6">
+            {(['fr', 'ar'] as const).map((lang) => {
+              const items = t.exampleQueries.filter((x) => x.lang === lang);
+              return (
+                <div key={lang}>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                      lang === 'fr' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {lang === 'fr' ? '🇫🇷 FR' : '🇹🇳 AR'}
                     </span>
-                    <span className="text-[10px] uppercase tracking-wider opacity-60 w-12 shrink-0">
-                      {(isAr ? SUBJECT_LABELS_AR : SUBJECT_LABELS_FR)[item.s]}
-                    </span>
-                    <span className="flex-1 truncate">{item.q}</span>
-                  </button>
-                );
-              })}
-            </div>
+                    {lang === 'fr' ? '5 questions en français' : '5 أسئلة بالعربية'}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {items.map((item, i) => {
+                      const SUBJECT_STYLES: Record<string, string> = {
+                        math:     'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
+                        physique: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100',
+                        svt:      'bg-lime-50 text-lime-700 border-lime-200 hover:bg-lime-100',
+                        info:     'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100',
+                      };
+                      const SUBJECT_ICONS: Record<string, string> = {
+                        math: '∑', physique: '⚛', svt: '🌱', info: '{ }',
+                      };
+                      const SUBJECT_LABELS_FR: Record<string, string> = {
+                        math: 'Math', physique: 'Phy', svt: 'SVT', info: 'Info',
+                      };
+                      const SUBJECT_LABELS_AR: Record<string, string> = {
+                        math: 'رياضيات', physique: 'فيزياء', svt: 'علوم', info: 'إعلامية',
+                      };
+                      return (
+                        <button
+                          key={`${lang}-${item.s}-${i}`}
+                          onClick={() => runSearch(item.q)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-start border transition ${
+                            SUBJECT_STYLES[item.s] || 'bg-slate-50 text-slate-700 border-slate-200'
+                          }`}
+                        >
+                          <span className="text-base opacity-70 w-5 text-center shrink-0">
+                            {SUBJECT_ICONS[item.s]}
+                          </span>
+                          <span className="text-[10px] uppercase tracking-wider opacity-60 w-12 shrink-0">
+                            {(lang === 'fr' ? SUBJECT_LABELS_FR : SUBJECT_LABELS_AR)[item.s]}
+                          </span>
+                          <span className="flex-1 truncate" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+                            {item.q}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
