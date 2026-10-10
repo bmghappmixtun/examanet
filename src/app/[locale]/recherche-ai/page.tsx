@@ -455,9 +455,48 @@ export default function RechercheAiPage() {
  * Avoids pulling in a 100kb markdown library for a small block of LLM
  * output. The result is HTML safe (we escape first, then apply patterns).
  */
+// Strip the LLM-leaked artifacts that show up in answers:
+// - [\text{...}]            → LaTeX-style wrapping the LLM hallucinated
+// - [\text/xxx.txt]         → file path leak from chunk metadata
+// - [/api/file/...]         → direct file paths
+// - [cmr99ix8t05zu68...]    → CUIDs (resource IDs the LLM saw in chunks)
+// - [a-z0-9-]{20,}.txt      → bare filename refs
+// We never want these in a chat answer; the user just wants a clean
+// pedagogical explanation.
+function cleanAnswer(text: string): string {
+  if (!text) return '';
+  let v = text;
+
+  // Strip brackets wrapping CUID/file/LaTeX noise (with or without preceding space/period)
+  // 1. [\text{anything}]
+  v = v.replace(/\s*\[\s*\\text\{[^}]*\}\s*\]\s*/g, ' ');
+  // 2. [\text/anything.txt]  and  [\text/anything]
+  v = v.replace(/\s*\[\s*\\text\s*\/[^\]]*\]\s*/g, ' ');
+  // 3. [cmr...txt] / [cmr...]  (CUID: 24+ char lowercase alphanumeric)
+  v = v.replace(/\s*\[\s*[a-z0-9]{20,}(?:\.txt)?\s*\]\s*/gi, ' ');
+  // 4. [anything].txt  (file refs in brackets)
+  v = v.replace(/\s*\[\s*[\w\-\/]+\.txt\s*\]\s*/g, ' ');
+  // 5. (/api/file/...) and /api/file/...  leaked paths
+  v = v.replace(/\s*\(?\s*\/api\/file\/[^\s)]+\s*\)?\s*/g, ' ');
+  // 6. raw .txt filename refs (when LLM writes "see foo.txt")
+  v = v.replace(/\b[\w-]{20,}\.txt\b/g, '');
+  // 7. ["Source : ... chemin/.../file.txt" or similar] — keep "Source : N" but drop the path
+  v = v.replace(/(\bSource\s*:\s*)[^\n.]*?\.txt/gi, '$1');
+  v = v.replace(/(\bالمصدر\s*:\s*)[^\n.]*?\.txt/gi, '$1');
+
+  // Collapse repeated whitespace from removals
+  v = v.replace(/[ \t]{2,}/g, ' ');
+  // Remove orphan " ." / " ," leftovers
+  v = v.replace(/\s+([.,;:!?])/g, '$1');
+  // Trim
+  v = v.trim();
+  return v;
+}
+
 function MarkdownLite({ content }: { content: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const html = renderMarkdown(content);
+  const cleaned = cleanAnswer(content);
+  const html = renderMarkdown(cleaned);
   // After every content change, run KaTeX's auto-render on the new DOM.
   // We use the lower-level katex.render() directly (more reliable than
   // the auto-render extension which auto-runs only on page load).
