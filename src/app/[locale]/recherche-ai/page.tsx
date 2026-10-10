@@ -90,7 +90,24 @@ export default function RechercheAiPage() {
     });
   }
 
-  async function runSearch(q: string) {
+  // Detect language of typed/clicked query: 'fr' | 'ar' | 'darija'
+  // (darija is AR script with markers like "كيفاش", "نحب", "باش", "على خاطر")
+  function detectQueryLocale(text: string): 'fr' | 'ar' | 'darija' {
+    const t = text.trim();
+    if (!t) return locale as any;
+    // Count Arabic characters (Unicode range)
+    const arabicChars = (t.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g) || []).length;
+    const latinChars = (t.match(/[A-Za-zÀ-ÿ]/g) || []).length;
+    // If predominantly Arabic, check for darija markers
+    if (arabicChars > latinChars) {
+      const darijaMarkers = /\b(كيفاش|نحب|نحبش|نحبوا|باش|برشة|تو|على خاطر|يخدم|تخدم|موش|كة|دروك|توا|هاذي|هاذا|هاذو|هاذي|ينجم|لقا|البارح|خاصة)\b/;
+      if (darijaMarkers.test(t)) return 'darija';
+      return 'ar';
+    }
+    return 'fr';
+  }
+
+  async function runSearch(q: string, overrideLocale?: 'fr' | 'ar' | 'darija') {
     const trimmed = q.trim();
     if (trimmed.length < 2) return;
     setQuery(trimmed);
@@ -98,10 +115,12 @@ export default function RechercheAiPage() {
     setError(null);
     setResult(null);
     pushRecent(trimmed);
+    // Priority: explicit override (from chip) > auto-detect from query > URL locale
+    const effectiveLocale = overrideLocale || detectQueryLocale(trimmed) || locale;
     const t0 = performance.now();
     try {
       const res = await fetch(
-        `/api/search/ai?q=${encodeURIComponent(trimmed)}&locale=${locale}`,
+        `/api/search/ai?q=${encodeURIComponent(trimmed)}&locale=${effectiveLocale}`,
         { method: 'GET', headers: { Accept: 'application/json' } }
       );
       const data: AiResponse = await res.json();
@@ -115,7 +134,7 @@ export default function RechercheAiPage() {
       setError(e?.message || 'Erreur réseau');
     } finally {
       const t1 = performance.now();
-      console.log(`[recherche-ai] ${trimmed} → ${(t1 - t0).toFixed(0)}ms`);
+      console.log(`[recherche-ai] ${trimmed} (${effectiveLocale}) → ${(t1 - t0).toFixed(0)}ms`);
       setLoading(false);
     }
   }
@@ -299,7 +318,7 @@ export default function RechercheAiPage() {
                       return (
                         <button
                           key={`${lang}-${item.s}-${i}`}
-                          onClick={() => runSearch(item.q)}
+                          onClick={() => runSearch(item.q, item.lang)}
                           className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-start border transition ${
                             SUBJECT_STYLES[item.s] || 'bg-slate-50 text-slate-700 border-slate-200'
                           }`}
