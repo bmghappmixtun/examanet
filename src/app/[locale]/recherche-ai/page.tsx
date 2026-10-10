@@ -60,11 +60,13 @@ export default function RechercheAiPage() {
 
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false); // streaming is in flight (first token not yet)
   const [result, setResult] = useState<AiResponse | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showReasoning, setShowReasoning] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Load recent queries on mount
   useEffect(() => {
@@ -110,32 +112,159 @@ export default function RechercheAiPage() {
   async function runSearch(q: string, overrideLocale?: 'fr' | 'ar' | 'darija') {
     const trimmed = q.trim();
     if (trimmed.length < 2) return;
+
+    // Abort any in-flight request
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
+
     setQuery(trimmed);
     setLoading(true);
+    setStreaming(false);
     setError(null);
     setResult(null);
+    setShowReasoning(false);
     pushRecent(trimmed);
-    // Priority: explicit override (from chip) > auto-detect from query > URL locale
+
     const effectiveLocale = overrideLocale || detectQueryLocale(trimmed) || locale;
     const t0 = performance.now();
+
     try {
       const res = await fetch(
-        `/api/search/ai?q=${encodeURIComponent(trimmed)}&locale=${effectiveLocale}`,
-        { method: 'GET', headers: { Accept: 'application/json' } }
+        `/api/search/ai?q=${encodeURIComponent(trimmed)}&locale=${effectiveLocale}&stream=1`,
+        {
+          method: 'GET',
+          headers: { Accept: 'text/event-stream' },
+          signal: ac.signal,
+        }
       );
-      const data: AiResponse = await res.json();
+
       if (!res.ok) {
-        setError(data.message || data.error || `Erreur ${res.status}`);
-      } else {
-        setResult(data);
-        setShowReasoning(false); // reset on new query
+        // Non-streaming error (rate limit, 5xx, config missing, etc.)
+        let errMsg = `Erreur ${res.status}`;
+        try {
+          const data = await res.json();
+          errMsg = data.message || data.error || errMsg;
+        } catch {
+          /* ignore */
+        }
+        setError(errMsg);
+        return;
+      }
+
+      if (!res.body) {
+        setError('Réponse vide du serveur');
+        return;
+      }
+
+      // We have a streaming response. Initialize the result shell so the
+      // MarkdownLite can render incrementally as content tokens arrive.
+      setResult({
+        query: trimmed,
+        locale: effectiveLocale,
+        model: '',
+        answer: '',
+        reasoning: '',
+        sources: [],
+        total: 0,
+        durationMs: 0,
+      });
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let firstTokenAt = 0;
+      let didFireFirstToken = false;
+
+      const setMeta = (model: string) => {
+        setResult((prev) => (prev ? { ...prev, model: prev.model || model } : prev));
+      };
+
+      const appendContent = (text: string) => {
+        if (!didFireFirstToken) {
+          didFireFirstToken = true;
+          firstTokenAt = performance.now();
+          setStreaming(false); // hide loading skeleton, content is flowing
+        }
+        setResult((prev) => (prev ? { ...prev, answer: prev.answer + text } : prev));
+      };
+
+      const appendReasoning = (text: string) => {
+        setResult((prev) => (prev ? { ...prev, reasoning: prev.reasoning + text } : prev));
+      };
+
+      const setDone = (usage: any) => {
+        setResult((prev) =>
+          prev
+            ? {
+                ...prev,
+                usage,
+                durationMs: Math.round(performance.now() - t0),
+              }
+            : prev
+        );
+      };
+
+      const setStreamError = (message: string) => {
+        setError(message);
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (ac.signal.aborted) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // keep partial line
+
+        for (const rawLine of lines) {
+          const line = rawLine.trimEnd();
+          if (!line.startsWith('data:')) continue;
+          const data = line.slice(5).trim();
+          if (!data) continue;
+          let evt: any;
+          try {
+            evt = JSON.parse(data);
+          } catch {
+            continue;
+          }
+          if (evt.type === 'meta' && evt.model) {
+            setMeta(evt.model);
+            if (evt.locale) {
+              setResult((prev) => (prev ? { ...prev, locale: evt.locale } : prev));
+            }
+          } else if (evt.type === 'content' && evt.text) {
+            appendContent(evt.text);
+          } else if (evt.type === 'reasoning' && evt.text) {
+            appendReasoning(evt.text);
+          } else if (evt.type === 'done') {
+            setDone(evt.usage);
+          } else if (evt.type === 'error') {
+            setStreamError(evt.message || 'stream error');
+          }
+        }
+      }
+
+      // If stream closed without 'done' event, finalize anyway
+      if (!didFireFirstToken) {
+        // Server never sent content — could be empty answer
+        setStreaming(false);
       }
     } catch (e: any) {
+      if (e?.name === 'AbortError') {
+        // User cancelled (new query) — no error
+        return;
+      }
+      console.error('[recherche-ai] error:', e);
       setError(e?.message || 'Erreur réseau');
     } finally {
       const t1 = performance.now();
-      console.log(`[recherche-ai] ${trimmed} (${effectiveLocale}) → ${(t1 - t0).toFixed(0)}ms`);
+      console.log(
+        `[recherche-ai] ${trimmed} (${effectiveLocale}) → ${(t1 - t0).toFixed(0)}ms`
+      );
       setLoading(false);
+      setStreaming(false);
     }
   }
 
@@ -342,11 +471,19 @@ export default function RechercheAiPage() {
           </div>
         )}
 
-        {/* Loading */}
-        {loading && (
+        {/* Loading — only when waiting for FIRST token (we don't have a result yet) */}
+        {loading && !result && (
           <div className="text-center py-16">
             <div className="inline-block w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
             <p className="mt-4 text-slate-600">{t.loading}</p>
+          </div>
+        )}
+
+        {/* Streaming in progress — we have partial content, waiting for more tokens */}
+        {streaming && result && (
+          <div className="text-center py-4 text-xs text-slate-400 flex items-center justify-center gap-2">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+            <span>{isAr ? 'جاري الكتابة…' : 'En cours d\'écriture…'}</span>
           </div>
         )}
 
@@ -394,7 +531,15 @@ export default function RechercheAiPage() {
                   )}
                 </div>
 
-                <MarkdownLite content={result.answer} />
+                <div className="relative">
+                  <MarkdownLite content={result.answer} />
+                  {streaming && (
+                    <span
+                      className="inline-block w-1.5 h-4 bg-primary-500 ml-0.5 align-middle animate-pulse"
+                      aria-hidden
+                    />
+                  )}
+                </div>
 
                 {result.reasoning && showReasoning && (
                   <details className="mt-4 pt-4 border-t border-slate-100">

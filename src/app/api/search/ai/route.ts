@@ -4,22 +4,18 @@
  *
  * 2026-10-08 v3: migrated from /search (pure retrieval) to
  *   /chat/completions (managed RAG with LLM generation).
+ * 2026-10-10 v4: added SSE streaming (token-by-token progressive answer)
+ *   - client: ?stream=1 OR Accept: text/event-stream
+ *   - server: forwards CF AI Search SSE deltas as our own SSE protocol
+ *   - protocol: data: {type:'content'|'reasoning'|'done'|'error', ...}
  *
  * Architecture (3 layers, WITH LLM in the loop):
  *   1. USER  (frontend /recherche-ai or /api/search/ai)
- *   2. WORKER PROXY  (this route — thin pass-through)
- *        - validate query
- *        - locale detect (FR / AR / darija) → system prompt
- *        - forward to CF AI Search /chat/completions
- *        - parse response + chunks (sources)
- *        - lookup D1 Resource for richer previews
- *   3. CF AI SEARCH  (managed RAG, @cf/openai/gpt-oss-120b default model)
- *        - embeds query with qwen3-embedding-0.6b
- *        - retrieves top-K chunks (1024-dim, 14k indexed PDFs)
- *        - generates answer in user's language
+ *   2. WORKER PROXY  (this route — thin pass-through, supports SSE)
+ *   3. CF AI SEARCH  (managed RAG, @cf/openai/gpt-oss-120b default)
  *
  * Auth: CF_API_TOKEN via getSecret() (NEVER hardcode).
- * Rate limit: 20 req/min/IP (LLM is expensive).
+ * Rate limit: 20 req/min/IP.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -80,11 +76,9 @@ function detectLocale(query: string, explicit?: string): 'fr' | 'ar' | 'darija' 
   if (explicit && (explicit === 'fr' || explicit === 'ar' || explicit === 'darija')) {
     return explicit as 'fr' | 'ar' | 'darija';
   }
-  // Arabic Unicode range (basic + extended)
   const arabicChars = (query.match(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g) || []).length;
   const latinChars = (query.match(/[a-zA-Z]/g) || []).length;
   if (arabicChars > latinChars * 0.5) {
-    // Detected Arabic — check if it's darija (lots of latin script mixed in)
     if (arabicChars >= 2 && latinChars >= 2 && arabicChars < query.length * 0.7) {
       return 'darija';
     }
@@ -93,25 +87,20 @@ function detectLocale(query: string, explicit?: string): 'fr' | 'ar' | 'darija' 
   return 'fr';
 }
 
-interface ChatChunk {
-  id?: string;
-  type?: string;
-  score?: number;
-  text?: string;
-  item?: {
-    key?: string;
-    metadata?: Record<string, any>;
-  };
-  scoring_details?: { vector_score?: number };
-}
-
 interface ChatChoice {
   finish_reason?: string;
   index?: number;
   message?: {
     role?: string;
     content?: string;
-    reasoning?: string;        // gpt-oss-120b exposes CoT
+    reasoning?: string;
+    reasoning_content?: string;
+  };
+  // streaming
+  delta?: {
+    role?: string;
+    content?: string;
+    reasoning?: string;
     reasoning_content?: string;
   };
 }
@@ -122,25 +111,12 @@ interface ChatResponse {
   created?: number;
   model?: string;
   choices?: ChatChoice[];
-  chunks?: ChatChunk[];
+  chunks?: any[];
   usage?: {
     prompt_tokens?: number;
     completion_tokens?: number;
     total_tokens?: number;
   };
-}
-
-interface D1Lookup {
-  id: string;
-  numericId: number | null;
-  titleFr: string | null;
-  titleAr: string | null;
-  typeSlug: string | null;
-  subjectSlug: string | null;
-  classSlug: string | null;
-  pdfUrl: string | null;
-  thumbnailUrl: string | null;
-  teacherName: string | null;
 }
 
 async function getD1() {
@@ -152,116 +128,16 @@ async function getD1() {
   }
 }
 
-/** Extract resource CUID from the AI Search item key (text/{cuid}.txt) */
-function extractResourceIdFromKey(key?: string): string | null {
-  if (!key) return null;
-  const m = key.match(/^text\/([a-z0-9]+)\.txt$/i);
-  return m ? m[1] : null;
-}
-
-/**
- * Parse the structured header that the ingestion script writes to each
- * .txt chunk. Format:
- *   # Titre - Matière - Niveau - Section (année) : Topic
- *   PDF original: /api/file/.../...pdf
- *   Resource ID: {cuid}
- *   Matière: ... / Niveau: ... / Prof(s): ... / Tags: ...
- *   ---
- *   {PDF body}
- */
-function parseContentHeader(content: string): {
-  title: string | null;
-  resourceId: string | null;
-  pdfPath: string | null;
-  metadata: Record<string, string>;
-  body: string;
-} {
-  const lines = content.split('\n');
-  const metadata: Record<string, string> = {};
-  let i = 0;
-
-  let title: string | null = null;
-  if (lines[0]?.startsWith('# ')) {
-    title = lines[0].slice(2).trim();
-    i = 1;
-  }
-  while (i < lines.length && lines[i].trim() === '') i++;
-
-  for (; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmed = line.trim();
-    if (trimmed === '---') { i++; break; }
-    if (trimmed === '') continue;
-    const m = line.match(/^([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ\s]*?):\s*(.+)$/);
-    if (m) metadata[m[1].trim()] = m[2].trim();
-    else break;
-  }
-
-  const body = lines.slice(i).join('\n').trim();
-  return {
-    title,
-    resourceId: metadata['Resource ID'] || null,
-    pdfPath: metadata['PDF original'] || null,
-    metadata,
-    body,
-  };
-}
-
-async function lookupResourcesByIds(
-  db: any,
-  ids: string[]
-): Promise<Map<string, D1Lookup>> {
-  const map = new Map<string, D1Lookup>();
-  if (!db || ids.length === 0) return map;
-  const placeholders = ids.map(() => '?').join(',');
-  try {
-    const rows = await db
-      .prepare(
-        `SELECT r.id, r.numericId,
-                r.titleFr, r.titleAr,
-                t.slug AS typeSlug,
-                s.slug AS subjectSlug,
-                c.slug AS classSlug,
-                (SELECT fileKey FROM ResourceFile WHERE resourceId = r.id AND kind = 'pdf' LIMIT 1) AS pdfKey,
-                (SELECT fileKey FROM ResourceFile WHERE resourceId = r.id AND kind = 'thumbnail' LIMIT 1) AS thumbKey,
-                (SELECT u.firstName || ' ' || u.lastName FROM User u WHERE u.id = r.teacherId LIMIT 1) AS teacherName
-         FROM Resource r
-         LEFT JOIN Type t ON t.id = r.typeId
-         LEFT JOIN Subject s ON s.id = r.subjectId
-         LEFT JOIN Class c ON c.id = r.classId
-         WHERE r.id IN (${placeholders})`
-      )
-      .bind(...ids)
-      .all();
-    for (const row of rows.results || []) {
-      const pdfUrl = row.pdfKey ? `/api/file/${row.pdfKey}` : null;
-      const thumbnailUrl = row.thumbKey ? `/api/file/${row.thumbKey}` : null;
-      map.set(row.id, {
-        id: row.id,
-        numericId: row.numericId,
-        titleFr: row.titleFr,
-        titleAr: row.titleAr,
-        typeSlug: row.typeSlug,
-        subjectSlug: row.subjectSlug,
-        classSlug: row.classSlug,
-        pdfUrl,
-        thumbnailUrl,
-        teacherName: row.teacherName,
-      });
-    }
-  } catch (e) {
-    console.error('[ai-search] D1 lookup failed:', e);
-  }
-  return map;
-}
-
 export async function GET(req: NextRequest) {
   const t0 = Date.now();
   const p = req.nextUrl.searchParams;
   const query = (p.get('q') || '').trim();
   const explicitLocale = p.get('locale') || undefined;
+  const wantsStream =
+    p.get('stream') === '1' ||
+    (req.headers.get('accept') || '').includes('text/event-stream');
 
-  // Rate limit — 20 req/min (LLM is more expensive than keyword search)
+  // Rate limit
   const rl = await rateLimitKv(req, 'search-ai', 20, 60 * 1000);
   if (!rl.allowed) return rateLimitResponse(rl);
 
@@ -295,36 +171,34 @@ export async function GET(req: NextRequest) {
   const locale = detectLocale(query, explicitLocale);
   const systemPrompt = SYSTEM_PROMPTS[locale];
 
-  // Call CF AI Search chat/completions endpoint
-  // Model: @cf/openai/gpt-oss-120b (default, ~120B params, multilingual, great for FR/AR/darija)
-  // Override with CF_AI_SEARCH_MODEL env if you want (e.g. "@cf/meta/llama-3.3-70b-instruct-fp8-fast")
   const customModel = await getSecret('CF_AI_SEARCH_MODEL');
   const model = customModel || '@cf/openai/gpt-oss-120b';
 
   const cfUrl = `${CF_API_BASE}/accounts/${accountId}/ai-search/instances/${instance}/chat/completions`;
 
+  // Build CF request body (with optional streaming)
+  const cfBody = {
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: query },
+    ],
+    max_num_results: MAX_RESULTS,
+    ...(wantsStream ? { stream: true } : {}),
+  };
+
   let cfRes: Response;
-  let cfBody: ChatResponse;
   try {
     cfRes = await fetch(cfUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
+        Accept: wantsStream ? 'text/event-stream' : 'application/json',
       },
-      body: JSON.stringify({
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: query },
-        ],
-        max_num_results: MAX_RESULTS,
-        // stream: false → simple JSON response (we could later add SSE)
-      }),
-      // AI Search chat can be slow (5-10s)
-      // @ts-ignore — Node fetch supports signal
-      signal: AbortSignal.timeout(30_000),
+      body: JSON.stringify(cfBody),
+      // CF AI Search chat can be slow; allow up to 60s
+      signal: AbortSignal.timeout(60_000),
     });
-    cfBody = (await cfRes.json()) as ChatResponse;
   } catch (e: any) {
     console.error('[ai-search] CF fetch failed:', e);
     return NextResponse.json(
@@ -334,58 +208,39 @@ export async function GET(req: NextRequest) {
   }
 
   if (!cfRes.ok) {
-    const errMsg = (cfBody as any)?.errors?.[0]?.message || `CF returned ${cfRes.status}`;
-    console.error('[ai-search] CF error:', errMsg);
+    const errText = await cfRes.text().catch(() => '');
+    console.error('[ai-search] CF error:', cfRes.status, errText.slice(0, 500));
     return NextResponse.json(
-      { error: 'upstream_error', message: errMsg },
+      {
+        error: 'upstream_error',
+        message: `CF returned ${cfRes.status}`,
+        detail: errText.slice(0, 500),
+      },
       { status: 502 }
     );
   }
 
-  // Extract LLM answer + reasoning (CoT)
-  const message = cfBody.choices?.[0]?.message;
+  // Streaming path: forward SSE chunks
+  if (wantsStream) {
+    return streamFromCf(cfRes, model, locale, t0);
+  }
+
+  // Non-streaming: parse JSON
+  const cfBody2 = (await cfRes.json()) as ChatResponse;
+  const message = cfBody2.choices?.[0]?.message;
   const answer = message?.content || '';
   const reasoning = message?.reasoning || message?.reasoning_content || '';
-
-  // Parse sources (chunks) for source cards
-  const chunks: ChatChunk[] = cfBody.chunks || [];
-  const resourceIds = chunks
-    .map((c) => extractResourceIdFromKey(c.item?.key))
-    .filter((id): id is string => !!id);
-  const db = await getD1();
-  const d1Map = await lookupResourcesByIds(db, resourceIds);
-
-  const sources = chunks.map((c) => {
-    const rid = extractResourceIdFromKey(c.item?.key);
-    const d1 = rid ? d1Map.get(rid) : null;
-    const headerParsed = parseContentHeader(c.text || '');
-    return {
-      id: c.id,
-      itemKey: c.item?.key,
-      score: c.score,
-      resourceId: rid,
-      title: headerParsed.title,
-      matiere: headerParsed.metadata['Matière'] || null,
-      niveau: headerParsed.metadata['Niveau'] || null,
-      profs: headerParsed.metadata['Prof(s)'] || null,
-      tags: headerParsed.metadata['Tags'] || null,
-      pdfPath: headerParsed.pdfPath,
-      numericId: d1?.numericId || null,
-      thumbnailUrl: d1?.thumbnailUrl || null,
-      excerpt: (headerParsed.body || c.text || '').slice(0, 320).trim(),
-    };
-  });
 
   return NextResponse.json(
     {
       query,
       locale,
       model,
-      answer,         // LLM-generated markdown answer
-      reasoning,      // Chain-of-thought (optional, exposed for debugging)
-      sources,
-      total: sources.length,
-      usage: cfBody.usage,  // tokens (for monitoring cost)
+      answer,
+      reasoning,
+      sources: [], // kept for backwards compat; no longer displayed
+      total: 0,
+      usage: cfBody2.usage,
       durationMs: Date.now() - t0,
     },
     {
@@ -394,4 +249,129 @@ export async function GET(req: NextRequest) {
       },
     }
   );
+}
+
+/**
+ * Forward CF AI Search SSE stream to client.
+ * CF sends OpenAI-compatible deltas:
+ *   data: {"id":"...","choices":[{"delta":{"content":"hello"}}]}
+ *   data: {"id":"...","choices":[{"delta":{"content":" world"}}]}
+ *   data: [DONE]
+ * We re-emit as a simpler protocol:
+ *   data: {"type":"meta","model":"...","locale":"..."}
+ *   data: {"type":"content","text":"..."}
+ *   data: {"type":"reasoning","text":"..."}
+ *   data: {"type":"done","usage":{...},"durationMs":...}
+ *   data: {"type":"error","message":"..."}
+ */
+function streamFromCf(
+  cfRes: Response,
+  model: string,
+  locale: string,
+  t0: number
+): Response {
+  const { readable, writable } = new TransformStream();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+
+  // Fire-and-forget the pump
+  (async () => {
+    const reader = cfRes.body!.getReader();
+    let buffer = '';
+    let usage: any = null;
+    let sentMeta = false;
+
+    const writeEvent = async (obj: any) => {
+      try {
+        await writer.write(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
+      } catch {
+        // writer closed; ignore
+      }
+    };
+
+    try {
+      // Meta event (model + locale) before the first token
+      if (!sentMeta) {
+        await writeEvent({ type: 'meta', model, locale });
+        sentMeta = true;
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // keep last partial line
+
+        for (const rawLine of lines) {
+          const line = rawLine.trimEnd();
+          if (!line.startsWith('data:')) continue;
+          const data = line.slice(5).trim();
+          if (!data) continue;
+
+          if (data === '[DONE]') {
+            await writeEvent({
+              type: 'done',
+              usage,
+              durationMs: Date.now() - t0,
+            });
+            continue;
+          }
+
+          let chunk: any;
+          try {
+            chunk = JSON.parse(data);
+          } catch {
+            continue; // skip malformed lines
+          }
+
+          if (chunk.usage) usage = chunk.usage;
+          const choice = chunk.choices?.[0];
+          if (!choice) continue;
+          const delta = choice.delta;
+          if (!delta) continue;
+
+          // Reasoning first (gpt-oss-120b emits CoT as 'reasoning' or 'reasoning_content')
+          const reasoningText = delta.reasoning || delta.reasoning_content;
+          if (reasoningText) {
+            await writeEvent({ type: 'reasoning', text: reasoningText });
+          }
+          // Then content
+          if (delta.content) {
+            await writeEvent({ type: 'content', text: delta.content });
+          }
+        }
+      }
+
+      // If we never got [DONE] (CF sometimes just closes the stream), emit done
+      await writeEvent({
+        type: 'done',
+        usage,
+        durationMs: Date.now() - t0,
+      });
+    } catch (e: any) {
+      console.error('[ai-search] stream error:', e);
+      await writeEvent({
+        type: 'error',
+        message: e?.message || 'stream error',
+      });
+    } finally {
+      try {
+        await writer.close();
+      } catch {
+        // already closed
+      }
+    }
+  })();
+
+  return new Response(readable, {
+    headers: {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    },
+  });
 }
