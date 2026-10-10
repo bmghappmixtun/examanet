@@ -350,22 +350,15 @@ export default function RechercheAiPage() {
           </div>
         )}
 
-        {/* Error */}
+        {/* Error — soft toast, auto-dismiss, closeable, with retry */}
         {error && !loading && (
-          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-red-800">
-            <p className="font-semibold mb-1">⚠️ {error}</p>
-            {error.includes('CF_API_TOKEN') && (
-              <p className="text-sm mt-2 font-mono text-xs">
-                wrangler secret put CF_API_TOKEN
-              </p>
-            )}
-            <Link
-              href="/recherche"
-              className="inline-block mt-3 text-sm text-primary-700 underline"
-            >
-              {t.fallbackCta}
-            </Link>
-          </div>
+          <ErrorToast
+            error={error}
+            lastQuery={query}
+            onClose={() => setError(null)}
+            onRetry={() => runSearch(query)}
+            t={t}
+          />
         )}
 
         {/* Result */}
@@ -455,6 +448,81 @@ export default function RechercheAiPage() {
  * Avoids pulling in a 100kb markdown library for a small block of LLM
  * output. The result is HTML safe (we escape first, then apply patterns).
  */
+function ErrorToast({
+  error,
+  lastQuery,
+  onClose,
+  onRetry,
+  t,
+}: {
+  error: string;
+  lastQuery: string;
+  onClose: () => void;
+  onRetry: () => void;
+  t: any;
+}) {
+  // Auto-dismiss after 12s (timeout/network errors can be transient)
+  useEffect(() => {
+    const id = setTimeout(onClose, 12000);
+    return () => clearTimeout(id);
+  }, [error, onClose]);
+
+  // Detect error category
+  const isTimeout = /timeout|aborted|abort|deadline/i.test(error);
+  const isAuth = error.includes('CF_API_TOKEN') || error.includes('401') || error.includes('403');
+  const isRateLimit = /429|rate.?limit/i.test(error);
+
+  let icon = '⚠️';
+  let title = 'Une erreur est survenue';
+  let detail: string | null = null;
+  if (isTimeout) {
+    icon = '⏱';
+    title = 'La requête a pris trop de temps';
+    detail = 'Le modèle met parfois plus de 30 s. Réessaie ou reformule ta question.';
+  } else if (isAuth) {
+    icon = '🔑';
+    title = 'Service momentanément indisponible';
+    detail = null; // don't expose the secret name to end users
+  } else if (isRateLimit) {
+    icon = '⏸';
+    title = 'Trop de requêtes — réessaie dans quelques secondes';
+    detail = null;
+  }
+
+  return (
+    <div
+      role="alert"
+      className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-start gap-3 text-amber-900 text-sm animate-[fadeIn_0.2s_ease-out]"
+    >
+      <span className="text-base mt-0.5 shrink-0">{icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold">{title}</p>
+        {detail && <p className="text-xs text-amber-800/80 mt-0.5">{detail}</p>}
+        <div className="mt-2 flex items-center gap-3 text-xs">
+          {lastQuery && lastQuery.length >= 2 && (
+            <button
+              onClick={onRetry}
+              className="text-amber-900 underline hover:no-underline"
+            >
+              Réessayer
+            </button>
+          )}
+          <Link href="/recherche" className="text-amber-900/70 underline hover:no-underline">
+            {t.fallbackCta}
+          </Link>
+        </div>
+      </div>
+      <button
+        onClick={onClose}
+        aria-label="Fermer"
+        className="text-amber-700/60 hover:text-amber-900 text-lg leading-none shrink-0 -mt-1"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
 // Strip the LLM-leaked artifacts that show up in answers:
 // - [\text{...}]            → LaTeX-style wrapping the LLM hallucinated
 // - [\text/xxx.txt]         → file path leak from chunk metadata
