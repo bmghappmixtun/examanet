@@ -65,6 +65,7 @@ export async function GET(req: NextRequest) {
       severities: Array.from(g.severities),
       reference: g.sample.reference,
       message: g.sample.message,
+      stack: g.sample.stack, // 2026-10-11: expose stack so the nightly agent can pinpoint the failing file:line
       url: g.sample.url,
       source: g.sample.source,
       createdAt: g.sample.createdAt,

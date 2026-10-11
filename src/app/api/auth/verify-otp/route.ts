@@ -84,9 +84,16 @@ export async function POST(req: NextRequest) {
       .run();
 
     // Send confirmation email
-    await sendWelcomeConfirmedEmail(user.email, user.firstName ?? '', user.role).catch(
-      (e) => console.error('Confirmation email error:', e),
-    );
+    // 2026-10-11: only for STUDENTS. For TEACHERs, the "Compte activé" copy
+    // is misleading because the account is still PENDING_FILE_VERIFICATION
+    // (waiting for the teacher to send a verification file, then admin
+    // approval). Teachers get a more accurate email from
+    // sendTeacherFileRequestEmail() further below.
+    if (user.role !== 'TEACHER') {
+      await sendWelcomeConfirmedEmail(user.email, user.firstName ?? '', user.role).catch(
+        (e) => console.error('Confirmation email error:', e),
+      );
+    }
 
     // Auto-login students; teachers wait for approval
     if (newStatus === 'ACTIVE') {
