@@ -5,6 +5,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { uploadFile } from '@/lib/storage';
 import { detectFormat } from '@/lib/document-converter';
 import { sendAdminVerificationFilesEmail } from '@/lib/email';
+import { getAdminEmailsFromConfig } from '@/lib/admin-config';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -127,20 +128,33 @@ export async function POST(req: NextRequest) {
       "UPDATE User SET verificationFilesReceivedAt = ?, status = 'PENDING_REVIEW', updatedAt = ? WHERE id = ?"
     ).bind(now, now, user.id).run();
 
-    // Send email to admin
+    // Send email to admins
+    // 2026-10-11: Send to ALL admins (DB + hardcoded config). Previously we
+    // only sent to the FIRST DB admin, which meant the user (boutiti.mehdi)
+    // missed notifications when he wasn't first. Merged DB admins with
+    // getAdminEmailsFromConfig() via a Set to dedupe.
     try {
-      const admin: any = await db.prepare("SELECT email FROM User WHERE role = 'ADMIN' LIMIT 1").first();
-      if (admin?.email) {
-        await sendAdminVerificationFilesEmail({
-          to: admin.email,
-          teacherName: `${user.firstName} ${user.lastName}`,
-          fileCount: (countResult?.c || 0) + 1,
-          teacherId: user.id,
-          locale: 'fr',
-        });
+      const admins: any = await db.prepare("SELECT email FROM User WHERE role = 'ADMIN'").all();
+      const recipients = new Set<string>(getAdminEmailsFromConfig());
+      for (const a of admins?.results || []) {
+        if (a?.email) recipients.add(a.email);
+      }
+      if (recipients.size > 0) {
+        for (const adminEmail of recipients) {
+          await sendAdminVerificationFilesEmail({
+            to: adminEmail,
+            teacherName: `${user.firstName} ${user.lastName}`,
+            teacherEmail: user.email,
+            fileCount: (countResult?.c || 0) + 1,
+            teacherId: user.id,
+            locale: 'fr',
+          }).catch((e) =>
+            console.error(`[verification-files] admin email to ${adminEmail} failed:`, e),
+          );
+        }
       }
     } catch (e) {
-      console.error('[verification-files] admin email failed:', e);
+      console.error('[verification-files] admin email loop failed:', e);
     }
 
     return NextResponse.json({ id: fileId, fileUrl, success: true });
