@@ -513,3 +513,40 @@ export function renderMagicLinkEmail(
     footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Connexion sécurisée par lien magique</p>`,
   });
 }
+
+/**
+ * 2026-10-11: Email sent to admins when a TEACHER has been notified
+ * (via sendTeacherFileRequestEmail) to upload their verification file.
+ * This is a delivery-confirmation email so admins know the teacher has
+ * been prompted — the file is not yet uploaded, just the prompt was sent.
+ */
+export function renderAdminTeacherNotifiedEmail(
+  firstName: string,
+  lastName: string,
+  email: string,
+  locale: 'fr' | 'ar' = 'fr',
+): string {
+  return renderEmailShell({
+    accent: 'blue',
+    icon: '📨',
+    title: locale === 'ar' ? 'المعلم تم إشعاره' : 'Professeur notifié',
+    subtitle: locale === 'ar'
+      ? 'تم إرسال طلب ملف التحقق إلى المعلم'
+      : 'Email de demande de fichier envoyé à l\'enseignant',
+    preheader: `${firstName} ${lastName} a reçu la demande de fichier de vérification`,
+    body: `
+      <p style="margin:0 0 16px;font-size:16px;color:#0F172A;font-family:${F};">Bonjour Admin,</p>
+      ${paragraph(
+        `L'enseignant <strong style="color:#0F172A;">${firstName} ${lastName}</strong> vient de recevoir l'email lui demandant d'envoyer son fichier de vérification.`,
+      )}
+      <div style="background:#E0F2FE;border-left:4px solid #0EA5E9;border-radius:8px;padding:16px;margin:20px 0;font-family:${F};">
+        <p style="margin:0 0 8px;color:#0C4A6E;font-weight:bold;">📨 Email de demande envoyé</p>
+        <p style="margin:4px 0;color:#075985;font-size:14px;"><strong>Nom :</strong> ${firstName} ${lastName}</p>
+        <p style="margin:4px 0;color:#075985;font-size:14px;"><strong>Email :</strong> <a href="mailto:${email}" style="color:#0369A1;">${email}</a></p>
+        <p style="margin:4px 0;color:#075985;font-size:14px;"><strong>Étape :</strong> Email vérifié → Demande de fichier envoyée</p>
+      </div>
+      ${muted("Le prof sait maintenant qu'il doit envoyer un fichier. Vous recevrez un autre email dès qu'il l'aura uploadé.")}
+    `,
+    footer: `<p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;font-family:${F};">Examanet · Système de notification admin</p>`,
+  });
+}

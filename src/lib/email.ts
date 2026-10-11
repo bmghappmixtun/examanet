@@ -5,6 +5,7 @@ import {
   renderEditApprovedEmail,
   renderEditRejectedEmail,
   renderNewEditPendingEmail,
+  renderAdminTeacherNotifiedEmail,
 } from './email-templates';
 import {
   renderEmailShell,
@@ -235,6 +236,40 @@ export async function sendTeacherFileRequestEmail(opts: {
   const sendResult = await sendViaResend({
     to: [opts.to],
     subject: 'Action requise : uploadez votre fichier',
+    html,
+  });
+  if (!sendResult.ok) {
+    return new EmailResult(false, 'failed', sendResult.error);
+  }
+  return new EmailResult(true, sendResult.id || 'sent');
+}
+
+/**
+ * 2026-10-11: Notify admins that a teacher has received the
+ * sendTeacherFileRequestEmail — this is a delivery-confirmation email
+ * (not "file uploaded"). Admins use this to know the teacher was
+ * successfully prompted and is now expected to upload.
+ */
+export async function sendAdminTeacherNotifiedEmail(opts: {
+  to: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  locale?: 'fr' | 'ar';
+}): Promise<EmailResult> {
+  if (process.env.DISABLE_EMAILS === 'true' || process.env.NODE_ENV === 'test') {
+    console.log(`[EMAIL SKIP] Admin teacher-notified for ${opts.to}`);
+    return new EmailResult(true, 'test-mode');
+  }
+  const html = renderAdminTeacherNotifiedEmail(
+    opts.firstName,
+    opts.lastName,
+    opts.email,
+    opts.locale || 'fr',
+  );
+  const sendResult = await sendViaResend({
+    to: [opts.to],
+    subject: `📨 ${opts.firstName} ${opts.lastName} a reçu la demande de fichier de vérification`,
     html,
   });
   if (!sendResult.ok) {

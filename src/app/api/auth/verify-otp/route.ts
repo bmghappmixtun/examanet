@@ -2,7 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isValidOrigin, isProduction } from '@/lib/security';
 import { createSession, setSessionCookie } from '@/lib/auth';
-import { sendWelcomeConfirmedEmail } from '@/lib/email';
+import { sendWelcomeConfirmedEmail, sendAdminTeacherNotifiedEmail } from '@/lib/email';
+import { getAdminEmailsFromConfig } from '@/lib/admin-config';
 import { notifyAdminsTeacherActivated, notifyAdminsStudentActivated } from '@/lib/admin-notify';
 
 async function getD1() {
@@ -162,6 +163,33 @@ export async function POST(req: NextRequest) {
           email: user.email,
           note: 'Votre email est vérifié. Pour finaliser la vérification, merci d\'envoyer 1 fichier Word (.docx) ou PDF contenant un exemple de votre travail avec votre nom et prénom.',
         });
+
+        // 2026-10-11: Notify ALL admins that the teacher has been prompted
+        // (delivery confirmation). User (boutiti.mehdi) explicitly asked for
+        // this so he knows the email landed and the teacher is now expected
+        // to upload. Recipients = hardcoded ADMIN_EMAILS + DB admins (deduped).
+        try {
+          const dbAdmins: any = await db
+            .prepare("SELECT email FROM User WHERE role = 'ADMIN'")
+            .all();
+          const recipients = new Set<string>(getAdminEmailsFromConfig());
+          for (const a of dbAdmins?.results || []) {
+            if (a?.email) recipients.add(a.email);
+          }
+          for (const adminEmail of recipients) {
+            await sendAdminTeacherNotifiedEmail({
+              to: adminEmail,
+              firstName: user.firstName || '',
+              lastName: user.lastName || '',
+              email: user.email,
+              locale: 'fr',
+            }).catch((e) =>
+              console.error(`[verify-otp] admin notified email to ${adminEmail} failed:`, e),
+            );
+          }
+        } catch (e) {
+          console.error('[verify-otp] admin notified email loop failed:', e);
+        }
       } catch (e) {
         console.error('[verify-otp] sendTeacherFileRequestEmail error:', e);
       }
