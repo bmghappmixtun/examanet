@@ -703,6 +703,31 @@ function cleanAnswer(text: string): string {
   v = v.replace(/\s+([.,;:!?])/g, '$1');
   // Trim
   v = v.trim();
+
+  // ──────────────────────────────────────────────────────────────────
+  // 8. WRAP BARE LATEX LINES
+  // The LLM sometimes regurgitates raw LaTeX from PDF chunks without
+  // wrapping them in \(...\) or \[...\]. We detect lines that LOOK like
+  // math (start with LaTeX line break `\ `, contain `\command{...}` or
+  // end with `\\`) and wrap them in display math \[...\].
+  //
+  // Patterns covered:
+  //   `\ A = \frac{5+11}{2} \\`   →   `\[ \ A = \frac{5+11}{2} \]`
+  //   `\ B = \frac{7}{8} + (-1) \div 2 \\`   →   `\[ ... \]`
+  //   `\sqrt{2} + \sin(x) = 1`   →   `\[ ... \]`
+  v = v.replace(
+    /(^|\n)(\s*\\[A-Za-z][A-Za-z0-9]*\b[\s\S]*?\\\\?\s*)(?=\n|$)/g,
+    (m, prefix, latexLine) => {
+      // Only wrap if it actually contains a math command (not just a stray backslash)
+      if (!/\\(frac|sqrt|sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|sinh|cosh|tanh|coth|ln|log|exp|sum|prod|int|lim|alpha|beta|gamma|delta|epsilon|theta|lambda|mu|pi|sigma|phi|omega|cdot|times|div|pm|mp|leq|geq|neq|approx|sim|equiv|infty|partial|nabla|to|Rightarrow|Leftarrow|quad|circ|rightarrow|mathrm|text|boxed|overline|underline|bar|hat|vec|dot|ddot|widetilde|widehat|overleftrightarrow|overleftarrow|overrightarrow|not|arg|max|min|sup|inf|det|gcd|deg|hom|ker|im|dim|Pr|mapsto|right|left|big|bigstar|approx|partial|div|times|pm|cap|cup|subset|supset|in|ni|le|ge|forall|exists|Rightarrow|Leftarrow|Leftrightarrow)/.test(latexLine)) {
+        return m;
+      }
+      // Strip trailing `\\` (LaTeX line break) — it's a no-op in markdown
+      const cleaned = latexLine.replace(/\\\\\s*$/, '').trim();
+      return `${prefix}\\[ ${cleaned} \\]`;
+    }
+  );
+
   return v;
 }
 
