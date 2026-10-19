@@ -3,14 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import LazyPDFViewer from '@/components/resources/LazyPDFViewer';
-import AiDescription from '@/components/resources/AiDescription';
 import RatingSection from '@/components/resources/RatingSection';
 import CommentsSection from '@/components/resources/CommentsSection';
+import ResourceScribdHeader from '@/components/resources/ResourceScribdHeader';
+import AiExerciseOverview from '@/components/resources/AiExerciseOverview';
 
 interface ResourceMain {
   numericId: number;
   slug: string;
   title: string;
+  // 2026-10-19: AR title for bilingual docs (used in ResourceScribdHeader)
+  titleAr?: string | null;
   description: string | null;
   summary: string | null;
   type: string;
@@ -19,6 +22,7 @@ interface ResourceMain {
   hasCorrection: number;
   fileKey: string | null;
   fileSize: number | null;
+  pageCount?: number | null;
   viewsCount: number;
   downloadsCount: number;
   avgRating: number;
@@ -39,6 +43,9 @@ interface ResourceMain {
   teacherId: string | null;
   teacherFirstName: string;
   teacherLastName: string;
+  // 2026-10-19: AR teacher name for "Transféré par" when isArDoc=true
+  teacherFirstNameAr?: string | null;
+  teacherLastNameAr?: string | null;
   teacherNumericId: number;
   teacherAvatar: string | null;
   teacherSchool: string | null;
@@ -86,6 +93,20 @@ interface Payload {
     totalDownloads: number;
     totalFavorites: number;
     followersCount: number;
+  } | null;
+  // 2026-10-19: AI-extracted metadata for ResourceScribdHeader + AiExerciseOverview
+  metadata: {
+    systemName: string | null;
+    subject: string | null;
+    dossierTechnique: string | null;
+    shortKeyPoints: string[] | null;
+    keyPoints: string[] | null;
+    topics: string[] | null;
+    level: string | null;
+    estimatedTimeMinutes: number | null;
+    prerequisites: string[] | null;
+    keyInsights: string[] | null;
+    exerciseInsights: string[] | null;
   } | null;
   sameTeacher: RelatedItem[];
   byTypeAndClass: RelatedItem[];
@@ -317,17 +338,61 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
           </div>
         </div>
 
-        {/* AI SUMMARY CARD (full width, above PDF) — same AiDescription as the live site */}
-        {main.summary ? (
-          <div className="mb-6">
-            <AiDescription
-              text={main.summary}
-              source="agent-v2-multilingual"
-              language={main.language}
-              hideTitle={false}
-            />
-          </div>
-        ) : null}
+        {/* AI ZONE (full width, above PDF) — same as the live /fr/ressources/[id] page
+            (ResourceScribdHeader + AiExerciseOverview). Renders:
+            - title
+            - stats row (vues, téléchargements, note, commentaires, pages, durée, taille)
+            - description (collapsible "Réduire" toggle)
+            - "Transféré par" attribution
+            - "Aperçu des exercices" accordion
+            - "Points clés" accordion (with chip tags) */}
+        {(() => {
+          const pdfUrl = main.fileKey ? `${SITE_URL}/api/file/${main.fileKey}` : null;
+          return (
+            <div className="mb-6">
+              <ResourceScribdHeader
+                resourceId={String(main.numericId)}
+                title={main.title}
+                titleAr={main.titleAr || null}
+                description={main.description}
+                pageCount={main.pageCount ?? null}
+                fileSize={main.fileSize ? fmtNum(main.fileSize / 1024) + ' KB' : null}
+                viewsCount={main.viewsCount || 0}
+                downloadsCount={main.downloadsCount || 0}
+                avgRating={main.avgRating || 0}
+                commentsCount={main.commentsCount || 0}
+                downloadUrl={pdfUrl || '#'}
+                teacherName={teacherName || null}
+                teacherNameAr={
+                  main.teacherFirstNameAr && main.teacherLastNameAr
+                    ? `${main.teacherFirstNameAr} ${main.teacherLastNameAr}`
+                    : null
+                }
+                teacherProfileUrl={
+                  main.teacherNumericId
+                    ? `/fr/professeurs/${main.teacherNumericId}`
+                    : null
+                }
+                aiInsights={data?.metadata?.keyInsights || null}
+                aiKeyPoints={data?.metadata?.keyPoints || null}
+                aiShortKeyPoints={data?.metadata?.shortKeyPoints || null}
+                isArDoc={main.language === 'ar'}
+                subjectName={main.subjectNameFr || null}
+                subjectSlug={main.subjectSlug || null}
+              />
+              {/* Exercise overview (separate card with "N exercices X" badge) */}
+              {data?.metadata?.keyInsights && data.metadata.keyInsights.length > 0 ? (
+                <div className="mt-4">
+                  <AiExerciseOverview
+                    keyInsights={data.metadata.keyInsights}
+                    subjectSlug={main.subjectSlug}
+                    resourceType={(main.type as any) || null}
+                  />
+                </div>
+              ) : null}
+            </div>
+          );
+        })()}
 
         <div className="grid lg:grid-cols-[1fr_360px] gap-6">
           {/* MAIN COLUMN */}

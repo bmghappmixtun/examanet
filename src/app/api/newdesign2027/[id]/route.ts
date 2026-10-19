@@ -65,6 +65,46 @@ export async function GET(
       ).first().catch(() => null);
     }
 
+    // 2026-10-19: Fetch ResourceMetadata (AI-extracted exercises, key points, etc.)
+    // so the new design can render the same "Aperçu des exercices" + "Points clés"
+    // accordions as the old design (ResourceScribdHeader + AiExerciseOverview).
+    const meta = await db.prepare(
+      `SELECT systemName, subject, profNames, dossierTechnique, shortKeyPoints,
+              keyPoints, topics, level, estimatedTimeMinutes, prerequisites,
+              keyInsights, exerciseInsights
+       FROM ResourceMetadata WHERE resourceId = ? LIMIT 1`
+    ).bind(main.id).first().catch(() => null);
+
+    // 2026-10-19: Also fetch the AR title if the resource is bilingual
+    const titleArRow = await db.prepare(
+      `SELECT titleAr FROM Resource WHERE id = ? LIMIT 1`
+    ).bind(main.id).first().catch(() => null);
+    if (titleArRow?.titleAr) {
+      main.titleAr = titleArRow.titleAr;
+    }
+
+    // 2026-10-19: Fetch teacher name in AR for "Transféré par" attribution
+    const teacherArRow = main.teacherId
+      ? await db.prepare(
+          `SELECT firstNameAr, lastNameAr FROM User WHERE id = ? LIMIT 1`
+        ).bind(main.teacherId).first().catch(() => null)
+      : null;
+    if (teacherArRow) {
+      main.teacherFirstNameAr = teacherArRow.firstNameAr;
+      main.teacherLastNameAr = teacherArRow.lastNameAr;
+    }
+
+    // Helper to safely parse JSON arrays stored in D1
+    const safeJsonArr = (val: any): string[] | null => {
+      if (!val) return null;
+      try {
+        const parsed = typeof val === 'string' ? JSON.parse(val) : val;
+        return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : null;
+      } catch {
+        return null;
+      }
+    };
+
     // Rating distribution + initial comments for live-site parity
     const ratingDistRes: any = await db.prepare(`
       SELECT value as star, COUNT(*) as count FROM Rating
@@ -208,6 +248,25 @@ export async function GET(
     return NextResponse.json({
       main,
       teacherStats,
+      // 2026-10-19: AI-extracted metadata for the "Aperçu des exercices"
+      // and "Points clés" accordions (matches the old design's
+      // ResourceScribdHeader + AiExerciseOverview components).
+      metadata: meta
+        ? {
+            systemName: meta.systemName || null,
+            subject: meta.subject || null,
+            dossierTechnique: meta.dossierTechnique || null,
+            shortKeyPoints: safeJsonArr(meta.shortKeyPoints),
+            keyPoints: safeJsonArr(meta.keyPoints),
+            topics: safeJsonArr(meta.topics),
+            level: meta.level || null,
+            estimatedTimeMinutes: meta.estimatedTimeMinutes || null,
+            prerequisites: safeJsonArr(meta.prerequisites),
+            // Aperçu des exercices (the list of "Exercice 1 (Chimie): ...")
+            keyInsights: safeJsonArr(meta.keyInsights),
+            exerciseInsights: safeJsonArr(meta.exerciseInsights),
+          }
+        : null,
       sameTeacher: sameTeacherRes.results || [],
       byTypeAndClass: byTypeAndClassRes.results || [],
       otherClassesSameLevel: otherClassesSameLevelRes.results || [],
