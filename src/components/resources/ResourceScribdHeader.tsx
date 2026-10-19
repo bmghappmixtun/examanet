@@ -195,17 +195,20 @@ export default function ResourceScribdHeader({
           </div>
         )}
 
-        {/* Stats line */}
+        {/* Stats line — 2026-10-19: removed verbose unit text ("vues",
+            "téléchargements", "commentaires", "pages", "min de lecture",
+            "KB") to keep just the icon + number. Cleaner look, less
+            visual noise, the icons convey the meaning. */}
         <div
           dir={isAr ? 'rtl' : 'ltr'}
           className={`flex items-center gap-3 text-xs text-slate-500 mb-3 flex-wrap ${isAr ? 'justify-start text-right' : ''}`}
         >
           <span className="inline-flex items-center gap-1">
-            <Eye className="w-3.5 h-3.5" /> {formatNumber(viewsCount)} vues
+            <Eye className="w-3.5 h-3.5" /> {formatNumber(viewsCount)}
           </span>
           <span className="text-slate-300">•</span>
           <span className="inline-flex items-center gap-1">
-            <Download className="w-3.5 h-3.5" /> {formatNumber(downloadsCount)} téléchargements
+            <Download className="w-3.5 h-3.5" /> {formatNumber(downloadsCount)}
           </span>
           <span className="text-slate-300">•</span>
           <span className="inline-flex items-center gap-1">
@@ -213,28 +216,30 @@ export default function ResourceScribdHeader({
           </span>
           <span className="text-slate-300">•</span>
           <span className="inline-flex items-center gap-1">
-            <MessageCircle className="w-3.5 h-3.5" /> {commentsCount} commentaires
+            <MessageCircle className="w-3.5 h-3.5" /> {commentsCount}
           </span>
           {pageCount ? (
             <>
               <span className="text-slate-300">•</span>
               <span className="inline-flex items-center gap-1">
-                <FileText className="w-3.5 h-3.5" /> {pageCount} pages
+                <FileText className="w-3.5 h-3.5" /> {pageCount}
               </span>
             </>
           ) : null}
           {readingTimeMin ? (
             <>
               <span className="text-slate-300">•</span>
-              <span className="inline-flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" /> ≈ {readingTimeMin} min de lecture
+              <span className="inline-flex items-center gap-1" title="Temps de lecture estimé">
+                <Clock className="w-3.5 h-3.5" /> {readingTimeMin}
               </span>
             </>
           ) : null}
           {fileSize ? (
             <>
               <span className="text-slate-300">•</span>
-              <span>{fileSize}</span>
+              <span className="inline-flex items-center gap-1" title="Taille du fichier">
+                <span className="text-xs">📄</span> {fileSize}
+              </span>
             </>
           ) : null}
         </div>
