@@ -154,16 +154,6 @@ function typeLabel(t: string): string {
   }
 }
 
-function typeColor(t: string): string {
-  // Soft light grey / light blue palette
-  switch (t) {
-    case 'COURSE': return 'from-sky-400 to-blue-500';
-    case 'DEVOIR': return 'from-slate-300 to-slate-400';
-    case 'EXERCISE': return 'from-sky-300 to-sky-400';
-    default: return 'from-slate-300 to-slate-400';
-  }
-}
-
 function typeColorSolid(t: string): string {
   // Solid soft background for type icons
   switch (t) {
@@ -279,64 +269,10 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6">
 
-        {/* TITLE + ACTION BAR (full width, above PDF) */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${typeColor(main.type)}`}>
-              {typeLabel(main.type)}
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-              {main.subjectNameFr || 'Matière'}
-            </span>
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-              {main.classNameFr || 'Classe'}
-            </span>
-            {main.hasCorrection ? (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
-                ✓ Corrigé
-              </span>
-            ) : null}
-            {main.language === 'ar' ? (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">AR</span>
-            ) : null}
-          </div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 leading-tight mb-3" dir={isRtlTitle(main.title) ? 'rtl' : 'ltr'} style={{ textAlign: isRtlTitle(main.title) ? 'right' : 'left' }}>{main.title}</h1>
-          {main.description && (
-            <p className="text-base text-slate-600 leading-relaxed">
-              {main.description.slice(0, 300)}{main.description.length > 300 ? '…' : ''}
-            </p>
-          )}
-          {/* Inline action bar */}
-          <div className="mt-4 bg-white border border-slate-200 rounded-2xl p-3 flex flex-wrap items-center gap-2">
-            {pdfUrl ? (
-              <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-bold rounded-xl transition">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Télécharger
-              </a>
-            ) : null}
-            <a href={pdfUrl || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-bold rounded-xl transition border border-slate-200">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              Aperçu
-            </a>
-            <div className="flex items-center gap-3 ml-auto text-xs text-slate-500">
-              <div className="flex items-center gap-1">
-                <svg className="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9.91 8.26 3 9.27l5.46 4.73L7 21l5-3 5 3-1.46-6.99L21 9.27l-6.91-1.01L12 2z"/></svg>
-                <strong className="text-slate-900">{(main.avgRating || 0).toFixed(1)}</strong>
-                <span>({main.ratingsCount || 0})</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                <strong className="text-slate-900">{fmtNum(main.viewsCount)}</strong>
-                <span>vues</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                <strong className="text-slate-900">{fmtNum(main.downloadsCount)}</strong>
-                <span>téléch.</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* TITLE + ACTION BAR removed 2026-10-19: the ResourceScribdHeader
+            below now provides title, stats row, description (collapsible),
+            download button, etc. The custom hero above was duplicating all
+            of that. */}
 
         {/* AI ZONE (full width, above PDF) — same as the live /fr/ressources/[id] page
             (ResourceScribdHeader + AiExerciseOverview). Renders:
