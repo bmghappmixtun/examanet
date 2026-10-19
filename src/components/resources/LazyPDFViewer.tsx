@@ -67,6 +67,12 @@ interface LazyPDFViewerProps {
    * exited fullscreen with Échap.
    */
   fullscreenRequestId?: number;
+  /**
+   * 2026-10-19: forwarded to PDFViewer for the Scribd-style left
+   * vertical toolbar download button. When omitted, the toolbar
+   * falls back to a plain `<a download href={url}>`.
+   */
+  onDownload?: () => void;
 }
 
 export default function LazyPDFViewer({
@@ -77,6 +83,7 @@ export default function LazyPDFViewer({
   forceActivated = false,
   autoFullscreen,
   fullscreenRequestId,
+  onDownload,
 }: LazyPDFViewerProps) {
   // Internal state for the placeholder button (still works when parent
   // hasn't forced activation). forceActivated ORs with this — either
@@ -95,6 +102,7 @@ export default function LazyPDFViewer({
         fileName={fileName}
         autoFullscreen={autoFullscreen}
         fullscreenRequestId={fullscreenRequestId}
+        onDownload={onDownload}
       />
     );
   }

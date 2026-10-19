@@ -11,6 +11,8 @@ import {
   Minimize2,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Download,
   Loader2,
   AlertCircle,
@@ -554,6 +556,15 @@ export default function PDFViewer({
   const zoomIn = useCallback(() => {
     setFitMode('manual');
     setScale((s) => Math.min(MAX_SCALE, +(s + SCALE_STEP).toFixed(2)));
+  }, []);
+
+  // 2026-10-19: scroll helpers for the Scribd-style left vertical toolbar.
+  const scrollToTop = useCallback(() => {
+    containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+  const scrollToBottom = useCallback(() => {
+    const el = containerRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
   }, []);
 
   const zoomOut = useCallback(() => {
@@ -1297,6 +1308,101 @@ export default function PDFViewer({
       </div>
 
       {/* Bottom status bar removed — replaced by floating top-right status pill above */}
+
+      {/* === SCRIBD-STYLE VERTICAL LEFT TOOLBAR (2026-10-19) === */}
+      {/* Floating column of icon buttons on the left edge of the viewer.
+          Mirrors the Scribd / Google Docs reader UX: search at the top,
+          download, scroll-to-top, page indicator, scroll-to-bottom,
+          zoom out, zoom in. Hidden when the left thumbnail sidebar is
+          open on desktop (would overlap). */}
+      <div
+        className={`pdf-viewer-scribd-bar absolute top-1/2 -translate-y-1/2 start-2 z-30 bg-slate-900/95 backdrop-blur-md text-slate-700 rounded-full flex flex-col items-center py-1.5 shadow-2xl ring-1 ring-white/10 ${
+          sidebarOpen && !isFullscreen ? 'lg:hidden' : ''
+        }`}
+        dir="ltr"
+      >
+        {/* Search */}
+        <button
+          type="button"
+          onClick={() => setSearchOpen((v) => !v)}
+          className="w-10 h-10 inline-flex items-center justify-center hover:bg-white/10 text-slate-200 rounded-full transition active:scale-90"
+          title="Rechercher dans le document"
+          aria-label="Rechercher dans le document"
+        >
+          <Search className="w-4 h-4" />
+        </button>
+        <div className="w-6 h-px bg-white/10 my-0.5" />
+        {/* Download (Scribd uses a download icon, then a sep, then a save icon) */}
+        {onDownload ? (
+          <button
+            type="button"
+            onClick={onDownload}
+            className="w-10 h-10 inline-flex items-center justify-center hover:bg-white/10 text-slate-200 rounded-full transition active:scale-90"
+            title="Télécharger"
+            aria-label="Télécharger"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        ) : (
+          <a
+            href={url}
+            download
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-10 h-10 inline-flex items-center justify-center hover:bg-white/10 text-slate-200 rounded-full transition active:scale-90"
+            title="Télécharger"
+            aria-label="Télécharger"
+          >
+            <Download className="w-4 h-4" />
+          </a>
+        )}
+        <div className="w-6 h-px bg-white/10 my-0.5" />
+        {/* Scroll to top */}
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className="w-10 h-10 inline-flex items-center justify-center hover:bg-white/10 text-slate-200 rounded-full transition active:scale-90"
+          title="Haut de page"
+          aria-label="Haut de page"
+        >
+          <ChevronUp className="w-4 h-4" />
+        </button>
+        {/* Page indicator (current page only, e.g. "1") */}
+        <div className="text-[11px] font-bold font-mono tabular-nums text-slate-200 py-0.5 min-w-[40px] text-center select-none">
+          {numPages ? pageNumber : '…'}
+        </div>
+        {/* Scroll to bottom */}
+        <button
+          type="button"
+          onClick={scrollToBottom}
+          className="w-10 h-10 inline-flex items-center justify-center hover:bg-white/10 text-slate-200 rounded-full transition active:scale-90"
+          title="Bas de page"
+          aria-label="Bas de page"
+        >
+          <ChevronDown className="w-4 h-4" />
+        </button>
+        <div className="w-6 h-px bg-white/10 my-0.5" />
+        {/* Zoom out */}
+        <button
+          type="button"
+          onClick={zoomOut}
+          className="w-10 h-10 inline-flex items-center justify-center hover:bg-white/10 text-slate-200 rounded-full transition active:scale-90"
+          title="Zoom arrière (−)"
+          aria-label="Zoom arrière"
+        >
+          <ZoomOut className="w-4 h-4" />
+        </button>
+        {/* Zoom in */}
+        <button
+          type="button"
+          onClick={zoomIn}
+          className="w-10 h-10 inline-flex items-center justify-center hover:bg-white/10 text-slate-200 rounded-full transition active:scale-90"
+          title="Zoom avant (+)"
+          aria-label="Zoom avant"
+        >
+          <ZoomIn className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 }

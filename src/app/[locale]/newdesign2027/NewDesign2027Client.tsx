@@ -342,6 +342,16 @@ export default function NewDesign2027Client({ numericId }: { numericId: number }
                   fileName={`${main.title}.pdf`}
                   pageCount={main.pageCount ?? null}
                   fileSize={main.fileSize ? fmtNum(main.fileSize / 1024) + ' KB' : null}
+                  onDownload={() => {
+                    // Open the PDF in a new tab so the browser's native
+                    // viewer (or "Save as" on Safari) handles the download.
+                    // Using <a download> doesn't bypass R2 content-disposition
+                    // for cross-origin URLs anyway, so this is the most
+                    // reliable path.
+                    if (typeof window !== 'undefined' && pdfUrl) {
+                      window.open(pdfUrl, '_blank', 'noopener');
+                    }
+                  }}
                 />
               </div>
             ) : null}
