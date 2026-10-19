@@ -234,14 +234,7 @@ export default function ResourceScribdHeader({
               </span>
             </>
           ) : null}
-          {fileSize ? (
-            <>
-              <span className="text-slate-300">•</span>
-              <span className="inline-flex items-center gap-1" title="Taille du fichier">
-                <span className="text-xs">📄</span> {fileSize}
-              </span>
-            </>
-          ) : null}
+          {/* 2026-10-19: file size removed per user request (not needed) */}
         </div>
 
         {/* Description with expand */}
