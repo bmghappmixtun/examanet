@@ -19,6 +19,7 @@
 
 import { useState } from 'react';
 import { Download, Star, Check } from 'lucide-react';
+import BrandBooks, { BRAND_BOOKS_PALETTES } from '@/components/shared/BrandBooks';
 
 type Variant = {
   id: string;
@@ -71,10 +72,12 @@ function HeroCard({
   v,
   title,
   desc,
+  palette,
 }: {
   v: Variant;
   title: string;
   desc: string;
+  palette: string;
 }) {
   return (
     <div className="relative w-full max-w-md mx-auto aspect-square">
@@ -84,7 +87,7 @@ function HeroCard({
         style={{ background: v.background, boxShadow: `0 25px 50px -12px ${v.shadow}` }}
       >
         <div className="text-center text-white p-8 relative z-10">
-          <div className="text-8xl mb-4">📚</div>
+          <BrandBooks palette={palette} className="w-40 h-[132px] mx-auto mb-4" />
           <div className="text-2xl font-extrabold">{title}</div>
           <div className="text-lg opacity-90">{desc}</div>
         </div>
@@ -123,7 +126,8 @@ function HeroCard({
 }
 
 export default function PreviewHeroGradient() {
-  const [picked, setPicked] = useState<string | null>(null);
+  const [picked, setPicked] = useState<string | null>('a');
+  const [palette, setPalette] = useState<string>('contrast');
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4">
@@ -153,6 +157,33 @@ export default function PreviewHeroGradient() {
               </button>
             ))}
           </div>
+
+          <div className="mt-4 pt-4 border-t border-slate-200">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
+              Palette des 3 livres
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(BRAND_BOOKS_PALETTES).map(([key, p]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setPalette(key)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
+                    palette === key
+                      ? 'bg-slate-900 text-white border-slate-900'
+                      : 'bg-white text-slate-600 border-slate-300 hover:border-slate-500'
+                  }`}
+                  title={p.hint}
+                >
+                  {palette === key ? '✓ ' : ''}
+                  {p.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              {BRAND_BOOKS_PALETTES[palette]?.hint}
+            </p>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-10">
@@ -177,6 +208,7 @@ export default function PreviewHeroGradient() {
 
               <HeroCard
                 v={v}
+                palette={palette}
                 title="100% gratuit"
                 desc="Toutes les ressources sont accessibles sans aucun frais."
               />
@@ -223,6 +255,7 @@ boxShadow: '0 25px 50px -12px ${v.shadow}',`}
                     <HeroCard
                       key={v.id}
                       v={v}
+                      palette={palette}
                       title="100% gratuit"
                       desc="Toutes les ressources sont accessibles sans aucun frais."
                     />

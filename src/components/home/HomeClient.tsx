@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import ResourceCard from '@/components/resources/ResourceCard';
+import BrandBooks from '@/components/shared/BrandBooks';
 import { formatNumber } from '@/lib/utils';
 
 type Subject = {
@@ -231,9 +232,21 @@ export default function HomeClient({
 
             <div className="relative hidden lg:block">
               <div className="relative w-full max-w-md mx-auto aspect-square">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-primary-700 rounded-3xl shadow-2xl shadow-primary-500/40 rotate-3 hover:rotate-0 transition-transform duration-500 flex items-center justify-center">
+                <div
+                  className="absolute inset-0 rounded-3xl shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500 flex items-center justify-center"
+                  style={{
+                    // 2026-10-21: gradient A — orange (#F0913E) top-left → teal
+                    // (#006078) bottom-right + warm glow top-right. Replaces the
+                    // old sky-blue `from-primary-500 to-primary-700`.
+                    background:
+                      'radial-gradient(62% 52% at 70% 30%, rgba(255,224,186,0.55) 0%, rgba(255,224,186,0) 68%),' +
+                      'linear-gradient(150deg, #F0913E 0%, #E07A4C 26%, #4E8A73 66%, #006078 100%)',
+                    boxShadow: '0 25px 50px -12px rgba(0, 78, 96, 0.40)',
+                  }}
+                >
                   <div className="text-center text-white p-8">
-                    <div className="text-8xl mb-4">📚</div>
+                    {/* 2026-10-21: 📚 emoji → custom SVG (pop sur le nouveau fond) */}
+                    <BrandBooks className="w-40 h-[132px] mx-auto mb-4" />
                     <div className="text-2xl font-extrabold">{t('home.sections.whyFreeTitle')}</div>
                     <div className="text-lg opacity-90">{t('home.sections.whyFreeDesc')}</div>
                   </div>

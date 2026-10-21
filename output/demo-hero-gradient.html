@@ -55,8 +55,8 @@
     display: flex; align-items: center; justify-content: center; overflow: hidden;
   }
   .main-card:hover { transform: rotate(0deg); }
-  .main-card .inner { position: relative; z-index: 10; text-align: center; color: #fff; padding: 32px; }
-  .main-card .books { font-size: 80px; line-height: 1; margin-bottom: 16px; }
+  .main-card .book-inner { position: relative; z-index: 10; text-align: center; color: #fff; padding: 32px; }
+  .main-card .books { width: 160px; height: 132px; margin: 0 auto 18px; display: block; }
   .main-card .t { font-size: 24px; font-weight: 800; }
   .main-card .d { font-size: 18px; opacity: .9; margin-top: 4px; }
 
@@ -187,6 +187,19 @@ const VARIANTS = [
   }
 ];
 
+const BOOKS_SVG_BY_PAL = {
+  contrast: `<svg viewBox="0 0 170 140" class="books" role="img" aria-label="Pile de trois livres" fill="none" xmlns="http://www.w3.org/2000/svg">   <defs><filter id="bb-drop" x="-25%" y="-20%" width="150%" height="160%">     <feDropShadow dx="0" dy="7" stdDeviation="7" floodColor="#06121F" floodOpacity="0.38"/>   </filter></defs>   <g filter="url(#bb-drop)">     <g transform="rotate(-13 47 76)">       <rect x="27" y="45" width="42" height="62" rx="4" fill="#E4C79A"/>       <rect x="32" y="49" width="31" height="54" rx="2" fill="#FFFDF6"/>       <rect x="34" y="56" width="27" height="1.5" rx=".75" fill="#E4C79A" opacity=".45"/>       <rect x="34" y="62" width="27" height="1.5" rx=".75" fill="#E4C79A" opacity=".35"/>       <rect x="34" y="68" width="27" height="1.5" rx=".75" fill="#E4C79A" opacity=".45"/>       <rect x="34" y="74" width="27" height="1.5" rx=".75" fill="#E4C79A" opacity=".35"/>       <rect x="27" y="45" width="10" height="62" rx="4" fill="#FFF3DC"/>       <rect x="29.5" y="52" width="5" height="2.5" rx="1.25" fill="#E4C79A" opacity=".7"/>       <rect x="29.5" y="98" width="5" height="2.5" rx="1.25" fill="#E4C79A" opacity=".7"/>     </g>     <g>       <rect x="64" y="32" width="46" height="74" rx="4" fill="#0B1526"/>       <rect x="70" y="37" width="34" height="64" rx="2" fill="#FFFDF6"/>       <rect x="72" y="45" width="30" height="1.5" rx=".75" fill="#0B1526" opacity=".35"/>       <rect x="72" y="52" width="30" height="1.5" rx=".75" fill="#0B1526" opacity=".25"/>       <rect x="72" y="59" width="30" height="1.5" rx=".75" fill="#0B1526" opacity=".35"/>       <rect x="72" y="66" width="30" height="1.5" rx=".75" fill="#0B1526" opacity=".25"/>       <rect x="64" y="32" width="11" height="74" rx="4" fill="#16263F"/>       <rect x="67" y="40" width="5.5" height="2.5" rx="1.25" fill="#FFFDF6" opacity=".8"/>       <rect x="67" y="95" width="5.5" height="2.5" rx="1.25" fill="#FFFDF6" opacity=".8"/>       <path d="M96 32 h9 v30 l-4.5 -5.5 -4.5 5.5 Z" fill="#FCD34D"/>     </g>     <g transform="rotate(12 123 76)">       <rect x="103" y="45" width="42" height="62" rx="4" fill="#B81E5C"/>       <rect x="108" y="49" width="31" height="54" rx="2" fill="#FFFDF6"/>       <rect x="110" y="56" width="27" height="1.5" rx=".75" fill="#B81E5C" opacity=".4"/>       <rect x="110" y="62" width="27" height="1.5" rx=".75" fill="#B81E5C" opacity=".3"/>       <rect x="110" y="68" width="27" height="1.5" rx=".75" fill="#B81E5C" opacity=".4"/>       <rect x="110" y="74" width="27" height="1.5" rx=".75" fill="#B81E5C" opacity=".3"/>       <rect x="103" y="45" width="10" height="62" rx="4" fill="#EE4D8C"/>       <rect x="105.5" y="52" width="5" height="2.5" rx="1.25" fill="#B81E5C" opacity=".7"/>       <rect x="105.5" y="98" width="5" height="2.5" rx="1.25" fill="#B81E5C" opacity=".7"/>     </g>   </g> </svg>`,
+  brand: `<svg viewBox="0 0 170 140" class="books" role="img" aria-label="Pile de trois livres" fill="none" xmlns="http://www.w3.org/2000/svg">   <defs><filter id="bb-drop" x="-25%" y="-20%" width="150%" height="160%">     <feDropShadow dx="0" dy="7" stdDeviation="7" floodColor="#06121F" floodOpacity="0.38"/>   </filter></defs>   <g filter="url(#bb-drop)">     <g transform="rotate(-13 47 76)">       <rect x="27" y="45" width="42" height="62" rx="4" fill="#E4C79A"/>       <rect x="32" y="49" width="31" height="54" rx="2" fill="#FFFDF6"/>       <rect x="34" y="56" width="27" height="1.5" rx=".75" fill="#E4C79A" opacity=".45"/>       <rect x="34" y="62" width="27" height="1.5" rx=".75" fill="#E4C79A" opacity=".35"/>       <rect x="34" y="68" width="27" height="1.5" rx=".75" fill="#E4C79A" opacity=".45"/>       <rect x="34" y="74" width="27" height="1.5" rx=".75" fill="#E4C79A" opacity=".35"/>       <rect x="27" y="45" width="10" height="62" rx="4" fill="#FFF3DC"/>       <rect x="29.5" y="52" width="5" height="2.5" rx="1.25" fill="#E4C79A" opacity=".7"/>       <rect x="29.5" y="98" width="5" height="2.5" rx="1.25" fill="#E4C79A" opacity=".7"/>     </g>     <g>       <rect x="64" y="32" width="46" height="74" rx="4" fill="#00384A"/>       <rect x="70" y="37" width="34" height="64" rx="2" fill="#FFFDF6"/>       <rect x="72" y="45" width="30" height="1.5" rx=".75" fill="#00384A" opacity=".35"/>       <rect x="72" y="52" width="30" height="1.5" rx=".75" fill="#00384A" opacity=".25"/>       <rect x="72" y="59" width="30" height="1.5" rx=".75" fill="#00384A" opacity=".35"/>       <rect x="72" y="66" width="30" height="1.5" rx=".75" fill="#00384A" opacity=".25"/>       <rect x="64" y="32" width="11" height="74" rx="4" fill="#00586E"/>       <rect x="67" y="40" width="5.5" height="2.5" rx="1.25" fill="#FFFDF6" opacity=".8"/>       <rect x="67" y="95" width="5.5" height="2.5" rx="1.25" fill="#FFFDF6" opacity=".8"/>       <path d="M96 32 h9 v30 l-4.5 -5.5 -4.5 5.5 Z" fill="#FCD34D"/>     </g>     <g transform="rotate(12 123 76)">       <rect x="103" y="45" width="42" height="62" rx="4" fill="#C25F14"/>       <rect x="108" y="49" width="31" height="54" rx="2" fill="#FFFDF6"/>       <rect x="110" y="56" width="27" height="1.5" rx=".75" fill="#C25F14" opacity=".4"/>       <rect x="110" y="62" width="27" height="1.5" rx=".75" fill="#C25F14" opacity=".3"/>       <rect x="110" y="68" width="27" height="1.5" rx=".75" fill="#C25F14" opacity=".4"/>       <rect x="110" y="74" width="27" height="1.5" rx=".75" fill="#C25F14" opacity=".3"/>       <rect x="103" y="45" width="10" height="62" rx="4" fill="#F0913E"/>       <rect x="105.5" y="52" width="5" height="2.5" rx="1.25" fill="#C25F14" opacity=".7"/>       <rect x="105.5" y="98" width="5" height="2.5" rx="1.25" fill="#C25F14" opacity=".7"/>     </g>   </g> </svg>`,
+  mono: `<svg viewBox="0 0 170 140" class="books" role="img" aria-label="Pile de trois livres" fill="none" xmlns="http://www.w3.org/2000/svg">   <defs><filter id="bb-drop" x="-25%" y="-20%" width="150%" height="160%">     <feDropShadow dx="0" dy="7" stdDeviation="7" floodColor="#06121F" floodOpacity="0.38"/>   </filter></defs>   <g filter="url(#bb-drop)">     <g transform="rotate(-13 47 76)">       <rect x="27" y="45" width="42" height="62" rx="4" fill="#D9C4A4"/>       <rect x="32" y="49" width="31" height="54" rx="2" fill="#FFFFFF"/>       <rect x="34" y="56" width="27" height="1.5" rx=".75" fill="#D9C4A4" opacity=".45"/>       <rect x="34" y="62" width="27" height="1.5" rx=".75" fill="#D9C4A4" opacity=".35"/>       <rect x="34" y="68" width="27" height="1.5" rx=".75" fill="#D9C4A4" opacity=".45"/>       <rect x="34" y="74" width="27" height="1.5" rx=".75" fill="#D9C4A4" opacity=".35"/>       <rect x="27" y="45" width="10" height="62" rx="4" fill="#FFF6E6"/>       <rect x="29.5" y="52" width="5" height="2.5" rx="1.25" fill="#D9C4A4" opacity=".7"/>       <rect x="29.5" y="98" width="5" height="2.5" rx="1.25" fill="#D9C4A4" opacity=".7"/>     </g>     <g>       <rect x="64" y="32" width="46" height="74" rx="4" fill="#D9C4A4"/>       <rect x="70" y="37" width="34" height="64" rx="2" fill="#FFFFFF"/>       <rect x="72" y="45" width="30" height="1.5" rx=".75" fill="#D9C4A4" opacity=".35"/>       <rect x="72" y="52" width="30" height="1.5" rx=".75" fill="#D9C4A4" opacity=".25"/>       <rect x="72" y="59" width="30" height="1.5" rx=".75" fill="#D9C4A4" opacity=".35"/>       <rect x="72" y="66" width="30" height="1.5" rx=".75" fill="#D9C4A4" opacity=".25"/>       <rect x="64" y="32" width="11" height="74" rx="4" fill="#FFF6E6"/>       <rect x="67" y="40" width="5.5" height="2.5" rx="1.25" fill="#FFFFFF" opacity=".8"/>       <rect x="67" y="95" width="5.5" height="2.5" rx="1.25" fill="#FFFFFF" opacity=".8"/>       <path d="M96 32 h9 v30 l-4.5 -5.5 -4.5 5.5 Z" fill="#F0913E"/>     </g>     <g transform="rotate(12 123 76)">       <rect x="103" y="45" width="42" height="62" rx="4" fill="#D9C4A4"/>       <rect x="108" y="49" width="31" height="54" rx="2" fill="#FFFFFF"/>       <rect x="110" y="56" width="27" height="1.5" rx=".75" fill="#D9C4A4" opacity=".4"/>       <rect x="110" y="62" width="27" height="1.5" rx=".75" fill="#D9C4A4" opacity=".3"/>       <rect x="110" y="68" width="27" height="1.5" rx=".75" fill="#D9C4A4" opacity=".4"/>       <rect x="110" y="74" width="27" height="1.5" rx=".75" fill="#D9C4A4" opacity=".3"/>       <rect x="103" y="45" width="10" height="62" rx="4" fill="#FFF6E6"/>       <rect x="105.5" y="52" width="5" height="2.5" rx="1.25" fill="#D9C4A4" opacity=".7"/>       <rect x="105.5" y="98" width="5" height="2.5" rx="1.25" fill="#D9C4A4" opacity=".7"/>     </g>   </g> </svg>`,
+};
+
+const BOOK_PALETTES = {
+  contrast: { label: 'P1 — Contraste max', hint: 'crème + marine + rose → pop sur le dégradé orange/teal' },
+  brand:    { label: 'P2 — Palette marque', hint: 'crème + teal brand + orange brand → cohérent avec le logo' },
+  mono:     { label: 'P3 — Mono crème', hint: 'tout crème avec ombres douces → minimal, très « premium »' }
+};
+let bookPalette = 'contrast';
+
 const DL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 const ST_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
 
@@ -194,8 +207,8 @@ function card(v) {
   return `
   <div class="stage">
     <div class="main-card" style="background:${v.background}; box-shadow:0 25px 50px -12px ${v.shadow}">
-      <div class="inner">
-        <div class="books">📚</div>
+      <div class="book-inner">
+        ${BOOKS_SVG_BY_PAL[bookPalette]}
         <div class="t">100% gratuit</div>
         <div class="d">Toutes les ressources sont accessibles sans aucun frais.</div>
       </div>
@@ -216,6 +229,10 @@ let picked = 'a';
 function render() {
   document.getElementById('picker').innerHTML = VARIANTS.map(v =>
     `<button data-id="${v.id}" class="${picked === v.id ? 'on' : ''}">${picked === v.id ? '✓ ' : ''}${v.label}</button>`
+  ).join('') +
+  '<div style="flex-basis:100%;height:1px;background:#e2e8f0;margin:6px 0"></div>' +
+  Object.entries(BOOK_PALETTES).map(([k, p]) =>
+    `<button data-pal="${k}" class="${bookPalette === k ? 'on' : ''}" title="${p.hint}">${bookPalette === k ? '✓ ' : ''}${p.label}</button>`
   ).join('');
 
   document.getElementById('grid').innerHTML = VARIANTS.map(v => `
@@ -232,8 +249,11 @@ boxShadow: '0 25px 50px -12px ${v.shadow}',</pre>
 
   document.getElementById('ctxcard').innerHTML = card(VARIANTS.find(v => v.id === picked));
 
-  document.querySelectorAll('#picker button').forEach(b => {
+  document.querySelectorAll('#picker button[data-id]').forEach(b => {
     b.onclick = () => { picked = b.dataset.id; render(); };
+  });
+  document.querySelectorAll('#picker button[data-pal]').forEach(b => {
+    b.onclick = () => { bookPalette = b.dataset.pal; render(); };
   });
 }
 render();
