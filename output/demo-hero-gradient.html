@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Démo — fond du hero homepage Examanet (bleu → orange/teal)</title>
+<style>
+  :root { --font: 'Fustat', 'Segoe UI', system-ui, -apple-system, sans-serif; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 20px;
+    font-family: var(--font);
+    background: #f8fafc; color: #0f172a;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+
+  .head {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 20px;
+    padding: 28px; margin-bottom: 28px;
+  }
+  .head h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; }
+  .head p { margin: 0; color: #475569; font-size: 14px; line-height: 1.6; }
+
+  .picker { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .picker button {
+    padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700;
+    border: 1px solid #cbd5e1; background: #fff; color: #475569; cursor: pointer;
+    font-family: inherit; transition: all .15s;
+  }
+  .picker button:hover { border-color: #64748b; }
+  .picker button.on { background: #0f172a; border-color: #0f172a; color: #fff; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px; }
+
+  .card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px;
+  }
+  .card.on { border-color: #0f172a; box-shadow: 0 0 0 2px #0f172a; }
+  .card h2 { margin: 0; font-size: 16px; font-weight: 800; }
+  .card .hint { margin: 2px 0 0; font-size: 11px; color: #64748b; font-family: ui-monospace, monospace; }
+  .card .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 22px; }
+
+  .chosen {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border-radius: 8px; background: #0f172a; color: #fff;
+    font-size: 11px; font-weight: 700;
+  }
+
+  /* ===== HERO CARD (identique à HomeClient.tsx) ===== */
+  .stage { position: relative; width: 100%; max-width: 448px; margin: 0 auto; aspect-ratio: 1 / 1; }
+
+  .main-card {
+    position: absolute; inset: 0; border-radius: 24px;
+    transform: rotate(3deg); transition: transform .5s;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .main-card:hover { transform: rotate(0deg); }
+  .main-card .inner { position: relative; z-index: 10; text-align: center; color: #fff; padding: 32px; }
+  .main-card .books { font-size: 80px; line-height: 1; margin-bottom: 16px; }
+  .main-card .t { font-size: 24px; font-weight: 800; }
+  .main-card .d { font-size: 18px; opacity: .9; margin-top: 4px; }
+
+  .badge {
+    position: absolute; background: #fff; border-radius: 16px; padding: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,.35);
+    display: flex; align-items: center; gap: 10px;
+    animation: float 6s ease-in-out infinite;
+  }
+  .badge.dl { top: -16px; right: -16px; }
+  .badge.rt { bottom: -16px; left: -16px; animation-delay: 1s; }
+  .badge .ic { width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center; }
+  .badge .ic.g { background: #dcfce7; }
+  .badge .ic.a { background: #fef3c7; }
+  .badge .ic svg { width: 20px; height: 20px; }
+  .badge .ic.g svg { color: #16a34a; }
+  .badge .ic.a svg { color: #f59e0b; }
+  .badge .lbl { font-size: 12px; color: #64748b; }
+  .badge .val { font-size: 18px; font-weight: 700; color: #0f172a; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  pre {
+    margin: 24px 0 0; background: #0f172a; color: #e2e8f0; border-radius: 12px;
+    padding: 12px; font-size: 10px; line-height: 1.6; overflow-x: auto;
+    font-family: ui-monospace, monospace;
+  }
+
+  /* ===== FULL HERO CONTEXT ===== */
+  .ctx { margin-top: 28px; background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px; }
+  .ctx h2 { margin: 0 0 18px; font-size: 16px; font-weight: 800; }
+  .hero {
+    position: relative; overflow: hidden; border-radius: 16px; border: 1px solid #f1f5f9;
+    background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 45%, #f0f9ff 100%);
+  }
+  .hero .blob { position: absolute; border-radius: 999px; filter: blur(64px); opacity: .3; }
+  .hero .b1 { width: 192px; height: 192px; top: 80px; left: -80px; background: #bae6fd; }
+  .hero .b2 { width: 192px; height: 192px; top: 160px; right: -80px; background: #fde68a; }
+  .hero .inner {
+    position: relative; max-width: 1200px; margin: 0 auto; padding: 64px 32px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+  }
+  @media (max-width: 900px) { .hero .inner { grid-template-columns: 1fr; } }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px; background: #fff;
+    border: 1px solid #bae6fd; border-radius: 999px; padding: 8px 16px;
+    font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 24px;
+  }
+  .pill .dot { width: 8px; height: 8px; border-radius: 999px; background: #22c55e; }
+  .hero h3 { margin: 0 0 16px; font-size: 40px; font-weight: 800; line-height: 1.05; }
+  .hero h3 span { background: linear-gradient(135deg, #0EA5E9 0%, #0369A1 50%, #0C4A6E 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { margin: 0 0 24px; font-size: 18px; color: #475569; }
+  .btns { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 600; color: #fff; }
+  .btn.p { background: linear-gradient(to right, #0EA5E9, #0369A1); box-shadow: 0 10px 15px -3px rgba(14,165,233,.2); }
+  .btn.a { background: linear-gradient(to right, #f59e0b, #d97706); box-shadow: 0 10px 15px -3px rgba(245,158,11,.2); }
+
+  .foot { margin-top: 24px; font-size: 12px; color: #64748b; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <h1>Démo — fond de la carte hero (bleu → dégradé orange/teal)</h1>
+    <p>
+      La carte bleue de la page d’accueil (<code>bg-gradient-to-br from-primary-500 to-primary-700</code>)
+      est remplacée par un dégradé tiré des couleurs du logo Examanet
+      (<b style="color:#F0903C">orange #F0903C</b> → <b style="color:#006078">teal #006078</b>).
+      Clique sur une variante pour la valider — <b>rien n’est encore appliqué au vrai site</b>.
+    </p>
+    <div class="picker" id="picker"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="ctx">
+    <h2>Contexte réel (section hero complète) — variante sélectionnée</h2>
+    <div class="hero">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="inner">
+        <div>
+          <div class="pill"><span class="dot"></span> +12 400 ressources</div>
+          <h3>Révise ton Bac <span>gratuitement</span></h3>
+          <p>Cours, devoirs, exercices et sujets de bac corrigés — pour le collège et le lycée, en français et en arabe.</p>
+          <div class="btns">
+            <div class="btn p">Explorer les ressources</div>
+            <div class="btn a">Devenir enseignant</div>
+          </div>
+        </div>
+        <div id="ctxcard"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">Démo isolée — la page d’accueil en production n’est pas modifiée.</p>
+</div>
+
+<script>
+const VARIANTS = [
+  {
+    id: 'current', label: 'ACTUEL (bleu)',
+    hint: 'from-primary-500 → to-primary-700 · bg-gradient-to-br',
+    background: 'linear-gradient(135deg, #0EA5E9 0%, #0284C7 45%, #0369A1 100%)',
+    shadow: 'rgba(14, 165, 233, 0.40)'
+  },
+  {
+    id: 'a', label: 'A — Logo diagonal',
+    hint: 'orange #F0903C (haut-gauche) → teal #006078 (bas-droite) + glow central',
+    background: 'radial-gradient(62% 52% at 70% 30%, rgba(255,224,186,0.55) 0%, rgba(255,224,186,0) 68%), linear-gradient(150deg, #F0913E 0%, #E07A4C 26%, #4E8A73 66%, #006078 100%)',
+    shadow: 'rgba(240, 144, 60, 0.38)'
+  },
+  {
+    id: 'b', label: 'B — Top-to-bottom',
+    hint: 'orange en haut → teal en bas, direction verticale (comme l’image 1)',
+    background: 'radial-gradient(70% 45% at 62% 34%, rgba(255,235,205,0.45) 0%, rgba(255,235,205,0) 70%), linear-gradient(178deg, #F2964A 0%, #E58250 22%, #3E8B7B 58%, #006078 100%)',
+    shadow: 'rgba(240, 144, 60, 0.38)'
+  },
+  {
+    id: 'c', label: 'C — Teal dominant',
+    hint: 'teal en haut → orange en bas (inversé, plus « cool »)',
+    background: 'radial-gradient(65% 48% at 32% 26%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0) 72%), linear-gradient(155deg, #00788F 0%, #006078 30%, #3E8B7B 58%, #E9964E 100%)',
+    shadow: 'rgba(0, 96, 120, 0.40)'
+  }
+];
+
+const DL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+const ST_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+
+function card(v) {
+  return `
+  <div class="stage">
+    <div class="main-card" style="background:${v.background}; box-shadow:0 25px 50px -12px ${v.shadow}">
+      <div class="inner">
+        <div class="books">📚</div>
+        <div class="t">100% gratuit</div>
+        <div class="d">Toutes les ressources sont accessibles sans aucun frais.</div>
+      </div>
+    </div>
+    <div class="badge dl">
+      <div class="ic g">${DL_SVG}</div>
+      <div><div class="lbl">Téléchargements</div><div class="val">30.9k</div></div>
+    </div>
+    <div class="badge rt">
+      <div class="ic a">${ST_SVG}</div>
+      <div><div class="lbl">Note moyenne</div><div class="val">4.8/5</div></div>
+    </div>
+  </div>`;
+}
+
+let picked = 'a';
+
+function render() {
+  document.getElementById('picker').innerHTML = VARIANTS.map(v =>
+    `<button data-id="${v.id}" class="${picked === v.id ? 'on' : ''}">${picked === v.id ? '✓ ' : ''}${v.label}</button>`
+  ).join('');
+
+  document.getElementById('grid').innerHTML = VARIANTS.map(v => `
+    <div class="card ${picked === v.id ? 'on' : ''}">
+      <div class="row">
+        <div><h2>${v.label}</h2><p class="hint">${v.hint}</p></div>
+        ${picked === v.id ? '<span class="chosen">✓ Choisi</span>' : ''}
+      </div>
+      ${card(v)}
+      <pre>background: '${v.background}',
+boxShadow: '0 25px 50px -12px ${v.shadow}',</pre>
+    </div>
+  `).join('');
+
+  document.getElementById('ctxcard').innerHTML = card(VARIANTS.find(v => v.id === picked));
+
+  document.querySelectorAll('#picker button').forEach(b => {
+    b.onclick = () => { picked = b.dataset.id; render(); };
+  });
+}
+render();
+</script>
+</body>
+</html>
