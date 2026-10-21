@@ -25,6 +25,8 @@ export default function InviteNewProfModal({ open, onClose, onSuccess }: InviteN
     email: string;
     emailSent: boolean;
     emailError?: string;
+    from?: string;
+    usedFallbackSender?: boolean;
   } | null>(null);
 
   const reset = () => {
@@ -72,6 +74,8 @@ export default function InviteNewProfModal({ open, onClose, onSuccess }: InviteN
         email: data.email,
         emailSent: data.emailSent,
         emailError: data.emailError,
+        from: data.from,
+        usedFallbackSender: data.usedFallbackSender,
       });
       toast.success('Invitation créée');
       onSuccess?.(data);
@@ -122,6 +126,17 @@ export default function InviteNewProfModal({ open, onClose, onSuccess }: InviteN
             {result.emailSent ? (
               <div className="text-sm text-slate-600 mb-4">
                 ✅ L'email a été envoyé via Resend. Le prof peut activer son compte en cliquant le lien.
+                {result.from ? (
+                  <div className="text-xs text-slate-500 mt-1 font-mono">
+                    Expéditeur : {result.from}
+                  </div>
+                ) : null}
+                {result.usedFallbackSender ? (
+                  <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2 mt-2">
+                    ⚠️ L'expéditeur du site ({result.from}) a été refusé — l'email est parti de
+                    l'adresse Examanet. Vérifie que le domaine est bien « Verified » dans Resend.
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
@@ -254,7 +269,10 @@ export default function InviteNewProfModal({ open, onClose, onSuccess }: InviteN
                 </button>
               </div>
               <p className="text-xs text-slate-500 mt-2">
-                Détermine le ton et les exemples de l'email d'invitation.
+                Détermine le ton, les exemples <em>et l'expéditeur</em> de l'email d'invitation.
+              </p>
+              <p className="text-[11px] text-slate-400 mt-1 font-mono">
+                Expéditeur : {site === 'devoirat' ? 'contact@devoirat.net' : 'contact@tunisiecollege.net'}
               </p>
             </div>
 
