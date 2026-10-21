@@ -81,6 +81,89 @@ async function sendViaResend(args: {
   }
 }
 
+/**
+ * Send an email with an EXPLICIT From address, with a fallback.
+ *
+ * 2026-10-21: used by the teacher-invitation flow so the invitation is
+ * sent from the source site's own address (contact@devoirat.net /
+ * contact@tunisiecollege.net) instead of the global noreply@examanet.com.
+ *
+ * Fallback behaviour: if the send with `from` fails (most likely because
+ * the domain is not yet verified in Resend), we retry with `fallbackFrom`
+ * so the invitation is never lost. The returned `usedFallback` flag lets
+ * the caller log / track it.
+ *
+ * Open + click tracking are enabled explicitly because the delivery-sync
+ * pipeline (TeacherInvitation.resendMessageId → openCount / clickCount /
+ * deliveryStatus) relies on the Resend webhooks that those produce.
+ */
+export async function sendEmailWithFrom(args: {
+  to: string | string[];
+  subject: string;
+  html: string;
+  /** Primary From address (e.g. "contact@devoirat.net") */
+  from: string;
+  /** Used if the primary send fails. Omit to disable the fallback. */
+  fallbackFrom?: string;
+  track?: boolean;
+}): Promise<{ ok: boolean; id?: string; error?: string; usedFallback?: boolean }> {
+  const { resend, from: defaultFrom } = await getMailer();
+  if (!resend) {
+    console.warn('[email] RESEND_API_KEY not set — cannot send:', args.subject);
+    return { ok: false, error: 'RESEND_API_KEY not configured' };
+  }
+
+  const attempt = async (fromAddr: string) => {
+    const result: any = await resend.emails.send({
+      from: fromAddr,
+      to: args.to,
+      subject: args.subject,
+      html: args.html,
+      ...(args.track === false
+        ? {}
+        : { open_tracking: true, click_tracking: true }),
+    } as any);
+    if (result?.error) {
+      return { ok: false as const, error: String(result.error.message || result.error) };
+    }
+    return { ok: true as const, id: result?.data?.id };
+  };
+
+  try {
+    const primary = await attempt(args.from);
+    if (primary.ok) {
+      console.log(
+        '[email] Sent:', args.subject,
+        '→', Array.isArray(args.to) ? args.to.join(',') : args.to,
+        '| from:', args.from,
+      );
+      return { ok: true, id: primary.id };
+    }
+
+    console.error(
+      '[email] Resend error with from', args.from, '→', primary.error,
+      '— trying fallback',
+    );
+
+    const fallback = args.fallbackFrom || defaultFrom;
+    if (fallback && fallback !== args.from) {
+      const fb = await attempt(fallback);
+      if (fb.ok) {
+        console.warn(
+          '[email] Sent via FALLBACK sender:', fallback,
+          '(primary', args.from, 'failed)',
+        );
+        return { ok: true, id: fb.id, usedFallback: true };
+      }
+      return { ok: false, error: fb.error, usedFallback: true };
+    }
+    return { ok: false, error: primary.error };
+  } catch (e: any) {
+    console.error('[email] Resend exception:', args.subject, '→', e?.message);
+    return { ok: false, error: e?.message || 'unknown' };
+  }
+}
+
 // SECURITY: Only return devCode in non-production environments.
 // In production, the dev code should NEVER be exposed (security risk).
 const INCLUDE_DEV_CODE = process.env.NODE_ENV !== 'production' && process.env.HIDE_DEV_CODE !== 'true';

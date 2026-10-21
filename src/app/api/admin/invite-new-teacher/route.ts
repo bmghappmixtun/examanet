@@ -26,7 +26,8 @@ import {
   USER_INV_STATUS,
 } from '@/lib/invitation';
 import { renderJotformInvitationEmail, type SourceSite } from '@/lib/email-templates/jotform-invitation';
-import { Resend } from 'resend';
+import { sendEmailWithFrom } from '@/lib/email';
+import { getSiteSender } from '@/lib/email-senders';
 
 const VALID_SITES: SourceSite[] = ['devoirat', 'tunisiecollege'];
 
@@ -68,8 +69,6 @@ function validateBody(body: any): { ok: true; data: {
   };
 }
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const FROM = process.env.EMAIL_FROM || 'Examanet <noreply@examanet.com>';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
 // Subject lines (kept in sync with the email template)
@@ -185,56 +184,53 @@ export async function POST(req: NextRequest) {
 
   const subject = SITE_CONFIG[site as SourceSite].subject;
 
-  // Send the email
+  // Send the email.
+  // 2026-10-21: the From address follows the SOURCE SITE — a prof coming
+  // from tunisiecollege.net gets contact@tunisiecollege.net, one from
+  // devoirat.net gets contact@devoirat.net. If that domain is not yet
+  // verified in Resend, sendEmailWithFrom retries with the examanet
+  // sender so the invitation is never lost.
   let emailOk = false;
   let emailError: string | undefined;
-  if (resend) {
-    try {
-      const result: any = await resend.emails.send({
-        from: FROM,
-        to: [normalizedEmail],
-        subject,
-        html,
-        // 2026-09-05: Enable tracking so we get the resend message ID for delivery
-        // sync. Without this, `result.data.id` is undefined and we can't track bounces.
-        open_tracking: true,
-        click_tracking: true,
-      } as any);
-      if (result.error) {
-        emailError = result.error.message;
-        console.error('📧 [JOTFORM INVITATION ERROR]', normalizedEmail, '→', result.error.message);
-      } else {
-        emailOk = true;
-        // 2026-09-05: D1 schema has `invitationSentAt` (not `emailSentAt`).
-        // Use raw d1Run to avoid d1-admin.update silently failing on missing columns.
-        // Set all 7 fields so delivery tracking works:
-        //   - status = SENT
-        //   - invitationSentAt = now
-        //   - resendMessageId = Resend's message ID (for later bounce/opens sync)
-        //   - deliveryStatus = 'sent' (will be updated by sync-delivery on opens/bounces)
-        //   - deliverySyncedAt = now
-        //   - updatedAt = now
-        const { d1Run } = await import('@/lib/db-d1');
-        const resendMessageId = result.data?.id || null;
-        const now = Date.now();
-        await d1Run(
-          `UPDATE TeacherInvitation
-           SET status = ?, invitationSentAt = ?, resendMessageId = ?, deliveryStatus = ?, deliverySyncedAt = ?, updatedAt = ?
-           WHERE id = ?`,
-          'SENT', now, resendMessageId, 'sent', now, now, invitation.id,
-        );
-      }
-    } catch (e: any) {
-      emailError = e.message;
-      console.error('📧 [JOTFORM INVITATION EXCEPTION]', e);
-    }
+  let usedFallbackSender = false;
+  const { from: siteFrom, fallback: fallbackFrom } = await getSiteSender(site as SourceSite);
+  console.log(
+    `📧 [JOTFORM INVITATION] site=${site} from=${siteFrom} → ${normalizedEmail}`,
+  );
+
+  const sendResult = await sendEmailWithFrom({
+    to: [normalizedEmail],
+    subject,
+    html,
+    from: siteFrom,
+    fallbackFrom,
+  });
+
+  emailOk = sendResult.ok;
+  emailError = sendResult.error;
+  usedFallbackSender = !!sendResult.usedFallback;
+
+  if (emailOk) {
+    // 2026-09-05: D1 schema has `invitationSentAt` (not `emailSentAt`).
+    // Use raw d1Run to avoid d1-admin.update silently failing on missing columns.
+    // Set all 7 fields so delivery tracking works:
+    //   - status = SENT
+    //   - invitationSentAt = now
+    //   - resendMessageId = Resend's message ID (for later bounce/opens sync)
+    //   - deliveryStatus = 'sent' (will be updated by sync-delivery on opens/bounces)
+    //   - deliverySyncedAt = now
+    //   - updatedAt = now
+    const { d1Run } = await import('@/lib/db-d1');
+    const resendMessageId = sendResult.id || null;
+    const now = Date.now();
+    await d1Run(
+      `UPDATE TeacherInvitation
+       SET status = ?, invitationSentAt = ?, resendMessageId = ?, deliveryStatus = ?, deliverySyncedAt = ?, updatedAt = ?
+       WHERE id = ?`,
+      'SENT', now, resendMessageId, 'sent', now, now, invitation.id,
+    );
   } else {
-    // Dev mode: log to console
-    console.log(`\n📧 [JOTFORM INVITATION - DEV] To: ${normalizedEmail}`);
-    console.log(`   Site: ${site}`);
-    console.log(`   Name: ${firstName} ${lastName}`);
-    console.log(`   Accept URL: ${acceptUrl}`);
-    emailOk = true; // In dev, we consider it OK
+    console.error('📧 [JOTFORM INVITATION ERROR]', normalizedEmail, '→', emailError);
   }
 
   // 2026-09-13: Track journey event for invited teacher
@@ -242,7 +238,14 @@ export async function POST(req: NextRequest) {
   const { trackJourney } = await import('@/lib/teacher-journey');
   await trackJourney(user.id, 'INVITATION_CREATED', {
     page: '/admin/invitations',
-    metadata: { source: 'invite-new-teacher', invitationId: invitation.id, emailSent: emailOk },
+    metadata: {
+      source: 'invite-new-teacher',
+      invitationId: invitation.id,
+      emailSent: emailOk,
+      senderSite: site,
+      senderAddress: siteFrom,
+      usedFallbackSender,
+    },
     req,
   });
 
@@ -254,6 +257,8 @@ export async function POST(req: NextRequest) {
     acceptUrl,
     emailSent: emailOk,
     emailError,
+    from: siteFrom,
+    usedFallbackSender,
   });
   } catch (err: any) {
     console.error('❌ [JOTFORM INVITATION - UNCAUGHT]', err);

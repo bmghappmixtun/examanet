@@ -17,7 +17,9 @@
   ],
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://examanet-dev.examanet-poc.workers.dev",
-    "ENABLE_NEW_DESIGN": "1"
+    "ENABLE_NEW_DESIGN": "1",
+    "EMAIL_FROM_DEVOIRAT": "contact@devoirat.net",
+    "EMAIL_FROM_TUNISIECOLLEGE": "contact@tunisiecollege.net"
   },
   "assets": {
     "directory": ".open-next/assets",
