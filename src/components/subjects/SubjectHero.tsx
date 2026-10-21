@@ -114,7 +114,7 @@ export default function SubjectHero({
             <div className="flex flex-wrap gap-3 mb-5">
               <PillStat
                 icon={BookOpen}
-                value={totalResources.toLocaleString()}
+                value={totalResources.toLocaleString('fr-FR')}
                 label="ressources"
                 color={subject.color}
               />
