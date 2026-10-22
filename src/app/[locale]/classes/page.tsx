@@ -8,7 +8,11 @@
  */
 
 import type { Metadata } from 'next';
-import Link from 'next/link';
+// 2026-10-22 : le `Link` i18n (et non `next/link`) est INDISPENSABLE ici.
+// Avec `next/link`, href="/classes/7eme" sortait tel quel SANS le préfixe
+// /fr → le hub ne liait pas ses enfants et Google suivait une URL non
+// canonique. `Link` de @/i18n/navigation préfixe la locale automatiquement.
+import { Link } from '@/i18n/navigation';
 import { getLocale } from 'next-intl/server';
 import { ChevronRight } from 'lucide-react';
 import { getClassPages } from '@/lib/classes-seo';
