@@ -33,12 +33,35 @@
  * They never throw, never log, and always return a sensible default.
  */
 
-const isBrowser = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+/**
+ * Resolve `window.localStorage` without ever letting the getter throw.
+ *
+ * The SecurityError comes from the `localStorage` PROPERTY GETTER, not from
+ * `.getItem()`. Two traps:
+ *  1. `typeof window.localStorage` does NOT protect us — `typeof` evaluates
+ *     the member expression, so the getter still runs and throws.
+ *  2. Evaluating it at MODULE SCOPE kills the whole chunk: the throw happens
+ *     while the module factory runs (before React renders), so the app
+ *     crashes straight to the error boundary ("Recharger la page").
+ *
+ * Hence: lazy access (inside a function) + try/catch around the getter.
+ */
+function getStorage(): Storage | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage;
+  } catch {
+    // Site data / cookies blocked (Chrome Android, in-app browsers,
+    // sandboxed iframes) — storage is simply unavailable.
+    return null;
+  }
+}
 
 function tryStorage<T>(fn: (s: Storage) => T, fallback: T): T {
-  if (!isBrowser) return fallback;
+  const storage = getStorage();
+  if (!storage) return fallback;
   try {
-    return fn(window.localStorage);
+    return fn(storage);
   } catch {
     return fallback;
   }
