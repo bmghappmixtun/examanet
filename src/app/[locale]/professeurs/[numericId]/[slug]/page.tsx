@@ -4,6 +4,7 @@
 
 import TeacherDetailClient from '@/components/teachers/TeacherDetailClient';
 import { breadcrumbSchema, personSchema } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
@@ -30,9 +31,7 @@ export async function generateMetadata({
   return {
     title: `Professeur #${numericId}`,
     description: `Découvrez le profil de ce professeur sur Examanet : cours, exercices, sujets et corrigés gratuits.`,
-    alternates: {
-      canonical: `${SITE_URL}${localePrefix}/professeurs/${numericId}`,
-    },
+    alternates: localeAlternatesFor(`/professeurs/${numericId}`, locale as 'fr' | 'ar'),
     openGraph: {
       title: `Professeur #${numericId}`,
       description: `Profil professeur sur Examanet`,

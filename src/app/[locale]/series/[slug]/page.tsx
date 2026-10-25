@@ -10,6 +10,7 @@ import ApexListing from '@/components/preview-series2/ApexListing';
 import { SeriesFilterProvider } from '@/components/preview-series2/series-context';
 import styles from '@/components/preview-series2/apex-series.module.css';
 import { getSubjectDisplayName } from '@/lib/subject-cycle-name';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const revalidate = 300;
 
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   return {
     title: `Séries ${slug} | Examanet`,
-    alternates: { canonical: `${baseUrl}/${locale}/series/${slug}` },
+    alternates: localeAlternatesFor(`/series/${slug}`, locale as 'fr' | 'ar'),
   };
 }
 

@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
 import { getTranslations, getLocale } from 'next-intl/server';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 import {
   Eye,
   MessageCircle,
@@ -22,20 +23,14 @@ import {
 } from 'lucide-react';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as 'fr' | 'ar';
   const isAr = locale === 'ar';
   return {
     title: isAr ? 'انضم كمعلم — Examanet' : 'Espace Enseignants — Rejoignez Examanet',
     description: isAr
       ? 'منصة تعليمية تونسية: انشر تمارينك ودروسك. احصل على رؤية، تابع إحصائياتك وساعد آلاف التلاميذ.'
       : "Plateforme éducative tunisienne : publiez vos devoirs, cours et exercices. Gagnez en visibilité, suivez vos statistiques et aidez des milliers d'élèves.",
-    alternates: {
-      canonical: 'https://examanet.com/enseignants/rejoindre',
-      languages: {
-        'fr-TN': 'https://examanet.com/enseignants/rejoindre',
-        'ar-TN': 'https://examanet.com/ar/enseignants/rejoindre',
-      },
-    },
+    alternates: localeAlternatesFor('/enseignants/rejoindre', locale),
   };
 }
 

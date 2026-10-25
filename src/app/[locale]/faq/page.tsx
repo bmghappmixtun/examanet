@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Link } from '@/i18n/navigation';
 import { getTranslations, getLocale, getMessages } from 'next-intl/server';
 import { faqSchema, breadcrumbSchema } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
@@ -13,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: isAr
       ? 'جميع الإجابات على أسئلتك حول إكسامانت: دروس مجانية، مستويات، مواد، معلمون، تحميل.'
       : 'Toutes les réponses à vos questions sur Examanet : cours gratuits, niveaux, matières, enseignants, téléchargement.',
-    alternates: isAr ? { canonical: '/ar/faq' } : { canonical: '/fr/faq' },
+    alternates: localeAlternatesFor('/faq', isAr ? 'ar' : 'fr'),
     openGraph: {
       title: isAr ? 'الأسئلة الشائعة إكسامانت' : 'FAQ Examanet',
       description: isAr

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Shield, CheckCircle } from 'lucide-react';
 import { getTranslations, getLocale, getMessages } from 'next-intl/server';
 import { breadcrumbSchema, SITE_URL } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const revalidate = 3600; // 1 hour cache
 
@@ -15,9 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: isAr
       ? 'سياسة الخصوصية لمنصة إكسامانت. كيف نحمي بياناتك الشخصية.'
       : "Politique de confidentialité d'Examanet. Comment nous protégeons tes données personnelles.",
-    alternates: isAr
-      ? { canonical: '/ar/politique-confidentialite' }
-      : { canonical: '/fr/politique-confidentialite' },
+    alternates: localeAlternatesFor('/politique-confidentialite', isAr ? 'ar' : 'fr'),
     robots: { index: true, follow: true }, // Public legal page
   };
 }

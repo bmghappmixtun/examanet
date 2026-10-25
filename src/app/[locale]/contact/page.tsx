@@ -3,6 +3,7 @@ import { Mail, MessageSquare, Phone, MapPin, Clock } from 'lucide-react';
 import ContactForm from '@/components/contact/ContactForm';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { breadcrumbSchema, SITE_URL } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const revalidate = 3600; // 1 hour cache
 
@@ -14,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: isAr
       ? 'تواصل مع فريق إكسامانت. سؤال، خطأ، اقتراح؟ سنرد عليك خلال 24-48 ساعة.'
       : "Contactez l'équipe Examanet. Une question, un bug, une suggestion ? Nous vous répondons sous 24-48h.",
-    alternates: isAr ? { canonical: '/ar/contact' } : { canonical: '/fr/contact' },
+    alternates: localeAlternatesFor('/contact', isAr ? 'ar' : 'fr'),
     openGraph: {
       title: isAr ? 'اتصل بإكسامانت' : 'Contact Examanet',
       description: isAr

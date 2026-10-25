@@ -63,6 +63,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
         languages: {
           'fr-TN': `https://examanet.com/fr/matieres/${subjectSlug}`,
           'ar-TN': `https://examanet.com/ar/matieres/${subjectSlug}`,
+          'x-default': `https://examanet.com/fr/matieres/${subjectSlug}`,
         },
       },
       openGraph: {

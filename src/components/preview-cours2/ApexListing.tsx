@@ -6,6 +6,7 @@ import ResourceCard from '@/components/resources/ResourceCard';
 import styles from './apex-cours.module.css';
 import { useCoursContext } from './cours-context';
 import SidebarFilters from './SidebarFilters';
+import { emptyStateLabel } from '@/lib/fr-plural';
 
 interface ListingProps {
   subject: { slug: string; nameFr: string };
@@ -250,7 +251,7 @@ export default function ApexListing({ subject, classes, activeCycle, type = 'Cou
         <div className={styles.classicGrid} data-density={density}>
           {items.length === 0 && !loading ? (
             <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem 0', color: 'var(--muted)' }}>
-              <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>Aucun{type === 'Cours' ? 'e' : ''} {type.toLowerCase()} pour ces filtres.</p>
+              <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>{emptyStateLabel(type)}</p>
               <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>Essayez d'élargir vos critères.</p>
             </div>
           ) : (

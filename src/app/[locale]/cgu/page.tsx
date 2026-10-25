@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Scale, CheckCircle } from 'lucide-react';
 import { getTranslations, getLocale, getMessages } from 'next-intl/server';
 import { breadcrumbSchema, SITE_URL } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const revalidate = 3600; // 1 hour cache
 
@@ -13,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: isAr
       ? 'شروط استخدام منصة إكسامانت. الحقوق والالتزامات والمسؤوليات.'
       : "Conditions générales d'utilisation de la plateforme Examanet. Droits, obligations et responsabilités des utilisateurs.",
-    alternates: isAr ? { canonical: '/ar/cgu' } : { canonical: '/fr/cgu' },
+    alternates: localeAlternatesFor('/cgu', isAr ? 'ar' : 'fr'),
   };
 }
 

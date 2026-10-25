@@ -4,6 +4,7 @@ import { Sparkles } from 'lucide-react';
 import styles from './apex-cours.module.css';
 import SubjectIcons from '@/components/shared/SubjectIcons';
 import { useCoursContext } from './cours-context';
+import { statLabel } from '@/lib/fr-plural';
 
 interface HeroProps {
   subject: { slug: string; nameFr: string; nameAr?: string };
@@ -16,16 +17,6 @@ interface HeroProps {
   type?: 'Devoirs' | 'Cours' | 'Séries';
 }
 
-/**
- * 2026-10-25: singulier des libellés de stats.
- * « 1 DEVOIRS » / « 1 CLASSES » / « 1 TRIMESTRES » étaient affichés tel quel.
- * "Cours" est INVARIABLE en français → on ne retire pas le « s ».
- */
-const SINGULAR_LABELS: Record<string, string> = {
-  Devoirs: 'Devoir',
-  Cours: 'Cours',
-  'Séries': 'Série',
-};
 
 export default function ApexHero({
   subject,
@@ -73,7 +64,7 @@ export default function ApexHero({
           <div className={styles.heroStat}>
             <div className={styles.heroStatValue}>{totalCount.toLocaleString('fr-FR')}</div>
             <div className={styles.heroStatLabel}>
-              {totalCount > 1 ? type : SINGULAR_LABELS[type] || type}
+              {statLabel(type, totalCount)}
             </div>
           </div>
           <div className={styles.heroStat}>

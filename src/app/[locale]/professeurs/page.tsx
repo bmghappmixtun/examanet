@@ -18,12 +18,15 @@
 import { Suspense } from 'react';
 import TeachersClient from '@/components/teachers/TeachersClient';
 import { breadcrumbSchema, itemListSchema } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
+import { getLocale } from 'next-intl/server';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
 export const revalidate = 120; // PERF 2026-09-02: 2min ISR cache for public page
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ q?: string; subject?: string }> }) {
+  const locale = (await getLocale()) as 'fr' | 'ar';
   const sp = await searchParams;
   const filters: string[] = [];
   if (sp.q) filters.push(`"${sp.q}"`);
@@ -35,13 +38,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   return {
     title,
     description: 'Découvrez les professeurs tunisiens certifiés sur Examanet : cours, exercices, sujets de bac et corrigés. 100% gratuit.',
-    alternates: {
-      canonical: 'https://examanet.com/professeurs',
-      languages: {
-        'fr-TN': 'https://examanet.com/professeurs',
-        'ar-TN': 'https://examanet.com/ar/professeurs',
-      },
-    },
+    alternates: localeAlternatesFor('/professeurs', locale),
     openGraph: {
       title: baseTitle,
       description: 'Professeurs tunisiens certifiés sur Examanet',

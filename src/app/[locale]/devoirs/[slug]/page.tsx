@@ -10,6 +10,7 @@ import ApexListing from '@/components/preview-devoirs2/ApexListing';
 import { DevoirsFilterProvider } from '@/components/preview-devoirs2/devoirs-context';
 import styles from '@/components/preview-devoirs2/apex-devoirs.module.css';
 import { getSubjectDisplayName } from '@/lib/subject-cycle-name';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const revalidate = 300;
 
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: Props) {
   // obtenait « Devoirs histoire-geographie | Examanet | Examanet » en double.
   return {
     title: `Devoirs ${slug}`,
-    alternates: { canonical: `${baseUrl}/${locale}/devoirs/${slug}` },
+    alternates: localeAlternatesFor(`/devoirs/${slug}`, locale as 'fr' | 'ar'),
   };
 }
 

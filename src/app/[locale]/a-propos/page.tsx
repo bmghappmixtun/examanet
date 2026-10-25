@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { getTranslations, getLocale, getMessages } from 'next-intl/server';
 import { breadcrumbSchema, SITE_URL } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const revalidate = 3600; // 1 hour cache
 
@@ -27,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: isAr
       ? 'اكتشف إكسامانت، المنصة التربوية #1 في تونس. مهمتنا: جعل التعليم مجانياً ومتاحاً لجميع التلاميذ التونسيين.'
       : "Découvrez Examanet, la plateforme pédagogique #1 en Tunisie. Notre mission : rendre l'éducation gratuite et accessible à tous les élèves tunisiens.",
-    alternates: isAr ? { canonical: '/ar/a-propos' } : { canonical: '/fr/a-propos' },
+    alternates: localeAlternatesFor('/a-propos', isAr ? 'ar' : 'fr'),
     openGraph: {
       title: isAr ? 'حول إكسامانت' : "À propos d'Examanet",
       description: isAr

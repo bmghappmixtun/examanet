@@ -3,6 +3,7 @@ import { Link } from '@/i18n/navigation';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { Calculator, ArrowLeft, Award } from 'lucide-react';
 import { SITE_URL } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const revalidate = 3600;
 
@@ -20,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: isAr
       ? 'احسب معدلك في الباكالوريا التونسية حسب شعبتك مع المعاملات الرسمية لوزارة التربية (الدورة الرئيسية والمراقبة).'
       : "Calculez votre moyenne du Bac tunisien selon votre section, avec les coefficients officiels du Ministère de l'Éducation (sessions principale et de contrôle).",
-    alternates: { canonical: isAr ? PAGE_URL_AR : PAGE_URL_FR },
+    alternates: localeAlternatesFor('/outils/moyenne-bac', isAr ? 'ar' : 'fr'),
     openGraph: {
       title: isAr ? 'حساب معدل الباكالوريا' : 'Calcul Moyenne Bac',
       description: isAr

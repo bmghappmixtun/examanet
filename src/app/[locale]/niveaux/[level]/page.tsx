@@ -12,6 +12,7 @@ import { getUserFavorites, decorateWithFavorites } from '@/lib/resource-helpers'
 import { ChevronRight } from 'lucide-react';
 import { breadcrumbSchema } from '@/lib/structured-data';
 import { getLocalizedName } from '@/lib/localized-name';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const revalidate = 300; // 5 min cache
 
@@ -29,18 +30,14 @@ export async function generateMetadata({ params }: { params: Promise<{ level: st
       title: 'Niveau non trouvé',
       // 2026-09-12: Still emit canonical even for non-existent levels so
       // Google doesn't flag these as having no canonical link tag.
-      alternates: {
-        canonical: `${baseUrl}${locale === 'ar' ? '/ar' : '/fr'}/niveaux/${levelSlug}`,
-      },
+      alternates: localeAlternatesFor(`/niveaux/${levelSlug}`, locale as 'fr' | 'ar'),
       robots: { index: false, follow: true },
     };
   }
   return {
     title: `${getLocalizedName(level, locale)} — Cours et Devoirs gratuits`,
     description: `Ressources pédagogiques gratuites pour ${getLocalizedName(level, locale)} en Tunisie : cours, devoirs, exercices et corrigés.`,
-    alternates: {
-      canonical: `${baseUrl}${locale === 'ar' ? '/ar' : '/fr'}/niveaux/${level.slug}`,
-    },
+    alternates: localeAlternatesFor(`/niveaux/${level.slug}`, locale as 'fr' | 'ar'),
     openGraph: {
       title: `${getLocalizedName(level, locale)} — Examanet`,
       description: `Cours et devoirs gratuits pour ${getLocalizedName(level, locale)}.`,

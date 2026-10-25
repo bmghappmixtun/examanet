@@ -11,6 +11,7 @@ async function getD1() {
   return (ctx as any).env?.DB;
 }
 import { getLocale } from 'next-intl/server';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,7 +28,7 @@ export async function generateMetadata({ searchParams }: { searchParams: any }):
       ? 'ابحث في آلاف الموارد التربوية المجانية: دروس، فروض، تمارين، مواضيع باك وإصلاحات. بحث متسامح مع مرادفات.'
       : 'Recherchez parmi des milliers de ressources : cours, devoirs, exercices, sujets de bac et corrigés. Recherche tolérante aux fautes avec synonymes FR/AR.',
     // SEO 2026-08-22: locale-prefixed canonical. Was bare '/recherche' before.
-    alternates: { canonical: isAr ? '/ar/recherche' : '/fr/recherche' },
+    alternates: localeAlternatesFor('/recherche', isAr ? 'ar' : 'fr'),
     // 2026-09-07: Base /recherche now NOINDEX too.
     // Bot traffic (7,448 visitors/7d, 99.93% desktop) is hammering it.
     // The page is a search form — no unique content for search engines.

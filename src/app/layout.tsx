@@ -142,18 +142,25 @@ export function generateMetadata(): Metadata {
         'max-snippet': -1,
       },
     },
-    // SEO 2026-08-22: the canonical on the ROOT layout is the bare site URL
-    // (this is the homepage canonical). For [locale]/* pages, the locale
-    // layout's generateMetadata() OVERRIDES this with a locale-prefixed
-    // canonical + proper hreflang alternates. This is correct Next.js
-    // behavior — child metadata wins.
+    // SEO 2026-10-25: the canonical on the ROOT layout is the bare site URL
+    // (the homepage canonical). The root layout owns ONLY the bare `/` route.
+    //
+    // WHY `languages` WAS REMOVED HERE (site-wide hreflang bug):
+    // Next.js does NOT replace a parent's `alternates` with the child's — it
+    // RENDERS the root layout's alternates AND the leaf page's alternates as
+    // two separate sets of <link rel="alternate">. The root layout's
+    // `languages` pointed at the HOMEPAGE (fr-TN -> https://examanet.com,
+    // ar-TN -> https://examanet.com/ar, x-default -> https://examanet.com),
+    // so EVERY localized page was shipping hreflang claiming that "the French
+    // version of this page is the homepage". Observed on /fr/matieres,
+    // /fr/devoirs/*, /fr/ressources… while the canonical was correct.
+    //
+    // The [locale] layout (src/app/[locale]/layout.tsx) now provides the
+    // locale-root hreflang fallback, and every page that declares its own
+    // `alternates.languages` gets exactly ONE correct set — no duplicate
+    // hreflang keys.
     alternates: {
       canonical: SITE_URL,
-      languages: {
-        'fr-TN': SITE_URL,
-        'ar-TN': `${SITE_URL}/ar`,
-        'x-default': SITE_URL,
-      },
     },
     other: {
       'theme-color': '#0EA5E9',
@@ -205,10 +212,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta property="og:locale" content="fr_TN" />
         {/* Twitter locale for AR */}
         <meta name="twitter:card" content="summary_large_image" />
-        {/* Hreflang: FR is canonical, AR is at /ar/* prefix, x-default points to FR. */}
-        <link rel="alternate" hrefLang="fr-TN" href={SITE_URL} />
-        <link rel="alternate" hrefLang="ar-TN" href={`${SITE_URL}/ar`} />
-        <link rel="alternate" hrefLang="x-default" href={SITE_URL} />
+        {/*
+          SEO 2026-10-25: les 3 <link rel="alternate"> hreflang codés en dur
+          ici ont été SUPPRIMÉS.
+
+          Ils pointaient tous vers l'ACCUEIL (fr-TN -> https://examanet.com,
+          ar-TN -> https://examanet.com/ar, x-default -> https://examanet.com)
+          et étaient injectés dans le <head> de TOUTES les pages, y compris
+          /fr/matieres, /fr/niveaux/*, /fr/cours/*, /fr/devoirs/*…
+
+          Next.js ne peut pas dédupliquer ces liens : ils sont écrits en dur
+          dans le JSX, hors de l'API `metadata`, donc ils s'AJOUTENT aux
+          alternates générés par la page. Résultat observé avant le fix :
+          6 balises <link rel="alternate"> sur chaque page, avec 2 clés
+          hrefLang en doublon (fr-TN → la home ET fr-TN → la page).
+
+          Le hreflang est désormais déclaré une seule fois, par l'API
+          metadata : le layout [locale] fournit le repli (racines de locale)
+          et chaque page déclare le sien via `localeAlternates()` /
+          `localeAlternatesWithCanonical()` (src/lib/seo-alternates.ts).
+        */}
         {/* 2026-07-30: preconnect to Vercel Blob storage (PDFs) so the TCP
             + TLS handshake happens in parallel with HTML/CSS/JS parsing.
             Saves ~100-200ms on first PDF download / preview thumbnail. */}

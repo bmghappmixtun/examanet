@@ -5,6 +5,8 @@ import { unstable_cache as nextCache } from 'next/cache';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import HomeClient from '@/components/home/HomeClient';
 import { itemListSchema } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
+import { getLocale } from 'next-intl/server';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
@@ -139,21 +141,42 @@ function formatResource(r: any) {
   };
 }
 
-export const metadata: Metadata = {
-  // 2026-09-07: Added explicit title. Was relying on inherited root title
-  // (which now uses `template: '%s | Examanet'` since we removed noindex).
-  title: 'Examanet — La plateforme pédagogique #1 en Tunisie',
-  description: 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés pour le Collège et le Lycée. Gratuit.',
-  alternates: {
-    canonical: '/fr',
-  },
-  openGraph: {
-    title: 'Examanet — La plateforme pédagogique #1 en Tunisie',
-    description: 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés. Gratuit.',
-    url: '/fr',
-    type: 'website',
-  },
-};
+// SEO 2026-10-25 : la home était un `export const metadata` STATIQUE, donc
+// 100 % français : /ar servait le titre « Examanet — La plateforme
+// pédagogique #1 en Tunisie » et son canonical pointait sur /fr. Passé en
+// `generateMetadata` pour que le titre, la description, l'og:url et le
+// canonical suivent la locale.
+//
+// ⚠️ Ne JAMAIS exporter `metadata` ET `generateMetadata` sur la même page
+// (Next.js throw : "metadata and generateMetadata cannot be exported at the
+// same time") — d'où la suppression du `export const metadata` ci-dessous.
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = (await getLocale()) as 'fr' | 'ar';
+  const isAr = locale === 'ar';
+
+  return {
+    // 2026-09-07: Added explicit title. Was relying on inherited root title
+    // (which now uses `template: '%s | Examanet'` since we removed noindex).
+    title: isAr
+      ? 'إكسامانت — المنصة التربوية #1 في تونس'
+      : 'Examanet — La plateforme pédagogique #1 en Tunisie',
+    description: isAr
+      ? 'المنصة التربوية التونسية #1: دروس، فروض، تمارين، سلاسل، ملخصات، مواضيع باكالوريا وإصلاحات للابتدائي، الإعدادي والثانوي. مجانية 100%.'
+      : 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés pour le Collège et le Lycée. Gratuit.',
+    alternates: localeAlternatesFor('/', locale),
+    openGraph: {
+      title: isAr
+        ? 'إكسامانت — المنصة التربوية #1 في تونس'
+        : 'Examanet — La plateforme pédagogique #1 en Tunisie',
+      description: isAr
+        ? 'المنصة التربوية التونسية #1: دروس، فروض، تمارين، سلاسل، ملخصات، مواضيع باكالوريا وإصلاحات للابتدائي، الإعدادي والثانوي. مجانية 100%.'
+        : 'Plateforme pédagogique #1 pour les élèves tunisiens : cours, devoirs, exercices, sujets de bac et corrigés. Gratuit.',
+      url: `/${locale}`,
+      locale: isAr ? 'ar_TN' : 'fr_TN',
+      type: 'website',
+    },
+  };
+}
 
 export const revalidate = 300;
 

@@ -18,6 +18,7 @@ import {
 import { getTranslations, getLocale } from 'next-intl/server';
 import { itemListSchema, breadcrumbSchema } from '@/lib/structured-data';
 import { getLocalizedName } from '@/lib/localized-name';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
 
@@ -31,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: isAr
       ? '📚 +3700 مورد مجاني للإعدادي في تونس: دروس، فروض، سلاسل، تمارين وإصلاحات للسنة السابعة والثامنة والتاسعة أساسي.'
       : '📚 +3 700 ressources pour le collège en Tunisie : cours, devoirs, exercices et corrigés pour la 7ème, 8ème et 9ème année. Maths, Physique, SVT, Français, Arabe.',
-    alternates: isAr ? { canonical: '/ar/college' } : { canonical: '/fr/college' },
+    alternates: localeAlternatesFor('/college', isAr ? 'ar' : 'fr'),
     openGraph: {
       title: isAr
         ? 'دروس الإعدادي تونس — السنة 7، 8، 9'

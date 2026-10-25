@@ -10,6 +10,7 @@ import ApexListing from '@/components/preview-cours2/ApexListing';
 import { CoursFilterProvider } from '@/components/preview-cours2/cours-context';
 import styles from '@/components/preview-cours2/apex-cours.module.css';
 import { getSubjectDisplayName } from '@/lib/subject-cycle-name';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export const revalidate = 300;
 
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   return {
     title: `Cours ${slug} | Examanet`,
-    alternates: { canonical: `${baseUrl}/${locale}/cours/${slug}` },
+    alternates: localeAlternatesFor(`/cours/${slug}`, locale as 'fr' | 'ar'),
   };
 }
 

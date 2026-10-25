@@ -12,6 +12,7 @@ import type { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import { itemListSchema } from '@/lib/structured-data';
 import MatieresListClient from '@/components/matieres/MatieresListClient';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -23,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: isAr
       ? 'جميع مواد البرنامج التونسي: الرياضيات، الفيزياء، علوم الحياة والأرض، الفرنسية، العربية، التاريخ، الفلسفة. دروس، تمارين وإصلاحات لكل مادة.'
       : 'Toutes les matières du programme tunisien : Maths, Physique, SVT, Français, Arabe, Histoire, Philosophie. Cours, exercices et corrigés par matière.',
-    alternates: isAr ? { canonical: '/ar/matieres' } : { canonical: '/fr/matieres' },
+    alternates: localeAlternatesFor('/matieres', isAr ? 'ar' : 'fr'),
     openGraph: {
       title: isAr ? 'جميع مواد البرنامج التونسي' : 'Toutes les matières du programme tunisien',
       description: isAr

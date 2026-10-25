@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import { breadcrumbSchema } from '@/lib/structured-data';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 import { REFERENTIEL_SOURCE } from '@/data/referentiel-source';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
@@ -23,6 +24,10 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: isAr
       ? ['référentiel national', 'système éducatif', 'tunisie']
       : ['référentiel national Tunisie', 'système éducatif tunisien', 'programme officiel', 'JORT 2019-1085'],
+    // SEO 2026-10-25 : canonical + hreflang (la page héritait du fallback
+    // « fr-TN -> /fr » du layout [locale], qui annonce la home comme version
+    // française de cette page).
+    alternates: localeAlternatesFor('/referentiel-national', isAr ? 'ar' : 'fr'),
   };
 }
 

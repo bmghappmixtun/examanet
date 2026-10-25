@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import ClassAccordion from '@/components/niveaux/ClassAccordion';
 import { getLocalizedName } from '@/lib/localized-name';
+import { localeAlternatesFor } from '@/lib/seo-alternates';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -29,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
       : 'Ressources gratuites par niveau scolaire tunisien : 7ème à 9ème année (Collège), 1ère à 4ème année (Lycée/Bac). Cours, exercices et corrigés pour chaque classe.',
     // SEO 2026-08-22: locale-prefixed canonical. Was bare '/niveaux' before
     // (same canonical on /fr/niveaux and /ar/niveaux = duplicate content).
-    alternates: { canonical: isAr ? '/ar/niveaux' : '/fr/niveaux' },
+    alternates: localeAlternatesFor('/niveaux', isAr ? 'ar' : 'fr'),
     openGraph: {
       title: isAr ? 'جميع المستويات الدراسية في تونس' : 'Tous les niveaux scolaires en Tunisie',
       description: isAr

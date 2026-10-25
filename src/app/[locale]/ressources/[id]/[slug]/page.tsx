@@ -9,6 +9,7 @@
 // which uses D1 directly (no getCloudflareContext in the render path).
 
 import ResourceDetailClient from '@/components/resources/ResourceDetailClient';
+import { localeAlternatesWithCanonical } from '@/lib/seo-alternates';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +45,7 @@ export async function generateMetadata({
       title: fallbackTitle,
       description: fallbackDesc,
       robots: { index: true, follow: true },
-      alternates: { canonical: canonicalUrl },
+      alternates: localeAlternatesWithCanonical('/ressources', canonicalUrl),
       openGraph: { title: fallbackTitle, description: fallbackDesc, locale: locale === 'ar' ? 'ar_TN' : 'fr_TN', type: 'article' },
     };
   }
@@ -106,7 +107,7 @@ export async function generateMetadata({
     description,
     keywords: keywords.length > 0 ? keywords.join(', ') : undefined,
     robots: { index: true, follow: true },
-    alternates: { canonical: canonicalUrl },
+    alternates: localeAlternatesWithCanonical(`/ressources/${numericId}/${decodedSlug}`, canonicalUrl),
     openGraph: {
       title,
       description,
