@@ -43,6 +43,7 @@ import { db } from '@/lib/d1-admin';
 import { uploadFile } from '@/lib/storage';
 import { properSlugify } from '@/lib/slugify';
 import { convertDocxToPdf } from '@/lib/document-converter';
+import { resolveSubjectSlugForCycle } from '@/lib/subject-slug-by-cycle';
 
 export const maxDuration = 300; // 5 min — bulk import
 export const runtime = 'nodejs';
@@ -333,7 +334,13 @@ async function processFile(
 
     // Map class/subject/type from Jotform
     const classSlug = mapClassSlug(sub.classe);
-    const subjectSlug = mapSubjectSlug(sub.matiere, fileName);
+    // 2026-10-25: le slug de matière dépend du CYCLE.
+    // « Histoire-Géographie » est une matière combinée au collège et en
+    // 1AS/2AS ; « Histoire »/« Géographie » séparés n'existent qu'en 3AS/4AS.
+    // Sans cette correction, un fichier du collège nommé « …Histoire… » était
+    // importé avec le slug `histoire` et devenait invisible sur
+    // /fr/devoirs/histoire-geographie. Idem pour `algo-prog` → `informatique`.
+    const subjectSlug = resolveSubjectSlugForCycle(mapSubjectSlug(sub.matiere, fileName), classSlug);
     const resType = mapResourceType(sub.type, fileName);
     const classObj = ctx.classBySlug.get(classSlug);
     const subjectObj = ctx.subjectBySlug.get(subjectSlug);

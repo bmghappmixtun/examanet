@@ -99,10 +99,14 @@ export async function POST(req: NextRequest) {
     else if (/arabe/i.test(fnameLower)) subjectSlug = 'arabe';
     else if (/fran[çc]ais/i.test(fnameLower)) subjectSlug = 'francais';
     else if (/anglais/i.test(fnameLower)) subjectSlug = 'anglais';
-    else if (/histoire/i.test(fnameLower)) subjectSlug = 'histoire';
-    else if (/g[ée]ograph/i.test(fnameLower)) subjectSlug = 'geographie';
+    // 2026-10-25: sans classe on ne peut pas trancher entre « Histoire »
+    // (lycée 3AS/4AS) et « Histoire-Géographie » (collège + 1AS/2AS, matière
+    // combinée). On garde le slug COMBINÉ : il couvre 5 classes sur 7, et le
+    // slug séparé n'est correct que pour 3AS/4AS. Idem pour Géographie.
+    else if (/histoire/i.test(fnameLower)) subjectSlug = 'histoire-geographie';
+    else if (/g[ée]ograph/i.test(fnameLower)) subjectSlug = 'histoire-geographie';
     else if (/philosophie/i.test(fnameLower)) subjectSlug = 'philosophie';
-    else if (/algo|programmation/i.test(fnameLower)) subjectSlug = 'algo-prog';
+    else if (/algo|programmation/i.test(fnameLower)) subjectSlug = 'informatique';
     else if (/informatique/i.test(fnameLower)) subjectSlug = 'informatique';
     const subject = await db.subject.findUnique({ where: { slug: subjectSlug } });
 

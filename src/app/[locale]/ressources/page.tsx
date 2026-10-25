@@ -25,6 +25,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const sp = await searchParams;
   const locale = await getLocale();
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   const teacherId = sp.teacherId ? parseInt(sp.teacherId as string, 10) : null;
   // No prisma call here: prisma-compat on CF Workers throws 500 ~50% of the time.
   // The page is noindex so metadata is best-effort.
@@ -44,6 +45,19 @@ export async function generateMetadata({
     // Was noindex (left over from CF Workers POC). This page has unique
     // SEO value via filter combinations (?subject=, ?class=, ?year= etc.).
     robots: { index: true, follow: true },
+    // 2026-10-25: canonical MANQUANT → Google pouvait indexer chaque
+    // combinaison de filtres comme une page distincte (?subject=X&class=Y…),
+    // et les hreflang hérités du layout pointaient vers la PAGE D'ACCUEIL
+    // (https://examanet.com/fr) au lieu de /fr/ressources.
+    // Toutes les variantes de filtres se canonisent vers la page de base.
+    alternates: {
+      canonical: `${baseUrl}/${locale}/ressources`,
+      languages: {
+        'fr-TN': `${baseUrl}/fr/ressources`,
+        'ar-TN': `${baseUrl}/ar/ressources`,
+        'x-default': `${baseUrl}/fr/ressources`,
+      },
+    },
   };
 }
 

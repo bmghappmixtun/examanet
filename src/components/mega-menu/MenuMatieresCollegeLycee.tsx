@@ -53,7 +53,12 @@ const SUBJECT_CYCLE: Record<string, 'college' | 'lycee' | 'both'> = {
   'mathematiques': 'both',
   'svt': 'both',
   'physique': 'both',
-  'histoire-geographie': 'college',
+  // 2026-10-25: « Histoire-Géographie » est une matière COMBINÉE au collège
+  // ET en 1AS/2AS (tronc commun) — cf. référentiel officiel. Elle était
+  // classée 'college' alors que 1AS/2AS enseignent HG : les 28 ressources
+  // 1AS/2AS de la matière étaient donc invisibles dans le menu lycée.
+  // (« Histoire » et « Géographie » séparés n'existent qu'en 3AS/4AS.)
+  'histoire-geographie': 'both',
   'education-islamique': 'both',
   'pensee-islamique': 'both',
   'education-civique': 'both',

@@ -36,14 +36,29 @@ export async function GET(request: NextRequest) {
     }
 
     // Parse filters (and sort them for stable cache keys)
+    //
+    // 2026-10-25: les filtres acceptent DEUX formes :
+    //   - paramètres répétés : ?class=8eme&class=7eme  (ce qu'envoie le client)
+    //   - liste séparée par virgules : ?class=8eme,7eme
+    // `sp.getAll()` ne split pas les virgules → un appel direct à l'API avec
+    // la forme virgule produisait `cls.slug IN ('8eme,7eme,9eme')` → 0 résultat
+    // alors que la même page affichait 43 ressources via le navigateur (nuqs
+    // split côté client). On normalise donc ici, comme le font déjà
+    // /api/professeurs/data, /fr/professeurs et TeachersClient.
+    const splitAll = (key: string): string[] =>
+      sp.getAll(key)
+        .flatMap((v) => v.split(','))
+        .map((v) => v.trim())
+        .filter(Boolean);
+
     const q = (sp.get('q') || '').toLowerCase().trim();
-    const type = sp.getAll('type').sort();
-    const classSlug = sp.getAll('class').sort();
-    const section = sp.getAll('section').sort();
-    const subject = sp.getAll('subject').sort();
-    const trimestre = sp.getAll('trimestre').sort();
-    const year = sp.getAll('year').sort();
-    const language = sp.getAll('language').sort();
+    const type = splitAll('type').sort();
+    const classSlug = splitAll('class').sort();
+    const section = splitAll('section').sort();
+    const subject = splitAll('subject').sort();
+    const trimestre = splitAll('trimestre').sort();
+    const year = splitAll('year').sort();
+    const language = splitAll('language').sort();
     // 2026-09-14: accept both 'true' (nuqs default) and '1' (legacy) for
     // backward compat with existing links. nuqs parseAsBoolean writes
     // 'true' on toggle, but old external links / sitemap entries may

@@ -28,8 +28,11 @@ const FAQ_ITEMS = [
 export async function generateMetadata({ params }: Props) {
   const { slug, locale } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
+  // 2026-10-25: NE PAS ajouter "| Examanet" ici. Le layout [locale] applique
+  // déjà `template: '%s | Examanet'` (src/app/[locale]/layout.tsx:84) → on
+  // obtenait « Devoirs histoire-geographie | Examanet | Examanet » en double.
   return {
-    title: `Devoirs ${slug} | Examanet`,
+    title: `Devoirs ${slug}`,
     alternates: { canonical: `${baseUrl}/${locale}/devoirs/${slug}` },
   };
 }
@@ -74,11 +77,38 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
   const totalRes = await db.prepare(totalCountQuery).bind(...totalCountBindings).first();
   const totalCount = Number(totalRes?.c || 0);
 
-  const trimCountRes = await db
-    .prepare("SELECT COUNT(DISTINCT `trimester`) as c FROM Resource WHERE status='PUBLISHED' AND type='DEVOIR' AND subjectId = ? AND `trimester` IS NOT NULL")
-    .bind(subject.id)
-    .first();
+  // 2026-10-25: le compteur de trimestres était calculé SANS le filtre de
+  // cycle (donc sur toutes les classes) et la colonne `trimestre` est quasi
+  // NULL sur ces ressources → il affichait « 1 TRIMESTRES » partout, y compris
+  // quand la page n'affichait qu'1 devoir. On aligne sur le même WHERE que le
+  // total, cycle compris.
+  let trimCountQuery =
+    "SELECT COUNT(DISTINCT `trimester`) as c FROM Resource WHERE status='PUBLISHED' AND type='DEVOIR' AND subjectId = ? AND `trimester` IS NOT NULL";
+  const trimCountBindings: any[] = [subject.id];
+  if (cycleParam && CYCLE_CLASS_SLUGS[cycleParam]) {
+    const slugs = CYCLE_CLASS_SLUGS[cycleParam];
+    const placeholders = slugs.map(() => '?').join(',');
+    trimCountQuery += ` AND classId IN (SELECT id FROM "Class" WHERE slug IN (${placeholders}))`;
+    trimCountBindings.push(...slugs);
+  }
+  const trimCountRes = await db.prepare(trimCountQuery).bind(...trimCountBindings).first();
   const trimesterCount = Number(trimCountRes?.c || 0);
+
+  // 2026-10-25: le compteur de CLASSES affichait le nombre total de classes
+  // du système (7) — donc « 7 CLASSES » quelle que soit la matière, y compris
+  // pour une matière qui n'existe qu'en 4ème. On compte les classes qui
+  // possessing RÉELLEMENT des devoirs de cette matière (cycle compris).
+  let classCountQuery =
+    "SELECT COUNT(DISTINCT classId) as c FROM Resource WHERE status='PUBLISHED' AND type='DEVOIR' AND subjectId = ?";
+  const classCountBindings: any[] = [subject.id];
+  if (cycleParam && CYCLE_CLASS_SLUGS[cycleParam]) {
+    const slugs = CYCLE_CLASS_SLUGS[cycleParam];
+    const placeholders = slugs.map(() => '?').join(',');
+    classCountQuery += ` AND classId IN (SELECT id FROM "Class" WHERE slug IN (${placeholders}))`;
+    classCountBindings.push(...slugs);
+  }
+  const classCountRes = await db.prepare(classCountQuery).bind(...classCountBindings).first();
+  const classCount = Number(classCountRes?.c || 0);
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   const subjectNameFr = subject.nameFr;
@@ -111,7 +141,7 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
           type="Devoirs"
           subject={subject}
           totalCount={totalCount}
-          classCount={allClasses.length}
+          classCount={classCount}
           trimesterCount={trimesterCount}
           classes={allClasses}
           activeClass={classSlug}
