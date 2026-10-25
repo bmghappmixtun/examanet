@@ -169,6 +169,7 @@ async function ResourceDetailPageAsync({
   // Bing Webmaster Tools reported many pages without proper Schema.org data.
   // generateMetadata is server-side, so we generate JSON-LD here too.
   let jsonLdScript: string | null = null;
+  let breadcrumbJsonLdScript: string | null = null;
   if (Number.isFinite(numericId) && numericId > 0) {
     try {
       const { getCloudflareContext } = await import('@opennextjs/cloudflare');
@@ -239,7 +240,18 @@ async function ResourceDetailPageAsync({
               return '{"@context":"https://schema.org"}';
             }
           };
-          jsonLdScript = safeJsonLd([jsonLd, breadcrumbJsonLd]);
+          // 2026-10-22 nightly: emit TWO separate ld+json scripts instead of one
+          // array. The array made the script ROOT an array, so a consumer doing
+          // JSON.parse(text)["@context"] got undefined -> .toLowerCase() crash
+          // "TypeError: undefined is not an object (evaluating
+          // 'r[\"@context\"].toLowerCase')" (Safari 17.6, observed 2026-10-21 on
+          // /fr/ressources/10717). safeJsonLd missed it because
+          // json.includes('"@context"') is true for the NESTED objects.
+          // One script per schema matches the working pattern in
+          // components/resources/ResourceDetailClient.tsx and the 2 placeholder
+          // scripts in src/app/[locale]/ressources/[id]/loading.tsx.
+          jsonLdScript = safeJsonLd(jsonLd);
+          breadcrumbJsonLdScript = safeJsonLd(breadcrumbJsonLd);
         }
       }
     } catch (e) {
@@ -262,6 +274,12 @@ async function ResourceDetailPageAsync({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdScript }}
+        />
+      )}
+      {breadcrumbJsonLdScript && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: breadcrumbJsonLdScript }}
         />
       )}
       <ResourceDetailClient numericId={numericId} slug={decodedSlug} />

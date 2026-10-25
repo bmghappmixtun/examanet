@@ -10,6 +10,7 @@
 // Sub-sitemap routes (must be deployed first):
 //   /sitemap-static.xml      → src/app/sitemap-static.xml/route.ts
 //   /sitemap-classes.xml     → src/app/sitemap-classes.xml/route.ts
+//   /sitemap-class-section.xml → 26 pages /classes/[classe]/[section] (static, from MEGA_MENU_DATA)
 //   /sitemap-subjects.xml    → src/app/sitemap-subjects.xml/route.ts
 //   /sitemap-teachers.xml    → src/app/sitemap-teachers.xml/route.ts
 //   /sitemap-resources-1.xml → src/app/sitemap-resources-1.xml/route.ts
@@ -26,6 +27,7 @@ export async function GET() {
   const subSitemaps = [
     '/sitemap-static.xml',
     '/sitemap-classes.xml',
+    '/sitemap-class-section.xml',
     '/sitemap-subjects.xml',
     '/sitemap-teachers.xml',
     '/sitemap-resources-1.xml',

@@ -127,6 +127,11 @@ export function getStaticPageEntries(): SitemapEntry[] {
     withAlternates('/a-propos', 0.5, 'monthly'),
     withAlternates('/contact', 0.5, 'monthly'),
     withAlternates('/cgu', 0.3, 'monthly'),
+    // 2026-10-22: /ressources is the most-visited page AND the target of 100% of
+    // the mega-menu links, yet it was in NO sitemap (only individual resources
+    // were, via sitemap-resources-*). Adding it + the new /classes hub.
+    withAlternates('/ressources', 0.9, 'daily'),
+    withAlternates('/classes', 0.8, 'weekly'),
     withAlternates('/matieres', 0.8, 'weekly'),
     withAlternates('/niveaux', 0.8, 'weekly'),
     withAlternates('/college', 0.9, 'daily'),
