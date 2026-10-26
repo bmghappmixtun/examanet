@@ -15,12 +15,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { d1All, d1Run } from '@/lib/db-d1';
-import { requireCronSecret } from '@/lib/cf-auth';
+import { requireCronSecret, getSecret } from '@/lib/cf-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || '';
+// 2026-10-26: `process.env` est figé au BUILD dans un CF Worker → un
+// `wrangler secret put DISCORD_WEBHOOK_URL` n'était jamais visible en
+// runtime (le cron se taisait silencieusement). Lecture via getSecret()
+// (ctx.env d'abord) DANS le handler.
 
 function hashMessage(msg: string): string {
   // Simple hash to group similar errors
@@ -88,6 +91,8 @@ export async function GET(req: NextRequest) {
 
   // Post summary to Discord
   let discordPosted = false;
+  // 2026-10-26: lu au moment de la requête (binding runtime).
+  const DISCORD_WEBHOOK_URL = (await getSecret('DISCORD_WEBHOOK_URL')) || '';
   if (DISCORD_WEBHOOK_URL && unSeen.length > 0) {
     const fields: Array<{ name: string; value: string; inline?: boolean }> = [
       { name: 'Total unseen', value: String(unSeen.length), inline: true },

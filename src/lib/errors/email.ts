@@ -8,10 +8,16 @@
  */
 
 import { ErrorSeverity, ErrorSource } from './types';
+import { getSecret } from '../cf-auth';
 
 const AGENT_EMAIL = process.env.AGENT_EMAIL || process.env.OWNER_EMAIL || 'contact@examanet.com';
 const FROM_ADDRESS = process.env.EMAIL_FROM || 'Examanet Alerts <alerts@examanet.com>';
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || '';
+// 2026-10-26: `process.env` est figé au BUILD dans un CF Worker → un secret
+// posé via `wrangler secret put` n'était pas visible en runtime. La lecture
+// se fait désormais dans sendAgentAlert() via getSecret() (ctx.env d'abord).
+// NOTE : cette fonction n'est appelé par personne pour l'instant (code
+// dormant) — le correctif est appliqué quand même pour éviter de réactiver
+// un chemin cassé.
 
 interface AgentAlertParams {
   reference: string;
@@ -61,6 +67,7 @@ export async function sendAgentAlert(params: AgentAlertParams): Promise<boolean>
  * Uses embeds with severity color. Silent for DEBUG/INFO.
  */
 async function sendDiscordAlert(params: AgentAlertParams): Promise<boolean> {
+  const DISCORD_WEBHOOK_URL = (await getSecret('DISCORD_WEBHOOK_URL')) || '';
   if (!DISCORD_WEBHOOK_URL) return false;
 
   // Skip noise — only send WARNING+

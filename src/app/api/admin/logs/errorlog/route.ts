@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/d1-admin';
+import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -15,7 +16,30 @@ export const runtime = 'nodejs';
  * - severity: filter by severity
  * - limit: max results (default 50, max 200)
  */
+/**
+ * 2026-10-26: contrôle d'accès ADMIN ajouté.
+ *
+ * Cette route était ouverte à TOUT le monde : `GET /api/admin/logs/errorlog`
+ * répondait HTTP 200 sans aucun header, et exposait la table ErrorLog
+ * (message, stack, url, userAgent, userEmail, userId, context) sur un
+ * historique NON BORNÉ (`sinceMs` libre → 30 jours, `limit` jusqu'à 200).
+ * C'est une fuite de PII (emails d'élèves) + d'internes.
+ *
+ * Même contrôle que les routes admin sœurs (api/admin/logs/clear,
+ * api/admin/providers) : 401 si pas de session, 403 si le rôle n'est pas
+ * ADMIN.
+ */
+async function requireAdmin() {
+  const user = await getCurrentUser();
+  if (!user) return { error: 'Non autorisé', status: 401 };
+  if (user.role !== 'ADMIN') return { error: 'Accès admin requis', status: 403 };
+  return { user };
+}
+
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin();
+  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
   const url = new URL(req.url);
   const sinceMs = parseInt(url.searchParams.get('sinceMs') || '3600000');
   const severity = url.searchParams.get('severity');

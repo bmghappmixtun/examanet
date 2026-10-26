@@ -18,32 +18,34 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/d1-admin';
-import { getSecret } from '@/lib/cf-auth';
+import { getSecret, requireCronSecret } from '@/lib/cf-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL || '';
+// 2026-10-26: `process.env` est figé au BUILD dans un CF Worker (OpenNext
+// l'injecte depuis wrangler.jsonc). Un secret posé via `wrangler secret put`
+// n'est donc JAMAIS visible ici → le webhook était toujours vide en runtime.
+// La lecture se fait maintenant via getSecret(), qui interroge `ctx.env`
+// (le binding) en priorité. Lire DANS le handler, pas au scope module.
 
 export async function POST(req: NextRequest) {
-  // 2026-09-05: use cf-auth helper for cross-env secret (CF env → process.env)
-  // Accepts either CRON_SECRET or AGENT_REPORT_TOKEN (so Mavis can post from
-  // a local env that doesn't have CRON_SECRET)
-  const auth = req.headers.get('authorization');
-  const cronToken = await getSecret('CRON_SECRET');
-  const agentToken = await getSecret('AGENT_REPORT_TOKEN');
-  const expectedCron = cronToken ? `Bearer ${cronToken}` : null;
-  const expectedAgent = agentToken ? `Bearer ${agentToken}` : null;
-  if (
-    !auth ||
-    (expectedCron && auth === expectedCron) ||
-    (expectedAgent && auth === expectedAgent)
-  ) {
-    // OK
-  } else {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+  // 2026-10-26 — CORRECTION D'UN BYPASS D'AUTHENTIFICATION.
+  //
+  // L'ancien guard était :
+  //   if (!auth || (expectedCron && auth === expectedCron) || (expectedAgent && auth === expectedAgent))
+  // La branche `!auth` signifiait « PAS de header = AUTORISÉ ». Concrètement :
+  //   POST sans header  → 503 no_webhook  (l'auth était PASSÉE)
+  //   POST avec un faux → 401 unauthorized
+  // i.e. une requête ANONYME passait le contrôle. Effet possible : n'importe
+  // qui pouvait poster du contenu arbitraire sur le webhook Discord du
+  // projet (quand il existera) — et une future régression sur ce tableau
+  // rouvrirait l'écriture D1.
+  //
+  // requireCronSecret() applique la règle correcte : 401 si aucun secret
+  // n'est fourni, comparaison stricte avec CRON_SECRET ou AGENT_REPORT_TOKEN.
+  const authErr = await requireCronSecret(req, { allowAgentToken: true });
+  if (authErr) return authErr;
 
   let body: any;
   try {
@@ -62,6 +64,8 @@ export async function POST(req: NextRequest) {
     details = '',
   } = body || {};
 
+  // 2026-10-26: lu au moment de la requête (binding runtime), pas au build.
+  const DISCORD_WEBHOOK_URL = (await getSecret('DISCORD_WEBHOOK_URL')) || '';
   if (!DISCORD_WEBHOOK_URL) {
     return NextResponse.json({ ok: false, error: 'no_webhook' }, { status: 503 });
   }
