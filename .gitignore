@@ -174,3 +174,6 @@ cache/
 .gitlab-ci.yml.backup
 next.config.analyze.js
 .audits/
+
+# token agent local (2026-10-26) — ne JAMAIS committer
+.agent-token
