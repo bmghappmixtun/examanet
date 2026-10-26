@@ -12,7 +12,7 @@
 // SEO is preserved via generateMetadata() that also uses D1 directly.
 
 import MatiereClient from '@/components/matieres/MatiereClient';
-import { getSubjectConfig } from '@/lib/subjects.config';
+import { getSubjectConfig, withLiveCount } from '@/lib/subjects.config';
 import { breadcrumbSchema, itemListSchema } from '@/lib/structured-data';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
@@ -44,8 +44,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     const cfg = getSubjectConfig(subjectSlug);
 
     // Vercel-style description
-    const description = cfg?.seo?.descriptionFr 
-      || `${totalCount}+ ressources en ${subject.nameFr} pour le système éducatif tunisien. Cours, exercices, sujets de bac et corrigés. 100% gratuit.`;
+    // 2026-10-26: `{count}` = total LIVE (la config portait un nombre figé).
+    const description = withLiveCount(
+      cfg?.seo?.descriptionFr,
+      totalCount,
+    ) || `${totalCount}+ ressources en ${subject.nameFr} pour le système éducatif tunisien. Cours, exercices, sujets de bac et corrigés. 100% gratuit.`;
 
     return {
       title: `${subject.nameFr} — Cours, Devoirs et Exercices gratuits`,
