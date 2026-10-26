@@ -141,10 +141,20 @@ L'**Option A** a été retenue et implémentée (commit `1d73931d`) :
 
 > Note : l'écart résiduel entre `/fr/devoirs/mathematiques` (2 874) et `/fr/ressources?subject=mathematiques` (2 881) est **légitime** : l'API devoirs filtre `homeworkNumber BETWEEN 1 AND 20` (contrôle anti-typo prof), donc 7 ressources ne sont pas listables depuis la page devoirs. Le nombre **affiché** est désormais exactement celui **consultable** ✅.
 
+### ✅ Déploiement prod (`main` = `50301736`, run GH Actions `40396069443` = success)
+
+Vérifié sur `examanet.com` : **106 liens, 106/106 en `OK`** — 0 page vide, 0 écart de compte, 0 erreur HTTP.
+Meta live : `+6740` (maths) / `+4253` (physique). Hero devoirs : 273 / 2 874 / 2 722 (= exactement le nombre listable).
+Audit hreflang : **42/42 OK**. `/fr/matieres` : HTTP 200.
+
+**Piège d'outillage rencontré en prod** (le site n'était pas en cause) : le script d'extraction cliquait le déclencheur **avant l'hydratation** de la page prod (412 Ko de HTML) → le `onClick` n'était pas encore attaché → le panneau ne s'ouvrait pas. Puis, en forçant l'ouverture, le panneau s'ouvrait **vide** (le composant fetch `/api/matieres/list` côté client) et le clic sur l'onglet atterrissait sur le backdrop → fermeture du panneau. Mesures réelles en prod : **panneau visible à 317 ms, liens à 824 ms**, 2ᵉ ouverture 253 ms (état React conservé, aucun nouvel appel API) → l'UX est saine.
+Le script attend désormais l'hydratation **et** la présence effective des liens avant de cliquer l'onglet, avec 6 tentatives.
+
 **Artefacts**
 - `output/docs/megamenu-counts-2026-10-26-prod-before.csv` (141 liens, prod avant)
 - `output/docs/megamenu-counts-2026-10-26-dev-after.csv` (106 liens, dev après)
-- `output/docs/megamenu-links-2026-10-26-{prod-before,dev-after}.json`
+- `output/docs/megamenu-links-2026-10-26-{prod-before,dev-after,prod-after}.json`
+- `output/docs/megamenu-counts-2026-10-26-prod-after.csv` (106 liens, prod après)
 - Scripts : `scripts/megamenu-extract-links.cjs` (extraction Playwright), `scripts/verify-megamenu-counts.mjs` (3 sources), `scripts/crosscheck-megamenu.mjs` (croisement base / `/fr/ressources` / affiché)
 
 **Piège rencontré** : `scripts/extract-megamenu-links.cjs` ouvrait le panneau, le refermait, puis le rouvrait — mais si le panneau était **déjà ouvert**, le clic le **refermait** et l'extraction sortait **vide et silencieuse** (onglet collège à 0 lien, sans erreur). Corrigé : fermeture forcée + `process.exitCode = 2` si un onglet sort vide. Le script était aussi **gitignoré** (`.gitignore:94` → `extract-*.cjs`) → renommé `megamenu-extract-links.cjs` pour être versionné.
