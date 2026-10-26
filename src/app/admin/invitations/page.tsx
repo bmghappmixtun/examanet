@@ -108,6 +108,8 @@ export default async function AdminInvitationsPage() {
       initialInvitations={invitations as any}
       initialStats={stats}
       totalClickEvents={totalClickEvents}
+      // Horodatage figé au rendu serveur → rendu déterministe (hydration).
+      renderedAt={Date.now()}
     />
   );
 }

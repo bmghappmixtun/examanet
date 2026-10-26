@@ -156,6 +156,8 @@ export default async function PendingEditsPage() {
     <PendingEditsClient
       pendingEdits={pendingEdits}
       recentlyRejected={recentlyRejected}
+      // Horodatage figé au rendu serveur → rendu déterministe (hydration).
+      renderedAt={Date.now()}
     />
   );
 }

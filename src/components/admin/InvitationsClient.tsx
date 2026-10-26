@@ -157,10 +157,19 @@ export default function InvitationsClient({
   initialInvitations,
   initialStats,
   totalClickEvents = 0,
+  renderedAt,
 }: {
   initialInvitations: Invitation[];
   initialStats: Record<string, number>;
   totalClickEvents?: number;
+  /**
+   * 2026-10-26 : horodatage du rendu SERVEUR, sérialisé dans le payload
+   * RSC. Le client l'hydrate avec la même valeur → tout calcul dépendant
+   * du temps (badge « expire bientôt ») est identique des deux côtés.
+   * Sans ce prop, on retombe sur Date.now() (mismatch garanti si la
+   * frontière de temps est franchie entre le SSR et l'hydratation).
+   */
+  renderedAt?: number;
 }) {
   const router = useRouter();
   const [invitations, setInvitations] = useState<Invitation[]>(initialInvitations);
@@ -481,13 +490,21 @@ export default function InvitationsClient({
                 const meta = STATUS_META[inv.status];
                 const fileCount = inv.teacher?._count?.uploadedFiles || 0;
                 const expiresAt = inv.expiresAt ? new Date(inv.expiresAt) : null;
+                // 2026-10-26 : `renderedAt` vient du serveur (prop RSC) →
+                // le flag est IDENTIQUE au rendu SSR et à l'hydratation.
+                // Avant, `Date.now()` au rendu pouvait basculer entre les deux
+                // → mismatch React #418/#422 observé en prod sur
+                // /admin/invitations (Firefox, 2026-10-26 20:26 UTC).
+                // Repli `Date.now()` si la prop est absente (ancien
+                // comportement) : à ne pas utiliser en SSR.
+                const now = renderedAt ?? Date.now();
                 const isExpiringSoon =
                   expiresAt &&
                   expiresAt.getTime() > 0 &&
                   inv.status !== 'ACTIVATED' &&
                   inv.status !== 'EXPIRED' &&
                   inv.status !== 'CANCELLED' &&
-                  expiresAt.getTime() - Date.now() < 2 * 24 * 3600 * 1000;
+                  expiresAt.getTime() - now < 2 * 24 * 3600 * 1000;
                 return (
                   <tr
                     key={inv.id}

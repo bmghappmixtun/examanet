@@ -64,9 +64,9 @@ function formatFileSize(bytes: number | null | undefined): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-function timeAgo(ms: number | null | undefined): string {
+function timeAgo(ms: number | null | undefined, now: number = Date.now()): string {
   if (!ms) return '—';
-  const diff = Date.now() - ms;
+  const diff = now - ms;
   if (diff < 60_000) return 'il y a quelques secondes';
   if (diff < 3_600_000) return `il y a ${Math.floor(diff / 60_000)} min`;
   if (diff < 86_400_000) return `il y a ${Math.floor(diff / 3_600_000)} h`;
@@ -77,10 +77,15 @@ function timeAgo(ms: number | null | undefined): string {
 export default function PendingEditsClient({
   pendingEdits,
   recentlyRejected,
+  renderedAt,
 }: {
   pendingEdits: PendingEdit[];
   recentlyRejected: PendingEdit[];
+  /** Horodatage du rendu SERVEUR → rendu déterministe (pas de mismatch). */
+  renderedAt?: number;
 }) {
+  // Repli Date.now() si la prop est absente (jamais en SSR).
+  const now = renderedAt ?? Date.now();
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
   const [showRejected, setShowRejected] = useState(false);
 
@@ -210,7 +215,7 @@ export default function PendingEditsClient({
                       )}
                       <span className="px-2.5 py-1 bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wider rounded-full inline-flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {timeAgo(edit.editRequestedAt)}
+                        {timeAgo(edit.editRequestedAt, now)}
                       </span>
                     </div>
                     <a
@@ -342,7 +347,7 @@ export default function PendingEditsClient({
                         {edit.title}
                       </div>
                       <div className="text-xs text-slate-500">
-                        {edit.teacherName} • {timeAgo(edit.editRequestedAt)}
+                        {edit.teacherName} • {timeAgo(edit.editRequestedAt, now)}
                       </div>
                     </div>
                     <a

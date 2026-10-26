@@ -52,9 +52,14 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string; ic
   ARCHIVED: { label: 'Archivé', color: 'text-slate-600', bg: 'bg-slate-100', icon: Archive },
 };
 
-function timeAgo(ms: number | null | undefined): string {
+/**
+ * 2026-10-26 : `now` injectable (horodatage serveur) → le texte rendu est
+ * IDENTIQUE au SSR et à l'hydratation. `Date.now()` au rendu pouvait
+ * faire basculer "il y a 59 min" → "il y a 1 h" entre les deux.
+ */
+function timeAgo(ms: number | null | undefined, now: number = Date.now()): string {
   if (!ms) return '—';
-  const diff = Date.now() - ms;
+  const diff = now - ms;
   if (diff < 60_000) return 'à l\'instant';
   if (diff < 3_600_000) return `il y a ${Math.floor(diff / 60_000)} min`;
   if (diff < 86_400_000) return `il y a ${Math.floor(diff / 3_600_000)} h`;
@@ -65,10 +70,15 @@ function timeAgo(ms: number | null | undefined): string {
 export default function MessagesClient({
   initialMessages,
   stats,
+  renderedAt,
 }: {
   initialMessages: ContactMessage[];
   stats: { total: number; pending: number; replied: number; archived: number; thisWeek: number };
+  /** Horodatage du rendu SERVEUR → rendu déterministe (pas de mismatch). */
+  renderedAt?: number;
 }) {
+  // Repli Date.now() si la prop est absente (jamais en SSR).
+  const now = renderedAt ?? Date.now();
   const [messages, setMessages] = useState<ContactMessage[]>(initialMessages);
   const [stats_, setStats] = useState(stats);
   const [filter, setFilter] = useState<'ALL' | 'PENDING' | 'REPLIED' | 'ARCHIVED'>('PENDING');
@@ -322,7 +332,7 @@ export default function MessagesClient({
                           </div>
                         </div>
                         <div className="text-[10px] text-slate-400 whitespace-nowrap mt-1">
-                          {timeAgo(msg.createdAt)}
+                          {timeAgo(msg.createdAt, now)}
                         </div>
                       </div>
                     </button>
@@ -382,11 +392,11 @@ export default function MessagesClient({
 
               <div className="text-xs text-slate-500 mb-3 flex items-center gap-3">
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> Reçu {timeAgo(selected.createdAt)}
+                  <Clock className="w-3 h-3" /> Reçu {timeAgo(selected.createdAt, now)}
                 </span>
                 {selected.repliedAt && (
                   <span className="flex items-center gap-1 text-emerald-600">
-                    <CheckCircle2 className="w-3 h-3" /> Répondu {timeAgo(selected.repliedAt)}
+                    <CheckCircle2 className="w-3 h-3" /> Répondu {timeAgo(selected.repliedAt, now)}
                   </span>
                 )}
               </div>

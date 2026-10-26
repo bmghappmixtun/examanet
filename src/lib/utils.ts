@@ -19,7 +19,17 @@ export function formatDate(date: Date | string, lang: 'fr' | 'ar' = 'fr'): strin
   return d.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-export function timeAgo(date: Date | string | number | null | undefined): string {
+/**
+ * 2026-10-26 : `now` est injectable pour que le rendu serveur et le rendu
+ * client soient BIT-À-BIT identiques. `Date.now()` appelé pendant le rendu
+ * diverge entre le serveur et le client → mismatch d'hydratation React
+ * (#418/#422). On passe donc l'horodatage du serveur via une prop.
+ * Sans `now`, on garde le comportement historique (utile hors SSR).
+ */
+export function timeAgo(
+  date: Date | string | number | null | undefined,
+  now: number = Date.now(),
+): string {
   if (date == null || date === 0 || date === '') return 'jamais';
   let d: Date;
   if (typeof date === 'number') {
@@ -32,7 +42,7 @@ export function timeAgo(date: Date | string | number | null | undefined): string
     d = date;
   }
   if (!(d instanceof Date) || isNaN(d.getTime())) return 'inconnu';
-  const seconds = Math.floor((Date.now() - d.getTime()) / 1000);
+  const seconds = Math.floor((now - d.getTime()) / 1000);
   const intervals: [number, string][] = [
     [31536000, 'an'],
     [2592000, 'mois'],

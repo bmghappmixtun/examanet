@@ -62,6 +62,8 @@ export default async function AdminMessagesPage() {
     <MessagesClient
       initialMessages={messages}
       stats={{ total, pending, replied, archived, thisWeek }}
+      // Horodatage figé au rendu serveur → rendu déterministe (hydration).
+      renderedAt={Date.now()}
     />
   );
 }
