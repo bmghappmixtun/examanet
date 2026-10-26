@@ -121,13 +121,30 @@ Effet : 33 liens morts → 0 (A/B) ou 9 (C).
 
 ---
 
-## 5. État après correction (dev `92d6c7e0`)
+## 5. État après correction — dev `ba0ecbba` (Option A appliquée)
 
-| Contrôle | Avant | Après |
+L'**Option A** a été retenue et implémentée (commit `1d73931d`) :
+
+- `/api/matieres/list` renvoie désormais `counts` (par type × cycle) et `totalByCycle` (2 requêtes SQL en plus, 1 `GROUP BY` chacune).
+- `MenuMatieresCollegeLycee` **masque un lien de type dont le compte est 0** dans le cycle actif, **masque la matière entière** si elle n'a rien dans le cycle (`education-artistique`), et **affiche le compte** à côté de chaque lien (« Devoirs Anglais · 335 »).
+- Repli sûr : si l'API ne fournit pas le détail (`counts` absent), les liens restent affichés — le menu ne peut pas devenir vide par accident.
+
+| Contrôle | Prod (avant) | Dev (après) |
 |---|---|---|
-| Liens en erreur HTTP | 0 | 0 |
+| Liens du méga-menu | 141 | **106** |
+| Liens vers une page vide | 34 | **0** ✅ |
 | Écarts de cohérence (affiché ≠ listable) | 3 | **0** ✅ |
-| Comptes figés en meta description | 2 | **0** ✅ |
-| Liens vers une page vide | 33 | 33 *(inchangé — décision d'UX, cf. §3)* |
+| Comptes figés en meta description | 2 | **0** ✅ (`+6740` / `+4253`) |
+| Erreurs HTTP | 0 | **0** ✅ |
 
-Releve complet : `output/docs/megamenu-counts-2026-10-26.csv` (141 lignes).
+**Contrôle final (dev)** : 106/106 liens en `OK` — hero = listing = `/fr/ressources` partout où le contenu existe.
+
+> Note : l'écart résiduel entre `/fr/devoirs/mathematiques` (2 874) et `/fr/ressources?subject=mathematiques` (2 881) est **légitime** : l'API devoirs filtre `homeworkNumber BETWEEN 1 AND 20` (contrôle anti-typo prof), donc 7 ressources ne sont pas listables depuis la page devoirs. Le nombre **affiché** est désormais exactement celui **consultable** ✅.
+
+**Artefacts**
+- `output/docs/megamenu-counts-2026-10-26-prod-before.csv` (141 liens, prod avant)
+- `output/docs/megamenu-counts-2026-10-26-dev-after.csv` (106 liens, dev après)
+- `output/docs/megamenu-links-2026-10-26-{prod-before,dev-after}.json`
+- Scripts : `scripts/megamenu-extract-links.cjs` (extraction Playwright), `scripts/verify-megamenu-counts.mjs` (3 sources), `scripts/crosscheck-megamenu.mjs` (croisement base / `/fr/ressources` / affiché)
+
+**Piège rencontré** : `scripts/extract-megamenu-links.cjs` ouvrait le panneau, le refermait, puis le rouvrait — mais si le panneau était **déjà ouvert**, le clic le **refermait** et l'extraction sortait **vide et silencieuse** (onglet collège à 0 lien, sans erreur). Corrigé : fermeture forcée + `process.exitCode = 2` si un onglet sort vide. Le script était aussi **gitignoré** (`.gitignore:94` → `extract-*.cjs`) → renommé `megamenu-extract-links.cjs` pour être versionné.
