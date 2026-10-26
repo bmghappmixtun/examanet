@@ -18,6 +18,9 @@ const BASE = process.argv[2] || 'https://examanet.com';
   const ctx = await browser.newContext({ viewport: { width: 1680, height: 1200 } });
   const page = await ctx.newPage();
   await page.goto(`${BASE}/fr`, { waitUntil: 'domcontentloaded', timeout: 90000 });
+  // Laisse le temps à l'hydratation : un clic AVANT que React n'ait
+  // attaché le onClick peut être rejoué et refermer le panneau.
+  await page.waitForTimeout(4000);
 
   /**
    * Ouvre le panneau du méga-menu en attendant l'HYDRATATION.
@@ -64,7 +67,12 @@ const BASE = process.argv[2] || 'https://examanet.com';
             { timeout: 20000 }
           );
         await page.waitForTimeout(1000);
-        return true;
+        // VÉRIFICATION : un clic effectué AVANT l'hydratation peut être
+        // rejoué par React (sélection hydration) → le panneau s'ouvre puis
+        // se referme. On exige donc un panneau TOUJOURS ouvert 1 s après.
+        const stillOpen = await page.locator('[role="dialog"] a[href]').count();
+        if (stillOpen > 0) return true;
+        console.error(`    [diag] tentative ${attempt} : le panneau s'est refermé (clic pré-hydratation rejoué) → on réessaie`);
       } catch {
         // Panneau vide ou pas ouvert → on referme et on réessaie.
         if (await page.locator('[role="dialog"]').count()) {
@@ -79,25 +87,43 @@ const BASE = process.argv[2] || 'https://examanet.com';
 
   const out = { college: [], lycee: [] };
 
-  for (const cycle of ['college', 'lycee']) {
-    // 1. Ouvrir le panneau (attend l'hydratation)
-    if (!(await openPanel(page))) {
-      console.error(`\n⚠️  Panneau du méga-menu impossible à ouvrir sur ${BASE} (hydratation ?).`);
-      process.exitCode = 2;
-      break;
-    }
+  // 1. UN SEUL opening du panneau : on bascule les onglets à l'intérieur.
+  //    (Ouvrir/fermer pour chaque cycle était la source d'un premier
+  //    onglet vide quand le Worker est froid → extraction à 0 sans erreur.)
+  if (!(await openPanel(page))) {
+    console.error(`\n⚠️  Panneau du méga-menu impossible à ouvrir sur ${BASE} (hydratation ?).`);
+    process.exitCode = 2;
+    console.log(JSON.stringify(out, null, 2));
+    await browser.close();
+    return;
+  }
 
-    // 2. Onglet du cycle (dans le panneau)
+  console.error(`    [diag] après openPanel → dialogs=${await page.locator('[role="dialog"]').count()} liens=${await page.locator('[role="dialog"] a[href]').count()}`);
+  for (const cycle of ['college', 'lycee']) {
+    // 2. Onglet du cycle (dans le panneau).
     // Le texte du bouton est composite (« Lycée1ère → 4ème année (Bac) »)
     // → on matche en substring, pas en exact.
     const tabLabel = cycle === 'college' ? 'Collège' : 'Lycée';
+    const before = await page.locator('[role="dialog"] a[href]').count();
     const tab = page.locator('[role="dialog"] button', { hasText: tabLabel }).first();
     if (await tab.count()) {
       await tab.click({ timeout: 10000 }).catch(() => {});
-      await page.waitForTimeout(1500);
+      // Attendre que le contenu de l'onglet change réellement.
+      await page
+        .waitForFunction(
+          (prev) => {
+            const n = document.querySelectorAll('[role="dialog"] a[href]').length;
+            return n > 0 && n !== prev;
+          },
+          before,
+          { timeout: 20000 }
+        )
+        .catch(() => {});
+      await page.waitForTimeout(800);
     }
 
     // 3. Extraire les liens du panneau uniquement
+    console.error(`    [diag] cycle=${cycle} avant extraction → dialogs=${await page.locator('[role="dialog"]').count()} liens=${await page.locator('[role="dialog"] a[href]').count()}`);
     const links = await page.evaluate(() => {
       const panel = document.querySelector('[role="dialog"]');
       if (!panel) return [];
@@ -106,24 +132,18 @@ const BASE = process.argv[2] || 'https://examanet.com';
           href: a.getAttribute('href'),
           label: (a.textContent || '').trim().replace(/\s+/g, ' '),
         }))
-        .filter((x) => x.href && /^\/(fr\/)?(matieres|devoirs|series|cours|classes)\//.test(x.href));
+        .filter((x) => x.href && /^\/(fr\/|ar\/)?(matieres|devoirs|series|cours|classes)\//.test(x.href));
     });
     out[cycle] = links;
     if (!links.length) {
-      console.error(`\n⚠️  AUCUN lien extrait pour le cycle « ${cycle} » — extraction probablement ratée (panneau non ouvert ?). Relancez.`);
+      console.error(`\n⚠️  AUCUN lien extrait pour le cycle « ${cycle} » — extraction probablement ratée. Relancez.`);
       process.exitCode = 2;
     }
-
-    // 4. Refermer (Escape — l'état React doit suivre, sinon le clic suivant
-    //    refermerait un panneau déjà ouvert)
-    await page.keyboard.press('Escape').catch(() => {});
-    await page.waitForTimeout(700);
-    if (await page.locator('[role="dialog"]').count()) {
-      const close = page.locator('[role="dialog"] [aria-label="Fermer"]').first();
-      if (await close.count()) await close.click({ timeout: 8000 }).catch(() => {});
-      await page.waitForTimeout(700);
-    }
   }
+
+  // 4. Refermer (Escape — l'état React doit suivre)
+  await page.keyboard.press('Escape').catch(() => {});
+  await page.waitForTimeout(500);
 
   console.log(JSON.stringify(out, null, 2));
   await browser.close();
