@@ -34,8 +34,12 @@ const BASE = process.argv[2] || 'https://examanet-dev.examanet-poc.workers.dev';
     page.on('console', (m) => { if (m.type() === 'error') errors.push(`[${c.label}] ${m.text()}`); });
     page.on('pageerror', (e) => errors.push(`[${c.label}] PAGEERROR ${e.message}`));
 
-    const resp = await page.goto(c.url, { waitUntil: 'networkidle', timeout: 90000 });
-    await page.waitForTimeout(2500);
+    // networkidle peut ne jamais se déclencher en prod (connexion GA persistante)
+    const resp = await page.goto(c.url, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    await page.waitForLoadState('load', { timeout: 30000 }).catch(() => {});
+    // La prod charge le listing plus lentement que dev (D1 + volume) :
+    // sur prod les cartes apparaissent vers ~8 s, pas ~2,5 s.
+    await page.waitForTimeout(9000);
 
     const cards = await page.locator('a[href*="/fr/ressources/"]').count();
     const title = await page.title();
