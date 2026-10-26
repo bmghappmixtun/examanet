@@ -14,7 +14,7 @@ import SubjectHero from '@/components/subjects/SubjectHero';
 import SubjectFilters from '@/components/subjects/SubjectFilters';
 import SmartPagination from '@/components/ui/SmartPagination';
 import { Sparkles, ArrowRight, BookOpen, FileText, Layers, GraduationCap, SlidersHorizontal } from 'lucide-react';
-import { getSubjectConfig, SUBJECTS_CONFIG } from '@/lib/subjects.config';
+import { getSubjectConfig, SUBJECTS_CONFIG, withLiveCount } from '@/lib/subjects.config';
 import { getLocalizedName } from '@/lib/localized-name';
 
 interface PageData {
@@ -227,7 +227,7 @@ function MatiereView({ data, locale, currentSort }: { data: PageData; locale: st
       <main className="flex-1 pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Subject Hero */}
-          <SubjectHero subject={heroSubject} totalResources={totalCount} totalTeachers={uniqueTeachers.length} intro={cfg?.seo?.descriptionFr ?? `Ressources en ${subject.nameFr} pour le système éducatif tunisien : cours, exercices, sujets de bac et corrigés.`} />
+          <SubjectHero subject={heroSubject} totalResources={totalCount} totalTeachers={uniqueTeachers.length} intro={withLiveCount(cfg?.seo?.descriptionFr, totalCount) ?? `Ressources en ${subject.nameFr} pour le système éducatif tunisien : cours, exercices, sujets de bac et corrigés.`} />
 
           {/* APEX Preview Links - Devoir / Cours / Série landing pages */}
           <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -428,7 +428,7 @@ function MatiereView({ data, locale, currentSort }: { data: PageData; locale: st
                       <span>{f.q}</span>
                       <span className="text-slate-400 group-open:rotate-45 transition-transform text-2xl leading-none">+</span>
                     </summary>
-                    <p className="text-slate-600 mt-3 leading-relaxed">{f.a}</p>
+                    <p className="text-slate-600 mt-3 leading-relaxed">{withLiveCount(f.a, totalCount)}</p>
                   </details>
                 ))}
               </div>

@@ -90,9 +90,9 @@ export const SUBJECTS_CONFIG: Record<string, SubjectConfig> = {
       titleFr: 'Mathématiques — Cours, Devoirs et Exercices gratuits',
       titleAr: 'الرياضيات — دروس، فروض، تمارين مجانية',
       descriptionFr:
-        '📐 +8600 ressources gratuites en Mathématiques pour le système éducatif tunisien : cours, devoirs, séries, sujets bac et corrigés. 7ème → BAC.',
+        '📐 +{count} ressources gratuites en Mathématiques pour le système éducatif tunisien : cours, devoirs, séries, sujets bac et corrigés. 7ème → BAC.',
       descriptionAr:
-        '📐 أكثر من 8600 مورد مجاني في الرياضيات لتلاميذ النظام التربوي التونسي: دروس، فروض، سلاسل، مواضيع باكالوريا مع التصحيح. من السنة السابعة إلى الباكالوريا.',
+        '📐 أكثر من {count} مورد مجاني في الرياضيات لتلاميذ النظام التربوي التونسي: دروس، فروض، سلاسل، مواضيع باكالوريا مع التصحيح. من السنة السابعة إلى الباكالوريا.',
       keywordsFr: [
         'cours maths tunisie',
         'devoirs maths',
@@ -117,7 +117,7 @@ export const SUBJECTS_CONFIG: Record<string, SubjectConfig> = {
         },
         {
           q: 'Où trouver des cours gratuits de Mathématiques en Tunisie ?',
-          a: "Examanet centralise +8600 ressources gratuites en Mathématiques : cours, devoirs, séries d'exercices et corrigés, conformes au programme officiel du Ministère de l'Éducation tunisien (JORT 2019-1085).",
+          a: "Examanet centralise +{count} ressources gratuites en Mathématiques : cours, devoirs, séries d'exercices et corrigés, conformes au programme officiel du Ministère de l'Éducation tunisien (JORT 2019-1085).",
         },
         {
           q: 'Comment réussir en Mathématiques au lycée tunisien ?',
@@ -157,7 +157,7 @@ export const SUBJECTS_CONFIG: Record<string, SubjectConfig> = {
       titleFr: 'Physique — Cours, Devoirs et Exercices gratuits',
       titleAr: 'الفيزياء — دروس، فروض، تمارين',
       descriptionFr:
-        '⚛️ +3000 ressources en Physique pour le système éducatif tunisien : mécanique, électricité, optique, ondes. Cours, séries et corrigés du BAC.',
+        '⚛️ +{count} ressources en Physique pour le système éducatif tunisien : mécanique, électricité, optique, ondes. Cours, séries et corrigés du BAC.',
       descriptionAr:
         '⚛️ أكثر من 3000 مورد في الفيزياء: ميكانيكا، كهرباء، بصريات، موجات. دروس وسلاسل وتمارين للباكالوريا.',
       keywordsFr: [
@@ -1258,6 +1258,22 @@ export const SUBJECTS_CONFIG: Record<string, SubjectConfig> = {
 };
 
 /** Helper : get config par slug, fallback safe */
+/**
+ * 2026-10-26: interpole le nombre RÉEL de ressources dans les textes SEO.
+ *
+ * Les descriptions de la config portaient des chiffres FIGÉS (« +8600
+ * ressources » pour les maths alors que la base en a 6740 publiées, « +3000 »
+ * pour la physique alors qu'il y en a 4253). Un compte qui sur-promet est
+ * pire qu'un compte absent : Google compare la meta description au contenu
+ * réel, et l'utilisateur compte les cartes.
+ *
+ * `{count}` dans la config est remplacé par le total live au moment du rendu.
+ */
+export function withLiveCount(text: string | undefined | null, count: number): string {
+  if (!text) return '';
+  return text.replace(/\{count\}/g, String(count));
+}
+
 export function getSubjectConfig(slug: string): SubjectConfig | null {
   return SUBJECTS_CONFIG[slug] || null;
 }

@@ -69,6 +69,14 @@ export default async function ApexDevoirsPage({ params, searchParams }: Props) {
   };
   let totalCountQuery = "SELECT COUNT(*) as c FROM Resource WHERE status='PUBLISHED' AND type='DEVOIR' AND subjectId = ?";
   const totalCountBindings: any[] = [subject.id];
+  // 2026-10-26: on compte EXACTEMENT ce que l'API de listing peut afficher.
+  // L'API /api/devoirs/[slug]/list filtre les numéros de devoir hors bornes
+  // (« Global sanity: homeworkNumber must be 1-20 »), mais le hero ne le
+  // faisait pas → la page annonçait N ressources alors que N-k n'étaient
+  // jamais listées (anglais 274/273, maths 2881/2874, physique 2726/2722).
+  // Le même filtre existe dans l'API series/cours ? NON → on ne l'ajoute
+  // que sur la page devoirs, sinon on créerait l'écart inverse.
+  totalCountQuery += ' AND (homeworkNumber IS NULL OR (homeworkNumber BETWEEN 1 AND 20))';
   if (cycleParam && CYCLE_CLASS_SLUGS[cycleParam]) {
     const slugs = CYCLE_CLASS_SLUGS[cycleParam];
     const placeholders = slugs.map(() => '?').join(',');

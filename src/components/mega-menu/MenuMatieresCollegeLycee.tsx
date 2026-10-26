@@ -39,6 +39,15 @@ interface SubjectItem {
   nameAr: string;
   color: string;
   order: number;
+  /**
+   * 2026-10-26 : nombre de ressources publiées par TYPE et par CYCLE.
+   * Sert à masquer les liens qui mènent à une page vide (24 % des 141 liens
+   * du méga-menu) et à afficher le nombre attendu à côté de chaque lien.
+   * Type : DEVOIR (devoirs) | EXERCISE (séries) | COURSE (cours).
+   */
+  counts?: Record<string, { college: number; lycee: number }>;
+  /** Total de ressources publiées de la matière, par cycle (tous types). */
+  totalByCycle?: { college: number; lycee: number };
 }
 
 type CycleKey = 'college' | 'lycee';
@@ -88,6 +97,22 @@ const SUBJECT_CYCLE: Record<string, 'college' | 'lycee' | 'both'> = {
 
 function classifySubject(slug: string): 'college' | 'lycee' | 'both' {
   return SUBJECT_CYCLE[slug] || 'both';
+}
+
+/**
+ * 2026-10-26 : nombre de ressources d'un type pour une matière dans un cycle.
+ * Retourne `null` si l'API n'a pas fourni le détail (repli : on garde le
+ * lien, comme avant) — le menu ne doit jamais devenir vide par accident.
+ */
+function countFor(
+  subject: SubjectItem | undefined,
+  type: 'DEVOIR' | 'EXERCISE' | 'COURSE',
+  cycle: CycleKey,
+): number | null {
+  if (!subject?.counts) return null;
+  const c = subject.counts[type];
+  if (!c) return 0;
+  return cycle === 'college' ? c.college : c.lycee;
 }
 
 // Language of instruction for standard collège (JORT 2019-063 + user
@@ -193,7 +218,17 @@ export default function MenuMatieresCollegeLycee({
     const items = subjects.filter((s) => !['pensee-islamique'].includes(s.slug));
     return items.filter((s) => {
       const cycle = classifySubject(s.slug);
-      return cycle === activeCycle || cycle === 'both';
+      if (cycle !== activeCycle && cycle !== 'both') return false;
+      // 2026-10-26 : on masque la MATIÈRE ENTIÈRE quand elle n'a aucune
+      // ressource publiée dans le cycle actif (ex. `education-artistique` :
+      // 0 ressource partout → le menu n'affichait que des liens morts).
+      // Si l'API n'a pas fourni le détail (totalByCycle absent) on garde la
+      // matière : le menu ne doit jamais devenir vide par accident.
+      if (s.totalByCycle) {
+        const total = activeCycle === 'college' ? s.totalByCycle.college : s.totalByCycle.lycee;
+        if (total === 0) return false;
+      }
+      return true;
     });
   }, [subjects, activeCycle]);
 
@@ -436,6 +471,19 @@ function SubjectColumn({
   const displayName = isAr && subject.nameAr ? subject.nameAr : displayNameFr;
   // Cycle param so the target page filters by cycle's classes
   const cycleQs = `?cycle=${cycle}`;
+  // 2026-10-26 : nombre de ressources par type pour le cycle courant.
+  //   null = l'API n'a pas fourni le détail → on garde le lien (repli sûr).
+  //   0    = aucun contenu de ce type dans ce cycle → on MASQUE le lien
+  //          (34 des 141 liens du méga-menu menaient à une page vide).
+  const countDevoirs = countFor(subject, 'DEVOIR', cycle);
+  const countSeries = countFor(subject, 'EXERCISE', cycle);
+  const countCours = countFor(subject, 'COURSE', cycle);
+  const subjectTotal = subject.totalByCycle
+    ? (cycle === 'college' ? subject.totalByCycle.college : subject.totalByCycle.lycee)
+    : null;
+
+  const fmt = (n: number) => n.toLocaleString('fr-FR');
+
   return (
     <div className="mb-2">
       <Link
@@ -448,33 +496,53 @@ function SubjectColumn({
           dir={isAr ? 'rtl' : 'ltr'}
         >
           {displayName}
+          {subjectTotal != null && subjectTotal > 0 && (
+            <span className="ms-1.5 text-xs font-normal text-slate-400 align-middle">
+              {fmt(subjectTotal)}
+            </span>
+          )}
         </div>
       </Link>
       <div className="flex flex-col" dir={isAr ? 'rtl' : 'ltr'}>
-        <Link
-          href={`/devoirs/${subject.slug}${cycleQs}`}
-          onClick={onClose}
-          className={linkCls}
-          title={`${labels.devoirs} ${displayName}`}
-        >
-          {labels.devoirs} {short}
-        </Link>
-        <Link
-          href={`/series/${subject.slug}${cycleQs}`}
-          onClick={onClose}
-          className={linkCls}
-          title={`${labels.series} ${displayName}`}
-        >
-          {labels.series} {short}
-        </Link>
-        <Link
-          href={`/cours/${subject.slug}${cycleQs}`}
-          onClick={onClose}
-          className={linkCls}
-          title={`${labels.cours} ${displayName}`}
-        >
-          {labels.cours} {short}
-        </Link>
+        {countDevoirs !== 0 && (
+          <Link
+            href={`/devoirs/${subject.slug}${cycleQs}`}
+            onClick={onClose}
+            className={linkCls}
+            title={`${labels.devoirs} ${displayName}`}
+          >
+            {labels.devoirs} {short}
+            {countDevoirs != null && countDevoirs > 0 && (
+              <span className="ms-1.5 text-xs text-slate-400 align-middle">{fmt(countDevoirs)}</span>
+            )}
+          </Link>
+        )}
+        {countSeries !== 0 && (
+          <Link
+            href={`/series/${subject.slug}${cycleQs}`}
+            onClick={onClose}
+            className={linkCls}
+            title={`${labels.series} ${displayName}`}
+          >
+            {labels.series} {short}
+            {countSeries != null && countSeries > 0 && (
+              <span className="ms-1.5 text-xs text-slate-400 align-middle">{fmt(countSeries)}</span>
+            )}
+          </Link>
+        )}
+        {countCours !== 0 && (
+          <Link
+            href={`/cours/${subject.slug}${cycleQs}`}
+            onClick={onClose}
+            className={linkCls}
+            title={`${labels.cours} ${displayName}`}
+          >
+            {labels.cours} {short}
+            {countCours != null && countCours > 0 && (
+              <span className="ms-1.5 text-xs text-slate-400 align-middle">{fmt(countCours)}</span>
+            )}
+          </Link>
+        )}
       </div>
     </div>
   );

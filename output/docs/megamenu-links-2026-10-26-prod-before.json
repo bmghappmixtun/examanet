@@ -1,0 +1,614 @@
+{
+  "college": [
+    {
+      "href": "/fr/matieres/francais",
+      "label": "Français"
+    },
+    {
+      "href": "/fr/devoirs/francais?cycle=college",
+      "label": "Devoirs Français"
+    },
+    {
+      "href": "/fr/series/francais?cycle=college",
+      "label": "Séries Français"
+    },
+    {
+      "href": "/fr/cours/francais?cycle=college",
+      "label": "Cours Français"
+    },
+    {
+      "href": "/fr/matieres/anglais",
+      "label": "Anglais"
+    },
+    {
+      "href": "/fr/devoirs/anglais?cycle=college",
+      "label": "Devoirs Anglais"
+    },
+    {
+      "href": "/fr/series/anglais?cycle=college",
+      "label": "Séries Anglais"
+    },
+    {
+      "href": "/fr/cours/anglais?cycle=college",
+      "label": "Cours Anglais"
+    },
+    {
+      "href": "/fr/matieres/informatique",
+      "label": "Informatique"
+    },
+    {
+      "href": "/fr/devoirs/informatique?cycle=college",
+      "label": "Devoirs Info"
+    },
+    {
+      "href": "/fr/series/informatique?cycle=college",
+      "label": "Séries Info"
+    },
+    {
+      "href": "/fr/cours/informatique?cycle=college",
+      "label": "Cours Info"
+    },
+    {
+      "href": "/fr/matieres/mathematiques",
+      "label": "الرياضيات"
+    },
+    {
+      "href": "/fr/devoirs/mathematiques?cycle=college",
+      "label": "فروض الرياضيات"
+    },
+    {
+      "href": "/fr/series/mathematiques?cycle=college",
+      "label": "تمارين الرياضيات"
+    },
+    {
+      "href": "/fr/cours/mathematiques?cycle=college",
+      "label": "دروس الرياضيات"
+    },
+    {
+      "href": "/fr/matieres/physique",
+      "label": "الفيزياء"
+    },
+    {
+      "href": "/fr/devoirs/physique?cycle=college",
+      "label": "فروض الفيزياء"
+    },
+    {
+      "href": "/fr/series/physique?cycle=college",
+      "label": "تمارين الفيزياء"
+    },
+    {
+      "href": "/fr/cours/physique?cycle=college",
+      "label": "دروس الفيزياء"
+    },
+    {
+      "href": "/fr/matieres/svt",
+      "label": "علوم الحياة والأرض"
+    },
+    {
+      "href": "/fr/devoirs/svt?cycle=college",
+      "label": "فروض علوم الحياة والأرض"
+    },
+    {
+      "href": "/fr/series/svt?cycle=college",
+      "label": "تمارين علوم الحياة والأرض"
+    },
+    {
+      "href": "/fr/cours/svt?cycle=college",
+      "label": "دروس علوم الحياة والأرض"
+    },
+    {
+      "href": "/fr/matieres/arabe",
+      "label": "دراســـــة النّــــــص"
+    },
+    {
+      "href": "/fr/devoirs/arabe?cycle=college",
+      "label": "فروض دراسة النص"
+    },
+    {
+      "href": "/fr/series/arabe?cycle=college",
+      "label": "تمارين دراسة النص"
+    },
+    {
+      "href": "/fr/cours/arabe?cycle=college",
+      "label": "دروس دراسة النص"
+    },
+    {
+      "href": "/fr/matieres/technologie",
+      "label": "التكنولوجيا"
+    },
+    {
+      "href": "/fr/devoirs/technologie?cycle=college",
+      "label": "فروض التكنولوجيا"
+    },
+    {
+      "href": "/fr/series/technologie?cycle=college",
+      "label": "تمارين التكنولوجيا"
+    },
+    {
+      "href": "/fr/cours/technologie?cycle=college",
+      "label": "دروس التكنولوجيا"
+    },
+    {
+      "href": "/fr/matieres/musique",
+      "label": "الموسيقى"
+    },
+    {
+      "href": "/fr/devoirs/musique?cycle=college",
+      "label": "فروض الموسيقى"
+    },
+    {
+      "href": "/fr/series/musique?cycle=college",
+      "label": "تمارين الموسيقى"
+    },
+    {
+      "href": "/fr/cours/musique?cycle=college",
+      "label": "دروس الموسيقى"
+    },
+    {
+      "href": "/fr/matieres/education-civique",
+      "label": "التربية المدنية"
+    },
+    {
+      "href": "/fr/devoirs/education-civique?cycle=college",
+      "label": "فروض التربية المدنية"
+    },
+    {
+      "href": "/fr/series/education-civique?cycle=college",
+      "label": "تمارين التربية المدنية"
+    },
+    {
+      "href": "/fr/cours/education-civique?cycle=college",
+      "label": "دروس التربية المدنية"
+    },
+    {
+      "href": "/fr/matieres/education-islamique",
+      "label": "التربية الإسلامية"
+    },
+    {
+      "href": "/fr/devoirs/education-islamique?cycle=college",
+      "label": "فروض التربية الإسلامية"
+    },
+    {
+      "href": "/fr/series/education-islamique?cycle=college",
+      "label": "تمارين التربية الإسلامية"
+    },
+    {
+      "href": "/fr/cours/education-islamique?cycle=college",
+      "label": "دروس التربية الإسلامية"
+    },
+    {
+      "href": "/fr/matieres/education-artistique",
+      "label": "التربية التشكيلية"
+    },
+    {
+      "href": "/fr/devoirs/education-artistique?cycle=college",
+      "label": "فروض التربية التشكيلية"
+    },
+    {
+      "href": "/fr/series/education-artistique?cycle=college",
+      "label": "تمارين التربية التشكيلية"
+    },
+    {
+      "href": "/fr/cours/education-artistique?cycle=college",
+      "label": "دروس التربية التشكيلية"
+    },
+    {
+      "href": "/fr/matieres/histoire-geographie",
+      "label": "التاريخ والجغرافيا"
+    },
+    {
+      "href": "/fr/devoirs/histoire-geographie?cycle=college",
+      "label": "فروض التاريخ والجغرافيا"
+    },
+    {
+      "href": "/fr/series/histoire-geographie?cycle=college",
+      "label": "تمارين التاريخ والجغرافيا"
+    },
+    {
+      "href": "/fr/cours/histoire-geographie?cycle=college",
+      "label": "دروس التاريخ والجغرافيا"
+    }
+  ],
+  "lycee": [
+    {
+      "href": "/fr/matieres/theatre",
+      "label": "Théâtre"
+    },
+    {
+      "href": "/fr/devoirs/theatre?cycle=lycee",
+      "label": "Devoirs Théâtre"
+    },
+    {
+      "href": "/fr/series/theatre?cycle=lycee",
+      "label": "Séries Théâtre"
+    },
+    {
+      "href": "/fr/cours/theatre?cycle=lycee",
+      "label": "Cours Théâtre"
+    },
+    {
+      "href": "/fr/matieres/mathematiques",
+      "label": "Mathématiques"
+    },
+    {
+      "href": "/fr/devoirs/mathematiques?cycle=lycee",
+      "label": "Devoirs Math"
+    },
+    {
+      "href": "/fr/series/mathematiques?cycle=lycee",
+      "label": "Séries Math"
+    },
+    {
+      "href": "/fr/cours/mathematiques?cycle=lycee",
+      "label": "Cours Math"
+    },
+    {
+      "href": "/fr/matieres/physique",
+      "label": "Physique"
+    },
+    {
+      "href": "/fr/devoirs/physique?cycle=lycee",
+      "label": "Devoirs Physique"
+    },
+    {
+      "href": "/fr/series/physique?cycle=lycee",
+      "label": "Séries Physique"
+    },
+    {
+      "href": "/fr/cours/physique?cycle=lycee",
+      "label": "Cours Physique"
+    },
+    {
+      "href": "/fr/matieres/svt",
+      "label": "SVT"
+    },
+    {
+      "href": "/fr/devoirs/svt?cycle=lycee",
+      "label": "Devoirs SVT"
+    },
+    {
+      "href": "/fr/series/svt?cycle=lycee",
+      "label": "Séries SVT"
+    },
+    {
+      "href": "/fr/cours/svt?cycle=lycee",
+      "label": "Cours SVT"
+    },
+    {
+      "href": "/fr/matieres/francais",
+      "label": "Français"
+    },
+    {
+      "href": "/fr/devoirs/francais?cycle=lycee",
+      "label": "Devoirs Français"
+    },
+    {
+      "href": "/fr/series/francais?cycle=lycee",
+      "label": "Séries Français"
+    },
+    {
+      "href": "/fr/cours/francais?cycle=lycee",
+      "label": "Cours Français"
+    },
+    {
+      "href": "/fr/matieres/arabe",
+      "label": "Étude de texte"
+    },
+    {
+      "href": "/fr/devoirs/arabe?cycle=lycee",
+      "label": "Devoirs Arabe"
+    },
+    {
+      "href": "/fr/series/arabe?cycle=lycee",
+      "label": "Séries Arabe"
+    },
+    {
+      "href": "/fr/cours/arabe?cycle=lycee",
+      "label": "Cours Arabe"
+    },
+    {
+      "href": "/fr/matieres/anglais",
+      "label": "Anglais"
+    },
+    {
+      "href": "/fr/devoirs/anglais?cycle=lycee",
+      "label": "Devoirs Anglais"
+    },
+    {
+      "href": "/fr/series/anglais?cycle=lycee",
+      "label": "Séries Anglais"
+    },
+    {
+      "href": "/fr/cours/anglais?cycle=lycee",
+      "label": "Cours Anglais"
+    },
+    {
+      "href": "/fr/matieres/histoire",
+      "label": "Histoire"
+    },
+    {
+      "href": "/fr/devoirs/histoire?cycle=lycee",
+      "label": "Devoirs Histoire"
+    },
+    {
+      "href": "/fr/series/histoire?cycle=lycee",
+      "label": "Séries Histoire"
+    },
+    {
+      "href": "/fr/cours/histoire?cycle=lycee",
+      "label": "Cours Histoire"
+    },
+    {
+      "href": "/fr/matieres/geographie",
+      "label": "Géographie"
+    },
+    {
+      "href": "/fr/devoirs/geographie?cycle=lycee",
+      "label": "Devoirs Géographie"
+    },
+    {
+      "href": "/fr/series/geographie?cycle=lycee",
+      "label": "Séries Géographie"
+    },
+    {
+      "href": "/fr/cours/geographie?cycle=lycee",
+      "label": "Cours Géographie"
+    },
+    {
+      "href": "/fr/matieres/philosophie",
+      "label": "Philosophie"
+    },
+    {
+      "href": "/fr/devoirs/philosophie?cycle=lycee",
+      "label": "Devoirs Philo"
+    },
+    {
+      "href": "/fr/series/philosophie?cycle=lycee",
+      "label": "Séries Philo"
+    },
+    {
+      "href": "/fr/cours/philosophie?cycle=lycee",
+      "label": "Cours Philo"
+    },
+    {
+      "href": "/fr/matieres/economie",
+      "label": "Économie"
+    },
+    {
+      "href": "/fr/devoirs/economie?cycle=lycee",
+      "label": "Devoirs Économie"
+    },
+    {
+      "href": "/fr/series/economie?cycle=lycee",
+      "label": "Séries Économie"
+    },
+    {
+      "href": "/fr/cours/economie?cycle=lycee",
+      "label": "Cours Économie"
+    },
+    {
+      "href": "/fr/matieres/gestion",
+      "label": "Gestion"
+    },
+    {
+      "href": "/fr/devoirs/gestion?cycle=lycee",
+      "label": "Devoirs Gestion"
+    },
+    {
+      "href": "/fr/series/gestion?cycle=lycee",
+      "label": "Séries Gestion"
+    },
+    {
+      "href": "/fr/cours/gestion?cycle=lycee",
+      "label": "Cours Gestion"
+    },
+    {
+      "href": "/fr/matieres/informatique",
+      "label": "Informatique"
+    },
+    {
+      "href": "/fr/devoirs/informatique?cycle=lycee",
+      "label": "Devoirs Info"
+    },
+    {
+      "href": "/fr/series/informatique?cycle=lycee",
+      "label": "Séries Info"
+    },
+    {
+      "href": "/fr/cours/informatique?cycle=lycee",
+      "label": "Cours Info"
+    },
+    {
+      "href": "/fr/matieres/technologie",
+      "label": "Sciences Techniques"
+    },
+    {
+      "href": "/fr/devoirs/technologie?cycle=lycee",
+      "label": "Devoirs Techno"
+    },
+    {
+      "href": "/fr/series/technologie?cycle=lycee",
+      "label": "Séries Techno"
+    },
+    {
+      "href": "/fr/cours/technologie?cycle=lycee",
+      "label": "Cours Techno"
+    },
+    {
+      "href": "/fr/matieres/algo-prog",
+      "label": "Algorithme et programmation"
+    },
+    {
+      "href": "/fr/devoirs/algo-prog?cycle=lycee",
+      "label": "Devoirs Algo"
+    },
+    {
+      "href": "/fr/series/algo-prog?cycle=lycee",
+      "label": "Séries Algo"
+    },
+    {
+      "href": "/fr/cours/algo-prog?cycle=lycee",
+      "label": "Cours Algo"
+    },
+    {
+      "href": "/fr/matieres/tic",
+      "label": "TIC"
+    },
+    {
+      "href": "/fr/devoirs/tic?cycle=lycee",
+      "label": "Devoirs TIC"
+    },
+    {
+      "href": "/fr/series/tic?cycle=lycee",
+      "label": "Séries TIC"
+    },
+    {
+      "href": "/fr/cours/tic?cycle=lycee",
+      "label": "Cours TIC"
+    },
+    {
+      "href": "/fr/matieres/systeme-exploitation-reseaux",
+      "label": "STI"
+    },
+    {
+      "href": "/fr/devoirs/systeme-exploitation-reseaux?cycle=lycee",
+      "label": "Devoirs STI"
+    },
+    {
+      "href": "/fr/series/systeme-exploitation-reseaux?cycle=lycee",
+      "label": "Séries STI"
+    },
+    {
+      "href": "/fr/cours/systeme-exploitation-reseaux?cycle=lycee",
+      "label": "Cours STI"
+    },
+    {
+      "href": "/fr/matieres/bases-donnees",
+      "label": "Bases de données"
+    },
+    {
+      "href": "/fr/devoirs/bases-donnees?cycle=lycee",
+      "label": "Devoirs BD"
+    },
+    {
+      "href": "/fr/series/bases-donnees?cycle=lycee",
+      "label": "Séries BD"
+    },
+    {
+      "href": "/fr/cours/bases-donnees?cycle=lycee",
+      "label": "Cours BD"
+    },
+    {
+      "href": "/fr/matieres/education-civique",
+      "label": "Éducation civique"
+    },
+    {
+      "href": "/fr/devoirs/education-civique?cycle=lycee",
+      "label": "Devoirs Civique"
+    },
+    {
+      "href": "/fr/series/education-civique?cycle=lycee",
+      "label": "Séries Civique"
+    },
+    {
+      "href": "/fr/cours/education-civique?cycle=lycee",
+      "label": "Cours Civique"
+    },
+    {
+      "href": "/fr/matieres/education-islamique",
+      "label": "Éducation islamique"
+    },
+    {
+      "href": "/fr/devoirs/education-islamique?cycle=lycee",
+      "label": "Devoirs Islamique"
+    },
+    {
+      "href": "/fr/series/education-islamique?cycle=lycee",
+      "label": "Séries Islamique"
+    },
+    {
+      "href": "/fr/cours/education-islamique?cycle=lycee",
+      "label": "Cours Islamique"
+    },
+    {
+      "href": "/fr/matieres/histoire-geographie",
+      "label": "Histoire-Géographie"
+    },
+    {
+      "href": "/fr/devoirs/histoire-geographie?cycle=lycee",
+      "label": "Devoirs Histoire-Géo"
+    },
+    {
+      "href": "/fr/series/histoire-geographie?cycle=lycee",
+      "label": "Séries Histoire-Géo"
+    },
+    {
+      "href": "/fr/cours/histoire-geographie?cycle=lycee",
+      "label": "Cours Histoire-Géo"
+    },
+    {
+      "href": "/fr/matieres/3eme-langue-allemand",
+      "label": "3ème Langue - Allemand"
+    },
+    {
+      "href": "/fr/devoirs/3eme-langue-allemand?cycle=lycee",
+      "label": "Devoirs Allemand"
+    },
+    {
+      "href": "/fr/series/3eme-langue-allemand?cycle=lycee",
+      "label": "Séries Allemand"
+    },
+    {
+      "href": "/fr/cours/3eme-langue-allemand?cycle=lycee",
+      "label": "Cours Allemand"
+    },
+    {
+      "href": "/fr/matieres/3eme-langue-italien",
+      "label": "3ème Langue - Italien"
+    },
+    {
+      "href": "/fr/devoirs/3eme-langue-italien?cycle=lycee",
+      "label": "Devoirs Italien"
+    },
+    {
+      "href": "/fr/series/3eme-langue-italien?cycle=lycee",
+      "label": "Séries Italien"
+    },
+    {
+      "href": "/fr/cours/3eme-langue-italien?cycle=lycee",
+      "label": "Cours Italien"
+    },
+    {
+      "href": "/fr/matieres/3eme-langue-espagnol",
+      "label": "3ème Langue - Espagnol"
+    },
+    {
+      "href": "/fr/devoirs/3eme-langue-espagnol?cycle=lycee",
+      "label": "Devoirs Espagnol"
+    },
+    {
+      "href": "/fr/series/3eme-langue-espagnol?cycle=lycee",
+      "label": "Séries Espagnol"
+    },
+    {
+      "href": "/fr/cours/3eme-langue-espagnol?cycle=lycee",
+      "label": "Cours Espagnol"
+    },
+    {
+      "href": "/fr/matieres/genie-electrique",
+      "label": "Genie Electrique"
+    },
+    {
+      "href": "/fr/devoirs/genie-electrique?cycle=lycee",
+      "label": "Devoirs Génie Élec."
+    },
+    {
+      "href": "/fr/series/genie-electrique?cycle=lycee",
+      "label": "Séries Génie Élec."
+    },
+    {
+      "href": "/fr/cours/genie-electrique?cycle=lycee",
+      "label": "Cours Génie Élec."
+    }
+  ]
+}
