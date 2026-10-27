@@ -394,13 +394,77 @@ export default function InvitationsClient({
         </div>
         <button
           onClick={async () => {
-            if (!confirm('Synchroniser le statut de livraison Resend pour toutes les invitations envoyées (jusqu\'à 50) ?')) return;
+            // 2026-10-27 : on synchronise UNIQUEMENT l'onglet actif
+            // (demande explicite) — sinon on interrogeait Resend pour toute
+            // la base alors qu'on regarde 17 invitations expirées.
+            const scopeLabel = filterStatus ? STATUS_META[filterStatus]?.label : null;
+            const scopeCount = filterStatus ? stats[filterStatus] || 0 : null;
+
+            // Resend ne conserve les emails que 30 jours : on prévient
+            // AVANT l'appel si l'onglet ne contient que des emails trop
+            // anciens (la synchro ne pourra rien remonter).
+            const RESEND_RETENTION_MS = 30 * 24 * 3600 * 1000;
+            const tabInvitations = filterStatus
+              ? invitations.filter((inv) =>
+                  filterStatus === 'CLICKED'
+                    ? (inv.clickCount || 0) > 0
+                    : inv.status === filterStatus,
+                )
+              : [];
+            const tooOld = tabInvitations.filter(
+              (inv) =>
+                inv.emailSentAt &&
+                Date.now() - new Date(inv.emailSentAt).getTime() > RESEND_RETENTION_MS,
+            ).length;
+            const willFail = tabInvitations.length > 0 && tooOld === tabInvitations.length;
+
+            let question = scopeLabel
+              ? `Synchroniser le statut de livraison Resend pour les invitations « ${scopeLabel} »${scopeCount != null ? ` (${scopeCount})` : ''} ?`
+              : `Synchroniser le statut de livraison Resend pour toutes les invitations envoyées (jusqu'à 50) ?`;
+            if (willFail) {
+              question += `\n\n⚠️ Les ${tooOld} emails de cet onglet ont plus de 30 jours : Resend ne les conserve plus, la synchronisation ne renverra aucun statut.`;
+            }
+            if (!confirm(question)) return;
             toast.loading('Synchronisation Resend...', { id: 'sync-resend' });
             try {
-              const res = await fetch('/api/admin/invitations/sync-delivery', { method: 'POST' });
+              const res = await fetch('/api/admin/invitations/sync-delivery', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: filterStatus || undefined }),
+              });
               const data = await res.json();
               if (data.synced !== undefined) {
-                toast.success(`${data.synced} invitations synchronisées`, { id: 'sync-resend' });
+                if (data.synced === 0) {
+                  const why = scopeLabel
+                    ? `aucune invitation envoyée dans l'onglet « ${scopeLabel} »`
+                    : 'aucune invitation à synchroniser';
+                  toast.success(`0 synchronisée — ${why}`, { id: 'sync-resend' });
+                } else if (data.notFound > 0 && data.ok === 0) {
+                  // Resend ne conserve les emails que 30 jours → aucun statut
+                  // ne peut être remonté. On le dit clairement (au lieu
+                  // d'annoncer « synchronisé » alors que rien n'a bougé).
+                  toast.custom(
+                    () => (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-900 shadow-lg">
+                        <div className="text-sm font-bold">
+                          Resend ne conserve plus ces emails
+                        </div>
+                        <div className="mt-0.5 text-xs">
+                          {data.notFound} email{data.notFound > 1 ? 's' : ''} de plus de 30 jours
+                          {scopeLabel ? ` dans « ${scopeLabel} »` : ''} — aucun statut mis à jour.
+                        </div>
+                      </div>
+                    ),
+                    { id: 'sync-resend' },
+                  );
+                } else {
+                  const skipped = data.skipped > 0 ? ` (${data.skipped} sans ID Resend)` : '';
+                  const gone = data.notFound > 0 ? `, ${data.notFound} trop ancien${data.notFound > 1 ? 's' : ''}` : '';
+                  toast.success(
+                    `${data.ok} invitation${data.ok > 1 ? 's' : ''} synchronisée${data.ok > 1 ? 's' : ''}${scopeLabel ? ` — ${scopeLabel}` : ''}${gone}${skipped}`,
+                    { id: 'sync-resend' },
+                  );
+                }
                 router.refresh();
               } else {
                 toast.error(data.error || 'Erreur de sync', { id: 'sync-resend' });
@@ -409,11 +473,21 @@ export default function InvitationsClient({
               toast.error(e.message || 'Erreur', { id: 'sync-resend' });
             }
           }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition"
-          title="Synchroniser le statut de livraison depuis Resend"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          title={
+            filterStatus
+              ? `Synchroniser le statut de livraison Resend pour l'onglet « ${STATUS_META[filterStatus]?.label} » uniquement`
+              : "Synchroniser le statut de livraison depuis Resend (toutes les invitations envoyées)"
+          }
         >
           <Activity className="w-3.5 h-3.5" />
           Sync Resend
+          {filterStatus && (
+            <span className="px-1.5 py-0.5 rounded bg-sky-200/70 text-sky-900 text-[10px] font-extrabold">
+              {STATUS_META[filterStatus]?.label}
+              {stats[filterStatus] != null ? ` · ${stats[filterStatus]}` : ''}
+            </span>
+          )}
         </button>
       </div>
 
