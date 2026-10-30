@@ -23,8 +23,34 @@ import { useState, useEffect } from 'react';
 import nextDynamic from 'next/dynamic';
 import { Eye, FileText, Loader2, Maximize2, AlertCircle } from 'lucide-react';
 
+const PDF_CHUNK_RELOAD_KEY = 'examanet:pdf-chunk-reload';
+
+// 2026-10-30: prod 2026-10-29T18:22Z — the react-pdf CSS chunk failed to
+// load right after "Afficher le document" was clicked. The rejection reached
+// the root error boundary (whole page → spinner); the generic auto-reload
+// there only matches the JS form ("Loading chunk N failed"), not the CSS form
+// ("Loading CSS chunk N failed"). Catch it at the import site and force ONE
+// reload to pick up fresh chunk hashes; the sessionStorage flag prevents a
+// reload loop if the asset is really gone.
 const PDFViewer = nextDynamic(
-  () => import('@/components/resources/PDFViewer'),
+  () =>
+    import('@/components/resources/PDFViewer')
+      .then((m) => {
+        try { sessionStorage.removeItem(PDF_CHUNK_RELOAD_KEY); } catch { /* private mode */ }
+        return m;
+      })
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (/Loading (?:CSS )?chunk \d+ failed|dynamically imported module/i.test(msg)) {
+          let done = false;
+          try {
+            done = sessionStorage.getItem(PDF_CHUNK_RELOAD_KEY) === '1';
+            if (!done) sessionStorage.setItem(PDF_CHUNK_RELOAD_KEY, '1');
+          } catch { /* private mode */ }
+          if (!done && typeof window !== 'undefined') window.location.reload();
+        }
+        throw err;
+      }),
   {
     ssr: false,
     loading: () => (
