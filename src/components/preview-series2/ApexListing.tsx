@@ -7,6 +7,7 @@ import styles from './apex-series.module.css';
 import { useSeriesContext } from './series-context';
 import SidebarFilters from './SidebarFilters';
 import { emptyStateLabel } from '@/lib/fr-plural';
+import { safeGetItem, safeSetItem } from '@/lib/safeStorage';
 
 interface ListingProps {
   subject: { slug: string; nameFr: string };
@@ -45,11 +46,14 @@ export default function ApexListing({ subject, classes, activeCycle, type = 'Sé
   const [density, setDensity] = useState<Density>('comfortable');
   const [sidebarVisible, setSidebarVisible] = useState(true);
   useEffect(() => {
-    const saved = localStorage.getItem('apex-density') as Density | null;
+    // safeGetItem: `window.localStorage` THROWS a SecurityError when site data
+    // is blocked (in-app browsers). The throw is on the PROPERTY GETTER, so the
+    // `typeof window` guard below does NOT protect us.
+    const saved = safeGetItem('apex-density') as Density | null;
     if (saved && saved !== density) setDensity(saved);
   }, []);
   useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('apex-density', density);
+    if (typeof window !== 'undefined') safeSetItem('apex-density', density);
   }, [density]);
 
   // Refetch on URL state change
