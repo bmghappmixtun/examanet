@@ -156,6 +156,7 @@ export async function GET(req: NextRequest) {
          WHERE (seenBySession IS NULL OR seenBySession = 0)
            AND createdAt >= ?
            AND level IN ('ERROR', 'CRITICAL')
+           AND source != 'PROBE'   -- 2026-11-01: sondes de diagnostic exclues du triage
          ORDER BY createdAt DESC
          LIMIT 100`,
         since,
@@ -169,6 +170,7 @@ export async function GET(req: NextRequest) {
            FROM ErrorLog
            WHERE createdAt >= ?
              AND level IN ('ERROR', 'CRITICAL')
+             AND source != 'PROBE'   -- 2026-11-01: sondes de diagnostic exclues du triage
            ORDER BY createdAt DESC
            LIMIT 100`,
           since,

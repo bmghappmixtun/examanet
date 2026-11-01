@@ -61,6 +61,7 @@ export async function GET(req: NextRequest) {
             agentSeen, stack, context
      FROM ErrorLog
      WHERE level IN ('ERROR', 'CRITICAL', 'error')
+       AND source != 'PROBE'   -- 2026-11-01: sondes de diagnostic exclues du rapport
        AND createdAt >= ?
      ORDER BY createdAt DESC
      LIMIT 200`,

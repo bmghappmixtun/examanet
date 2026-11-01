@@ -13,7 +13,7 @@ const BASE = process.argv[2] || 'https://examanet-dev.examanet-poc.workers.dev';
 
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const ctx = await browser.newContext({ userAgent: 'MavisProbe/1.0 (diagnostic Examanet - hors triage)', viewport: { width: 1440, height: 1000 } });
   const errors = [];
 
   const cases = [

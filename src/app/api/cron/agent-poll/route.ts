@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
        FROM ErrorLog
        WHERE agentSeen = 0
          AND level IN ('ERROR', 'CRITICAL')
+         AND source != 'PROBE'   -- 2026-11-01: sondes de diagnostic exclues du triage
          AND createdAt >= ?
        ORDER BY createdAt DESC
        LIMIT 50`,

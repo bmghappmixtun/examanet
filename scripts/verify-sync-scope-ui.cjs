@@ -8,7 +8,7 @@ const TOKEN = process.env.MAVIS_SESSION;
 
 (async () => {
   const b = await chromium.launch();
-  const ctx = await b.newContext({ viewport: { width: 1680, height: 1050 } });
+  const ctx = await b.newContext({ userAgent: 'MavisProbe/1.0 (diagnostic Examanet - hors triage)', viewport: { width: 1680, height: 1050 } });
   await ctx.addCookies([
     { name: '__Secure-examanet_session', value: TOKEN, domain: new URL(BASE).hostname, path: '/', secure: true },
   ]);

@@ -15,7 +15,7 @@ const URLS = [
 (async () => {
   const browser = await chromium.launch({ args: ['--no-sandbox'] });
   for (const [name, url] of URLS) {
-    const ctx = await browser.newContext();
+    const ctx = await browser.newContext({ userAgent: 'MavisProbe/1.0 (diagnostic Examanet - hors triage)' });
     const page = await ctx.newPage();
     const logs = [];
     page.on('console', (m) => logs.push({ t: m.type(), x: m.text() }));

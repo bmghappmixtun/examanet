@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 
 const browser = await chromium.launch();
-const context = await browser.newContext({
+const context = await browser.newContext({ userAgent: 'MavisProbe/1.0 (diagnostic Examanet - hors triage)',
   viewport: { width: 1440, height: 900 },
   deviceScaleFactor: 2, // High DPI for crisp output
 });

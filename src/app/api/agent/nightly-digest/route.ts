@@ -58,6 +58,7 @@ export async function GET(req: NextRequest) {
         `SELECT id, source, level, message, stack, url, context, createdAt, updatedAt
            FROM ErrorLog
           WHERE agentSeen = 1 AND createdAt >= ?
+            AND source != 'PROBE'   -- 2026-11-01: sondes de diagnostic exclues
           ORDER BY createdAt DESC
           LIMIT 200`,
       )

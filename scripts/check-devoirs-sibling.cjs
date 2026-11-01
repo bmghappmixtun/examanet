@@ -10,7 +10,7 @@ const URLS = [
 (async () => {
   const browser = await chromium.launch({ args: ['--no-sandbox'] });
   for (const [u, label] of URLS) {
-    const ctx = await browser.newContext({ ignoreHTTPSErrors: true, locale: 'fr-FR' });
+    const ctx = await browser.newContext({ userAgent: 'MavisProbe/1.0 (diagnostic Examanet - hors triage)', ignoreHTTPSErrors: true, locale: 'fr-FR' });
     const page = await ctx.newPage();
     const errs = [];
     page.on('pageerror', (e) => errs.push(e.message));

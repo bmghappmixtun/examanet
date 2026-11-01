@@ -15,7 +15,7 @@ const BASE = process.argv[2] || 'https://examanet.com';
 
 (async () => {
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: { width: 1680, height: 1200 } });
+  const ctx = await browser.newContext({ userAgent: 'MavisProbe/1.0 (diagnostic Examanet - hors triage)', viewport: { width: 1680, height: 1200 } });
   const page = await ctx.newPage();
   await page.goto(`${BASE}/fr`, { waitUntil: 'domcontentloaded', timeout: 90000 });
   // Laisse le temps à l'hydratation : un clic AVANT que React n'ait
