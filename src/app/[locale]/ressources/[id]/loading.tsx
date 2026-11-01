@@ -4,6 +4,25 @@ import { Loader2, Eye, Download, Star, MessageCircle, FileText, ChevronRight, Wr
 
 export default function Loading() {
   return (
+    <>
+      {/* 2026-11-01 nightly fix (React #418/#422 + "removeChild NotFoundError",
+          prod group on /fr/ressources/3875, 2026-10-31):
+          page.tsx renders TWO server-side JSON-LD <script> elements as SIBLINGS
+          of <ResourceDetailClient /> (see the fragment at page.tsx:271-286), so
+          the Suspense boundary content is [script, script, div]. This skeleton
+          used to be a SINGLE [div] — the skeleton and the page then disagreed on
+          the number of direct children AND on the element type at position 0
+          (script vs div). React's hydration check is type- and count-strict, so
+          when the skeleton stays in the DOM (page render fails or streams
+          partially) React discards the server HTML and its commit phase calls
+          removeChild() on a node that is no longer a child -> NotFoundError,
+          which remounts the app-router and then crashes with "Cannot read
+          properties of null (reading 'get')" (next.js #67730, t.parallelRoutes
+          .get on null). These 2 placeholders restore the mirror
+          [script, script, div] — same convention as
+          src/app/[locale]/ressources/loading.tsx. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: '{"@context":"https://schema.org"}' }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: '{"@context":"https://schema.org"}' }} />
     <div className="min-h-screen flex flex-col">
       {/* JSON-LD placeholders — must contain @context to be valid (Safari parses
           ld+json scripts eagerly and crashes on missing @context with
@@ -220,5 +239,6 @@ export default function Loading() {
         </div>
       </div>
     </div>
+    </>
   );
 }
