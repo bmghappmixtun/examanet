@@ -47,19 +47,32 @@ export async function GET(req: NextRequest) {
   const since = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
   // 2026-09-05: Replaced Prisma findMany/updateMany with raw D1 SQL
+  // 2026-11-01 FIX (nightly muet depuis des semaines) : `agentSeen` n'était
+  // PLUS dans la liste SELECT (régression c7aa53c8, migration vers le SQL
+  // brut) alors que le filtre ligne 60 teste `e.agentSeen === 0 || ===
+  // false`. Comme `e.agentSeen` valait undefined, AUCUNE ligne ne passait le
+  // filtre => `unSeen` toujours vide => (a) rien n'était marqué comme vu,
+  // (b) le rapport Discord était sauté (condition `unSeen.length > 0`),
+  // (c) le digest renvoyait 0 erreur -> le nightly ne voyait rien et
+  // relisait le backlog. `stack` et `context` ont le même problème (absents
+  // du SELECT alors que le digest les expose).
   const allRows: any[] = await d1All(
-    `SELECT id, level as severity, source, message, url, createdAt, userEmail
+    `SELECT id, level as severity, source, message, url, createdAt, userEmail,
+            agentSeen, stack, context
      FROM ErrorLog
-     WHERE level IN ('ERROR', 'CRITICAL')
+     WHERE level IN ('ERROR', 'CRITICAL', 'error')
        AND createdAt >= ?
      ORDER BY createdAt DESC
      LIMIT 200`,
     since,
   );
 
-  const unSeen = allRows.filter((e) => e.agentSeen === 0 || e.agentSeen === false);
-  const unSeenCritical = unSeen.filter((e) => e.severity === 'CRITICAL');
-  const unSeenError = unSeen.filter((e) => e.severity === 'ERROR');
+  // `!e.agentSeen` couvre 0 / false / null / undefined (agentSeen est un
+  // INTEGER 0|1 en base) : une colonne absente ne doit jamais faire passer
+  // une ligne pour "déjà vue".
+  const unSeen = allRows.filter((e) => !e.agentSeen);
+  const unSeenCritical = unSeen.filter((e) => String(e.severity || '').toUpperCase() === 'CRITICAL');
+  const unSeenError = unSeen.filter((e) => String(e.severity || '').toUpperCase() === 'ERROR');
 
   // Group by message hash
   const grouped = new Map<string, { count: number; sample: any; severities: Set<string> }>();
@@ -157,7 +170,7 @@ export async function GET(req: NextRequest) {
     topGroups: topGroups.map((g) => ({
       count: g.count,
       severities: Array.from(g.severities),
-      reference: g.sample.reference,
+      reference: g.sample.id, // pas de colonne `reference` dans ErrorLog : l'id de la ligne
       message: g.sample.message,
       url: g.sample.url,
       source: g.sample.source,

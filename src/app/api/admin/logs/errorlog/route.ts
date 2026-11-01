@@ -48,9 +48,14 @@ export async function GET(req: NextRequest) {
   const since = new Date(Date.now() - sinceMs);
   
   try {
+    // 2026-11-01: la colonne réelle est `level`, PAS `severity` (severity
+    // n'existe pas dans ErrorLog -> filtre silencieusement inerte car en
+    // SQLite un identifiant en double quotes inconnu devient un litteral
+    // chaine). La base contient 'ERROR' (331) mais aussi 'error' (1) :
+    // on filtre donc sur les deux casses.
     const where: any = { createdAt: { gte: since } };
     if (severity && severity !== 'all') {
-      where.severity = severity;
+      where.OR = [{ level: severity }, { level: severity.toLowerCase() }];
     }
     
     const logs = await db.errorLog.findMany({
@@ -59,9 +64,9 @@ export async function GET(req: NextRequest) {
       take: limit,
     });
     
-    // Get counts by severity
+    // Get counts by severity (colonne réelle : level)
     const counts = await db.errorLog.groupBy({
-      by: ['severity'],
+      by: ['level'],
       where: { createdAt: { gte: since } },
       _count: { _all: true },
     });
@@ -69,7 +74,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       range: { since, until: new Date() },
-      counts: counts.map(c => ({ level: c.severity, count: c._count._all })),
+      counts: counts.map(c => ({ level: c.level, count: c._count._all })),
       logs: logs.map(l => ({
         ...l,
         createdAt: (typeof l.createdAt === 'number' ? new Date(l.createdAt).toISOString() : l.createdAt),
