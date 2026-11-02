@@ -176,3 +176,42 @@ l'erreur d'hydratation.
 
 Le fix de référence reste l'invariant miroir du skeleton Suspense (voir
 `f0e94d5b`), qui a corrigé `/fr/ressources/[id]`.
+
+### 6.1 La chaîne causale prouvée (31/10 10:53)
+
+```
+10:53:42Z  [CRITICAL/CLIENT] removeChild NotFoundError   /fr/ressources/3875
+10:53:44Z  [CRITICAL/CLIENT] null.get (×4)              /fr/classes/3eme-secondaire/sciences-informatique
+```
+
+Un **seul appareil** (Android 10, mobile Chrome) : le mismatch
+d'hydratation sur la page ressource fait **remonter le router**
+(`next#67730`), et la page **suivante** (les landing pages `/fr/classes/**`)
+hérite du router cassé → `null.get` ×4.
+
+**Les landing pages `/fr/classes/**` ne sont donc pas en cause** : ce sont des
+victimes collatérales. Le déclencheur est le `removeChild` sur la page
+ressource.
+
+Vérifié côté serveur : la page `/fr/ressources/[id]` sert bien son skeleton de
+chargement (le `<ResourceDetailClient>` rend son état `loading` — cohérent
+SSR **et** client) et le miroir `[script, script, div]` de `f0e94d5b` est
+correct. Le HTML est complet (`</html>` présent, 3 boundaries Suspense toutes
+fermées, 0 segment d'erreur dans le payload RSC).
+
+### 6.2 Le nightly relisait sa propre pollution 🔥
+
+18 enregistrements `#418`/`#422` sur `/admin/invitations` depuis le 07/09.
+En croisant horodatages + User-Agent :
+
+| UA | occurrences | origine |
+|---|---|---|
+| `X11; Ubuntu; Linux x86_64` (Firefox 157/158) | 4 paires — 21/10 10:55, 26/10 20:26, 27/10 20:47, 28/10 19:15 | **les sondes de diagnostic de l'agent** (Playwright+Firefox sous Linux) |
+| `Windows NT 10.0` (Firefox 154/158) | 5 paires — 07/09, 21/10, 31/10 | de vrais visiteurs |
+
+Le nightly escaladait donc un « bug prod » qui n'existait que dans son propre
+harnais de test. **Correctif `5745e949`** : les sondes naviguent avec
+`userAgent: 'MavisProbe/1.0 (...)'` → `POST /api/errors/log` force
+`source='PROBE'` → `session-start`, `nightly-digest`, `nightly-cleanup` et
+`agent-poll` excluent `source != 'PROBE'`.
+

@@ -27,6 +27,7 @@ import {
   AlertTriangle,
   Mail,
   Rocket,
+  History,
 } from 'lucide-react';
 
 // Admin pages should never be indexed
@@ -75,7 +76,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         .catch(() => ({ c: 0 })),
       db
         .prepare(
-          "SELECT COUNT(*) as c FROM ErrorLog WHERE severity IN ('ERROR', 'CRITICAL') AND createdAt > ?",
+          "SELECT COUNT(*) as c FROM ErrorLog WHERE level IN ('ERROR', 'CRITICAL') AND createdAt > ?",
         )
         .bind(oneDayAgo)
         .first()
@@ -159,6 +160,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       badge: unseenErrors,
       badgeColor: 'bg-red-500',
     },
+    { href: '/admin/versions', icon: History, label: 'Versions déployées' },
 
     { group: 'Configuration' },
     { href: '/admin/parametres', icon: Settings, label: 'Paramètres' },

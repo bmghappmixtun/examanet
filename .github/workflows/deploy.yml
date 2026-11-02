@@ -87,6 +87,21 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
+      - name: Register deployment version
+        if: github.ref == 'refs/heads/main'
+        # Inscrit la version deployee dans le registre D1 `DeploymentVersion`
+        # (numerotation 0.01, 0.02... +0.01 par deploiement de code).
+        # Idempotent : un rerun de la CI ne cree pas de doublon.
+        run: |
+          node scripts/register-deployment.mjs --env=prod
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
