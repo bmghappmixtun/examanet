@@ -73,6 +73,7 @@ export default async function AdminVersionsPage(props: any) {
   let activity: { day: string; n: number }[] = [];
   let tableMissing = false;
   let filteredTotal = 0;
+  let syncState: any = null;
 
   try {
     const where = ['env = ?'];
@@ -161,14 +162,22 @@ export default async function AdminVersionsPage(props: any) {
       return { day: String(day), n: byDay.get(day) || 0 };
     });
 
+    // etat de la synchronisation quotidienne (script sync-deployment-versions.mjs)
+    const syncR = await db
+      .prepare('SELECT * FROM DeploymentSyncState WHERE env = ? LIMIT 1')
+      .bind(env)
+      .first()
+      .catch(() => null);
+    syncState = syncR || null;
+
     stats = {
       total: Number(s?.total || 0),
       code: Number(s?.code || 0),
       secret: Number(s?.secret || 0),
       week: Number(s?.week || 0),
-      current: currentR || null,
+      current: currentR || null, // version CF reellement en ligne (100 %)
       first: firstR || null,
-      last: lastR || null,
+      last: lastR || null, // derniere version de CODE (le site)
     };
   } catch (e: any) {
     tableMissing = true;
@@ -203,18 +212,50 @@ export default async function AdminVersionsPage(props: any) {
             aujourd&apos;hui. Source : Cloudflare Workers + GitHub Actions.
           </p>
         </div>
-        {stats.current && (
-          <div className="rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 text-white px-5 py-3 shadow-lg">
-            <div className="text-[11px] uppercase tracking-wide text-slate-300">Version en ligne</div>
-            <div className="text-3xl font-black tracking-tight">
-              {stats.current.version || '—'}
-            </div>
+        {stats.last && (
+          <div className="rounded-2xl bg-gradient-to-br from-slate-900 to-slate-700 text-white px-5 py-3 shadow-lg min-w-[268px]">
+            <div className="text-[11px] uppercase tracking-wide text-slate-300">Version du site</div>
+            <div className="text-3xl font-black tracking-tight">{stats.last.version}</div>
             <div className="text-[11px] text-slate-300 mt-0.5">
-              CF n°{stats.current.cfNumber} · {fmtDateTime(stats.current.deployedAt)}
+              CF n°{stats.last.cfNumber} · {fmtDateTime(stats.last.deployedAt)}
             </div>
+            {stats.current && stats.current.cfNumber !== stats.last.cfNumber && (
+              <div className="text-[11px] text-slate-400 mt-1.5 pt-1.5 border-t border-white/15">
+                Worker en ligne : CF n°{stats.current.cfNumber}
+                {stats.current.type === 'secret' ? ' (rotation de secret)' : ''}
+              </div>
+            )}
+            {syncState && (
+              <div className="text-[11px] text-slate-400 mt-1">
+                Synchronisé le {fmtDateTime(syncState.lastSyncAt)}
+                {Number(syncState.missingCount) > 0
+                  ? ` · ${syncState.missingCount} version(s) en retard`
+                  : ''}
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {syncState && syncState.status !== 'ok' && (
+        <div className="rounded-2xl border border-red-300 bg-red-50 p-4 text-red-900">
+          <p className="font-semibold">La synchronisation quotidienne a échoué.</p>
+          <p className="text-sm mt-0.5">
+            Dernière tentative : {fmtDateTime(syncState.lastSyncAt)} — {syncState.message}
+          </p>
+        </div>
+      )}
+      {syncState && syncState.status === 'ok' && Number(syncState.missingCount) > 0 && (
+        <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
+          <p className="font-semibold">
+            {syncState.missingCount} version(s) Cloudflare ne sont pas encore enregistrées.
+          </p>
+          <p className="text-sm mt-0.5">
+            Dernière synchronisation : {fmtDateTime(syncState.lastSyncAt)}. La prochaine
+            exécution du job quotidien les rattrapera.
+          </p>
+        </div>
+      )}
 
       {tableMissing && (
         <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-900">
@@ -416,10 +457,19 @@ export default async function AdminVersionsPage(props: any) {
                   </td>
                   <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{r.author || '—'}</td>
                   <td className="px-4 py-3">
-                    {r.isCurrent ? (
+                    {r.isCurrent && r.cfVersionId === stats.last?.cfVersionId ? (
                       <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         en ligne
+                      </span>
+                    ) : r.isCurrent ? (
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        worker en ligne
+                      </span>
+                    ) : r.cfVersionId === stats.last?.cfVersionId ? (
+                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-700">
+                        version du site
                       </span>
                     ) : (
                       <span className="text-xs text-slate-400">historique</span>

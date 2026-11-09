@@ -1,0 +1,47 @@
+name: Sync deployment versions
+
+# Synchronise le registre D1 `DeploymentVersion` avec l'historique réel
+# Cloudflare Workers. Lancé une fois par jour : le hook CI
+# (scripts/register-deployment.mjs) n'enregistre que les déploiements faits
+# par la CI, or Cloudflare crée aussi une version à chaque rotation de
+# secret — le nightly en fait une par nuit sur le worker prod.
+#
+# Sans ce job, la page /admin/versions perdait 1 version par nuit
+# (8 versions manquées entre le 02/11 et le 09/11).
+
+on:
+  schedule:
+    # 03:30 UTC = 04:30 Tunisie — après la rotation nocturne de secrets (~01:20 UTC)
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-deployment-versions
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Synchroniser le registre des versions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Le script n'utilise que des modules natifs Node (fetch, fs) :
+      # pas de npm install, donc le job est rapide et robuste.
+      - name: Synchroniser
+        run: node scripts/sync-deployment-versions.mjs --env=prod
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
