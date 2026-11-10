@@ -79,8 +79,15 @@ jobs:
       - name: Deploy to Cloudflare Workers
         if: github.ref == 'refs/heads/main'
         run: |
-          # Point wrangler to the correct worker entry point
-          sed 's|"main": "worker-with-cache.js"|"main": ".open-next/worker.js"|' \
+          # Point wrangler to the correct worker entry point.
+          # 2026-11-10: la prod pointait sur ".open-next/worker.js" (sed
+          # récupéré d'une restauration de fichier post-filter-branch). Ce
+          # worker n'exporte AUCUN handler `scheduled` => les triggers cron
+          # enregistrés sur le script ("0 3 * * *", "*/5 * * * *") se
+          # déclenchaient dans le vide : /api/cron/* n'a jamais tourné en
+          # prod. worker-cron.js relaie fetch tel quel (sans le cache HTML
+          # sans TTL) et restaure le handler scheduled + les métriques KV.
+          sed 's|"main": "worker-with-cache.js"|"main": "worker-cron.js"|' \
             wrangler.prod.jsonc > wrangler.github.jsonc
           npx wrangler deploy --config wrangler.github.jsonc
         env:

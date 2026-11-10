@@ -16,6 +16,7 @@
     "global_fetch_strictly_public"
   ],
   "vars": {
+    "WORKER_BASE_URL": "https://examanet-dev.examanet-poc.workers.dev",
     "NEXT_PUBLIC_SITE_URL": "https://examanet-dev.examanet-poc.workers.dev",
     "ENABLE_NEW_DESIGN": "1",
     "EMAIL_FROM_DEVOIRAT": "contact@devoirat.net",
