@@ -199,8 +199,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       dir="ltr"
       className={fustat.variable}
       suppressHydrationWarning
+      // 2026-11-10 — Google Translate réécrit le DOM (chaque texte est déplacé
+      // dans un <font>, les marqueurs de commentaires React/Next sont
+      // supprimés). React hydrate alors un arbre différent du serveur :
+      // mismatch #418/#423 → le client re-rend le root → removeChild() sur un
+      // nœud déplacé → NotFoundError → remount → `parallelRoutes.get()` sur
+      // null (nightly #27 : 19 erreurs en 14 j sur /fr/ressources).
+      // `translate="no"` + la meta notranslate empêchent le translateur de
+      // toucher l'arbre React. NE PAS RETIRER sans vérifier le nightly.
+      translate="no"
     >
       <head>
+        {/* Idem : signal explicement compris par Google Translate (et son
+            extension), qui renonce alors à modifier la page. */}
+        <meta name="google" content="notranslate" />
         {/* Explicit Google site verification meta tag (HTML tag verification) */}
         <meta
           name="google-site-verification"
