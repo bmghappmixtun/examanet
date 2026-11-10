@@ -35,6 +35,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getD1 } from '@/lib/db-d1';
+import { isThirdPartyError } from '@/lib/error-third-party';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -48,7 +49,12 @@ function hashMessage(message: string): string {
 }
 
 export async function GET(req: NextRequest) {
-  const since = Date.now() - 24 * 60 * 60 * 1000;
+  // 2026-11-10 (E3) : fenêtre 7 jours, alignée sur le cron nightly-cleanup
+  // (qui lit déjà 7 jours : src/app/api/cron/nightly-cleanup/route.ts:47).
+  // La fenêtre de 24 h rendait le digest vide chaque fois que le nettoyage
+  // de la nuit avait marqué les lignes de la veille.
+  const WINDOW_HOURS = 7 * 24;
+  const since = Date.now() - WINDOW_HOURS * 60 * 60 * 1000;
 
   let rows: any[] = [];
   try {
@@ -77,8 +83,8 @@ export async function GET(req: NextRequest) {
   if (rows.length === 0) {
     return NextResponse.json({
       ok: true,
-      message: 'No errors in the last 24h (or the nightly cleanup marked none as seen).',
-      windowHours: 24,
+      message: `No errors in the last ${WINDOW_HOURS}h (or the nightly cleanup marked none as seen).`,
+      windowHours: WINDOW_HOURS,
       count: 0,
       grouped: [],
     });
@@ -114,14 +120,29 @@ export async function GET(req: NextRequest) {
 
   const sorted = Array.from(grouped.values()).sort((a, b) => b.count - a.count);
 
+  // 2026-11-10 (E3) : les erreurs 100 % tierces (extensions, scripts injectés)
+  // sont sorties de la liste principale — le nightly ne doit pas les traiter
+  // comme des bugs de notre code. Elles restent comptabilisées et visibles.
+  const isThirdParty = (g: any) => isThirdPartyError(g.sample);
+  const appGroups = sorted.filter((g) => !isThirdParty(g));
+  const thirdPartyGroups = sorted.filter((g) => isThirdParty(g));
+
   return NextResponse.json({
     ok: true,
-    windowHours: 24,
+    windowHours: WINDOW_HOURS,
     // Le dernier `updatedAt` = le passage du cron nightly-cleanup qui a marqué
     // ces lignes comme vues (le cron écrit agentSeen=1 + updatedAt).
     lastRunAt: rows.reduce((max, r) => Math.max(max, Number(r.updatedAt) || 0), 0),
     count: rows.length,
-    grouped: sorted.slice(0, 20).map((g) => ({
+    thirdPartyCount: thirdPartyGroups.reduce((n, g) => n + g.count, 0),
+    thirdPartyGroups: thirdPartyGroups.slice(0, 10).map((g) => ({
+      reference: hashMessage(String(g.sample.message || '')),
+      count: g.count,
+      message: g.sample.message,
+      url: g.sample.url,
+      source: g.sample.source,
+    })),
+    grouped: appGroups.slice(0, 20).map((g) => ({
       reference: hashMessage(String(g.sample.message || '')),
       count: g.count,
       severities: Array.from(g.severities),

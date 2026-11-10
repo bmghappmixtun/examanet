@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { d1All, d1Run } from '@/lib/db-d1';
 import { requireCronSecret, getSecret } from '@/lib/cf-auth';
+import { isThirdPartyError } from '@/lib/error-third-party';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -72,12 +73,21 @@ export async function GET(req: NextRequest) {
   // INTEGER 0|1 en base) : une colonne absente ne doit jamais faire passer
   // une ligne pour "déjà vue".
   const unSeen = allRows.filter((e) => !e.agentSeen);
-  const unSeenCritical = unSeen.filter((e) => String(e.severity || '').toUpperCase() === 'CRITICAL');
-  const unSeenError = unSeen.filter((e) => String(e.severity || '').toUpperCase() === 'ERROR');
+
+  // 2026-11-10 (E3) : on ne NOTIFIE plus que les erreurs attribuables à notre
+  // code. Les erreurs 100 % tierces (extensions navigateur, scripts injectés)
+  // sont toujours marquées comme vues (pour ne pas s'accumuler) mais elles
+  // ne déclenchent plus de notification Discord ni de groupe de travail.
+  const thirdPartyRows = unSeen.filter((e) => isThirdPartyError(e));
+  const appRows = unSeen.filter((e) => !isThirdPartyError(e));
+  const thirdPartyCount = thirdPartyRows.length;
+
+  const unSeenCritical = appRows.filter((e) => String(e.severity || '').toUpperCase() === 'CRITICAL');
+  const unSeenError = appRows.filter((e) => String(e.severity || '').toUpperCase() === 'ERROR');
 
   // Group by message hash
   const grouped = new Map<string, { count: number; sample: any; severities: Set<string> }>();
-  for (const e of unSeen) {
+  for (const e of appRows) {
     const key = hashMessage(e.message || '');
     const existing = grouped.get(key);
     if (existing) {
@@ -107,12 +117,19 @@ export async function GET(req: NextRequest) {
   let discordPosted = false;
   // 2026-10-26: lu au moment de la requête (binding runtime).
   const DISCORD_WEBHOOK_URL = (await getSecret('DISCORD_WEBHOOK_URL')) || '';
-  if (DISCORD_WEBHOOK_URL && unSeen.length > 0) {
+  if (DISCORD_WEBHOOK_URL && appRows.length > 0) {
     const fields: Array<{ name: string; value: string; inline?: boolean }> = [
-      { name: 'Total unseen', value: String(unSeen.length), inline: true },
+      { name: 'Total à traiter', value: String(appRows.length), inline: true },
       { name: 'Critical', value: String(unSeenCritical.length), inline: true },
       { name: 'Error', value: String(unSeenError.length), inline: true },
     ];
+    if (thirdPartyCount > 0) {
+      fields.push({
+        name: 'Ignorées (tiers)',
+        value: `${thirdPartyCount} — extensions / scripts injectés, non attribuables à notre code`,
+        inline: false,
+      });
+    }
 
     for (const g of topGroups.slice(0, 6)) {
       const sevEmoji = g.severities.has('CRITICAL') ? '🚨' : '⚠️';
@@ -136,7 +153,7 @@ export async function GET(req: NextRequest) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content: `🌙 **Rapport nocturne (3h Tunisie)** — ${unSeen.length} erreur(s) non-vue(s) sur 7 jours`,
+          content: `🌙 **Rapport nocturne (3h Tunisie)** — ${appRows.length} erreur(s) à traiter sur 7 jours${thirdPartyCount > 0 ? ` (+${thirdPartyCount} ignorée(s), tiers)` : ''}`,
           embeds: [embed],
           allowed_mentions: { parse: [] },
         }),
@@ -165,6 +182,8 @@ export async function GET(req: NextRequest) {
     generatedAt: new Date().toISOString(),
     windowDays: 7,
     totalUnseen: unSeen.length,
+    appErrors: appRows.length,
+    thirdPartyIgnored: thirdPartyCount,
     critical: unSeenCritical.length,
     error: unSeenError.length,
     groupedCount: grouped.size,
