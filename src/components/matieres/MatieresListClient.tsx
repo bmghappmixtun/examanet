@@ -90,10 +90,12 @@ export default function MatieresListClient({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-white to-sky-50 border-b border-slate-200/60">
-        <div className="absolute inset-0 bg-grid-slate-100/[0.04] bg-[size:20px_20px]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+      {/* Hero — 2026-11-11 : le bandeau pleine largeur devient une CARTE
+          (coins arrondis + bordure + ombre), comme sur les pages matière. */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10 pb-2">
+        <section className="relative overflow-hidden rounded-3xl border border-slate-200/60 shadow-sm bg-gradient-to-br from-primary-50 via-white to-sky-50">
+          <div className="absolute inset-0 bg-grid-slate-100/[0.04] bg-[size:20px_20px]" />
+          <div className="relative px-6 sm:px-10 lg:px-14 py-10 lg:py-14">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-primary-200/60 rounded-full px-4 py-1.5 mb-4">
               <GraduationCap className="w-4 h-4 text-primary-600" />
@@ -136,8 +138,9 @@ export default function MatieresListClient({
               <span className="text-sm text-slate-600">{t('subjects.page.hero.gratuit', { defaultValue: '100% gratuit' })}</span>
             </div>
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
 
       {/* Subjects grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

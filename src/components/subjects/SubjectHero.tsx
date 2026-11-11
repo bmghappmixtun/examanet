@@ -50,11 +50,15 @@ export default function SubjectHero({
   const borderColor = hexToRgba(subject.color, 0.3);
 
   return (
+    // 2026-11-11 : le bandeau pleine largeur devient une CARTE (coins
+    // arrondis + bordure + ombre colorée). Le dégradé, le motif et les
+    // blobs décoratifs sont conservés à l'intérieur.
     <section
-      className="relative overflow-hidden"
+      className="relative overflow-hidden rounded-3xl border shadow-sm mb-8"
       style={{
         background: `linear-gradient(135deg, ${lighterColor} 0%, ${hexToRgba(subject.color, 0.05)} 100%)`,
-        borderBottom: `1px solid ${borderColor}`,
+        borderColor: borderColor,
+        boxShadow: `0 18px 40px -26px ${hexToRgba(subject.color, 0.55)}`,
       }}
     >
       {/* Motif SVG filigrane */}
@@ -70,7 +74,7 @@ export default function SubjectHero({
         style={{ background: subject.color }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+      <div className="relative max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 py-10 lg:py-14">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm text-slate-600 mb-5">
           <Link href="/" className="hover:text-slate-900 transition">
@@ -86,10 +90,10 @@ export default function SubjectHero({
 
         <div className="flex flex-col lg:flex-row items-start gap-8">
           {/* Bloc icon + nom */}
-          <div className="flex-1">
-            <div className="flex items-center gap-5 mb-5">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-4 sm:gap-5 mb-5">
               <div
-                className="w-20 h-20 rounded-3xl flex items-center justify-center text-5xl shadow-lg"
+                className="w-14 h-14 sm:w-20 sm:h-20 rounded-3xl flex items-center justify-center text-3xl sm:text-5xl shadow-lg shrink-0"
                 style={{
                   background: `linear-gradient(135deg, ${hexToRgba(subject.color, 0.25)} 0%, ${hexToRgba(subject.color, 0.1)} 100%)`,
                   border: `2px solid ${hexToRgba(subject.color, 0.5)}`,
@@ -99,12 +103,12 @@ export default function SubjectHero({
               </div>
               <div>
                 <h1
-                  className="text-4xl lg:text-5xl font-extrabold tracking-tight"
+                  className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight break-words"
                   style={{ color: subject.color }}
                 >
                   {subject.nameFr}
                 </h1>
-                <p className="text-xl text-slate-700 mt-1" dir="rtl">
+                <p className="text-base sm:text-xl text-slate-700 mt-1" dir="rtl">
                   {subject.nameAr}
                 </p>
               </div>
