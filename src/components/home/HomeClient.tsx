@@ -163,7 +163,9 @@ export default function HomeClient({
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-in-up">
+            {/* order-2 sur mobile : la carte visuelle passe en tête (voir plus
+                bas). Sur desktop (lg) order-1 : le texte reste à gauche. */}
+            <div className="animate-fade-in-up order-2 lg:order-1">
               <div className="inline-flex items-center gap-2 bg-white border border-primary-200 rounded-full px-4 py-2 mb-6 shadow-sm">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 <span className="text-xs font-semibold text-slate-700">
@@ -230,8 +232,14 @@ export default function HomeClient({
               </div>
             </div>
 
-            <div className="relative hidden lg:block">
-              <div className="relative w-full max-w-md mx-auto aspect-square">
+            {/* 2026-11-11 : la carte « 100% gratuit » + les badges de preuve
+                sociale sont désormais visibles sur MOBILE (avant : hidden
+                lg:block => invisible sous 1024px). Sur mobile elle passe en
+                tête de colonne (order-1) : le visuel + la preuve sociale
+                arrivent avant le texte ; sur desktop l'ordre est inchangé
+                (texte à gauche, carte à droite). */}
+            <div className="relative order-1 lg:order-2 w-full max-w-[340px] sm:max-w-md mx-auto lg:mx-0">
+              <div className="relative w-full aspect-square">
                 <div
                   className="absolute inset-0 rounded-3xl shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500 flex items-center justify-center"
                   style={{
@@ -244,35 +252,37 @@ export default function HomeClient({
                     boxShadow: '0 25px 50px -12px rgba(0, 78, 96, 0.40)',
                   }}
                 >
-                  <div className="text-center text-white p-8">
+                  <div className="text-center text-white p-5 sm:p-8">
                     {/* 2026-10-21: 📚 emoji → custom SVG (pop sur le nouveau fond) */}
-                    <BrandBooks className="w-40 h-[132px] mx-auto mb-4" />
-                    <div className="text-2xl font-extrabold">{t('home.sections.whyFreeTitle')}</div>
-                    <div className="text-lg opacity-90">{t('home.sections.whyFreeDesc')}</div>
+                    <BrandBooks className="w-32 h-[106px] sm:w-40 sm:h-[132px] mx-auto mb-3 sm:mb-4" />
+                    <div className="text-xl sm:text-2xl font-extrabold">{t('home.sections.whyFreeTitle')}</div>
+                    <div className="text-base sm:text-lg opacity-90">{t('home.sections.whyFreeDesc')}</div>
                   </div>
                 </div>
-                <div className="absolute -top-4 -end-4 bg-white rounded-2xl shadow-2xl p-4 animate-float">
+                {/* Badges : offsets et tailles réduits sur mobile, sinon ils
+                    débordent du viewport (le conteneur n'a que px-4). */}
+                <div className="absolute -top-3 -end-2 sm:-top-4 sm:-end-4 bg-white rounded-2xl shadow-2xl p-3 sm:p-4 animate-float">
                   <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-green-100 flex items-center justify-center">
                       <Download className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
                       <div className="text-xs text-slate-500">{t('home.stats.downloads')}</div>
-                      <div className="text-lg font-bold">{formatNumber(downloads)}</div>
+                      <div className="text-base sm:text-lg font-bold">{formatNumber(downloads)}</div>
                     </div>
                   </div>
                 </div>
                 <div
-                  className="absolute -bottom-4 -start-4 bg-white rounded-2xl shadow-2xl p-4 animate-float"
+                  className="absolute -bottom-3 -start-2 sm:-bottom-4 sm:-start-4 bg-white rounded-2xl shadow-2xl p-3 sm:p-4 animate-float"
                   style={{ animationDelay: '1s' }}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-amber-100 flex items-center justify-center">
                       <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
                     </div>
                     <div>
                       <div className="text-xs text-slate-500">{t('teacher.avgRating')}</div>
-                      <div className="text-lg font-bold">4.8/5</div>
+                      <div className="text-base sm:text-lg font-bold">4.8/5</div>
                     </div>
                   </div>
                 </div>
