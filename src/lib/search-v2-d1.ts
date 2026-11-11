@@ -234,6 +234,11 @@ export async function searchV2(options: SearchOptions): Promise<SearchResponse> 
       // LIKE-based search: search in title, description, summary.
       // Escape LIKE metachars (\, %, _) so user input can't trigger
       // "LIKE or GLOB pattern too complex" or match-everything wildcards.
+      // 2026-11-11: the ESCAPE clause must contain exactly ONE character.
+      // It used to send '\\\\' (two backslashes) -> SQLite rejected the whole
+      // query with "ESCAPE expression must be a single character", so every
+      // non-empty search failed. The escaping above (lines 238-242) is written
+      // for a single backslash escape char, which is what we now send.
       // Also cap query length to avoid pathological patterns.
       const safeQ = q
         .replace(/\\/g, '\\\\')
@@ -242,7 +247,7 @@ export async function searchV2(options: SearchOptions): Promise<SearchResponse> 
         .slice(0, 200);
       const likeParam = `%${safeQ}%`;
       conditions.push(
-        "(r.title LIKE ? ESCAPE '\\\\' OR r.description LIKE ? ESCAPE '\\\\' OR r.summary LIKE ? ESCAPE '\\\\')"
+        "(r.title LIKE ? ESCAPE '\\' OR r.description LIKE ? ESCAPE '\\' OR r.summary LIKE ? ESCAPE '\\')"
       );
       params.push(likeParam, likeParam, likeParam);
     }
