@@ -54,6 +54,12 @@ Statut **404**, `Content-Type: text/html; charset=utf-8`, `Content-Language: fr|
 - FR : « Document indisponible »
 - AR : « الوثيقة غير متوفرة »
 
+> **Langue = celle de la RESSOURCE** (champ `Resource.language`), pas celle du navigateur.
+> Bug corrigé le 2026-11-12 après le premier déploiement : la langue venait de l'en-tête
+> `Accept-Language`, donc un document **arabe** affichait « Document indisponible » en français
+> pour un visiteur francophone (et l'inverse). L'en-tête ne sert plus que de repli.
+> Vérification : `scripts/verify-download-missing-lang.mjs` → 10/10 sur dev.
+
 ### 3.4 Nom de fichier téléchargé
 `toAsciiName()` : translittération NFD + retrait des diacritiques (`œ→oe`, `æ→ae`) ; si le titre n'a pas ≥ 3 lettres latines → `document-<numericId>.pdf`.
 
