@@ -16,20 +16,54 @@ function sanitizeFilename(name: string): string {
     .substring(0, 200);
 }
 
-function buildFilename(
+/**
+ * 2026-11-12 — Nom de fichier lisible par l'utilisateur.
+ *
+ * L'ancien `buildFilename` ne gardait que l'ASCII : pour un titre ARABE, le
+ * nom téléchargé devenait « 3-------(2022-2023).pdf » (les caractères arabes
+ * supprimés, seuls les chiffres et les tirets restaient).
+ *
+ * On renvoie donc les DEUX formes :
+ * - `ascii`  → fallback ASCII (paramètre `filename=`) ;
+ * - `utf8`   → nom complet avec accents / arabe (paramètre `filename*=`,
+ *               RFC 5987, prioritaire dans tous les navigateurs).
+ */
+function buildFilenameParts(
   resource: { title: string; originalFileName?: string | null },
   original: boolean,
-): string {
+): { ascii: string; utf8: string } {
   if (original && resource.originalFileName) {
-    return resource.originalFileName;
+    const raw = sanitizeFilename(resource.originalFileName);
+    return { ascii: raw, utf8: raw };
   }
+
   const cleanTitle = resource.title
     .replace(/&[a-z]+;/gi, ' ')
     .replace(/[^a-zA-Z0-9À-ÿ\s\-_()]/g, '')
     .trim()
     .replace(/\s+/g, '-')
     .substring(0, 150);
-  return `${cleanTitle || 'document'}.pdf`;
+  const ascii = `${cleanTitle || 'document'}.pdf`;
+
+  // Version « humane » : on garde tout sauf les caractères interdits par les
+  // systèmes de fichiers et les caractères de contrôle.
+  const pretty = resource.title
+    .replace(/&[a-z]+;/gi, ' ')
+    .replace(/[\x00-\x1F\x7F]/g, '')
+    .replace(/[<>:"/\\|?*]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 150);
+
+  const utf8 = pretty ? `${pretty}.pdf` : ascii;
+  return { ascii, utf8 };
+}
+
+/** En-tête Content-Disposition : fallback ASCII + nom UTF-8 (RFC 5987). */
+function contentDisposition(ascii: string, utf8: string): string {
+  const base = `attachment; filename="${ascii}"`;
+  if (!utf8 || utf8 === ascii) return base;
+  return `${base}; filename*=UTF-8''${encodeURIComponent(utf8)}`;
 }
 
 /**
@@ -52,7 +86,7 @@ function buildFilename(
  */
 async function streamFromR2(
   key: string,
-  filename: string,
+  disposition: string,
   contentType: string,
 ): Promise<NextResponse | null> {
   if (!key) return null;
@@ -67,12 +101,11 @@ async function streamFromR2(
   const obj = await bucket.get(key);
   if (!obj) return null;
 
-  const safeName = sanitizeFilename(filename);
   return new NextResponse(obj.body, {
     status: 200,
     headers: {
       'Content-Type': obj.httpMetadata?.contentType || contentType,
-      'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
+      'Content-Disposition': disposition,
       'Cache-Control': 'public, max-age=3600, must-revalidate',
       'X-Content-Type-Options': 'nosniff',
       'X-Robots-Tag': 'noindex, nofollow',
@@ -173,13 +206,15 @@ async function streamFileToClient(
   baseUrl?: string,
   r2Keys: string[] = [],
   lang: 'fr' | 'ar' = 'fr',
+  disposition?: string,
 ): Promise<NextResponse> {
   const safeName = sanitizeFilename(filename);
+  const contentDispositionHeader = disposition || contentDisposition(safeName, safeName);
 
   // 1) Lecture directe dans R2 (le cas de 100 % des ressources actuelles).
   for (const key of r2Keys) {
     try {
-      const fromR2 = await streamFromR2(key, filename, contentType);
+      const fromR2 = await streamFromR2(key, contentDispositionHeader, contentType);
       if (fromR2) return fromR2;
     } catch (e: any) {
       console.error('[download] lecture R2 impossible pour', key, e?.message);
@@ -213,7 +248,7 @@ async function streamFileToClient(
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
+        'Content-Disposition': contentDispositionHeader,
         'Cache-Control': 'public, max-age=3600, must-revalidate',
         'X-Content-Type-Options': 'nosniff',
         'X-Robots-Tag': 'noindex, nofollow',
@@ -314,13 +349,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const lang = (req.headers.get('accept-language') || '').toLowerCase().startsWith('ar') ? 'ar' : 'fr';
 
+    const nameParts = buildFilenameParts(resource, false);
     return streamFileToClient(
       resource.fileUrl,
-      buildFilename(resource, false),
+      nameParts.ascii,
       'application/pdf',
       req.nextUrl?.origin,
       r2KeyCandidates(resource),
       lang,
+      contentDisposition(nameParts.ascii, nameParts.utf8),
     );
   } catch (e: any) {
     const elapsed = Date.now() - reqStart;
@@ -361,7 +398,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     
     return NextResponse.json({
       url: `/api/resources/${numericId}/download`,
-      fileName: buildFilename(resource, false),
+      fileName: buildFilenameParts(resource, false).utf8,
     });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'unknown' }, { status: 500 });
