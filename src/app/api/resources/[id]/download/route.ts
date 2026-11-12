@@ -302,7 +302,7 @@ async function streamFileToClient(
 async function getResourceByNumericId(db: any, numericId: number) {
   return await db.prepare(`
     SELECT id, numericId, slug, title, type, status, fileKey, fileUrl, r2Key,
-           fileSize
+           fileSize, language
     FROM Resource
     WHERE numericId = ?
     LIMIT 1
@@ -383,7 +383,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     // Track the view/download
     await incrementViewsAndDownloads(db, resource.id, req);
 
-    const lang = (req.headers.get('accept-language') || '').toLowerCase().startsWith('ar') ? 'ar' : 'fr';
+    // Langue de la page d'erreur = langue de la RESSOURCE (le document est en
+    // arabe ⇒ message en arabe), pas celle du navigateur : un utilisateur
+    // francophone sur une ressource arabe (ou l'inverse) doit comprendre.
+    // L'en-tête Accept-Language ne sert plus que de repli.
+    const resourceLang = (resource.language || '').toLowerCase();
+    const lang: 'fr' | 'ar' =
+      resourceLang === 'ar' ? 'ar'
+      : resourceLang === 'fr' ? 'fr'
+      : ((req.headers.get('accept-language') || '').toLowerCase().startsWith('ar') ? 'ar' : 'fr');
 
     const nameParts = buildFilenameParts(resource, false);
     return streamFileToClient(
