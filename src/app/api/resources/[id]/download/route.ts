@@ -33,28 +33,119 @@ function buildFilename(
 }
 
 /**
- * Stream a file from a URL (Vercel Blob) to the client.
+ * 2026-11-12 — LECTURE DIRECTE DANS R2 (correction du 502 sur 100 % des
+ * téléchargements).
+ *
+ * Après la migration Vercel Blob → R2, `Resource.fileUrl` contient un CHEMIN
+ * RELATIF (`/api/file/teacher-library/<teacherId>/imported/xxx.pdf`) :
+ * les 15 421 ressources PUBLISHED n'ont AUCUNE URL absolue (vérifié en D1).
+ *
+ * L'ancien code faisait `fetch(sourceUrl)` → `fetch('/api/file/...')` →
+ * « Invalid URL » → catch → 502. Le bouton bleu « Télécharger PDF » de
+ * TOUTES les ressources était donc cassé (le PDF, lui, est bien dans R2 :
+ * `GET /api/file/<clé>` renvoie 200 + le vrai PDF).
+ *
+ * Correctif : on lit l'objet R2 directement (bucket PDFS_BUCKET, ou
+ * TEXT_BUCKET pour le préfixe `text/` — même règle que /api/file/[...key]).
+ * Si l'objet est introuvable, on bascule sur le proxy HTTP (qui sait
+ * notamment renvoyer 410 pour un document orphelin).
+ */
+async function streamFromR2(
+  key: string,
+  filename: string,
+  contentType: string,
+): Promise<NextResponse | null> {
+  if (!key) return null;
+
+  const ctx = await getCloudflareContext({ async: true });
+  const env = (ctx as any).env;
+  const bucket = key.startsWith('text/')
+    ? env?.TEXT_BUCKET
+    : env?.PDFS_BUCKET;
+  if (!bucket) return null;
+
+  const obj = await bucket.get(key);
+  if (!obj) return null;
+
+  const safeName = sanitizeFilename(filename);
+  return new NextResponse(obj.body, {
+    status: 200,
+    headers: {
+      'Content-Type': obj.httpMetadata?.contentType || contentType,
+      'Content-Disposition': `attachment; filename="${safeName}"; filename*=UTF-8''${encodeURIComponent(safeName)}`,
+      'Cache-Control': 'public, max-age=3600, must-revalidate',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Robots-Tag': 'noindex, nofollow',
+      'X-Storage-Backend': 'r2',
+    },
+  });
+}
+
+/**
+ * Clés R2 candidates pour une ressource, par ordre de priorité.
+ * `Resource.fileKey` est déjà la clé R2 exacte ; à défaut on la déduit de
+ * `fileUrl` (`/api/file/<clé>`).
+ */
+function r2KeyCandidates(resource: { fileKey?: string | null; r2Key?: string | null; fileUrl?: string | null }): string[] {
+  const keys: string[] = [];
+  const push = (k?: string | null) => {
+    if (k && !keys.includes(k)) keys.push(k);
+  };
+  push(resource.r2Key);
+  push(resource.fileKey);
+  const url = resource.fileUrl;
+  if (url && url.startsWith('/api/file/')) {
+    push(url.slice('/api/file/'.length));
+  }
+  return keys;
+}
+
+/**
+ * Stream a file to the client.
  * Sets Content-Disposition so the browser downloads with the right filename.
  */
 async function streamFileToClient(
   sourceUrl: string,
   filename: string,
   contentType = 'application/pdf',
+  baseUrl?: string,
+  r2Keys: string[] = [],
 ): Promise<NextResponse> {
   const safeName = sanitizeFilename(filename);
-  
+
+  // 1) Lecture directe dans R2 (le cas de 100 % des ressources actuelles).
+  for (const key of r2Keys) {
+    try {
+      const fromR2 = await streamFromR2(key, filename, contentType);
+      if (fromR2) return fromR2;
+    } catch (e: any) {
+      console.error('[download] lecture R2 impossible pour', key, e?.message);
+    }
+  }
+
   try {
-    const upstream = await fetch(sourceUrl, {
+    // 2) Repli proxy HTTP : fetch() exige une URL ABSOLUE, on résout donc
+    //    les chemins relatifs contre l'origine de la requête.
+    const absoluteUrl = sourceUrl.startsWith('/')
+      ? new URL(sourceUrl, baseUrl || 'https://examanet.com').toString()
+      : sourceUrl;
+
+    const upstream = await fetch(absoluteUrl, {
       headers: { 'User-Agent': 'Examanet-Proxy/1.0' },
     });
-    
+
     if (!upstream.ok) {
+      // 404 = le document n'existe plus dans le stockage (message utile),
+      // le reste = erreur amont.
+      const status = upstream.status === 404 ? 404 : 502;
       return new NextResponse(
-        `Upstream fetch failed: ${upstream.status} for ${sourceUrl}`,
-        { status: 502 }
+        upstream.status === 404
+          ? 'Fichier introuvable dans le stockage'
+          : `Upstream fetch failed: ${upstream.status} for ${sourceUrl}`,
+        { status }
       );
     }
-    
+
     return new NextResponse(upstream.body, {
       status: 200,
       headers: {
@@ -63,7 +154,7 @@ async function streamFileToClient(
         'Cache-Control': 'public, max-age=3600, must-revalidate',
         'X-Content-Type-Options': 'nosniff',
         'X-Robots-Tag': 'noindex, nofollow',
-        'X-Storage-Backend': 'vercel-blob',
+        'X-Storage-Backend': 'r2',
       },
     });
   } catch (e: any) {
@@ -164,7 +255,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return streamFileToClient(
       resource.fileUrl,
       buildFilename(resource, false),
-      'application/pdf'
+      'application/pdf',
+      req.nextUrl?.origin,
+      r2KeyCandidates(resource),
     );
   } catch (e: any) {
     const elapsed = Date.now() - reqStart;
