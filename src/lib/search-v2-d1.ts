@@ -231,25 +231,19 @@ export async function searchV2(options: SearchOptions): Promise<SearchResponse> 
     const params: any[] = [];
     
     if (q) {
-      // LIKE-based search: search in title, description, summary.
-      // Escape LIKE metachars (\, %, _) so user input can't trigger
-      // "LIKE or GLOB pattern too complex" or match-everything wildcards.
-      // 2026-11-11: the ESCAPE clause must contain exactly ONE character.
-      // It used to send '\\\\' (two backslashes) -> SQLite rejected the whole
-      // query with "ESCAPE expression must be a single character", so every
-      // non-empty search failed. The escaping above (lines 238-242) is written
-      // for a single backslash escape char, which is what we now send.
-      // Also cap query length to avoid pathological patterns.
-      const safeQ = q
-        .replace(/\\/g, '\\\\')
-        .replace(/%/g, '\\%')
-        .replace(/_/g, '\\_')
-        .slice(0, 200);
-      const likeParam = `%${safeQ}%`;
+      // Substring search on title, description, summary.
+      //
+      // 2026-11-12: LIKE -> instr(). D1's SQLite refuses any LIKE/GLOB
+      // pattern longer than 48 BYTES ("LIKE or GLOB pattern too complex"),
+      // so every query over ~46 chars threw and was swallowed by the catch
+      // below (empty results, HTTP 200 -> the search looked alive while
+      // returning nothing). instr() does the same case-insensitive substring
+      // match, with no pattern-length limit and no wildcard escaping needed.
+      const needle = q.slice(0, 200);
       conditions.push(
-        "(r.title LIKE ? ESCAPE '\\' OR r.description LIKE ? ESCAPE '\\' OR r.summary LIKE ? ESCAPE '\\')"
+        '(instr(lower(r.title), lower(?)) > 0 OR instr(lower(r.description), lower(?)) > 0 OR instr(lower(r.summary), lower(?)) > 0)'
       );
-      params.push(likeParam, likeParam, likeParam);
+      params.push(needle, needle, needle);
     }
     if (subjectIds.length) {
       const placeholders = subjectIds.map(() => '?').join(',');
