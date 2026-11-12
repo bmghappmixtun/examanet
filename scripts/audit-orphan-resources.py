@@ -48,8 +48,12 @@ out = subprocess.run(
     [
         "npx", "wrangler", "d1", "execute", DB_ID, "--remote", "--json",
         "--command",
-        "SELECT numericId, title, fileKey, fileUrl FROM Resource "
-        "WHERE status='PUBLISHED'",
+        "SELECT r.numericId, r.title, r.fileKey, r.fileUrl, "
+        "COALESCE(c.slug,'') AS classSlug, COALESCE(s.slug,'') AS subjectSlug "
+        "FROM Resource r "
+        "LEFT JOIN Class c ON c.id = r.classId "
+        "LEFT JOIN Subject s ON s.id = r.subjectId "
+        "WHERE r.status='PUBLISHED'",
     ],
     capture_output=True, text=True, timeout=600,
 )
@@ -64,22 +68,32 @@ for r in rows:
         if r["fileUrl"].startswith("/api/file/"):
             key = urllib.parse.unquote(r["fileUrl"][len("/api/file/"):])
     if not key:
-        missing.append((r["numericId"], r["title"], "NO_KEY", ""))
+        missing.append((r["numericId"], r["title"], "NO_KEY", r.get("classSlug", ""), r.get("subjectSlug", "")))
         continue
     if key not in r2_keys:
-        missing.append((r["numericId"], r["title"], key, ""))
+        missing.append((r["numericId"], r["title"], key, r.get("classSlug", ""), r.get("subjectSlug", "")))
 
 print(f"=== {len(missing)} ressources sans objet R2 ({len(missing)/max(len(rows),1)*100:.2f} %) ===")
 by_prefix = {}
-for _, _, key, _ in missing:
+by_class = {}
+by_subject = {}
+for _, _, key, cls, subj in missing:
     p = key.split("/")[0] if key else "NO_KEY"
     by_prefix[p] = by_prefix.get(p, 0) + 1
+    by_class[cls or "—"] = by_class.get(cls or "—", 0) + 1
+    by_subject[subj or "—"] = by_subject.get(subj or "—", 0) + 1
 print("Par préfixe :", by_prefix)
+print("Par classe  :", dict(sorted(by_class.items(), key=lambda kv: -kv[1])))
+print("Par matière :", dict(sorted(by_subject.items(), key=lambda kv: -kv[1])))
 
-with open("/workspace/edutunisie/output/orphan-resources-2026-11-12.csv", "w") as f:
-    f.write("numericId\ttitle\tkey\n")
-    for nid, title, key, _ in missing:
-        f.write(f"{nid}\t{(title or '').replace(chr(9),' ')}\t{key}\n")
+# CSV réel (RFC 4180, séparateur virgule, BOM UTF-8 pour Excel + arabe)
+import csv
+
+with open("/workspace/edutunisie/output/orphan-resources-2026-11-12.csv", "w", newline="", encoding="utf-8-sig") as f:
+    w = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
+    w.writerow(["numericId", "title", "classSlug", "subjectSlug", "r2Key"])
+    for nid, title, key, cls, subj in missing:
+        w.writerow([nid, (title or "").replace("\t", " "), cls, subj, key])
 print("CSV : output/orphan-resources-2026-11-12.csv")
 
 for m in missing[:10]:
