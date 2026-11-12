@@ -101,6 +101,68 @@ function r2KeyCandidates(resource: { fileKey?: string | null; r2Key?: string | n
 }
 
 /**
+ * 2026-11-12 — Le fichier n'existe plus dans le stockage R2 (document
+ * orphelin : incident de maintenance R2 du 22/09/2026). ~4 % des ressources
+ * sont dans ce cas. On renvoie une page explicative FR/AR plutôt qu'un
+ * brut technique : le bouton « Télécharger » ouvre cette page dans un
+ * onglet, l'utilisateur doit comprendre ce qu'il se passe.
+ */
+function buildMissingFileResponse(lang: 'fr' | 'ar', filename: string): NextResponse {
+  const isAr = lang === 'ar';
+  const title = isAr ? 'الوثيقة غير متوفرة' : 'Document indisponible';
+  const lines = isAr
+    ? [
+        'هذه الوثيقة لم تعد متوفرة في مخزن الملفات.',
+        '',
+        'ربما تكون قد فُقدت أثناء عملية صيانة على مساحة التخزين (22/09/2026).',
+        'للمساعدة، يُرجى التواصل مع المشرف (admin@examanet.com).',
+      ]
+    : [
+        "Ce document n'est plus disponible dans le stockage.",
+        '',
+        "Il a probablement été perdu lors d'une opération de maintenance du stockage (22/09/2026).",
+        "Pour aide, contactez l'administrateur (admin@examanet.com).",
+      ];
+
+  const html = `<!doctype html>
+<html lang="${isAr ? 'ar' : 'fr'}" dir="${isAr ? 'rtl' : 'ltr'}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>${title}</title>
+<style>
+  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f8fafc;color:#0f172a;
+       display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0;padding:24px}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:32px;max-width:560px;
+        box-shadow:0 10px 30px rgba(15,23,42,.08)}
+  h1{font-size:1.25rem;margin:0 0 12px}
+  p{line-height:1.7;margin:0 0 8px;color:#334155}
+  .file{font-size:.85rem;color:#64748b;word-break:break-all;margin-top:16px}
+  a{color:#0f766e}
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>${title}</h1>
+    ${lines.map((l) => (l ? `<p>${l}</p>` : '<p>&nbsp;</p>')).join('\n    ')}
+    <p class="file">${filename}</p>
+    <p><a href="/">${isAr ? 'العودة إلى الصفحة الرئيسية' : 'Retour à l\'accueil'}</a></p>
+  </main>
+</body>
+</html>`;
+
+  const headers = new Headers();
+  headers.set('Content-Type', 'text/html; charset=utf-8');
+  headers.set('Content-Language', isAr ? 'ar' : 'fr');
+  headers.set('Cache-Control', 'no-store');
+  headers.set('X-Document-Status', 'missing-in-storage');
+  headers.set('X-Robots-Tag', 'noindex, nofollow');
+
+  return new NextResponse(html, { status: 404, headers });
+}
+
+/**
  * Stream a file to the client.
  * Sets Content-Disposition so the browser downloads with the right filename.
  */
@@ -110,6 +172,7 @@ async function streamFileToClient(
   contentType = 'application/pdf',
   baseUrl?: string,
   r2Keys: string[] = [],
+  lang: 'fr' | 'ar' = 'fr',
 ): Promise<NextResponse> {
   const safeName = sanitizeFilename(filename);
 
@@ -135,14 +198,14 @@ async function streamFileToClient(
     });
 
     if (!upstream.ok) {
-      // 404 = le document n'existe plus dans le stockage (message utile),
+      // 404 = le document n'existe plus dans le stockage (page explicative),
       // le reste = erreur amont.
-      const status = upstream.status === 404 ? 404 : 502;
+      if (upstream.status === 404) {
+        return buildMissingFileResponse(lang, safeName);
+      }
       return new NextResponse(
-        upstream.status === 404
-          ? 'Fichier introuvable dans le stockage'
-          : `Upstream fetch failed: ${upstream.status} for ${sourceUrl}`,
-        { status }
+        `Upstream fetch failed: ${upstream.status} for ${sourceUrl}`,
+        { status: 502 }
       );
     }
 
@@ -243,21 +306,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     
     // Default: stream the PDF
     if (!resource.fileUrl) {
-      return NextResponse.json(
-        { error: 'Aucun fichier associé' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Aucun fichier associé' }, { status: 404 });
     }
-    
+
     // Track the view/download
     await incrementViewsAndDownloads(db, resource.id, req);
-    
+
+    const lang = (req.headers.get('accept-language') || '').toLowerCase().startsWith('ar') ? 'ar' : 'fr';
+
     return streamFileToClient(
       resource.fileUrl,
       buildFilename(resource, false),
       'application/pdf',
       req.nextUrl?.origin,
       r2KeyCandidates(resource),
+      lang,
     );
   } catch (e: any) {
     const elapsed = Date.now() - reqStart;
