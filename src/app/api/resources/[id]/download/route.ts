@@ -17,19 +17,51 @@ function sanitizeFilename(name: string): string {
 }
 
 /**
- * 2026-11-12 — Nom de fichier lisible par l'utilisateur.
+ * Nom de fichier STRICTEMENT ASCII.
  *
- * L'ancien `buildFilename` ne gardait que l'ASCII : pour un titre ARABE, le
- * nom téléchargé devenait « 3-------(2022-2023).pdf » (les caractères arabes
- * supprimés, seuls les chiffres et les tirets restaient).
+ * Chromium n'utilise le paramètre `filename` que si sa valeur est ASCII :
+ * « Série-...-8ème.pdf » (accents) est ignoré et le fichier est enregistré
+ * sous « download ». On translittère donc les accents (décomposition Unicode
+ * NFD) et on remplace tout le reste (arabe, etc.) par des espaces.
+ */
+function toAsciiName(value: string): string {
+  return value
+    .replace(/&[a-z]+;/gi, ' ')
+    .replace(/\u0153/g, 'oe')   // œ
+    .replace(/\u0152/g, 'ae')   // æ
+    .replace(/\u00c6/g, 'AE')   // Æ
+    .replace(/\u00d0/g, 'D')    // Ð
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')   // diacritiques
+    .replace(/[^\x20-\x7E]/g, ' ')     // tout le reste (arabe, etc.)
+    .replace(/["<>:/\\|?*]/g, '_')
+    .replace(/\s+/g, '-')
+    .trim()
+    .replace(/-+/g, '-')
+    .substring(0, 150);
+}
+
+/**
+ * 2026-11-12 — Nom du fichier téléchargé.
  *
- * On renvoie donc les DEUX formes :
- * - `ascii`  → fallback ASCII (paramètre `filename=`) ;
- * - `utf8`   → nom complet avec accents / arabe (paramètre `filename*=`,
- *               RFC 5987, prioritaire dans tous les navigateurs).
+ * CONTRAINTE MAJEURE (mesurée sur Chromium) : Chromium ACCEPTE
+ * `Content-Disposition: ...; filename*=UTF-8''<nom>` mais uniquement si la
+ * valeur décodée est ASCII. Sur un nom non ASCII (titre arabe), il REJETTE
+ * le paramètre `filename*` ET ne retombe PAS sur `filename` → le fichier est
+ * enregistré sous le nom générique « download » (le dernier segment de l'URL).
+ * Firefox/Safari, eux, gèrent le UTF-8 correctement.
+ *
+ * => on n'envoie QUE `filename="..."` en ASCII : comportement identique et
+ * stable sur tous les navigateurs.
+ *
+ * Nom ASCII retenu :
+ * - si le titre garde au moins 3 caractères alphanumériques (titres FR/EN)
+ *   → le titre nettoyé (« Serie-dexercices-...pdf ») ;
+ * - sinon (titre arabe : il ne reste que chiffres et tirets)
+ *   → « document-<numericId>.pdf », stable et sans caractère parasite.
  */
 function buildFilenameParts(
-  resource: { title: string; originalFileName?: string | null },
+  resource: { title: string; numericId?: number | null; originalFileName?: string | null },
   original: boolean,
 ): { ascii: string; utf8: string } {
   if (original && resource.originalFileName) {
@@ -37,16 +69,17 @@ function buildFilenameParts(
     return { ascii: raw, utf8: raw };
   }
 
-  const cleanTitle = resource.title
-    .replace(/&[a-z]+;/gi, ' ')
-    .replace(/[^a-zA-Z0-9À-ÿ\s\-_()]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .substring(0, 150);
-  const ascii = `${cleanTitle || 'document'}.pdf`;
+  const cleanTitle = toAsciiName(resource.title);
 
-  // Version « humane » : on garde tout sauf les caractères interdits par les
-  // systèmes de fichiers et les caractères de contrôle.
+  // Un titre non latin ne laisse que ponctuation et chiffres (« 3--(2022) ») :
+  // on préfère alors un nom neutre et stable. On compte les LETTRES
+  // (et non les chiffres) : « 3--(2022-2023) » n'est pas un titre lisible.
+  const meaningful = /[a-zA-Z]{3,}/.test(cleanTitle);
+  const ascii = meaningful
+    ? `${cleanTitle}.pdf`
+    : `document-${resource.numericId ?? 'fichier'}.pdf`;
+
+  // Version « lisible » conservée pour l'API (POST) et l'affichage côté site.
   const pretty = resource.title
     .replace(/&[a-z]+;/gi, ' ')
     .replace(/[\x00-\x1F\x7F]/g, '')
@@ -59,11 +92,14 @@ function buildFilenameParts(
   return { ascii, utf8 };
 }
 
-/** En-tête Content-Disposition : fallback ASCII + nom UTF-8 (RFC 5987). */
-function contentDisposition(ascii: string, utf8: string): string {
-  const base = `attachment; filename="${ascii}"`;
-  if (!utf8 || utf8 === ascii) return base;
-  return `${base}; filename*=UTF-8''${encodeURIComponent(utf8)}`;
+/**
+ * En-tête Content-Disposition.
+ *
+ * Volontairement SANS `filename*` : Chromium perdrait le nom complet sur un
+ * titre non ASCII (cf. commentaire de buildFilenameParts).
+ */
+function contentDisposition(ascii: string): string {
+  return `attachment; filename="${ascii}"`;
 }
 
 /**
@@ -209,7 +245,7 @@ async function streamFileToClient(
   disposition?: string,
 ): Promise<NextResponse> {
   const safeName = sanitizeFilename(filename);
-  const contentDispositionHeader = disposition || contentDisposition(safeName, safeName);
+  const contentDispositionHeader = disposition || contentDisposition(safeName);
 
   // 1) Lecture directe dans R2 (le cas de 100 % des ressources actuelles).
   for (const key of r2Keys) {
@@ -357,7 +393,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       req.nextUrl?.origin,
       r2KeyCandidates(resource),
       lang,
-      contentDisposition(nameParts.ascii, nameParts.utf8),
+      contentDisposition(nameParts.ascii),
     );
   } catch (e: any) {
     const elapsed = Date.now() - reqStart;
