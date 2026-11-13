@@ -82,21 +82,45 @@ Statut **404**, `Content-Type: text/html; charset=utf-8`, `Content-Language: fr|
 - `scripts/verify-download-button.cjs` → **clic réel** sur le bouton bleu dans Chromium : téléchargement déclenché, fichier nommé `document-3562.pdf`.
 - En-têtes observés : `content-type: application/pdf`, `content-disposition: attachment; filename="document-3562.pdf"`, `x-storage-backend: r2`.
 
-## 6. Restant ouvert — 574 ressources sans objet R2
+## 6. Les 574 « orphelines » — restaurées le 2026-11-13 (état final : 1 seule)
 
-Après l'incident du 22/09/2026, **574 ressources PUBLISHED (3,72 %)** pointent vers un objet R2 **inexistant** :
-- `TeacherFile.isOriginalLost` (1 954 lignes) ne couvre que les `.doc/.docx` — le PDF n'était **pas** marqué dans la base.
-- Ces ressources restent listées/indexées mais leur bouton renvoie la page 404 FR/AR.
+### 6.1 Deux ensembles distincts (le point qui prêtait à confusion)
 
-Répartition exacte (recalculée le 2026-11-12 sur les 15 421 PUBLISHED vs les 18 465 objets R2) :
+| | Ressources | Ce qui manque | Qui est concerné |
+|---|---|---|---|
+| **Original prof perdu** | **1 941** | le `.doc` / `.docx` original du prof (`TeacherFile.isOriginalLost = 1`) | **profils prof/admin uniquement** — le bouton « Télécharger l'original » est rendu seulement si `isTeacher` (`src/components/resources/ResourceActions.tsx:220`) ; leur **PDF public est intact** |
+| **PDF public absent de R2** | **574** | le **PDF** lui-même (clé absente du bucket `examanet-pdf-prod`) | **tout le monde** — c'est le bouton bleu « Télécharger PDF » |
 
-| Axe | Répartition |
+Chevauchement entre les deux ensembles : **3 ressources** seulement. Les 574 ne sont donc *pas* les fichiers `.doc/.docx` supprimés.
+
+### 6.2 Les 574 n'étaient pas perdues : le store Vercel Blob est toujours vivant
+
+Le store Vercel Blob d'origine (`kmy1h6us8l7bg7bg.public.blob.vercel-storage.com`) **n'a jamais été supprimé** et sert toujours les objets sous le **chemin exact** attendu par la route (`teacher-library/<id>/imported/<nom>.pdf`) :
+
+- recherche par nom de fichier / suffixe / casse dans les 18 465 objets R2 → **0 correspondance** (les objets avaient bien disparu de R2) ;
+- recherche dans les 5 autres buckets du compte (`examanet-architecture`, `examanet-cache`, `examanet-poc-cache`, `examanet-text-prod`, `primaireprivee-pdfs`) → **0 correspondance** ;
+- **HEAD sur l'URL Vercel construite avec la clé R2 → 573/574 répondent 200** (448,5 Mo).
+
+Restauration : `scripts/restore-orphan-pdfs-from-vercel.mjs` (S3 SDK → R2, clé identique, `Content-Type: application/pdf`).
+Sûreté : **HEAD R2 avant chaque écriture** ⇒ on n'écrit que sur des clés **absentes** (aucune donnée existante écrasée). Dry-run : 573 ok / 0 échec, puis `--apply` : **573 restaurés**, 448,5 Mo. Bucket après : **19 038 objets** (18 465 + 573).
+
+**Aucun code applicatif n'a été modifié** : la route lit déjà la bonne clé, le bouton repart tout seul.
+
+### 6.3 État final vérifié en prod
+
+| Vérification | Résultat |
 |---|---|
-| **Classe** | 4ᵉ 173 · 7ᵉ 117 · 9ᵉ 86 · 8ᵉ 84 · 3ᵉ 63 · 1ʳᵉ 31 · 2ᵉ 20 → **collège 287 / lycée 287** (moitié-moitié) |
-| **Matière** | maths 255 · technologie 142 · physique 76 · SVT 23 · HG 21 · arabe 20 · français 14 · anglais 6 · musique 6 · informatique 4 · islamique 3 · éco 2 · théâtre 1 · civique 1 |
-| **Préfixe de clé** | `teacher-library/` 480 · `resources/` 73 · clés plates legacy (`NEW_*`, `OLD_*`, `DC2_*`, `DS2_*`) 21 |
+| Audit D1 ↔ R2 (15 421 PUBLISHED vs 19 038 objets) | **1 seule ressource sans objet** (0,01 %) au lieu de 574 |
+| 25 ressources restaurées téléchargées en prod | **25/25** en 200 + `application/pdf` + magic `%PDF` |
+| Échantillon D1 aléatoire (30) | **29/30** (l'échec = la ressource 93, réellement disparue) |
+| Ressources 1457 / 5547 / 1869 (anciennement 404) | **200 + PDF** |
 
-Détail ligne par ligne (numericId, titre, classe, matière, clé R2 attendue) : `output/orphan-resources-2026-11-12.csv`
-(CSV RFC 4180 avec BOM UTF-8 → s'ouvre directement dans Excel avec l'arabe correct).
+**Reste 1 ressource** (`numericId 93`, 3AS maths, `teacher-library/cmqme0ho00004si0lgal3c943/...`) : absente de R2 **et** en 404 sur Vercel ⇒ définitivement perdue. Elle affiche la page 404 FR/AR.
 
-**Décision attendue** : (A) dépublier les 574 (disparition de l'URL, perte de SEO), (B) les laisser en ligne avec la page 404 explicative (recommandé : l'URL reste utile pour le référencement, l'utilisateur comprend), (C) les garder mais les passer en `noindex`.
+### 6.4 Le vrai risque à refermer
+
+La copie R2 avait dérivé du store Vercel (incident du 22/09/2026) et **rien ne l'a signalé pendant ~3 mois** : le store Vercel est la source de vérité off-site, R2 n'est qu'un miroir.
+Le script `scripts/backup/blob-sync-r2.mjs` existe mais **n'est jamais exécuté automatiquement** (aucun workflow planifié). Le resync du 24/08/2026 (`backups/r2-inventory-2026-08-24/resync.log`) avait déjà vu **1 340 fichiers manquants** — tous en échec, donc non traités.
+→ **Recommandation** : un workflow planifié (ex. quotidien) qui re-synchronise Vercel → R2 et **alerte** dès qu'un objet manque. C'est ce qui aurait évité 574 téléchargements cassés.
+
+**Décision user (2026-11-13)** : ne rien dépublier — l'état « en ligne avec page 404 explicative » est conservé pour le cas résiduel (1 ressource).

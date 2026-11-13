@@ -14,6 +14,8 @@ ACCOUNT = "59cffdeaadf3809cc3d2039c43f836e0"
 BUCKET = "examanet-pdf-prod"
 DB_ID = "22ad2e7f-1692-486e-9131-d6c4062012e1"
 TOKEN = os.environ["CLOUDFLARE_API_TOKEN"]
+# Sortie horodatée (l'audit est rejouable : ne pas écraser l'historique)
+OUT_CSV = "/workspace/edutunisie/output/orphan-resources-%s.csv" % __import__("datetime").datetime.now().strftime("%Y-%m-%d")
 
 # --- 1. Toutes les cles R2 ----------------------------------------------------
 r2_keys = set()
@@ -89,12 +91,12 @@ print("Par matière :", dict(sorted(by_subject.items(), key=lambda kv: -kv[1])))
 # CSV réel (RFC 4180, séparateur virgule, BOM UTF-8 pour Excel + arabe)
 import csv
 
-with open("/workspace/edutunisie/output/orphan-resources-2026-11-12.csv", "w", newline="", encoding="utf-8-sig") as f:
+with open(OUT_CSV, "w", newline="", encoding="utf-8-sig") as f:
     w = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
     w.writerow(["numericId", "title", "classSlug", "subjectSlug", "r2Key"])
     for nid, title, key, cls, subj in missing:
         w.writerow([nid, (title or "").replace("\t", " "), cls, subj, key])
-print("CSV : output/orphan-resources-2026-11-12.csv")
+print("CSV :", OUT_CSV)
 
 for m in missing[:10]:
     print("  -", m[0], "|", (m[1] or "")[:60], "|", m[2][:90])
