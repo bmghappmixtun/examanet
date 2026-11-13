@@ -30,7 +30,8 @@ async function searchResources(db: any, q: string, limit: number): Promise<Sugge
   const trimmed = q.trim();
   if (!trimmed) return [];
 
-  const like = `%${trimmed}%`;
+  // 2026-11-13: D1 refuses LIKE patterns over 48 BYTES ("pattern too complex"),
+  // so a ~24-char Arabic query threw and killed suggest. instr() = same match.
   // 2026-09-05: also filter isHidden=0 to hide unpublished resources
   // (DO NOT put JS-style // comments inside the SQL template literal — SQLite doesn't understand them)
   const r = await db.prepare(
@@ -41,11 +42,11 @@ async function searchResources(db: any, q: string, limit: number): Promise<Sugge
       'LEFT JOIN `Subject` s ON r.subjectId = s.id',
       'LEFT JOIN `Class` c ON r.classId = c.id',
       "WHERE r.status = 'PUBLISHED' AND r.isHidden = 0",
-      '  AND (r.title LIKE ? OR r.description LIKE ? OR r.summary LIKE ?)',
+      '  AND (instr(lower(r.title), lower(?)) > 0 OR instr(lower(r.description), lower(?)) > 0 OR instr(lower(r.summary), lower(?)) > 0)',
       'ORDER BY r.viewsCount DESC',
       'LIMIT ?',
     ].join(' '),
-  ).bind(like, like, like, limit).all();
+  ).bind(trimmed, trimmed, trimmed, limit).all();
   
   return (r?.results || []).map((row: any) => ({
     type: 'resource' as SuggestType,
@@ -62,14 +63,15 @@ async function searchTeachers(db: any, q: string, limit: number): Promise<Sugges
   const trimmed = q.trim();
   if (!trimmed) return [];
 
-  const like = `%${trimmed}%`;
+  // 2026-11-13: D1 refuses LIKE patterns over 48 BYTES ("pattern too complex"),
+  // so a ~24-char Arabic query threw and killed suggest. instr() = same match.
   const r = await db.prepare(`
     SELECT id, numericId, slug, firstName, lastName, schoolName
     FROM User
     WHERE role = 'TEACHER' AND status = 'ACTIVE'
-      AND (LOWER(firstName) LIKE LOWER(?) OR LOWER(lastName) LIKE LOWER(?) OR LOWER(IFNULL(schoolName, '')) LIKE LOWER(?))
+      AND (instr(lower(firstName), lower(?)) > 0 OR instr(lower(lastName), lower(?)) > 0 OR instr(lower(IFNULL(schoolName, '')), lower(?)) > 0)
     LIMIT ?
-  `).bind(like, like, like, limit).all();
+  `).bind(trimmed, trimmed, trimmed, limit).all();
   
   return (r?.results || []).map((row: any) => ({
     type: 'teacher' as SuggestType,
@@ -86,14 +88,15 @@ async function searchSubjects(db: any, q: string, limit: number): Promise<Sugges
   const trimmed = q.trim().toLowerCase();
   if (!trimmed) return [];
   
-  const like = `%${trimmed}%`;
+  // 2026-11-13: D1 refuses LIKE patterns over 48 BYTES ("pattern too complex"),
+  // so a ~24-char Arabic query threw and killed suggest. instr() = same match.
   const r = await db.prepare(`
     SELECT id, slug, nameFr, nameAr
     FROM Subject
-    WHERE LOWER(nameFr) LIKE ? OR LOWER(nameAr) LIKE ?
+    WHERE instr(lower(nameFr), lower(?)) > 0 OR instr(lower(nameAr), lower(?)) > 0
     ORDER BY nameFr ASC
     LIMIT ?
-  `).bind(like, like, limit).all();
+  `).bind(trimmed, trimmed, limit).all();
   
   return (r?.results || []).map((row: any) => ({
     type: 'subject' as SuggestType,
