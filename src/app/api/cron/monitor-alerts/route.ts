@@ -13,7 +13,9 @@
  * 
  * Thresholds (configurable):
  * - Error rate > 10% (5xx responses / total)
- * - P95 latency > 1000ms
+ * - P95 latency > 2500ms, avec au moins 20 échantillons ET au moins 2 requêtes
+ *   lentes dans la fenêtre (2026-11-14 : un seul rendu à froid de /fr à 1,1 s
+ *   déclenchait le mail, 2 à 8 fois par jour, sur un site à 0 % d'erreur)
  * 
  * Storage: Uses CF Workers KV (examanet-prod-app-cache namespace).
  * Key: "metric:{timestamp}:{path}" with { durationMs, statusCode }
@@ -30,7 +32,21 @@ export const runtime = 'nodejs';
 
 // Alert thresholds
 const ERROR_RATE_THRESHOLD = 0.10; // 10%
-const P95_THRESHOLD_MS = 1000;
+// 2026-11-14 — recalibrage. Ce que la métrique mesure : la DURÉE CÔTÉ SERVEUR
+// (worker-cron.js enregistre `Date.now() - startTime`). Deux régimes très
+// différents se mélangent dans la même fenêtre :
+//   • hit du cache edge (s-maxage)  → ~0 ms
+//   • rendu à froid (SSR + D1)       → 700-1600 ms sur /fr
+// Avec 12 échantillons, `latencies[floor(12*0.95)]` = index 11 = le MAX :
+// le seuil à 1000 ms se déclenchait donc sur UN SEUL rendu à froid de 1,1 s.
+// Résultat : 2 à 8 mails par jour depuis la remise en route des crons
+// (2026-11-10, b51d64c9), sur un site qui répondait 200 à 100 % des requêtes.
+// Seuils recalibrés : 2500 ms (le rendu à froid de /fr est ~1,1 s, c'est la
+// normale) + 20 échantillons minimum + au moins 2 requêtes lentes (un seul
+// outlier ne déclenche plus rien).
+const P95_THRESHOLD_MS = 2500;
+const MIN_SAMPLES = 20;
+const MIN_SLOW_SAMPLES = 2;
 const ALERT_COOLDOWN_MS = 30 * 60 * 1000; // 30 min
 const WINDOW_MS = 5 * 60 * 1000; // 5 min
 const ENDPOINTS_TO_MONITOR = [
@@ -86,18 +102,20 @@ export async function GET(req: NextRequest) {
     const alerts: any[] = [];
     for (const [path, s] of stats.entries()) {
       if (!ENDPOINTS_TO_MONITOR.some(ep => path === ep || path.startsWith(ep))) continue;
-      if (s.total < 10) continue; // Need at least 10 samples to be meaningful
+      if (s.total < MIN_SAMPLES) continue; // fenêtre trop petite pour être signifiante
       
       const errorRate = s.errors / s.total;
       s.latencies.sort((a, b) => a - b);
+      const p50 = s.latencies[Math.floor(s.latencies.length * 0.5)] || 0;
       const p95 = s.latencies[Math.floor(s.latencies.length * 0.95)] || 0;
+      const slowCount = s.latencies.filter(d => d > P95_THRESHOLD_MS).length;
       
       const issues: string[] = [];
       if (errorRate > ERROR_RATE_THRESHOLD) {
         issues.push(`Error rate ${(errorRate * 100).toFixed(1)}% > ${ERROR_RATE_THRESHOLD * 100}% (${s.errors}/${s.total})`);
       }
-      if (p95 > P95_THRESHOLD_MS) {
-        issues.push(`P95 ${p95}ms > ${P95_THRESHOLD_MS}ms`);
+      if (p95 > P95_THRESHOLD_MS && slowCount >= MIN_SLOW_SAMPLES) {
+        issues.push(`P95 ${p95}ms > ${P95_THRESHOLD_MS}ms (${slowCount}/${s.total} requêtes lentes, p50 ${p50}ms)`);
       }
       
       if (issues.length > 0) {
@@ -112,7 +130,9 @@ export async function GET(req: NextRequest) {
             issues,
             total: s.total,
             errors: s.errors,
+            p50,
             p95,
+            slowCount,
             errorRate: (errorRate * 100).toFixed(1) + '%',
           });
           // Set cooldown
@@ -204,7 +224,7 @@ function formatAlertEmail(alerts: any[]): string {
       <td style="padding: 8px; border: 1px solid #ddd;"><code>${a.path}</code></td>
       <td style="padding: 8px; border: 1px solid #ddd;">${a.total} requests</td>
       <td style="padding: 8px; border: 1px solid #ddd; color: ${parseFloat(a.errorRate) > 20 ? '#dc2626' : '#f59e0b'};">${a.errorRate} errors</td>
-      <td style="padding: 8px; border: 1px solid #ddd; color: ${a.p95 > 2000 ? '#dc2626' : '#f59e0b'};">${a.p95}ms P95</td>
+      <td style="padding: 8px; border: 1px solid #ddd; color: ${a.p95 > 2000 ? '#dc2626' : '#f59e0b'};">${a.p95}ms P95 (p50 ${a.p50 ?? '-'}ms)</td>
     </tr>
     <tr>
       <td colspan="4" style="padding: 8px; border: 1px solid #ddd; color: #666;">${a.issues.join(' • ')}</td>
