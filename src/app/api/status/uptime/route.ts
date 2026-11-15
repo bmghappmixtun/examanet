@@ -42,17 +42,29 @@ const CACHE_TTL_SECONDS = 60;
 const FETCH_TIMEOUT_MS = 15_000;
 const UPTIMEROBOT_API = 'https://api.uptimerobot.com/v3/monitors';
 
+/**
+ * Base des cibles contrôlées = l'environnement qui sert cette route.
+ * `NEXT_PUBLIC_SITE_URL` est figé au build et vaut
+ *   prod → https://examanet.com
+ *   dev  → https://examanet-dev.examanet-poc.workers.dev
+ * (wrangler.prod.jsonc / wrangler.dev.jsonc) → chaque déploiement surveille
+ * donc sa propre chaîne (DNS → edge → worker → D1 → rendu).
+ */
+const SITE_BASE = (
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com'
+).replace(/\/+$/, '');
+
 /** Cibles contrôlées en interne (vocation interne). */
 const INTERNAL_TARGETS = [
   {
     name: 'homepage',
-    url: 'https://examanet.com/fr',
+    url: `${SITE_BASE}/fr`,
     method: 'HEAD',
     cacheBust: true,
   },
   {
     name: 'api-health',
-    url: 'https://examanet.com/api/health',
+    url: `${SITE_BASE}/api/health`,
     method: 'GET',
     cacheBust: false,
   },
