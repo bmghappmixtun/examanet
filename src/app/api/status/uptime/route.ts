@@ -30,45 +30,64 @@
  * elle n'expose que des statuts et des temps de réponse.
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getSecret } from '@/lib/cf-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const CACHE_KEY = 'uptime:status:v1';
+const CACHE_KEY_PREFIX = 'uptime:status:v1';
 const CACHE_TTL_SECONDS = 60;
 const FETCH_TIMEOUT_MS = 15_000;
 const UPTIMEROBOT_API = 'https://api.uptimerobot.com/v3/monitors';
 
 /**
- * Base des cibles contrôlées = l'environnement qui sert cette route.
- * `NEXT_PUBLIC_SITE_URL` est figé au build et vaut
- *   prod → https://examanet.com
- *   dev  → https://examanet-dev.examanet-poc.workers.dev
- * (wrangler.prod.jsonc / wrangler.dev.jsonc) → chaque déploiement surveille
- * donc sa propre chaîne (DNS → edge → worker → D1 → rendu).
+ * Origines autorisées à être surveillées (le worker ne va pas chercher
+ * n'importe quelle URL passée en Host — garde-fou anti-SSRF).
  */
-const SITE_BASE = (
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com'
-).replace(/\/+$/, '');
+const ALLOWED_ORIGINS = [
+  'https://examanet.com',
+  'https://www.examanet.com',
+  'https://examanet-prod.examanet-poc.workers.dev',
+  'https://examanet-dev.examanet-poc.workers.dev',
+  'https://examanet-poc.examanet-poc.workers.dev',
+];
+
+const DEFAULT_ORIGIN = 'https://examanet.com';
+
+/**
+ * Base des cibles contrôlées = l'origine par laquelle la route est appelée
+ * (l'agent interroge le worker de prod, donc c'est la prod qui est contrôlée ;
+ * un appel sur le worker de dev contrôle le dev). Si l'origine n'est pas
+ * dans la liste blanche → origine par défaut (prod).
+ *
+ * NOTE : `NEXT_PUBLIC_SITE_URL` est figé au BUILD et n'est pas défini dans
+ * l'environnement de build de la CI → inutile ici.
+ */
+function resolveSiteBase(requestOrigin?: string) {
+  if (!requestOrigin) return DEFAULT_ORIGIN;
+  const clean = requestOrigin.replace(/\/+$/, '');
+  return ALLOWED_ORIGINS.includes(clean) ? clean : DEFAULT_ORIGIN;
+}
 
 /** Cibles contrôlées en interne (vocation interne). */
-const INTERNAL_TARGETS = [
-  {
-    name: 'homepage',
-    url: `${SITE_BASE}/fr`,
-    method: 'HEAD',
-    cacheBust: true,
-  },
-  {
-    name: 'api-health',
-    url: `${SITE_BASE}/api/health`,
-    method: 'GET',
-    cacheBust: false,
-  },
-];
+function buildTargets(siteBase: string) {
+  return [
+    {
+      name: 'homepage',
+      url: `${siteBase}/fr`,
+      method: 'HEAD',
+      cacheBust: true,
+    },
+    {
+      name: 'api-health',
+      url: `${siteBase}/api/health`,
+      method: 'GET',
+      cacheBust: false,
+    },
+  ];
+}
 
 async function checkTarget(target) {
   const started = Date.now();
@@ -159,7 +178,10 @@ async function checkUptimeRobot(apiKey) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const siteBase = resolveSiteBase(req.nextUrl?.origin || req.url);
+  const CACHE_KEY = `${CACHE_KEY_PREFIX}:${siteBase.replace(/[^a-z0-9]+/gi, '_')}`;
+
   const ctx = await getCloudflareContext({ async: true });
   const kv = (ctx as any).env?.APP_CACHE;
 
@@ -179,7 +201,7 @@ export async function GET() {
     }
   }
 
-  const checks = await Promise.all(INTERNAL_TARGETS.map(checkTarget));
+  const checks = await Promise.all(buildTargets(siteBase).map(checkTarget));
 
   let uptimerobot = { configured: false };
   const apiKey = await getSecret('UPTIMEROBOT_API_KEY');
@@ -194,6 +216,7 @@ export async function GET() {
     ok: internalOk && externalOk,
     checkedAt: new Date().toISOString(),
     source: uptimerobot.configured ? 'worker+uptimerobot' : 'worker',
+    siteBase,
     checks,
     uptimerobot,
   };
