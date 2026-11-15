@@ -109,6 +109,47 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
+      - name: Smoke test prod (rendu à froid)
+        if: github.ref == 'refs/heads/main'
+        # 2026-11-15 : après le 7.05 (props fonction serveur→client ⇒ 500 sur
+        # TOUTES les pages), le cache ISR a masqué le bug pendant ~7 h avant
+        # qu'une invalidation ne révèle des 500 partout. Rien ne vérifiait que
+        # le site répondait après un déploiement.
+        # Ce smoke test force un rendu à FROID (cache-buster ?ci=) sur le
+        # domaine public ET sur le worker direct, et échoue la CI si une page
+        # renvoie autre chose que 200 ou contient `__next_error__`.
+        run: |
+          set -u
+          fail=0
+          check() {
+            url="$1"; label="$2"; code="000"
+            for attempt in 1 2 3; do
+              code=$(curl -sS -o /tmp/smoke.html -w "%{http_code}" --max-time 45 "$url" || echo 000)
+              if [ "$code" = "200" ] && ! grep -q "__next_error__" /tmp/smoke.html; then
+                echo "✅ $label → 200"
+                return 0
+              fi
+              echo "⚠️  $label → HTTP $code (tentative $attempt/3)"
+              sleep 12
+            done
+            echo "❌ $label KO (HTTP $code)"
+            head -c 300 /tmp/smoke.html 2>/dev/null || true
+            echo
+            return 1
+          }
+          for path in /fr /ar /fr/ressources /fr/matieres; do
+            check "https://examanet.com${path}?ci=${GITHUB_RUN_ID}" "examanet.com${path}" || fail=1
+            check "https://examanet-prod.examanet-poc.workers.dev${path}?ci=${GITHUB_RUN_ID}" "worker${path}" || fail=1
+          done
+          health=$(curl -sS --max-time 30 "https://examanet.com/api/health" || echo "")
+          echo "health: ${health:0:140}"
+          echo "$health" | grep -q '"ok":true' || { echo "❌ /api/health KO"; fail=1; }
+          if [ "$fail" != "0" ]; then
+            echo "::error::Site en erreur après déploiement (voir ci-dessus)."
+            exit 1
+          fi
+          echo "✅ Smoke test prod OK"
+
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
