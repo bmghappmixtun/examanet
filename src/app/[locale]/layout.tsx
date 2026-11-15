@@ -4,6 +4,7 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { hasLocale } from 'next-intl';
+import { onError, getMessageFallback } from '@/i18n/error-handlers';
 import { unstable_cache as nextCache } from 'next/cache';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -176,7 +177,12 @@ export default async function LocaleLayout({ children, params }: Props) {
   // mutates the URL but doesn't re-render the root layout).
   return (
     <>
-      <NextIntlClientProvider locale={locale} messages={messages}>
+      <NextIntlClientProvider
+        locale={locale}
+        messages={messages}
+        onError={onError}
+        getMessageFallback={getMessageFallback}
+      >
         {/* <SyncLocaleAttrs /> */}
         <Header />
         <main className="min-h-screen">

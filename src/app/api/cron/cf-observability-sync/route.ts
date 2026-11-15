@@ -140,6 +140,14 @@ export async function GET(req: NextRequest) {
         const ts = ev.timestamp ? Date.parse(ev.timestamp) : now;
         const createdAt = Number.isFinite(ts) ? ts : now;
 
+        // 2026-11-15 : le chemin de la requête n'est PAS dans `source` mais
+        // dans `$workers.event.request` (constat sur les erreurs next-intl :
+        // 240+/jour avec requestPath = null, donc impossible de savoir quelle
+        // page.Positional va le chercher au bon endroit.
+        const reqInfo = (ev as any)['$workers']?.event?.request ?? {};
+        const requestPath = src.requestPath || reqInfo.path || null;
+        const requestMethod = src.requestMethod || reqInfo.method || null;
+
         // Generate stable externalId for dedup
         const requestId = src.requestId || src.ipAddress || '';
         const externalId = await hashString(createdAt + '|' + requestId + '|' + message.slice(0, 200));
@@ -153,8 +161,8 @@ export async function GET(req: NextRequest) {
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           genId(),
           src.requestId || null,
-          src.requestPath || null,
-          src.requestMethod || null,
+          requestPath,
+          requestMethod,
           src.responseStatusCode || null,
           src.userAgent || null,
           src.ipAddress || null,
