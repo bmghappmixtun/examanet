@@ -152,3 +152,82 @@ React props    : 2 événements (préexistants depuis le 11/11, ~2/semaine)
    à planifier.
 4. Workflow planifié Vercel → R2 (quotidien) toujours en attente de « go ».
 
+---
+
+# 🚨 OUTAGE 2026-11-15 21:04 → 21:16 UTC — « Event handlers cannot be passed to Client Component props »
+
+> **Cause = une régression de l'intervention ci-dessus** (commit `bce06218`,
+> prod **7.05**). Pas un bug « préexistant » comme je l'avais d'abord cru.
+
+## Ce qui s'est passé
+
+`src/app/[locale]/layout.tsx` est un **composant serveur** ; or j'y ai passé
+`onError` et `getMessageFallback` (des **fonctions**) à
+`<NextIntlClientProvider>`, qui est un **composant client**. Les fonctions ne
+sont pas sérialisables dans le payload RSC → React lève :
+
+```
+Error: Event handlers cannot be passed to Client Component props.
+  {formats: undefined, locale: "fr", messages: ..., now: ...,
+   onError: function i, getMessageFallback: ..., children: ...}
+                              ^^^^^^^^^^
+```
+
+Le trait d'union pointe le coupable : le prop `onError`.
+
+**Effet** : 500 sur **toutes** les pages `/fr/*` et `/ar/*` (le layout est
+commun à tout le segment). L'API, elle, continuait de répondre 200 — d'où le
+diagnostic « le worker est vivant, le rendu est cassé ».
+
+## Pourquoi ça n'a pas explosé à l'instant du déploiement
+
+Les pages étaient encore servies par le **cache ISR** (HTML rendu avant le
+7.05). L'erreur n'est apparue qu'à la **premier rendu à froid** après
+l'invalidation du cache (par le cron de revalidation) — ~7 h plus tard.
+C'est exactement le scénario que la nouvelle **garde-fou CI** couvre.
+
+## Correctif
+
+- `src/components/i18n/IntlClientProvider.tsx` (nouveau) : wrapper **client**
+  qui porte les handlers (log seul, **jamais** de throw côté client).
+- `src/app/[locale]/layout.tsx` : plus aucune fonction passée au provider.
+- Le comportement strict (throw en dev) reste côté **serveur**, via
+  `getRequestConfig` (`src/i18n/request.ts`), où les fonctions sont légales.
+
+## Déploiements de la séquence
+
+| version | commit | contenu |
+|---|---|---|
+| 7.05 | `bce06218` | **régression** (props fonction serveur → client) |
+| 7.06 | `5a7db52b` | docs (déclenche le 500 à froid) |
+| **7.07** | `93940cec` | **hotfix** : wrapper client → site rétabli (21:15:47 UTC) |
+| **7.08** | `3741caf0` | **garde-fou CI** : smoke test prod post-déploiement |
+
+## Garde-fou ajouté (`.github/workflows/deploy.yml`)
+
+Étape « **Smoke test prod (rendu à froid)** » : après chaque déploiement,
+8 requêtes (domaine public + worker direct, 4 pages) avec cache-buster
+`?ci=<run_id>`, contrôle du code HTTP **et** de l'absence de
+`__next_error__` dans le HTML, plus `/api/health`. **Un 500 ⇒ CI rouge.**
+Validé au déploiement 7.08 : étape verte, 8/8 en 200.
+
+## Vérifications post-rétablissement
+
+- `/fr`, `/ar`, `/fr/ressources`, `/fr/matieres`, `/fr/classes`,
+  `/fr/classes/1ere-secondaire`, `/fr/concours-9eme-tunisie`,
+  `/fr/professeurs/[id]`, `/fr/bac/archives` : **200**, aucun `__next_error__`.
+- `/api/health` : `ok:true`, D1 OK (15 422 ressources).
+- `wrangler tail examanet-prod` sur 17 événements : **0 erreur**.
+- Le correctif i18n tient toujours : `/fr/concours-9eme-tunisie` affiche le
+  vrai texte, **0 clé brute** dans le HTML.
+
+## Règles à retenir
+
+1. **Jamais de fonction d'un composant serveur vers un composant client.**
+   Passer par un wrapper `'use client'`.
+2. **Après chaque déploiement, vérifier un rendu à FROID** : le cache peut
+   masquer un bug pendant des heures.
+3. **Un 500 sur toutes les pages d'un segment = penser « props RSC » en
+   premier**, pas « bug préexistant ».
+
+
