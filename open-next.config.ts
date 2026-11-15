@@ -1,6 +1,11 @@
 import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 import r2IncrementalCache from "@opennextjs/cloudflare/overrides/incremental-cache/r2-incremental-cache";
-import kvNextTagCache from "@opennextjs/cloudflare/overrides/tag-cache/kv-next-tag-cache";
+// 2026-11-15 : override maison du cache de tags.
+// L'implémentation d'OpenNext (KV) fait un bulk-get de TOUTES les clés d'un
+// coup : l'API Workers KV limite à 100 clés par appel et renvoie un 400
+// au-delà → exception avalée (message invisible) → cache de tags inopérant
+// → rendus à froid en boucle. Voir open-next/kv-next-tag-cache.ts.
+import kvNextTagCache from "./open-next/kv-next-tag-cache";
 
 export default defineCloudflareConfig({
   incrementalCache: r2IncrementalCache,
