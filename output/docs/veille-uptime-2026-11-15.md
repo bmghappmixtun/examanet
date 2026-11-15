@@ -9,7 +9,7 @@
 |---|--------|---------|---------|------|
 | 1 | **UptimeRobot** (externe, multi-régions) | site HS, DNS, edge CF global, workers.dev | ~5-10 min | 0 (free, 50 moniteurs) |
 | 2 | **`monitor-alerts`** (notre cron 5 min) | taux d'erreur > 10 % sur les endpoints surveillés | ~5 min | 0 (Resend déjà en place) |
-| 3 | **Agent** (tâche planifiée 15 min) | tout ce qui échappe à 1 et 2 + **diagnostic** + correctif | ≤ 15 min | ~32 k tokens / passage |
+| 3 | **Agent** (tâche planifiée horaire) | tout ce qui échappe à 1 et 2 + **diagnostic + correctif + déploiement** | ≤ 1 h | ~33 k tokens / passage |
 
 Les couches 1 et 2 s alertent **l'email** (`boutiti.mehdi@gmail.com`).
 La couche 3 alerte **le user dans la conversation** et lance le diagnostic.
@@ -63,17 +63,28 @@ continue d'envoyer ses propres emails.
 curl -s https://examanet.com/api/status/uptime | jq
 ```
 
-## 3. Tâche planifiée de l'agent
+## 3. Tâche planifiée de l'agent — horaire, correctiveur
 
-- Nom : **Veille uptime Examanet** — `*/15 * * * *` (Europe/Paris)
-- task_id : `463774934184119`
+- Nom : **Veille uptime Examanet** — `0 * * * *` (Europe/Paris)
+- task_id : `463774934184119` · modèle **MiniMax-M3** · projet 691
 - Mode : conversation dédiée (`sessionId: fixed`) → les incidents s'y cumulent.
-- Comportement : up → une ligne ; down → tail worker + Observability + D1
-  `CloudflareLog` + registre `DeploymentVersion` → cause racine → alerte dans la
-  conversation, et correctif si c'est trivial et sans risque.
-- Coût mesuré : ~32 k tokens d'entrée par passage (≈ 3 M/jour à 15 min).
-  Passable à 30 min ou 1 h via `cron_update` si le coût gêne — la détection
-  immédiate reste assurée par les emails (couches 1 et 2).
+- Comportement :
+  - site up → **une seule ligne**, aucune autre action ;
+  - site down → diagnostic (tail worker → Observability → D1 `CloudflareLog` →
+    registre `DeploymentVersion` → git log), **puis correction autonome** :
+    branche locale → correctif (≤ 40 lignes, cause à une file+line) → build →
+    **déploiement dev** → vérification → merge `main` → push (la CI déploie la
+    prod) → vérification prod (étape CI « Smoke test prod » verte) ;
+    si la prod reste en erreur → `git revert` + push → alerte.
+- Garde-fous de l'auto-fix (interdits ⇒ diagnostic + proposition, pas de commit) :
+  migration D1 / schéma, `package.json` + lockfile, `next.config.js`,
+  `wrangler*.jsonc`, secrets et variables d'environnement, `middleware.ts`,
+  `src/lib/auth*`, `src/app/api/auth/**`, `src/app/api/admin/auth/**`,
+  suppression de données, changement d'infra, plus d'1 commit et plus de
+  40 lignes par exécution.
+- Coût mesuré : ~33 k tokens par passage (≈ 800 k/jour en horaire).
+  Premier passage réel le 2026-11-15 23:00 Paris : « Examanet UP — home 200
+  (1085 ms), api-health 200 (442 ms) » en 1 seule ligne ✓.
 
 ## Vérifications
 
