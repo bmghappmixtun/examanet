@@ -1,10 +1,14 @@
 import type { Metadata } from 'next';
-import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { hasLocale } from 'next-intl';
-import { onError, getMessageFallback } from '@/i18n/error-handlers';
+// 2026-11-15 HOTFIX : `NextIntlClientProvider` est un client component → on ne
+// peut pas lui passer `onError` / `getMessageFallback` (fonctions) depuis ce
+// layout serveur : React levait « Event handlers cannot be passed to Client
+// Component props » → 500 sur toutes les pages /[locale]. Le wrapper client
+// below porte désormais les handlers.
+import IntlClientProvider from '@/components/i18n/IntlClientProvider';
 import { unstable_cache as nextCache } from 'next/cache';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -177,19 +181,14 @@ export default async function LocaleLayout({ children, params }: Props) {
   // mutates the URL but doesn't re-render the root layout).
   return (
     <>
-      <NextIntlClientProvider
-        locale={locale}
-        messages={messages}
-        onError={onError}
-        getMessageFallback={getMessageFallback}
-      >
+      <IntlClientProvider locale={locale} messages={messages}>
         {/* <SyncLocaleAttrs /> */}
         <Header />
         <main className="min-h-screen">
           {children}
         </main>
         <Footer />
-      </NextIntlClientProvider>
+      </IntlClientProvider>
     </>
   );
 }
