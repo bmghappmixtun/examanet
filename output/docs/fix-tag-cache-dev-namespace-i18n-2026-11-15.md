@@ -112,8 +112,43 @@ Scripts : `scripts/fix-i18n-placeholders.mjs` (idempotent),
 ## Vérifications
 
 - build OpenNext : OK, override présent dans le bundle
-- dev `28858bac-628b-4fe2-8131-63f81fd870e4`
+- dev `28858bac-628b-4fe2-8131-63f81fd870e4` (puis `88c38c73` avec l'instrumentation)
 - `wrangler tail examanet-dev` pendant les requêtes : **539 événements, 0 erreur**
 - pages dev vs prod : `bac/archives`, `college`, `ar/concours` **identiques** ;
   `fr/concours` corrigé (le paragraphe vide devient le texte réel)
-- métriques dev désormais dans le nouveau namespace
+
+## Déploiements prod
+
+| version | commit | contenu |
+|---|---|---|
+| **7.04** | `34fb8dfe` | tag cache par lots + namespace dev + échappement i18n |
+| **7.05** | `bce06218` | instrumentation i18n (clé dans les logs) + path des requêtes dans le sync |
+
+### Après 7.05 (13:55 UTC)
+```
+tag cache      : 0 erreur
+next-intl      : 0 erreur   (337 événements/jour avant le correctif)
+React props    : 2 événements (préexistants depuis le 11/11, ~2/semaine)
+```
+- `/fr/concours-9eme-tunisie` : le paragraphe « À propos » affiche enfin le texte
+  (il affichait littéralement `concours.about.p1` en prod) — aucune clé de
+  message brute ne reste dans le HTML.
+- `monitor-alerts` prod : `endpointsMonitored: 17, alertsSent: 0`.
+- Métriques dev dans `examanet-dev-app-cache` (6 clés `metric:*`), prod dans
+  `examanet-prod-app-cache` — plus de mélange.
+
+## Reste à faire (hors périmètre de cette intervention)
+
+1. **Erreur React « Event handlers cannot be passed to Client Component props »**
+   (`at e_ → Object.toJSON → stringify`) : **préexistante** (8 événements
+   depuis le 11/11, sur `/fr` et `/ar/professeurs/[id]`), les pages s'affichent
+   correctement. À traiter plus tard.
+2. **Attribution des erreurs CF** : le sync lit désormais
+   `$workers.event.request.path`, donc les futures erreurs seront attribuables
+   à leur page (c'est ce qui a permis d'identifier `/fr/concours-9eme-tunisie`).
+3. Les pages concours/bac/college utilisent encore `{strong}` comme marqueur
+   HTML : le fix est l'échappement ICU (zéro risque), mais la **vraie**
+   solution est `t.rich()` avec des handlers React — refactor plus gros,
+   à planifier.
+4. Workflow planifié Vercel → R2 (quotidien) toujours en attente de « go ».
+
