@@ -254,3 +254,30 @@ service »), 3 moniteurs Examanet attachés, ENABLED, sans mot de passe, logo
 `/v3/psps/{id}/monitors` n'existe pas ⇒ la lecture fine se fait par
 `GET /v3/monitors` (liste complète) ; le détail d'un objet PSP n'est pas
 exposé par l'API v3.
+
+## 🌐 RTL : le site arabe était en LTR depuis le 2026-09-16 (corrigé le 2026-11-16)
+
+Enoltage de la page d'état en AR, le texte ne s'alignait pas à droite ⇒
+investigation : `src/app/[locale]/layout.tsx` avait
+`{/* <SyncLocaleAttrs /> */}` **commenté** depuis le commit `5fe3a752`
+(« debug: disable SyncLocaleAttrs test », 2026-09-16) et jamais remis.
+
+Conséquences (tout le site `/ar/*`, pas seulement la nouvelle page) :
+- `<html>` restait `lang="fr" dir="ltr"` ⇒ texte arabe aligné à gauche,
+  logo/CTA/header en LTR ;
+- `globals.css` : `html[dir="rtl"] body { text-align: right; font-family: Cairo }`
+  jamais appliqué ⇒ police Cairo morte ;
+- les **25** usages de variantes Tailwind `rtl:` (`rtl:rotate-180`, etc.)
+  inertes.
+
+Fix : `<SyncLocaleAttrs />` réactivé. Le script s'exécute **de façon synchrone
+au parsing**, avant l'hydratation ; `<html>` et `<body>` portent tous deux
+`suppressHydrationWarning` ⇒ aucun mismatch #418/#422.
+
+Vérification : 14/14 pages (11 AR + 3 FR) ⇒ `dir` correct, `text-align`
+correct, **0 erreur console**, **0 débordement horizontal** ✓.
+Le FR reste strictement inchangé (`dir=ltr`) ✓.
+
+⚠️ Piège rencontré : juste après un déploiement, le cache ISR peut servir
+une **version stale** du HTML (script absent ⇒ LTR) pendant quelques
+minutes ⇒ re-tester systématiquement après un cache-buster.
