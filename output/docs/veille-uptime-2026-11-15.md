@@ -31,20 +31,53 @@ node scripts/uptimerobot-agent-monitor.mjs --email=boutiti.mehdi@gmail.com --url
 Les 2 demandes ont été envoyées le 2026-11-15 (HTTP 200). **Il reste à cliquer
 « Activate » dans les 2 emails de confirmation.**
 
-### ⏳ Clé API (optionnel mais recommandé) — pas encore posée
+### ✅ Clé API read-only — POSÉE le 2026-11-16
 
 L'agent-flow ne donne **pas** de clé API à l'agent (« the agent can't read your
 monitoring data »). Pour que la route `/api/status/uptime` affiche aussi la vue
 multi-régions d'UptimeRobot :
 
-1. Dashboard UptimeRobot → *Integrations & API → API* → créer une clé
-   **read-only** (elle ne peut que lire les données, pas les modifier).
-2. Me la transmettre → je la pose en secret worker `UPTIMEROBOT_API_KEY`
-   (`examanet-prod` + `examanet-dev`), **jamais dans Git**.
+Clé **read-only** posée en secret worker `UPTIMEROBOT_API_KEY` sur
+`examanet-prod` **et** `examanet-dev` (jamais dans Git).
 
-Alternative : UptimeRobot expose un **serveur MCP officiel**
-(`https://mcp.uptimerobot.com/mcp`) → connectable dans MiniMax Code
-(Plugins → MCP) pour lire les moniteurs directement, sans clé à transmettre.
+Portance mesurée de la clé :
+```
+GET  v3/monitors    → 200      GET v3/psps        → 200
+GET  v3/incidents   → 200      GET v3/integrations → 200
+POST v3/monitors    → 401      « You do not have write rights for this action. »
+```
+⇒ elle ne peut que **lire** ✓ (la config des moniteurs reste gérée à la main
+depuis le dashboard UptimeRobot).
+
+### 🔎 Moniteurs du compte (8 au total, vérifiés via l'API)
+
+| moniteur | URL | méthode | intervalle | région | état |
+|---|---|---|---|---|---|
+| agent-flow | `https://examanet.com/fr` | GET | 300 s | na | **UP** |
+| agent-flow | `https://examanet.com/api/health` | GET | 300 s | na | **UP** |
+| manuel | `https://www.examanet.com` | HEAD | 300 s | na | **UP** |
+| manuel | `https://examanet.com/fr` | HEAD | 300 s | na | **UP** |
+| manuel | `https://examanet.com` | HEAD | 300 s | na | **UP** |
+| manuel | `http://www.tunisiecollege.net` | GET | 300 s | eu | UP |
+| manuel | `http://www.devoirat.net` | GET | 300 s | eu | UP |
+| manuel | `https://www.zitounawood.com` | GET | 600 s | eu | UP |
+
+### ⚠️ Action manuelle restante (30 s) — le trou de la panne du 15/11
+
+UptimeRobot juge « up » une page qui répond **200 avec une page d'erreur**
+(sauf s'il y a un contrôle de mot-clé) → c'est exactement le mode de panne du
+15/11. Notre route le couvre ✓ (elle lit le HTML), mais UptimeRobot, non.
+
+Sur le moniteur **GET `https://examanet.com/fr`** (id 804686243) :
+*Edit → Keyword → « should not be present » → `__next_error__`*.
+
+Sur `https://examanet.com/api/health` (id 804686242) : mot-clé **« should be
+present »** → `"ok":true`.
+
+⚠️ Les 3 moniteurs en **HEAD** ne peuvent **pas** faire de contrôle de mot-clé
+(sans corps de réponse) : ils voient les 500 mais pas la page d'erreur en 200.
+On peut en supprimer 2 (redondants) pour éviter 3 emails par incident — le
+choix est à l'user.
 
 Sans la clé, la route fonctionne quand même (contrôle interne) et UptimeRobot
 continue d'envoyer ses propres emails.
