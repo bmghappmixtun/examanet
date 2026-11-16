@@ -62,6 +62,28 @@ depuis le dashboard UptimeRobot).
 | manuel | `http://www.devoirat.net` | GET | 300 s | eu | UP |
 | manuel | `https://www.zitounawood.com` | GET | 600 s | eu | UP |
 
+### 🧊 Piège : l'API UptimeRobot a SON PROPRE cache HTTP (prod 7.20)
+
+Les réponses de `api.uptimerobot.com/v3/monitors` sont servies par le cache
+d'UptimeRobot (`x-cache: HIT`, `etag`, `server: cloudflare`). Conséquence
+mesurée : après la suppression de 2 moniteurs, **le worker continuait de lire
+la liste d'avant suppression (8 moniteurs) pendant plusieurs minutes**, alors
+que tous les autres appels API étaient à jour (6) ⇒ la veille aurait cru à
+des moniteurs morts (ou, pire, ignoré la suppression).
+
+Correctif appliqué dans la route :
+```ts
+fetch(`${UPTIMEROBOT_API}?t=${Date.now()}`, {
+  headers: { authorization: `Bearer ${apiKey}`, accept: 'application/json',
+             'cache-control': 'no-cache', pragma: 'no-cache' },
+})
+```
+
+⚠️ Limite de débit UptimeRobot free : `x-ratelimit-limit: 10` requêtes/min ⇒
+le cache KV 60 s de la route est **indispensable** (sinon une requête API par
+appel). Les pannes du cache KV sont désormais **journalisées** (avant : `catch`
+silencieux ⇒ le cache pouvait ne jamais fonctionner sans qu'on le voie).
+
 ### ⚠️ Action manuelle restante (30 s) — le trou de la panne du 15/11
 
 UptimeRobot juge « up » une page qui répond **200 avec une page d'erreur**
