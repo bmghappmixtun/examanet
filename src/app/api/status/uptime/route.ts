@@ -267,6 +267,12 @@ async function checkUptimeRobot(apiKey) {
             : null,
         intervalSeconds: m.interval ?? null,
         method: m.httpMethodType ?? 'GET',
+        // Contrôle de mot-clé (moniteurs KEYWORD) : sans ça, la veille ne
+        // peut pas vérifier d'un coup d'œil que les moniteurs Examanet
+        // détectent bien une page d'erreur servie en HTTP 200.
+        keyword: m.keywordType
+          ? { type: m.keywordType, value: m.keywordValue }
+          : null,
         regions: m.regionalData?.REGION ?? null,
         lastIncident: m.lastIncident ?? null,
         responseTimeMs:

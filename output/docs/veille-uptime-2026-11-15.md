@@ -84,22 +84,42 @@ le cache KV 60 s de la route est **indispensable** (sinon une requête API par
 appel). Les pannes du cache KV sont désormais **journalisées** (avant : `catch`
 silencieux ⇒ le cache pouvait ne jamais fonctionner sans qu'on le voie).
 
-### ⚠️ Action manuelle restante (30 s) — le trou de la panne du 15/11
+### ⚙️ Configuration finale des moniteurs (faite via l'API v3, le 2026-11-16)
 
-UptimeRobot juge « up » une page qui répond **200 avec une page d'erreur**
-(sauf s'il y a un contrôle de mot-clé) → c'est exactement le mode de panne du
-15/11. Notre route le couvre ✓ (elle lit le HTML), mais UptimeRobot, non.
+**Reste 3 moniteurs Examanet + 3 autres sites sur le compte :**
 
-Sur le moniteur **GET `https://examanet.com/fr`** (id 804686243) :
-*Edit → Keyword → « should not be present » → `__next_error__`*.
+| id | URL | type | méthode | mot-clé | état |
+|---|---|---|---|---|---|
+| `804692371` | `https://examanet.com/fr` | KEYWORD | GET | `ALERT_EXISTS` → `__next_error__` | UP |
+| `804692373` | `https://examanet.com/api/health` | KEYWORD | GET | `ALERT_NOT_EXISTS` → `"ok":true` | UP |
+| `803597157` | `https://www.examanet.com` | HTTP | HEAD | — (couvre l'autre hostname) | UP |
+| `57216` / `3652` / `779612603` | Devoirat.net, Tunisiecollege.net, Zitounawood.com | HTTP | HEAD | — | UP |
 
-Sur `https://examanet.com/api/health` (id 804686242) : mot-clé **« should be
-present »** → `"ok":true`.
+Sémantique (doc officielle UptimeRobot) : `ALERT_EXISTS` = **on alerte quand le
+mot-clé apparaît** (donc le moniteur est UP tant qu'il est absent) ;
+`ALERT_NOT_EXISTS` = **on alerte quand le mot-clé disparaît** (UP tant qu'il
+est présent). `keywordCaseType: 1` = CaseInsensitive.
 
-⚠️ Les 3 moniteurs en **HEAD** ne peuvent **pas** faire de contrôle de mot-clé
-(sans corps de réponse) : ils voient les 500 mais pas la page d'erreur en 200.
-On peut en supprimer 2 (redondants) pour éviter 3 emails par incident — le
-choix est à l'user.
+**4 pièges d'API rencontrés (à ne pas refaire) :**
+1. **`type` est IMMUABLE** après création (« Monitor type cannot be changed
+   after creation. ») ⇒ pour passer un moniteur HTTP en KEYWORD, il faut
+   **créer le nouveau puis supprimer l'ancien** (l'ancien reste le filet de
+   sécurité jusqu'à ce que le nouveau soit UP).
+2. **`httpMethodType: null` = HEAD** ⇒ un moniteur créé sans méthode n'a
+   **PAS de corps** ⇒ un contrôle de mot-clé y est impossible (il faut
+   `httpMethodType: "GET"` à la création). Les 2 moniteurs de l'agent-flow
+   étaient en HEAD ⇒ c'est pour ça qu'ils ne pouvaient pas faire de
+   contrôle de mot-clé.
+3. **`keywordCaseType`** : `0` = CaseSensitive, `1` = CaseInsensitive (les
+   *noms* `CaseInsensitive` sont acceptés à la création, les chiffres à la
+   mise à jour).
+4. **La clé MAIN a les droits d'écriture**, la read-only non (`POST`/`PATCH`
+   → 401 « You do not have write rights ») ⇒ la clé MAIN vit dans le coffre
+   `secret` du projet (`UPTIMEROBOT_MAIN_API_KEY`), **jamais dans Git**.
+
+Vérifié avant configuration : la page `/fr` saine contient **0** occurrence de
+`__next_error__` et le corps de `/api/health` commence par `{"ok":true,` ⇒
+aucun faux positif possible.
 
 Sans la clé, la route fonctionne quand même (contrôle interne) et UptimeRobot
 continue d'envoyer ses propres emails.
