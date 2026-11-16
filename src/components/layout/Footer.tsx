@@ -2,6 +2,7 @@ import { Link } from '@/i18n/navigation';
 import { Facebook, Twitter, Instagram, Youtube, GraduationCap } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import LanguagePicker from './LanguagePicker';
+import ServiceStatusBadge from '@/components/status/ServiceStatusBadge';
 
 export default async function Footer() {
   const t = await getTranslations();
@@ -187,6 +188,11 @@ export default async function Footer() {
                   {t('nav.contact')}
                 </Link>
               </li>
+              <li>
+                <Link href="/statut" className="hover:text-primary-400 transition">
+                  {t('status.footerLink')}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -196,6 +202,15 @@ export default async function Footer() {
             {t('footer.copyright', { year: String(currentYear) })}
           </p>
           <div className="flex items-center gap-3">
+            <ServiceStatusBadge
+              href="/statut"
+              labels={{
+                operational: t('status.up'),
+                degraded: t('status.shortDegraded'),
+                down: t('status.downLabel'),
+                link: t('status.footerLink'),
+              }}
+            />
             <LanguagePicker />
             <p className="text-xs text-slate-500">{t('footer.madeWith')}</p>
           </div>

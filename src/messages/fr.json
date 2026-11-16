@@ -941,6 +941,30 @@
       "a4": "Allez dans Paramètres → Compte → Zone dangereuse → Supprimer mon compte."
     }
   },
+  "status": {
+    "badge": "Disponibilité",
+    "hero": {
+      "title": "État du service",
+      "intro": "Disponibilité en temps réel de la plateforme Examanet : site web, interfaces et vérifications automatiques. Les états sont relevés en continu et affichés ici sans intermédiaire."
+    },
+    "allOperational": "Tous les services sont opérationnels",
+    "degraded": "Service partiellement dégradé",
+    "down": "Service indisponible",
+    "checking": "Vérification en cours…",
+    "lastCheck": "Dernière vérification",
+    "services": "Services surveillés",
+    "up": "Opérationnel",
+    "downLabel": "Indisponible",
+    "history": "Historique et incidents détaillés",
+    "historyCta": "Ouvrir la page de statut UptimeRobot",
+    "refreshNote": "Les états sont contrôlés toutes les 5 minutes par un service de surveillance externe, en plus des vérifications internes.",
+    "error": "Impossible de récupérer l'état du service pour le moment.",
+    "monitorFr": "Site web (FR)",
+    "monitorHealth": "Interface de vérification",
+    "monitorWww": "Site web (www)",
+    "shortDegraded": "Dégradé",
+    "footerLink": "État du service"
+  },
   "cgu": {
     "badge": "Document juridique",
     "hero": {

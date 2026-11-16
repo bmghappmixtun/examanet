@@ -216,3 +216,68 @@ Le job `examanet-nightly-error-cleanup` (02:15 Paris) a poussé `0d879809`
 > 512 octets (les slugs arabes doublement encodés faisaient échouer le
 `GET_BULK` en bloc). Le pipeline nightly est donc opérationnel de bout en
 bout : digest → correctif → commit sur `main` → CI → prod.
+
+## 🟢 Page d'état du service (status page) — 2026-11-16
+
+**Status page UptimeRobot** : id `1294215`, URL publique
+`https://stats.uptimerobot.com/Fgu4mQDWvU` (nom : « Examanet — État du
+service »), 3 moniteurs Examanet attachés, ENABLED, sans mot de passe, logo
+`public/apple-touch-icon.png` (180×180, 25 Ko ✓ conforme 400×200 / 150 Ko).
+
+**Intégration dans le site (déployée sur DEV d'abord)** :
+- `src/app/[locale]/statut/page.tsx` → `/fr/statut` et `/ar/statut` :
+  état global + détail des 3 services + lien vers la page UptimeRobot
+  (historique/incidents) ; `robots: noindex,follow` (contenu vivant,
+  rendu client ⇒ page maigre) ; pas de sitemap.
+- `src/components/status/ServiceStatusPanel.tsx` ('use client') : lit
+  `/api/status/uptime` (donc la double source : interne + UptimeRobot),
+  filtre les moniteurs sur `examanet.com`, rafraîchit toutes les 60 s.
+- `src/components/status/ServiceStatusBadge.tsx` ('use client') : pastille
+  live dans le pied de page (« État du service · Opérationnel »), + lien
+  « État du service » dans la colonne « À propos ».
+- Libellés i18n dans `src/messages/{fr,ar}.json` (namespace `status.*`).
+
+**Contraintes UptimeRobot apprises (plan FREE)** :
+1. **Custom domain = plan payant** ⇒ pas de `status.examanet.com` (le CNAME
+   cible aurait été `stats.uptimerobot.com`, en DNS-only sur Cloudflare).
+2. **`subscription: true` = plan payant** ⇒ refusé (403 « Feature
+   subscribers is not enabled in your plan. »).
+3. **Pas de badge officiel en free** : `.../badge`, `.../badge.svg`,
+   `.../badge.png` → 404 ⇒ d'où notre **propre** badge branché sur notre route.
+4. **La page UptimeRobot refuse l'iframe** (`x-frame-options: DENY`) ⇒
+   intégration par **lien**, pas par embed.
+5. `GET /v3/psps` peut renvoyer une **réponse périmée en cache** (un vieux
+   « Status Page » fantôme est apparu alors que la liste était vide) ⇒
+   toujours recouper avec la création réelle + le cache-buster.
+
+**Rappel d'un bug de ce lot** : `/v3/psps/{id}` renvoie `{"data":[]}` et
+`/v3/psps/{id}/monitors` n'existe pas ⇒ la lecture fine se fait par
+`GET /v3/monitors` (liste complète) ; le détail d'un objet PSP n'est pas
+exposé par l'API v3.
+
+## 🌐 RTL : le site arabe était en LTR depuis le 2026-09-16 (corrigé le 2026-11-16)
+
+Enoltage de la page d'état en AR, le texte ne s'alignait pas à droite ⇒
+investigation : `src/app/[locale]/layout.tsx` avait
+`{/* <SyncLocaleAttrs /> */}` **commenté** depuis le commit `5fe3a752`
+(« debug: disable SyncLocaleAttrs test », 2026-09-16) et jamais remis.
+
+Conséquences (tout le site `/ar/*`, pas seulement la nouvelle page) :
+- `<html>` restait `lang="fr" dir="ltr"` ⇒ texte arabe aligné à gauche,
+  logo/CTA/header en LTR ;
+- `globals.css` : `html[dir="rtl"] body { text-align: right; font-family: Cairo }`
+  jamais appliqué ⇒ police Cairo morte ;
+- les **25** usages de variantes Tailwind `rtl:` (`rtl:rotate-180`, etc.)
+  inertes.
+
+Fix : `<SyncLocaleAttrs />` réactivé. Le script s'exécute **de façon synchrone
+au parsing**, avant l'hydratation ; `<html>` et `<body>` portent tous deux
+`suppressHydrationWarning` ⇒ aucun mismatch #418/#422.
+
+Vérification : 14/14 pages (11 AR + 3 FR) ⇒ `dir` correct, `text-align`
+correct, **0 erreur console**, **0 débordement horizontal** ✓.
+Le FR reste strictement inchangé (`dir=ltr`) ✓.
+
+⚠️ Piège rencontré : juste après un déploiement, le cache ISR peut servir
+une **version stale** du HTML (script absent ⇒ LTR) pendant quelques
+minutes ⇒ re-tester systématiquement après un cache-buster.
