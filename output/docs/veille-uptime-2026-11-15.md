@@ -94,6 +94,12 @@ continue d'envoyer ses propres emails.
   pour un simple contrôle de code HTTP (c'est ce qui a laissé le site « vert »
   pendant l'outage du 15/11). Test de régression :
   `node scripts/verify-uptime-error-detection.mjs https://examanet.com`.
+- ⚠️ **Le compte UptimeRobot contient aussi les AUTRES sites du propriétaire**
+  (Devoirat.net, Tunisiecollege.net, Zitounawood) ⇒ le verdict ne regarde
+  QUE les moniteurs `examanet.com` / `www.examanet.com`
+  (`isExamanetMonitor`). Les autres remontent dans `otherMonitorsDown` +
+  `warnings[]`, **sans** faire basculer le statut (sinon la veille croirait à
+  une panne d'Examanet et partirait corriger le mauvais site).
 - Contrôle **externe** : si `UPTIMEROBOT_API_KEY` est présent →
   `GET https://api.uptimerobot.com/v3/monitors` (`Authorization: Bearer …`).
   **Un échec de l'API n'est PAS une panne du site** : le verdict global ne
@@ -141,7 +147,13 @@ curl -s https://examanet.com/api/status/uptime | jq
 - One-shot de test de la tâche planifiée : cron déclenché → agent a interrogé la
   route → réponse « Examanet UP » en 1,2 s ✓ (tâche de test supprimée ensuite).
 
-## Renforts ajoutés le 2026-11-16 (prod 7.14)
+## Renforts ajoutés le 2026-11-16 (prod 7.14 → 7.18)
+
+- **Clé read-only branchée** (prod 7.16) : `source: worker+uptimerobot`, les
+  8 moniteurs du compte sont visibles depuis la route (URL, état, intervalle,
+  méthode, région, durée dans l'état courant).
+- **Filtre par domaine** (prod 7.18) : le verdict Examanet ne dépend plus que
+  des moniteurs `examanet.com`.
 
 - **Page d'erreur en 200 détectée** : la route lit le début du HTML et
   contrôle `__next_error__` → plus de « site vert » alors que les pages sont
