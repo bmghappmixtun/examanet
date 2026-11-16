@@ -176,6 +176,19 @@ async function checkTarget(target) {
   }
 }
 
+
+/**
+ * Un moniteur UptimeRobot appartient-il à Examanet ?
+ * Le compte UptimeRobot contient aussi les AUTRES sites du propriétaire
+ * (Devoirat.net, Tunisiecollege.net, Zitounawood…) : seul un moniteur
+ * Examanet doit pouvoir faire basculer le verdict de cette route.
+ */
+function isExamanetMonitor(monitor: { url?: string }): boolean {
+  return /^https?:\/\/(www\.)?examanet\.com(\/|$)/i.test(
+    String(monitor?.url ?? '')
+  );
+}
+
 /**
  * Interroge l'API UptimeRobot v3 (clé en lecture seule).
  *
@@ -253,12 +266,20 @@ async function checkUptimeRobot(apiKey) {
           null,
       };
     });
-    const monitorsDown = monitors.filter((m) => m.down).map((m) => m.name);
+    const monitorsDown = monitors.filter((m) => m.down && isExamanetMonitor(m)).map((m) => m.name);
+    // Les autres sites du MÊME compte UptimeRobot (Devoirat.net,
+    // Tunisiecollege.net, Zitounawood…) ne doivent PAS faire basculer le
+    // verdict Examanet : sinon la veille croirait à une panne d'Examanet et
+    // partirait corriger le mauvais site. Ils sont remontés à part.
+    const otherMonitorsDown = monitors
+      .filter((m) => m.down && !isExamanetMonitor(m))
+      .map((m) => m.name);
     return {
       configured: true,
       apiOk: true,
       latencyMs: Date.now() - started,
       monitorsDown,
+      otherMonitorsDown,
       monitors,
     };
   } catch (e) {
@@ -320,6 +341,13 @@ export async function GET(req: NextRequest) {
     warnings: [
       ...(uptimerobot.configured && uptimerobot.apiOk === false
         ? [`UptimeRobot API injoignable : ${uptimerobot.error}`]
+        : []),
+      ...((uptimerobot as any).otherMonitorsDown?.length
+        ? [
+            `Autres sites du compte UptimeRobot en panne (hors Examanet) : ${(
+              (uptimerobot as any).otherMonitorsDown
+            ).join(', ')}`,
+          ]
         : []),
     ],
   };
