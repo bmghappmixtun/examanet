@@ -4,18 +4,20 @@
  *
  * 2026-11-15 : créé après l'outage du 7.05 (500 sur toutes les pages pendant
  * ~7 h, détecté par l'utilisateur et non par une surveillance automatique).
- * Objectif :
- * donner à l'agent (tâche planifiée) une source unique, très bon marché, pour
- * savoir si le site répond — et le faire vérifier DEPUIS l'extérieur quand
- * une clé UptimeRobot est configurée.
+ * Objectif : une source unique, très bon marché, pour savoir si le site
+ * répond — et le faire vérifier DEPUIS l'extérieur quand une clé UptimeRobot
+ * est configurée.
  *
  * Deux sources, combinées :
  *
  *  1. Contrôle direct depuis le worker (vocation interne) :
- *     - HEAD https://examanet.com/fr?ci=<ts>  → rend à FROID la page (le
- *       cache-buster évite de servir le HTML mis en cache par l'edge) et
- *       vérifie ainsi la chaîne DNS → edge → worker → D1 → rendu.
- *     - GET  https://examanet.com/api/health    → vérifie le worker + D1.
+ *     - GET {origine}/fr?ci=<ts> → rend à FROID la page (le cache-buster évite
+ *       de servir le HTML mis en cache par l'edge) et vérifie ainsi la chaîne
+ *       DNS → edge → worker → D1 → rendu. On lit les 16 premiers Ko du HTML
+ *       pour détecter une page d'erreur servie en 200 (`__next_error__`) :
+ *       c'est le mode de panne le plus vicieux, invisible pour un simple
+ *       contrôle de code HTTP.
+ *     - GET {origine}/api/health → vérifie le worker + D1.
  *
  *  2. UptimeRobot (vocation externe, multi-régions) : si le secret
  *     `UPTIMEROBOT_API_KEY` est présent, on interroge l'API v3
@@ -41,6 +43,8 @@ const CACHE_KEY_PREFIX = 'uptime:status:v1';
 const CACHE_TTL_SECONDS = 60;
 const FETCH_TIMEOUT_MS = 15_000;
 const UPTIMEROBOT_API = 'https://api.uptimerobot.com/v3/monitors';
+/** Octets de HTML lus pour détecter une page d'erreur servie en 200. */
+const BODY_SNIFF_BYTES = 16 * 1024;
 
 /**
  * Origines autorisées à être surveillées (le worker ne va pas chercher
@@ -77,16 +81,45 @@ function buildTargets(siteBase: string) {
     {
       name: 'homepage',
       url: `${siteBase}/fr`,
-      method: 'HEAD',
+      method: 'GET',
+      // lecture du début du HTML : détecte une page d'erreur servie en 200
+      inspectBody: true,
       cacheBust: true,
     },
     {
       name: 'api-health',
       url: `${siteBase}/api/health`,
       method: 'GET',
+      inspectBody: false,
       cacheBust: false,
     },
   ];
+}
+
+/** Lit les premiers octets d'un stream et le ferme. */
+async function sniffBody(res: Response, maxBytes: number): Promise<string> {
+  try {
+    if (!res.body) return await res.text();
+    const reader = res.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    while (total < maxBytes) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) {
+        chunks.push(value);
+        total += value.length;
+      }
+    }
+    try {
+      await reader.cancel();
+    } catch {
+      /* best-effort */
+    }
+    return Buffer.concat(chunks.map((c) => Buffer.from(c))).toString('utf-8');
+  } catch {
+    return '';
+  }
 }
 
 async function checkTarget(target) {
@@ -105,7 +138,20 @@ async function checkTarget(target) {
     });
     clearTimeout(timer);
     const latencyMs = Date.now() - started;
-    const ok = res.status >= 200 && res.status < 400;
+
+    let bodyError: string | undefined;
+    if (target.inspectBody) {
+      const head = await sniffBody(res, BODY_SNIFF_BYTES);
+      // Une page d'erreur Next.js commence par <html id="__next_error__">.
+      if (head.includes('__next_error__')) {
+        bodyError = 'page d\'erreur servie en 200 (__next_error__)';
+      } else if (!head.trim()) {
+        bodyError = 'corps de réponse vide';
+      }
+    }
+
+    const statusOk = res.status >= 200 && res.status < 400;
+    const ok = statusOk && !bodyError;
     return {
       name: target.name,
       url: target.url,
@@ -113,7 +159,9 @@ async function checkTarget(target) {
       ok,
       status: res.status,
       latencyMs,
-      error: ok ? undefined: `HTTP ${res.status}`,
+      error: ok
+        ? undefined
+        : bodyError || `HTTP ${res.status}`,
     };
   } catch (e) {
     return {
@@ -130,7 +178,12 @@ async function checkTarget(target) {
 
 /**
  * Interroge l'API UptimeRobot v3 (clé en lecture seule).
- * Les moniteurs UptimeRobot : status 1 = paused, 2 = up, 3 = down.
+ *
+ * Distinction importante :
+ *  - `apiOk`  = l'appel à l'API a réussi (sinon on ne sait rien) ;
+ *  - `monitorsDown` = les moniteurs qui sont explicitement DOWN.
+ * Un échec de l'API NE DOIT PAS faire basculer le verdict global : sinon une
+ * coupure réseau de l'API UptimeRobot déclencherait un faux incident.
  */
 async function checkUptimeRobot(apiKey) {
   const started = Date.now();
@@ -145,35 +198,66 @@ async function checkUptimeRobot(apiKey) {
     if (!res.ok) {
       return {
         configured: true,
-        ok: false,
+        apiOk: false,
         error: `HTTP ${res.status}`,
         latencyMs: Date.now() - started,
+        monitorsDown: [],
+        monitors: [],
       };
     }
     const data = await res.json();
     const list = Array.isArray(data?.monitors) ? data.monitors : [];
-    const monitors = list.map((m) => ({
-      id: m.id,
-      name: m.friendly_name || m.url,
-      url: m.url,
-      status: m.status,
-      up: m.status === 2,
-      paused: m.status === 1,
-      responseTimeMs: m.response_times?.[0]?.response_time ?? null,
-      lastCheckTs: m.last_check_ts ?? null,
-    }));
+    const monitors = list.map((m) => {
+      // v2 : 1 = paused, 2 = up, 3 = down. v3 peut renvoyer une chaîne
+      // ("up"/"down"/"paused") ou un objet { value|status } : on tolère tout.
+      const raw = m.status;
+      const rawValue =
+        raw && typeof raw === 'object'
+          ? (raw as any).value ?? (raw as any).status ?? (raw as any).state
+          : raw;
+      const num = typeof rawValue === 'number' ? rawValue : Number(rawValue);
+      const state =
+        typeof rawValue === 'string'
+          ? rawValue.toLowerCase()
+          : num === 1
+            ? 'paused'
+            : num === 2
+              ? 'up'
+              : num === 3
+                ? 'down'
+                : 'unknown';
+      return {
+        id: m.id,
+        name: m.friendly_name || m.friendlyName || m.url,
+        url: m.url,
+        status: raw,
+        state,
+        up: state === 'up',
+        paused: state === 'paused',
+        down: state === 'down',
+        responseTimeMs:
+          m.response_times?.[0]?.response_time ??
+          m.responseTimes?.[0]?.responseTime ??
+          null,
+        lastCheckTs: m.last_check_ts ?? m.lastCheckTs ?? null,
+      };
+    });
+    const monitorsDown = monitors.filter((m) => m.down).map((m) => m.name);
     return {
       configured: true,
-      ok: monitors.every((m) => m.up || m.paused),
+      apiOk: true,
       latencyMs: Date.now() - started,
+      monitorsDown,
       monitors,
     };
   } catch (e) {
     return {
       configured: true,
-      ok: false,
+      apiOk: false,
       error: String(e?.message || e),
       latencyMs: Date.now() - started,
+      monitorsDown: [],
+      monitors: [],
     };
   }
 }
@@ -210,15 +294,23 @@ export async function GET(req: NextRequest) {
   }
 
   const internalOk = checks.every((c) => c.ok);
-  const externalOk = uptimerobot.configured ? uptimerobot.ok !== false : true;
+  // Seuls des moniteurs EXPLICITEMENT down font tomber le verdict : une
+  // indisponibilité de l'API UptimeRobot est un avertissement, pas une panne.
+  const externalDown =
+    uptimerobot.configured && (uptimerobot.monitorsDown?.length ?? 0) > 0;
 
   const payload = {
-    ok: internalOk && externalOk,
+    ok: internalOk && !externalDown,
     checkedAt: new Date().toISOString(),
     source: uptimerobot.configured ? 'worker+uptimerobot' : 'worker',
     siteBase,
     checks,
     uptimerobot,
+    warnings: [
+      ...(uptimerobot.configured && uptimerobot.apiOk === false
+        ? [`UptimeRobot API injoignable : ${uptimerobot.error}`]
+        : []),
+    ],
   };
 
   if (kv) {
