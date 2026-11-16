@@ -203,8 +203,17 @@ async function checkUptimeRobot(apiKey) {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    const res = await fetch(UPTIMEROBOT_API, {
-      headers: { authorization: `Bearer ${apiKey}`, accept: 'application/json' },
+    const res = await fetch(`${UPTIMEROBOT_API}?t=${Date.now()}`, {
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        accept: 'application/json',
+        // L'API UptimeRobot sert ses réponses via son PROPRE cache
+        // (`x-cache: HIT`) : sans ça, le worker peut lire une liste
+        // périmée (ex. des moniteurs déjà supprimés) pendant plusieurs
+        // minutes, alors que le reste de l'API est à jour.
+        'cache-control': 'no-cache',
+        pragma: 'no-cache',
+      },
       signal: controller.signal,
     });
     clearTimeout(timer);
@@ -312,8 +321,10 @@ export async function GET(req: NextRequest) {
           { headers: { 'cache-control': 'no-store' } }
         );
       }
-    } catch {
-      /* cache indisponible : on recalcule */
+    } catch (e) {
+      // Un cache muet qui ne fonctionne pas = une requête API à chaque
+      // appel (limite UptimeRobot free : 10/min). Il faut le voir.
+      console.error('[uptime] lecture cache KV impossible', e);
     }
   }
 
@@ -357,8 +368,8 @@ export async function GET(req: NextRequest) {
       await kv.put(CACHE_KEY, JSON.stringify(payload), {
         expirationTtl: CACHE_TTL_SECONDS,
       });
-    } catch {
-      /* écriture cache best-effort */
+    } catch (e) {
+      console.error('[uptime] écriture cache KV impossible', e);
     }
   }
 
