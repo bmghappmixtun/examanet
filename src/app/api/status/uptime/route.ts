@@ -208,12 +208,17 @@ async function checkUptimeRobot(apiKey) {
     const data = await res.json();
     const list = Array.isArray(data?.monitors) ? data.monitors : [];
     const monitors = list.map((m) => {
-      // v2/v3 : 1 = paused, 2 = up, 3 = down (on tolère aussi les chaînes).
+      // v2 : 1 = paused, 2 = up, 3 = down. v3 peut renvoyer une chaîne
+      // ("up"/"down"/"paused") ou un objet { value|status } : on tolère tout.
       const raw = m.status;
-      const num = typeof raw === 'number' ? raw : Number(raw);
+      const rawValue =
+        raw && typeof raw === 'object'
+          ? (raw as any).value ?? (raw as any).status ?? (raw as any).state
+          : raw;
+      const num = typeof rawValue === 'number' ? rawValue : Number(rawValue);
       const state =
-        typeof raw === 'string'
-          ? raw.toLowerCase()
+        typeof rawValue === 'string'
+          ? rawValue.toLowerCase()
           : num === 1
             ? 'paused'
             : num === 2
@@ -223,15 +228,18 @@ async function checkUptimeRobot(apiKey) {
                 : 'unknown';
       return {
         id: m.id,
-        name: m.friendly_name || m.url,
+        name: m.friendly_name || m.friendlyName || m.url,
         url: m.url,
         status: raw,
         state,
         up: state === 'up',
         paused: state === 'paused',
         down: state === 'down',
-        responseTimeMs: m.response_times?.[0]?.response_time ?? null,
-        lastCheckTs: m.last_check_ts ?? null,
+        responseTimeMs:
+          m.response_times?.[0]?.response_time ??
+          m.responseTimes?.[0]?.responseTime ??
+          null,
+        lastCheckTs: m.last_check_ts ?? m.lastCheckTs ?? null,
       };
     });
     const monitorsDown = monitors.filter((m) => m.down).map((m) => m.name);
