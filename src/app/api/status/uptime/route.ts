@@ -206,10 +206,13 @@ async function checkUptimeRobot(apiKey) {
       };
     }
     const data = await res.json();
-    const list = Array.isArray(data?.monitors) ? data.monitors : [];
+    // v3 : la réponse est { "data": [ ...moniteurs... ] } (et non { monitors: [] }).
+    // On tolère les deux formes.
+    const root = data?.data ?? data;
+    const list = Array.isArray(root) ? root : (root?.monitors ?? []);
     const monitors = list.map((m) => {
-      // v2 : 1 = paused, 2 = up, 3 = down. v3 peut renvoyer une chaîne
-      // ("up"/"down"/"paused") ou un objet { value|status } : on tolère tout.
+      // v2 : 1 = paused, 2 = up, 3 = down. v3 renvoie une CHAÎNE
+      // ("UP"/"DOWN"/"PAUSED") ; on tolère aussi un objet imbriqué.
       const raw = m.status;
       const rawValue =
         raw && typeof raw === 'object'
@@ -235,11 +238,19 @@ async function checkUptimeRobot(apiKey) {
         up: state === 'up',
         paused: state === 'paused',
         down: state === 'down',
+        // durée dans l'état courant (secondes) : "UP depuis 11 h"
+        upForSeconds:
+          typeof m.currentStateDuration === 'number'
+            ? m.currentStateDuration
+            : null,
+        intervalSeconds: m.interval ?? null,
+        method: m.httpMethodType ?? 'GET',
+        regions: m.regionalData?.REGION ?? null,
+        lastIncident: m.lastIncident ?? null,
         responseTimeMs:
           m.response_times?.[0]?.response_time ??
           m.responseTimes?.[0]?.responseTime ??
           null,
-        lastCheckTs: m.last_check_ts ?? m.lastCheckTs ?? null,
       };
     });
     const monitorsDown = monitors.filter((m) => m.down).map((m) => m.name);
