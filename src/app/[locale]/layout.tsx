@@ -182,7 +182,17 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <>
       <IntlClientProvider locale={locale} messages={messages}>
-        {/* <SyncLocaleAttrs /> */}
+        {/* 2026-11-16 : script RÉACTIVÉ.
+            Il était désactivé depuis le 2026-09-16 (commit 5fe3a752 « debug:
+            disable SyncLocaleAttrs test ») et jamais remis ⇒ <html> restait
+            lang="fr" dir="ltr" sur TOUTES les pages /ar/* ⇒ le site arabe
+            s'affichait en LTR : texte non aligné à droite, police Cairo
+            jamais appliquée (globals.css `html[dir="rtl"] body`) et les 25
+            variantes Tailwind `rtl:` inertes.
+            Le script s'exécute de façon SYNCHRONE au parsing, avant
+            l'hydratation ; <html> et <body> portent tous deux
+            `suppressHydrationWarning` ⇒ pas de mismatch #418/#422. */}
+        <SyncLocaleAttrs />
         <Header />
         <main className="min-h-screen">
           {children}
