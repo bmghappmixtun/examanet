@@ -31,15 +31,20 @@ node scripts/uptimerobot-agent-monitor.mjs --email=boutiti.mehdi@gmail.com --url
 Les 2 demandes ont été envoyées le 2026-11-15 (HTTP 200). **Il reste à cliquer
 « Activate » dans les 2 emails de confirmation.**
 
-### Clé API (optionnel mais recommandé)
+### ⏳ Clé API (optionnel mais recommandé) — pas encore posée
 
 L'agent-flow ne donne **pas** de clé API à l'agent (« the agent can't read your
 monitoring data »). Pour que la route `/api/status/uptime` affiche aussi la vue
 multi-régions d'UptimeRobot :
 
-1. Dashboard UptimeRobot → *Integrations → API* → créer une clé **read-only**.
+1. Dashboard UptimeRobot → *Integrations & API → API* → créer une clé
+   **read-only** (elle ne peut que lire les données, pas les modifier).
 2. Me la transmettre → je la pose en secret worker `UPTIMEROBOT_API_KEY`
-   (`examanet-prod`), jamais dans Git.
+   (`examanet-prod` + `examanet-dev`), **jamais dans Git**.
+
+Alternative : UptimeRobot expose un **serveur MCP officiel**
+(`https://mcp.uptimerobot.com/mcp`) → connectable dans MiniMax Code
+(Plugins → MCP) pour lire les moniteurs directement, sans clé à transmettre.
 
 Sans la clé, la route fonctionne quand même (contrôle interne) et UptimeRobot
 continue d'envoyer ses propres emails.
@@ -48,10 +53,19 @@ continue d'envoyer ses propres emails.
 
 `src/app/api/status/uptime/route.ts`
 
-- Contrôle **interne** : `HEAD {origine}/fr?ci=<ts>` (cache-buster → rendu à
+- Contrôle **interne** : `GET {origine}/fr?ci=<ts>` (cache-buster → rendu à
   FROID, pas le HTML mis en cache) + `GET {origine}/api/health`.
+  Sur la page d'accueil, les **16 premiers Ko du HTML** sont lus et analysés :
+  une page d'erreur Next.js servie en **HTTP 200** (`<html id="__next_error__">`)
+  est détectée et déclarée KO — c'est le mode de panne le plus vicieux, invisible
+  pour un simple contrôle de code HTTP (c'est ce qui a laissé le site « vert »
+  pendant l'outage du 15/11). Test de régression :
+  `node scripts/verify-uptime-error-detection.mjs https://examanet.com`.
 - Contrôle **externe** : si `UPTIMEROBOT_API_KEY` est présent →
-  `GET https://api.uptimerobot.com/v3/monitors` (Bearer).
+  `GET https://api.uptimerobot.com/v3/monitors` (`Authorization: Bearer …`).
+  **Un échec de l'API n'est PAS une panne du site** : le verdict global ne
+  bascule que si des moniteurs sont explicitement `down`
+  (`uptimerobot.monitorsDown`), sinon c'est un simple `warnings[]`.
 - Origine = celle de la requête, **liste blanche** (anti-SSRF) :
   `examanet.com`, `www.examanet.com`, `*.examanet-poc.workers.dev`.
 - Cache KV 60 s (clé `uptime:status:v1:<origine>`) → pas de hammering
@@ -93,3 +107,25 @@ curl -s https://examanet.com/api/status/uptime | jq
   home 494 ms / api 873 ms. CI verte (deploy + smoke test post-déploiement).
 - One-shot de test de la tâche planifiée : cron déclenché → agent a interrogé la
   route → réponse « Examanet UP » en 1,2 s ✓ (tâche de test supprimée ensuite).
+
+## Renforts ajoutés le 2026-11-16 (prod 7.14)
+
+- **Page d'erreur en 200 détectée** : la route lit le début du HTML et
+  contrôle `__next_error__` → plus de « site vert » alors que les pages sont
+  en erreur. (`scripts/verify-uptime-error-detection.mjs` : 3 tests au vert.)
+- **API UptimeRobot injoignable ≠ panne** : l'API qui ne répond plus ne fait
+  plus basculer le verdict global (sinon un incident réseau chez eux aurait
+  déclenché un faux diagnostic + un faux correctif).
+- **Lecture du HTML streamée** : le flux est annulé après 16 Ko (le Range n'est
+  pas honoré par l'edge ; le gzip ramène le transfert de 414 Ko à 85 Ko).
+- La **veille horaire** de l'agent (task_id `463774934184119`) a déjà tourné
+  11 fois de suite sans incident ; elle lit cette route et n'agit que si
+  `ok: false`.
+
+## Nuit du 2026-11-16 — le job nocturne a, lui aussi, corrigé un bug
+
+Le job `examanet-nightly-error-cleanup` (02:15 Paris) a poussé `0d879809`
+(prod **7.13**) : **clé KV stable par hachage** pour les tags de cache
+> 512 octets (les slugs arabes doublement encodés faisaient échouer le
+`GET_BULK` en bloc). Le pipeline nightly est donc opérationnel de bout en
+bout : digest → correctif → commit sur `main` → CI → prod.
