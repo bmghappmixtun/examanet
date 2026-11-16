@@ -38,6 +38,25 @@ export const BINDING_NAME = 'NEXT_TAG_CACHE_KV';
 const MAX_KEYS_PER_BULK_GET = 100;
 /** Limite Workers KV : longueur maximale d'une clé (512 octets). */
 const MAX_KEY_LENGTH = 512;
+/** Seuil sûr (octets UTF-8) au-delà duquel la clé est dérivée par hachage. */
+const MAX_KEY_BYTES = 480;
+
+/** Longueur d'une chaîne en OCTETS UTF-8 (la limite KV compte des octets). */
+function byteLength(value: string): number {
+  return new TextEncoder().encode(value).length;
+}
+
+/** Empreinte stable 64 bits (FNV-1a x2, sans dépendance). */
+function stableHash(value: string): string {
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193;
+  for (let i = 0; i < value.length; i++) {
+    const c = value.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 ^ c, 0x85ebca6b) >>> 0;
+  }
+  return h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
+}
 
 /** Format historique (OpenNext < 1.19) : un simple timestamp en ms. */
 type TagValueNumber = number;
@@ -180,7 +199,15 @@ export class KVNextModeTagCache implements NextModeTagCache {
   }
 
   getCacheKey(key: string): string {
-    return `${this.getBuildId()}/${key}`.replaceAll('//', '/');
+    const base = `${this.getBuildId()}/${key}`.replaceAll('//', '/');
+    // Un tag long (slug UTF-8 double-encodé → chemin > 485 caractères) donne
+    // une clé > 512 octets : le bulk-get KV échoue en 414 et l'ENTIER lot de
+    // tags est perdu ⇒ cache toujours périmé. On dérive une clé stable par
+    // hachage au lieu d'abandonner ces tags.
+    if (byteLength(base) > MAX_KEY_BYTES) {
+      return `${this.getBuildId()}/h${stableHash(base)}`;
+    }
+    return base;
   }
 
   getBuildId(): string {
