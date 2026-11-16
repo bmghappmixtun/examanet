@@ -46,7 +46,7 @@ export default async function StatutPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-1">
+      <main className="flex-1 pt-16 lg:pt-20">
         {/* HERO */}
         <section className="bg-gradient-to-br from-primary-50 via-white to-sky-50 py-12 lg:py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,7 +63,7 @@ export default async function StatutPage() {
 
         {/* PANNEAU LIVE */}
         <section className="py-12 lg:py-16 bg-white">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <ServiceStatusPanel
               labels={labels}
               locale={locale}
