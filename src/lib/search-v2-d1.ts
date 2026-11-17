@@ -364,10 +364,20 @@ export async function searchV2(options: SearchOptions): Promise<SearchResponse> 
     // 9. Get facets (in parallel with the above would be ideal, but for now sequential)
     // Facets: count by type, subjectId, classId, etc.
     // Use the same WHERE clause but no LIMIT
+    // 2026-11-17: aggregate in SQL instead of pulling every matching row.
+    // The old query returned ONE ROW PER RESOURCE (15,422 rows / 3.2 MB per
+    // search) and counted them in JS. That burned the D1 10s CPU budget, and
+    // once the budget was blown EVERY other D1 query failed with
+    // "D1 DB is overloaded. Too many resources consumed within a 10 second
+    // window" (observed 2026-11-16: 105 x HTTP 500 on /ar/professeurs/* and
+    // /fr/recherche, plus the [teacher short URL] + [search-v2-d1] errors).
+    // GROUP BY returns 3,134 rows / 677 KB and yields the EXACT same counters
+    // (verified row-by-row against the live DB on 2026-11-17).
     const facetsSql = [
-      'SELECT type, subjectId, classId, sectionId, year, trimester, language, hasCorrection',
+      'SELECT type, subjectId, classId, sectionId, year, trimester, language, hasCorrection, COUNT(*) as cnt',
       'FROM Resource r',
       'WHERE ' + whereClause,
+      'GROUP BY type, subjectId, classId, sectionId, year, trimester, language, hasCorrection',
     ].join('\n');
     const facetsResult = await db.prepare(facetsSql).bind(...params).all();
     const facets = facetsResult?.results || [];
@@ -382,14 +392,15 @@ export async function searchV2(options: SearchOptions): Promise<SearchResponse> 
     let withCorrection = 0;
     
     for (const r of facets) {
-      if (r.type) byType[r.type] = (byType[r.type] || 0) + 1;
-      if (r.subjectId) bySubjectId[r.subjectId] = (bySubjectId[r.subjectId] || 0) + 1;
-      if (r.classId) byClassId[r.classId] = (byClassId[r.classId] || 0) + 1;
-      if (r.sectionId) bySectionId[r.sectionId] = (bySectionId[r.sectionId] || 0) + 1;
-      if (r.year) byYear[r.year] = (byYear[r.year] || 0) + 1;
-      if (r.trimester) byTrimester[r.trimester] = (byTrimester[r.trimester] || 0) + 1;
-      if (r.language) byLanguage[r.language] = (byLanguage[r.language] || 0) + 1;
-      if (r.hasCorrection) withCorrection++;
+      const cnt = Number(r.cnt) || 0;
+      if (r.type) byType[r.type] = (byType[r.type] || 0) + cnt;
+      if (r.subjectId) bySubjectId[r.subjectId] = (bySubjectId[r.subjectId] || 0) + cnt;
+      if (r.classId) byClassId[r.classId] = (byClassId[r.classId] || 0) + cnt;
+      if (r.sectionId) bySectionId[r.sectionId] = (bySectionId[r.sectionId] || 0) + cnt;
+      if (r.year) byYear[r.year] = (byYear[r.year] || 0) + cnt;
+      if (r.trimester) byTrimester[r.trimester] = (byTrimester[r.trimester] || 0) + cnt;
+      if (r.language) byLanguage[r.language] = (byLanguage[r.language] || 0) + cnt;
+      if (r.hasCorrection) withCorrection += cnt;
     }
     
     return {
