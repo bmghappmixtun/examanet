@@ -2,11 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/navigation';
+import { loadUptime, examanetMonitors } from './useServiceStatus';
 
 /**
  * Badge compact d'état du service, à placer dans le pied de page.
  * Source de vérité : la route publique /api/status/uptime (cache 60 s côté
  * worker + monitoring externe UptimeRobot).
+ *
+ * 2026-11-18 : le fetch passe par `loadUptime()` (promesse partagée) au lieu
+ * d'un fetch direct. Le composant est monté 2 fois sur un affichage de page
+ * (mode strict React + remontée après hydratation) et le fetch direct
+ * déclenchait 2 requêtes par affichage, visibles dans les logs Cloudflare.
  */
 
 type BadgeLabels = {
@@ -14,11 +20,6 @@ type BadgeLabels = {
   degraded: string;
   down: string;
   link: string;
-};
-
-type UptimePayload = {
-  ok?: boolean;
-  uptimerobot?: { monitors?: Array<{ url?: string; down?: boolean }> };
 };
 
 export default function ServiceStatusBadge({
@@ -34,13 +35,9 @@ export default function ServiceStatusBadge({
     let alive = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/status/uptime', { cache: 'no-store' });
-        const json = (await res.json()) as UptimePayload;
+        const json = await loadUptime();
         if (!alive) return;
-        const monitors = (json.uptimerobot?.monitors ?? []).filter((m) =>
-          /^https?:\/\/(www\.)?examanet\.com(\/|$)/i.test(m.url ?? '')
-        );
-        const down = monitors.filter((m) => m.down).length;
+        const down = examanetMonitors(json).filter((m) => m.down).length;
         if (!json.ok && down > 0) setState('down');
         else if (!json.ok) setState('degraded');
         else setState('up');

@@ -13,7 +13,7 @@
 // Bump this version to force all clients to drop their old caches
 // and re-fetch the new bundles. Each deploy that touches a JS chunk
 // MUST bump this or users on the old bundle won't see the fix.
-const SW_VERSION = 'v1.0.14';
+const SW_VERSION = 'v1.0.15';
 const STATIC_CACHE = `examanet-static-${SW_VERSION}`;
 const PAGES_CACHE = `examanet-pages-${SW_VERSION}`;
 const API_CACHE = `examanet-api-${SW_VERSION}`;
@@ -21,10 +21,26 @@ const IMAGES_CACHE = `examanet-images-${SW_VERSION}`;
 const FONTS_CACHE = `examanet-fonts-${SW_VERSION}`;
 
 // Assets to precache on install (shell of the app)
+//
+// 2026-11-18 — PRECACHE RÉDUIT.
+// La liste d'origine contenait 10 URLs, dont '/', '/fr' et '/ar' (les 3
+// pages d'accueil). Problème : ces 3 URLs sont ré-validées à CHAQUE
+// installation du SW, et le SW est réinstallé à chaque déploiement
+// (`reg.update()` + `updateViaCache: 'none'`). Or les pages d'accueil sont
+// par définition VISITÉES par l'utilisateur — le précache ne sert à rien
+// pour elles, et chaque URL précachée est un aller-retour réseau
+// supplémentaire paid par l'utilisateur.
+//
+// On ne garde que ce qui sert VRAIMENT au mode hors-ligne :
+//   - '/offline' : la page de repli (cf. networkFirstWithOffline)
+//   - '/fr/offline', '/ar/offline' : les déclinaisons localisées
+//   - '/manifest.json' + les icônes : PWA installable
+//
+// Mesure (Cloudflare, zone examanet.com) : les chemins du SW
+// (/fr/offline, /ar/offline, /offline, /sw.js, /manifest.json, /icon-*.png,
+// /favicon.ico) pesaient 10,8 % des requêtes du 17/11 — soit 41 248
+// requêtes pour des URLs que PERSONNE ne visite volontairement.
 const PRECACHE_URLS = [
-  '/',
-  '/fr',
-  '/ar',
   '/offline',
   '/fr/offline',
   '/ar/offline',

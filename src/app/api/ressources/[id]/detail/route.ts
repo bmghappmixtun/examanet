@@ -130,7 +130,17 @@ export async function GET(
         fileKey: r.fileKey || null, fileUrl: r.fileUrl || null, r2Key: r.r2Key || null,
         fileSize: r.fileSize || null, pageCount: r.pageCount || null,
         subject: r.s_id ? { id: r.s_id, slug: r.s_slug, nameFr: r.s_nameFr, nameAr: r.s_nameAr, color: r.s_color } : null,
-        class: r.cl_id ? { id: r.cl_id, slug: r.cl_slug, nameFr: r.cl_nameFr, nameAr: r.cl_nameAr, levelId: r.cl_levelId } : null,
+        // 2026-11-18: `level` est expose DANS `class` en plus du niveau racine.
+        // Raison : ResourceDetailClient lit `resource.class.level?.slug` pour
+        // construire le fil d'Ariane. Comme `class` ne contenait que `levelId`
+        // (sans l'objet `level`), le slug etait `undefined` et l'URL rendue
+        // devenait `/niveaux/undefined` (404 loggué 4 035 fois le 17/11 par
+        // les robots, et JSON-LD BreadcrumbList pollutionne avec
+        // "https://examanet.com/niveaux/undefined?class=9eme").
+        class: r.cl_id ? {
+          id: r.cl_id, slug: r.cl_slug, nameFr: r.cl_nameFr, nameAr: r.cl_nameAr, levelId: r.cl_levelId,
+          level: r.lv_id ? { id: r.lv_id, slug: r.lv_slug, nameFr: r.lv_nameFr } : null,
+        } : null,
         level: r.lv_id ? { id: r.lv_id, slug: r.lv_slug, nameFr: r.lv_nameFr } : null,
         teacher: r.t_id ? { id: r.t_id, numericId: r.t_numericId, slug: r.t_slug, firstName: r.t_firstName, lastName: r.t_lastName } : null,
         viewsCount: r.viewsCount || 0, downloadsCount: r.downloadsCount || 0, avgRating: r.avgRating || 0,
