@@ -34,20 +34,39 @@ async function searchResources(db: any, q: string, limit: number): Promise<Sugge
   // so a ~24-char Arabic query threw and killed suggest. instr() = same match.
   // 2026-09-05: also filter isHidden=0 to hide unpublished resources
   // (DO NOT put JS-style // comments inside the SQL template literal — SQLite doesn't understand them)
-  const r = await db.prepare(
+  // 2026-11-18: FORCE the viewsCount index (resource_views_idx).
+  // instr(lower(...)) is not indexable, so the planner used to scan ALL
+  // 15 422 rows AND sort them: 88-205 ms of D1 CPU PER KEYSTROKE (measured
+  // on the live DB). That burned the account's 10-second CPU budget, and once
+  // it was blown EVERY D1 query of the whole DB started failing with
+  // "D1 DB is overloaded" (2026-11-16 + 2026-11-17 => 105 + 85 HTTP 500 on
+  // /fr/recherche, /api/search/suggest, /api/ressources/*/detail, ...).
+  // Walking resource_views_idx in viewsCount DESC order lets SQLite stop as
+  // soon as `limit` rows matched: SAME rows, SAME order, 0.4-2.4 ms (87-342x
+  // faster, verified row-by-row against the live DB on 2026-11-18).
+  const buildSql = (indexed: boolean) =>
     [
       'SELECT r.id, r.numericId, r.title, r.slug, r.type,',
       '       s.nameFr as subjectName, c.nameFr as className',
-      'FROM Resource r',
+      'FROM Resource r' + (indexed ? ' INDEXED BY resource_views_idx' : ''),
       'LEFT JOIN `Subject` s ON r.subjectId = s.id',
       'LEFT JOIN `Class` c ON r.classId = c.id',
       "WHERE r.status = 'PUBLISHED' AND r.isHidden = 0",
       '  AND (instr(lower(r.title), lower(?)) > 0 OR instr(lower(r.description), lower(?)) > 0 OR instr(lower(r.summary), lower(?)) > 0)',
       'ORDER BY r.viewsCount DESC',
       'LIMIT ?',
-    ].join(' '),
-  ).bind(trimmed, trimmed, trimmed, limit).all();
-  
+    ].join(' ');
+
+  let r: any;
+  try {
+    r = await db.prepare(buildSql(true)).bind(trimmed, trimmed, trimmed, limit).all();
+  } catch (e: any) {
+    // If a future migration drops resource_views_idx, fall back to the plain
+    // query instead of 500-ing the whole autocomplete.
+    if (!/no such index/i.test(e?.message || '')) throw e;
+    r = await db.prepare(buildSql(false)).bind(trimmed, trimmed, trimmed, limit).all();
+  }
+
   return (r?.results || []).map((row: any) => ({
     type: 'resource' as SuggestType,
     id: row.id,
