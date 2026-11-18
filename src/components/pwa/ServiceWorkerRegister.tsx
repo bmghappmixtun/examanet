@@ -64,8 +64,38 @@ export default function ServiceWorkerRegister() {
         }
 
         // Reload page when new SW takes over
+        //
+        // 2026-11-18 — CORRECTIF DU BOUCLE DE RECHARGEMENT.
+        //
+        // Le code d'origine rechargait la page sur CHAQUE `controllerchange`,
+        // y compris le tout premier : à l'installation initiale, le SW
+        // appelle `clients.claim()` (public/sw.js), ce qui prend le contrôle
+        // de la page ouverte et déclenche `controllerchange` → reload.
+        //
+        // Conséquence mesurée sur la prod (examanet.com/fr) :
+        //   - 1re visite d'un profil neuf  => 2 requêtes document + 93 requêtes
+        //     totales (et non 1 + 47)
+        //   - le reload rejoue tout : RSC prefetch, /api/status/uptime, chunks…
+        //   - à chaque nouveau déploiement, `reg.update()` réinstalle le SW
+        //     (updateViaCache: 'none') → le cycle recommence pour tous les
+        //     visiteurs qui ont un profil neuf.
+        //
+        // Sur un trafic composé de bots (qui n'ont pas de cookie persistant),
+        // chaque requête est une "première visite" ⇒ chaque requête coûte
+        // 2× le document + 10 URLs de precache. C'est un multiplicateur
+        // autoinfligeant du trafic, mesuré à 10,8 % des requêtes du 17/11
+        // sur les seuls chemins du SW (/fr/offline, /ar/offline, /offline,
+        // /sw.js, /manifest.json, /icon-*.png, /favicon.ico).
+        //
+        // Correctif : on ne recharge QUE si un contrôleur existait déjà
+        // avant l'enregistrement, c'est-à-dire s'il s'agit réellement d'une
+        // MISE À JOUR d'un SW déjà actif — pas d'une première installation.
+        const hadControllerBefore = !!navigator.serviceWorker.controller;
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
+          // Première installation : le SW vient de s'activer, rien à
+          // recharger. La page est déjà rendue et fonctionnelle.
+          if (!hadControllerBefore) return;
           if (refreshing) return;
           refreshing = true;
           window.location.reload();

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, Clock, ExternalLink, RefreshCw, XCircle } from 'lucide-react';
 import { UPTIMEROBOT_STATUS_URL } from '@/lib/service-status';
+import { loadUptime } from './useServiceStatus';
 
 /**
  * Panneau d'état du service : lit la route publique /api/status/uptime
@@ -11,6 +12,10 @@ import { UPTIMEROBOT_STATUS_URL } from '@/lib/service-status';
  *
  * Les libellés sont reçus en props (traduits côté serveur) pour éviter de
  * dépendre du provider client i18n.
+ *
+ * 2026-11-18 : le fetch passe par `loadUptime()` (promesse partagée avec le
+ * badge du pied de page) au lieu d'un fetch direct — le panneau et le badge
+ * étaient montés 2 fois chacun, ce qui doublait les appels à la route.
  */
 
 export type StatusLabels = {
@@ -73,8 +78,7 @@ export default function ServiceStatusPanel({
     let alive = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/status/uptime', { cache: 'no-store' });
-        const json = (await res.json()) as UptimePayload;
+        const json = (await loadUptime()) as UptimePayload;
         if (!alive) return;
         setData(json);
         setError(false);

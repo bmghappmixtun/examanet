@@ -147,16 +147,23 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
   // JSON-LD structured data for SEO (LearningResource schema)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://examanet.com';
   const resourceUrl = `${baseUrl}/ressources/${resource.numericId}/${resource.slug}`;
+  // 2026-11-18: slug du niveau, avec repli. `resource.class.level` peut
+  // manquer (niveau non renseigne en base) : sans ce repli, le template
+  // produisait l'URL "/niveaux/undefined" — fil d'Ariane cassé, JSON-LD
+  // invalide et URL polluee dans le sitemap Google.
+  const levelSlug = resource.class?.level?.slug || resource.level?.slug || '';
+  const levelUrl = levelSlug ? `/niveaux/${levelSlug}` : '/niveaux';
+  const levelName = resource.class?.level?.nameFr || resource.level?.nameFr || '';
   const courseJsonLd = courseSchema({
     slug: resource.slug,
     title: resource.title,
     description:
       resource.description || `${resource.title} — Ressource pédagogique gratuite sur Examanet`,
     language: resource.language || 'fr',
-    level: resource.class?.nameFr || resource.class?.level?.nameFr || 'Enseignement de base',
+    level: resource.class?.nameFr || levelName || 'Enseignement de base',
     cycle:
       (resource.headerData as any)?.cycle ||
-      resource.class?.level?.nameFr ||
+      levelName ||
       'Enseignement de base',
     subject: resource.subject?.nameFr || 'Éducation',
     type: resource.type,
@@ -185,7 +192,7 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
       ? [
           {
             name: resource.class.nameFr || resource.class.slug,
-            url: `${baseUrl}/niveaux/${resource.class.level?.slug}?class=${resource.class.slug}`,
+            url: `${baseUrl}${levelUrl}?class=${resource.class.slug}`,
           },
         ]
       : []),
@@ -282,7 +289,7 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
             >
               <ChevronRight className="w-3 h-3 text-slate-300" />
               <Link
-                href={resource.class ? `/niveaux/${resource.class.level?.slug}` : '/niveaux'}
+                href={resource.class ? levelUrl : '/niveaux'}
                 className="hover:text-primary-600 transition"
                 tabIndex={resource.class ? undefined : -1}
               >
@@ -513,7 +520,7 @@ export default function ResourceDetailClient({ numericId, slug: initialSlug }: {
                   Shown below the PDF viewer so the PDF gets full width. */}
               <ResourceInfoPanel
                 resource={resource}
-                hideClasse={resource.class?.level?.slug === 'lycee'}
+                hideClasse={levelSlug === 'lycee'}
               />
 
               {/* Notation — hidden for archived resources (non-owners) */}
