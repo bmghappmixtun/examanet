@@ -28,6 +28,14 @@ const getCachedHomeData = nextCache(
     if (!db) return { popular: [], recent: [], stats: { resources: 0, teachers: 0, students: 0, downloads: 0 }, subjects: [] };
 
     // Popular resources (by views)
+    // PERF 2026-11-19 : `INDEXED BY resource_views_idx` est OBLIGATOIRE ici.
+    // Sans cet indice, SQLite utilise resource_status_publishedAt_idx et fait
+    // "USE TEMP B-TREE FOR ORDER BY" sur les 15 421 ressources publiées
+    // (ORDER BY viewsCount DESC, publishedAt DESC n'est pas couvert par un
+    // index mono-colonne) => 84 867 lignes lues et 87 ms de CPU D1 PAR
+    // rendu, pour 8 lignes utiles. Avec l'index viewsCount : 50 lignes lues
+    // et 0,69 ms (126x). Mesuré sur la D1 de prod, résultats identiques.
+    // Ne PAS retirer cet indice sans re-mesurer (meta.timings.sql_duration_ms).
     const popularResult: any = await db.prepare(`
       SELECT r.id, r.numericId, r.slug, r.title, r.description, r.summary, r.type, r.year,
              r.hasCorrection, r.viewsCount, r.downloadsCount, r.avgRating, r.ratingsCount, r.publishedAt,
@@ -38,7 +46,7 @@ const getCachedHomeData = nextCache(
              t.id as t_id, t.firstName as t_firstName, t.lastName as t_lastName,
              t.firstNameAr as t_firstNameAr, t.lastNameAr as t_lastNameAr,
              t.avatarUrl as t_avatarUrl
-      FROM Resource r
+      FROM Resource r INDEXED BY resource_views_idx
       LEFT JOIN \`Subject\` s ON r.subjectId = s.id
       LEFT JOIN \`Class\` c ON r.classId = c.id
       LEFT JOIN \`Section\` sec ON r.sectionId = sec.id
